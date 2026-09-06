@@ -3,153 +3,635 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
 <title>班級工作回報－管理後台</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛠️</text></svg>">
+
+<link
+  rel="icon"
+  href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚓</text></svg>"
+>
 
 <style>
+/* =========================================================
+   海洋冒險風格
+========================================================= */
 :root{
-  --bg:#f5f7fb;
-  --card:#fff;
-  --ink:#172033;
-  --muted:#667085;
-  --line:#e4e7ec;
-  --brand:#2563eb;
-  --good:#067647;
-  --warn:#b54708;
-  --bad:#b42318
+  --sky:#58bdf5;
+  --sky2:#d9f4ff;
+  --sea:#137fd1;
+  --deep:#0d5e9d;
+
+  --wood:#55321e;
+  --wood2:#7c4b2d;
+  --wood3:#3f2416;
+
+  --paper:#fff7df;
+  --paper2:#f9e4b6;
+  --paper3:#f2cf86;
+
+  --ink:#402819;
+  --muted:#7a654f;
+
+  --blue:#1687ec;
+  --green:#19b56b;
+  --orange:#f79b1e;
+  --red:#ef4c5c;
+  --purple:#9068e8;
+
+  --line:#dfc799;
+  --shadow:0 8px 22px rgba(67,40,20,.18);
 }
 
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box;
+}
+
+html{
+  min-height:100%;
+}
 
 body{
   margin:0;
-  font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
-  background:var(--bg);
-  color:var(--ink)
+  min-height:100vh;
+  font-family:
+    "Noto Sans TC",
+    "Microsoft JhengHei",
+    system-ui,
+    sans-serif;
+
+  color:var(--ink);
+
+  background:
+    radial-gradient(circle at 18% 12%,rgba(255,255,255,.9),transparent 18%),
+    radial-gradient(circle at 85% 5%,rgba(255,255,255,.8),transparent 15%),
+    linear-gradient(
+      180deg,
+      #43b7f4 0,
+      #a9e4ff 30%,
+      #eefaff 58%,
+      #dff4ff 100%
+    );
 }
 
-button,input,select,textarea{font:inherit}
-
-.hidden{display:none!important}
-
-.wrap{
-  max-width:1320px;
-  margin:auto;
-  padding:16px
+button,
+input,
+select,
+textarea{
+  font:inherit;
 }
 
-.card{
-  background:#fff;
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:16px;
-  box-shadow:0 8px 24px rgba(16,24,40,.05)
+button{
+  touch-action:manipulation;
 }
 
-.login{
-  max-width:430px;
-  margin:8vh auto
+.hidden{
+  display:none!important;
 }
 
-.brand{
-  font-size:24px;
-  font-weight:800
-}
 
-.sub,.meta{
-  color:var(--muted);
-  font-size:13px
-}
-
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  align-items:center;
-  margin-bottom:14px
-}
-
-.btn{
-  border:0;
-  border-radius:10px;
-  padding:9px 13px;
-  cursor:pointer;
-  font-weight:700
-}
-
-.primary{
-  background:var(--brand);
-  color:#fff
-}
-
-.gray{background:#eef2f6}
-
-.danger{
-  background:#fee4e2;
-  color:var(--bad)
-}
-
-.good{
-  background:#dcfae6;
-  color:var(--good)
-}
-
-.warn{
-  background:#fff4e5;
-  color:var(--warn)
-}
-
-.small{
-  font-size:13px;
-  padding:7px 9px
-}
-
-.field{
+/* =========================================================
+   登入
+========================================================= */
+.login-shell{
+  min-height:100vh;
   display:grid;
-  gap:5px;
-  margin:10px 0
+  place-items:center;
+  padding:24px;
+  position:relative;
+  overflow:hidden;
 }
 
-.field input,
-.field select,
-.field textarea{
-  width:100%;
-  border:1px solid #cfd4dc;
-  border-radius:9px;
-  padding:10px
+.login-shell::before{
+  content:"";
+  position:absolute;
+  left:-10%;
+  right:-10%;
+  bottom:-80px;
+  height:240px;
+  background:
+    radial-gradient(
+      ellipse at center,
+      #2a9edb 0,
+      #1277bd 48%,
+      #075a98 100%
+    );
+  border-radius:50% 50% 0 0;
+}
+
+.login-card{
+  position:relative;
+  z-index:2;
+  width:min(460px,100%);
+  padding:28px;
+  border:3px solid #8b592e;
+  border-radius:18px;
+
+  background:
+    linear-gradient(
+      rgba(255,249,226,.96),
+      rgba(248,222,166,.96)
+    );
+
+  box-shadow:
+    0 16px 45px rgba(31,55,78,.3),
+    inset 0 0 0 4px rgba(255,255,255,.45);
+}
+
+.login-card::before{
+  content:"⚓";
+  position:absolute;
+  right:20px;
+  top:14px;
+  font-size:48px;
+  opacity:.12;
+}
+
+.login-brand{
+  font-size:27px;
+  font-weight:900;
+  color:#55301c;
+  margin-bottom:6px;
+}
+
+.login-sub{
+  color:#806448;
+  margin-bottom:18px;
+}
+
+.login-slogan{
+  text-align:center;
+  font-weight:800;
+  color:#805629;
+  margin-top:18px;
+}
+
+
+/* =========================================================
+   主架構
+========================================================= */
+#appView{
+  min-height:100vh;
+}
+
+.app-layout{
+  display:grid;
+  grid-template-columns:220px minmax(0,1fr);
+  min-height:100vh;
+}
+
+
+/* =========================================================
+   左側木質選單
+========================================================= */
+.sidebar{
+  position:sticky;
+  top:0;
+  height:100vh;
+  padding:18px 12px;
+
+  color:white;
+
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255,255,255,.025) 0 2px,
+      rgba(0,0,0,.04) 2px 5px
+    ),
+    linear-gradient(
+      90deg,
+      var(--wood3),
+      var(--wood2) 55%,
+      #4e2d1c
+    );
+
+  border-right:5px solid #9c6b37;
+
+  box-shadow:
+    8px 0 24px rgba(35,22,14,.2);
+
+  overflow:auto;
+  z-index:20;
+}
+
+.sidebar-title{
+  text-align:center;
+  padding:14px 8px 18px;
+  border-bottom:1px solid rgba(255,255,255,.17);
+  margin-bottom:12px;
+}
+
+.wheel{
+  font-size:46px;
+  line-height:1;
+  margin-bottom:6px;
+}
+
+.sidebar-title b{
+  font-size:19px;
+}
+
+.sidebar-sub{
+  font-size:12px;
+  color:#f9d7a4;
+  margin-top:5px;
 }
 
 .nav{
-  display:flex;
-  flex-wrap:wrap;
-  gap:7px;
-  margin-bottom:14px
-}
-
-.nav .active{
-  background:#dbeafe;
-  color:#1d4ed8
-}
-
-.grid{
   display:grid;
-  gap:12px
+  gap:8px;
 }
 
-.g4{
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr))
+.nav button{
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:11px;
+  text-align:left;
+
+  border:1px solid transparent;
+  border-radius:9px;
+
+  padding:12px 12px;
+
+  color:#fff8ea;
+  background:transparent;
+
+  cursor:pointer;
+  font-weight:800;
+  font-size:15px;
+
+  transition:.18s;
 }
 
-.stat{padding:14px}
+.nav button:hover{
+  background:rgba(255,255,255,.1);
+}
 
-.stat b{
-  font-size:28px
+.nav button.active{
+  background:
+    linear-gradient(
+      180deg,
+      #2197f1,
+      #1072cf
+    );
+
+  border-color:#8dd5ff;
+
+  box-shadow:
+    0 4px 10px rgba(0,78,145,.35),
+    inset 0 1px 0 rgba(255,255,255,.3);
+}
+
+.nav-icon{
+  width:26px;
+  text-align:center;
+  font-size:21px;
+}
+
+.sidebar-quote{
+  margin-top:20px;
+  padding:13px;
+
+  color:#5c381c;
+  text-align:center;
+  line-height:1.7;
+  font-weight:800;
+
+  background:
+    linear-gradient(
+      #fff3c9,
+      #eac57f
+    );
+
+  border:2px solid #9a6533;
+  border-radius:8px;
+
+  transform:rotate(-1deg);
+
+  box-shadow:0 5px 12px rgba(0,0,0,.2);
+}
+
+
+/* =========================================================
+   右側
+========================================================= */
+.main-area{
+  min-width:0;
+}
+
+
+/* =========================================================
+   航海天空 Header
+========================================================= */
+.hero{
+  min-height:176px;
+  position:relative;
+  overflow:hidden;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+
+  padding:24px 32px;
+
+  background:
+    radial-gradient(
+      circle at 76% -25%,
+      #fff7aa 0,
+      rgba(255,245,161,.45) 13%,
+      transparent 30%
+    ),
+    linear-gradient(
+      165deg,
+      #1f9ff0 0,
+      #60c5f8 55%,
+      #d5f4ff 100%
+    );
+
+  border-bottom:5px solid #b47736;
+}
+
+.hero::after{
+  content:"🌊  🌊  🌊  🌊  🌊";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:-17px;
+
+  font-size:58px;
+  letter-spacing:28px;
+  opacity:.22;
+  white-space:nowrap;
+}
+
+.hero-sign{
+  position:relative;
+  z-index:2;
+
+  max-width:710px;
+
+  padding:17px 24px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fff7d8,
+      #f4d59a
+    );
+
+  border:3px solid #996431;
+  border-radius:12px;
+
+  box-shadow:
+    0 7px 0 #76451f,
+    0 15px 26px rgba(50,67,87,.23);
+
+  transform:rotate(-.5deg);
+}
+
+.hero-title{
+  font-size:31px;
+  font-weight:950;
+  letter-spacing:2px;
+  color:#482a19;
+}
+
+.hero-sub{
+  margin-top:7px;
+  color:#795231;
+  font-weight:800;
+}
+
+.hero-user{
+  position:relative;
+  z-index:2;
+
+  min-width:190px;
+
+  padding:12px 15px;
+
+  border-radius:13px;
+
+  background:rgba(255,255,255,.92);
+
+  box-shadow:0 6px 17px rgba(24,85,132,.25);
+
+  border:2px solid rgba(255,255,255,.85);
+}
+
+.user-name{
+  font-weight:900;
+}
+
+.semester-badge{
+  display:inline-block;
+
+  margin-top:6px;
+
+  background:#e5f3ff;
+  color:#176baf;
+
+  padding:4px 9px;
+
+  border-radius:999px;
+  font-size:12px;
+  font-weight:850;
+}
+
+.header-actions{
+  display:flex;
+  gap:6px;
+  margin-top:8px;
+  flex-wrap:wrap;
+}
+
+
+/* =========================================================
+   工作區
+========================================================= */
+.content{
+  padding:18px 20px 38px;
+}
+
+.page-title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+
+  margin-bottom:14px;
+
+  font-size:22px;
+  font-weight:950;
+}
+
+.page-title::before{
+  content:"☸️";
+  font-size:27px;
+}
+
+
+/* =========================================================
+   羊皮紙卡
+========================================================= */
+.card{
+  position:relative;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,252,237,.98),
+      rgba(255,246,216,.98)
+    );
+
+  border:2px solid #d5ae6e;
+  border-radius:13px;
+
+  padding:16px;
+
+  box-shadow:var(--shadow);
+}
+
+.card::after{
+  content:"";
+  pointer-events:none;
+  position:absolute;
+  inset:3px;
+  border:1px solid rgba(143,96,44,.13);
+  border-radius:9px;
 }
 
 .section-title{
   font-size:20px;
+  font-weight:950;
+  margin-bottom:10px;
+  color:#51311e;
+}
+
+
+/* =========================================================
+   統計卡
+========================================================= */
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:13px;
+  margin-bottom:16px;
+}
+
+.dashboard-stat{
+  min-height:128px;
+  overflow:hidden;
+
+  border-radius:13px;
+  padding:17px;
+
+  background:#fff;
+  border:2px solid;
+
+  box-shadow:0 6px 14px rgba(55,71,95,.1);
+
+  position:relative;
+}
+
+.dashboard-stat::after{
+  position:absolute;
+  right:-5px;
+  bottom:-14px;
+  font-size:62px;
+  opacity:.13;
+}
+
+.stat-blue{
+  border-color:#80c8f7;
+  background:linear-gradient(145deg,#fff,#e8f6ff);
+}
+
+.stat-blue::after{
+  content:"👥";
+}
+
+.stat-green{
+  border-color:#86dfae;
+  background:linear-gradient(145deg,#fff,#ebfff3);
+}
+
+.stat-green::after{
+  content:"✅";
+}
+
+.stat-orange{
+  border-color:#ffc167;
+  background:linear-gradient(145deg,#fff,#fff4dd);
+}
+
+.stat-orange::after{
+  content:"⏳";
+}
+
+.stat-purple{
+  border-color:#aaa0f3;
+  background:linear-gradient(145deg,#fff,#f3efff);
+}
+
+.stat-purple::after{
+  content:"🚩";
+}
+
+.stat-label{
   font-weight:800;
-  margin-bottom:10px
+  color:#50463c;
+}
+
+.stat-number{
+  display:block;
+  margin-top:3px;
+
+  font-size:34px;
+  line-height:1.05;
+  font-weight:950;
+}
+
+.stat-blue .stat-number{
+  color:#126bc3;
+}
+
+.stat-green .stat-number{
+  color:#0c8850;
+}
+
+.stat-orange .stat-number{
+  color:#d3670a;
+}
+
+.stat-purple .stat-number{
+  color:#6852c5;
+}
+
+.stat-msg{
+  margin-top:8px;
+  color:#796d62;
+  font-size:13px;
+  font-weight:700;
+}
+
+
+/* =========================================================
+   元件
+========================================================= */
+.two{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.grid{
+  display:grid;
+  gap:12px;
+}
+
+.g4{
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
 }
 
 .toolbar{
@@ -157,156 +639,265 @@ button,input,select,textarea{font:inherit}
   gap:8px;
   flex-wrap:wrap;
   align-items:center;
-  margin:10px 0
+  margin:10px 0;
 }
 
-.table-wrap{
-  overflow:auto;
-  border:1px solid var(--line);
-  border-radius:12px
+.btn{
+  border:0;
+  border-radius:9px;
+
+  padding:9px 13px;
+
+  cursor:pointer;
+  font-weight:850;
+
+  transition:.15s;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.35),
+    0 2px 5px rgba(60,47,36,.12);
 }
 
-table{
-  border-collapse:collapse;
+.btn:hover{
+  transform:translateY(-1px);
+}
+
+.primary{
+  color:#fff;
+  background:linear-gradient(#2197f4,#1175cf);
+}
+
+.gray{
+  color:#55483c;
+  background:linear-gradient(#f9f6ef,#e8dfcf);
+  border:1px solid #cdbd9e;
+}
+
+.good{
+  color:white;
+  background:linear-gradient(#27c67a,#13a75f);
+}
+
+.warn{
+  color:#fff;
+  background:linear-gradient(#ffad35,#ec8613);
+}
+
+.danger{
+  color:white;
+  background:linear-gradient(#f35e6e,#dc364d);
+}
+
+.small{
+  font-size:13px;
+  padding:7px 9px;
+}
+
+.field{
+  display:grid;
+  gap:5px;
+  margin:10px 0;
+}
+
+.field label{
+  font-weight:800;
+  color:#61462e;
+}
+
+.field input,
+.field select,
+.field textarea,
+.toolbar input,
+.toolbar select{
   width:100%;
-  min-width:760px
-}
-
-th,td{
+  border:1px solid #c8a979;
+  border-radius:8px;
   padding:9px 10px;
-  border-bottom:1px solid var(--line);
-  text-align:left;
-  font-size:14px;
-  vertical-align:top
+
+  background:#fffdf5;
+  color:#422c1e;
+
+  outline:none;
 }
 
-th{
-  background:#f8fafc;
-  position:sticky;
-  top:0;
-  z-index:1
-}
-
-.pill{
-  display:inline-block;
-  padding:4px 8px;
-  border-radius:999px;
-  background:#f2f4f7;
-  font-size:12px;
-  font-weight:700
-}
-
-.pill.good{
-  background:#dcfae6;
-  color:var(--good)
-}
-
-.pill.warn{
-  background:#fff4e5;
-  color:var(--warn)
-}
-
-.pill.bad{
-  background:#fee4e2;
-  color:var(--bad)
+.field input:focus,
+.field select:focus,
+.field textarea:focus,
+.toolbar input:focus,
+.toolbar select:focus{
+  border-color:#3899df;
+  box-shadow:0 0 0 3px rgba(56,153,223,.13);
 }
 
 .notice{
-  padding:10px 12px;
-  border-radius:10px;
-  background:#fffaeb;
-  color:#93370d;
-  margin:10px 0
+  padding:11px 13px;
+  border-radius:9px;
+
+  background:#fff0c9;
+  color:#80531f;
+
+  border-left:5px solid #e99c2d;
+
+  margin:10px 0;
 }
 
-.error{
-  background:#fef3f2;
-  color:#b42318
-}
-
+.notice.success,
 .success{
-  background:#ecfdf3;
-  color:#067647
+  background:#e4f9eb;
+  color:#087540;
+  border-color:#19ad64;
 }
 
+.notice.error,
+.error{
+  background:#ffe5e7;
+  color:#aa2937;
+  border-color:#dc4052;
+}
+
+.sub,
+.meta{
+  color:#7f6c57;
+  font-size:13px;
+}
+
+
+/* =========================================================
+   資料項目
+========================================================= */
 .item{
-  border:1px solid var(--line);
-  border-radius:13px;
+  position:relative;
+
+  border:1px solid #dfc693;
+  border-radius:10px;
+
   padding:13px;
-  margin:9px 0
+  margin:9px 0;
+
+  background:rgba(255,255,255,.63);
+}
+
+.item:hover{
+  background:rgba(255,255,255,.85);
 }
 
 .item-head{
   display:flex;
   justify-content:space-between;
+  align-items:flex-start;
   gap:10px;
-  align-items:flex-start
 }
 
-.two{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px
+.item-head b{
+  font-size:16px;
 }
 
-.assign{
-  background:#f8fafc;
-  border:1px solid var(--line);
-  padding:8px 10px;
-  border-radius:9px;
-  margin:6px 0
+.pill{
+  display:inline-block;
+  padding:4px 9px;
+  border-radius:999px;
+
+  font-size:12px;
+  font-weight:850;
+
+  background:#eee6da;
+  color:#5f5246;
 }
 
-.modal{
-  position:fixed;
-  inset:0;
-  background:rgba(16,24,40,.45);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:14px;
-  z-index:10
+.pill.good{
+  background:#d9f7e7;
+  color:#087747;
 }
 
-.modal-card{
-  background:#fff;
-  border-radius:16px;
-  padding:16px;
-  width:min(960px,100%);
-  max-height:92vh;
-  overflow:auto
+.pill.warn{
+  background:#fff0ce;
+  color:#b1650c;
 }
 
+.pill.bad{
+  background:#ffe0e3;
+  color:#b02b3a;
+}
+
+
+/* =========================================================
+   表格
+========================================================= */
+.table-wrap{
+  overflow:auto;
+
+  border:1px solid #d8bd8d;
+  border-radius:10px;
+
+  background:#fffdf6;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:760px;
+}
+
+th,
+td{
+  padding:9px 10px;
+  border-bottom:1px solid #ead9b9;
+  text-align:left;
+  vertical-align:top;
+  font-size:14px;
+}
+
+th{
+  position:sticky;
+  top:0;
+  z-index:1;
+
+  color:#55351f;
+
+  background:
+    linear-gradient(
+      #f5dbab,
+      #e9c787
+    );
+}
+
+tbody tr:nth-child(even){
+  background:#fffaf0;
+}
+
+
+/* =========================================================
+   班級 / 學生
+========================================================= */
 .student-grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
-  gap:7px
+  gap:7px;
 }
 
 .student{
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:8px
+  border:1px solid #dcc396;
+  border-radius:9px;
+  padding:8px;
+  background:#fffdf7;
 }
 
 .student select,
 .student input{
   width:100%;
   padding:7px;
-  border:1px solid #d0d5dd;
-  border-radius:8px;
-  margin-top:5px
+  border:1px solid #ccb286;
+  border-radius:7px;
+  margin-top:5px;
+  background:#fff;
 }
 
-.semester-badge{
-  display:inline-block;
-  background:#dbeafe;
-  color:#1d4ed8;
-  border-radius:999px;
-  padding:5px 10px;
-  font-size:13px;
-  font-weight:800;
-  margin-top:5px
+.assign{
+  background:#fff9e9;
+  border:1px solid #e1c799;
+  padding:8px 10px;
+  border-radius:8px;
+  margin:6px 0;
 }
 
 .role-row{
@@ -315,221 +906,476 @@ th{
   gap:10px;
   align-items:center;
   padding:8px 0;
-  border-bottom:1px solid #eef2f6
+  border-bottom:1px dashed #dfc89e;
 }
 
 .role-row select{
   width:100%;
   padding:8px;
-  border:1px solid #d0d5dd;
-  border-radius:8px
+  border:1px solid #ccb184;
+  border-radius:7px;
+  background:#fffef9;
 }
 
-.muted-box{
-  background:#f8fafc;
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:10px
+.late-note{
+  color:#d72638;
+  font-weight:900;
+  font-size:13px;
+  margin-top:5px;
 }
 
-@media(max-width:760px){
-  .wrap{padding:10px}
-  .two{grid-template-columns:1fr}
-  .brand{font-size:20px}
-  .topbar{align-items:flex-start}
-  .role-row{grid-template-columns:1fr}
-  .table-wrap{border-radius:8px}
+.lock-note{
+  color:#7d6d5b;
+  font-size:12px;
+  margin-top:4px;
+}
+
+
+/* =========================================================
+   鼓勵區
+========================================================= */
+.encouragement{
+  display:grid;
+  grid-template-columns:1.2fr .8fr;
+  gap:14px;
+  margin-top:14px;
+}
+
+.quote-card{
+  position:relative;
+
+  padding:20px;
+
+  min-height:130px;
+
+  border-radius:12px;
+
+  background:
+    radial-gradient(circle at 86% 50%,rgba(255,255,255,.9),transparent 25%),
+    linear-gradient(135deg,#fff2c9,#f1cd8b);
+
+  border:2px solid #b98949;
+  box-shadow:var(--shadow);
+}
+
+.quote-card::after{
+  content:"🧭";
+  position:absolute;
+  right:20px;
+  bottom:12px;
+  font-size:64px;
+  opacity:.18;
+}
+
+.quote-main{
+  font-size:20px;
+  font-weight:950;
+  line-height:1.65;
+}
+
+.quote-sub{
+  margin-top:5px;
+  color:#765638;
+  font-size:13px;
+}
+
+.ship-card{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  min-height:130px;
+
+  border-radius:12px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #a9e4ff 0,
+      #e8f8ff 60%,
+      #87cff0 60%,
+      #2b9dd4 100%
+    );
+
+  border:2px solid #5aa9d5;
+
+  font-size:67px;
+
+  box-shadow:var(--shadow);
+}
+
+
+/* =========================================================
+   Modal
+========================================================= */
+.modal{
+  position:fixed;
+  inset:0;
+  z-index:100;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  padding:14px;
+
+  background:rgba(35,24,17,.62);
+  backdrop-filter:blur(3px);
+}
+
+.modal-card{
+  width:min(980px,100%);
+  max-height:92vh;
+  overflow:auto;
+
+  padding:17px;
+
+  background:
+    linear-gradient(#fff9e7,#f8e2b7);
+
+  border:3px solid #88562d;
+  border-radius:14px;
+
+  box-shadow:0 20px 55px rgba(0,0,0,.35);
+}
+
+
+/* =========================================================
+   手機
+========================================================= */
+.mobile-menu{
+  display:none;
+}
+
+@media(max-width:900px){
+
+  .app-layout{
+    display:block;
+  }
+
+  .sidebar{
+    position:relative;
+    height:auto;
+
+    border-right:0;
+    border-bottom:4px solid #9c6b37;
+  }
+
+  .sidebar-title{
+    display:none;
+  }
+
+  .nav{
+    display:flex;
+    overflow:auto;
+    padding-bottom:4px;
+  }
+
+  .nav button{
+    flex:0 0 auto;
+    width:auto;
+    white-space:nowrap;
+  }
+
+  .sidebar-quote{
+    display:none;
+  }
+
+  .hero{
+    min-height:auto;
+    padding:17px;
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .hero-title{
+    font-size:24px;
+  }
+
+  .stats-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .two,
+  .encouragement{
+    grid-template-columns:1fr;
+  }
+
+}
+
+@media(max-width:560px){
+
+  .content{
+    padding:12px;
+  }
+
+  .stats-grid{
+    grid-template-columns:1fr;
+  }
+
+  .hero-title{
+    font-size:21px;
+  }
+
+  .hero-sign{
+    padding:13px;
+  }
+
+  .dashboard-stat{
+    min-height:110px;
+  }
+
+  .role-row{
+    grid-template-columns:1fr;
+  }
+
 }
 </style>
 </head>
 
 <body>
 
-<div class="wrap">
+<!-- ======================================================
+     登入
+====================================================== -->
+<section id="loginView" class="login-shell">
 
-<section id="loginView" class="card login">
+  <div class="login-card">
 
-  <div class="brand">
-    🛠️ 班級工作回報－管理後台
-  </div>
+    <div class="login-brand">
+      ⚓ 班級工作回報－管理後台
+    </div>
 
-  <div class="sub">
-    僅管理員帳號可進入
-  </div>
+    <div class="login-sub">
+      導師專屬航海指揮中心
+    </div>
 
-  <div id="loginMsg"></div>
+    <div id="loginMsg"></div>
 
-  <div class="field">
-    <label>管理員帳號／Email</label>
-    <input id="loginUser">
-  </div>
+    <div class="field">
+      <label>管理員帳號／Email</label>
+      <input
+        id="loginUser"
+        autocomplete="username"
+      >
+    </div>
 
-  <div class="field">
-    <label>密碼</label>
-    <input
-      id="loginPass"
-      type="password"
+    <div class="field">
+      <label>密碼</label>
+
+      <input
+        id="loginPass"
+        type="password"
+        autocomplete="current-password"
+      >
+    </div>
+
+    <button
+      id="loginBtn"
+      class="btn primary"
+      style="width:100%;font-size:16px"
     >
-  </div>
+      ⛵ 登入管理後台
+    </button>
 
-  <button
-    id="loginBtn"
-    class="btn primary"
-    style="width:100%"
-  >
-    登入
-  </button>
+    <div class="login-slogan">
+      航向更好的班級！每一份努力，都讓未來更閃亮！
+    </div>
+
+  </div>
 
 </section>
 
 
+<!-- ======================================================
+     主程式
+====================================================== -->
 <main
   id="appView"
   class="hidden"
 >
 
-  <div class="topbar">
+<div class="app-layout">
 
-    <div>
+  <!-- 左側 -->
+  <aside class="sidebar">
 
-      <div class="brand">
-        🛠️ 班級工作回報－管理後台
+    <div class="sidebar-title">
+
+      <div class="wheel">
+        ☸️
       </div>
 
-      <div
-        id="who"
-        class="sub"
-      ></div>
+      <b>
+        班級航海管理站
+      </b>
 
-      <div
-        id="semesterBadge"
-        class="semester-badge"
-      ></div>
+      <div class="sidebar-sub">
+        一起航向更棒的班級！
+      </div>
 
     </div>
 
 
-    <div>
-
-      <a href="class-work.html">
-
-        <button
-          class="btn gray small"
-        >
-          前往回報頁
-        </button>
-
-      </a>
+    <div class="nav">
 
       <button
-        id="logoutBtn"
-        class="btn gray small"
+        class="active"
+        data-page="dashboard"
       >
-        登出
+        <span class="nav-icon">🏠</span>
+        總覽／學期
+      </button>
+
+      <button data-page="roles">
+        <span class="nav-icon">📜</span>
+        職務派發總表
+      </button>
+
+      <button data-page="records">
+        <span class="nav-icon">📝</span>
+        收繳／成績
+      </button>
+
+      <button data-page="accounts">
+        <span class="nav-icon">🔑</span>
+        帳號與權限
+      </button>
+
+      <button data-page="classes">
+        <span class="nav-icon">👥</span>
+        班級名單
+      </button>
+
+      <button data-page="audit">
+        <span class="nav-icon">🧾</span>
+        操作紀錄
       </button>
 
     </div>
 
+
+    <div class="sidebar-quote">
+      小小的努力<br>
+      也能成就<br>
+      偉大的航程！<br>
+      — 加油！ —
+    </div>
+
+  </aside>
+
+
+  <!-- 右側 -->
+  <div class="main-area">
+
+    <header class="hero">
+
+      <div class="hero-sign">
+
+        <div class="hero-title">
+          ☸️ 班級工作回報－管理後台
+        </div>
+
+        <div class="hero-sub">
+          一起航向更棒的班級！每一份努力，都讓未來更閃亮！
+        </div>
+
+      </div>
+
+
+      <div class="hero-user">
+
+        <div class="user-name">
+          👨‍🏫 <span id="who"></span>
+        </div>
+
+        <div
+          id="semesterBadge"
+          class="semester-badge"
+        ></div>
+
+
+        <div class="header-actions">
+
+          <a
+            href="class-work.html"
+            style="text-decoration:none"
+          >
+            <button class="btn gray small">
+              📋 回報頁
+            </button>
+          </a>
+
+          <button
+            id="logoutBtn"
+            class="btn danger small"
+          >
+            🚪 登出
+          </button>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <div class="content">
+
+      <div id="appMsg"></div>
+
+      <section id="page-dashboard"></section>
+
+      <section
+        id="page-roles"
+        class="hidden"
+      ></section>
+
+      <section
+        id="page-records"
+        class="hidden"
+      ></section>
+
+      <section
+        id="page-accounts"
+        class="hidden"
+      ></section>
+
+      <section
+        id="page-classes"
+        class="hidden"
+      ></section>
+
+      <section
+        id="page-audit"
+        class="hidden"
+      ></section>
+
+    </div>
+
   </div>
-
-
-  <div id="appMsg"></div>
-
-
-  <div class="nav">
-
-    <button
-      class="btn gray active"
-      data-page="dashboard"
-    >
-      總覽／學期
-    </button>
-
-    <button
-      class="btn gray"
-      data-page="roles"
-    >
-      職務派發總表
-    </button>
-
-    <button
-      class="btn gray"
-      data-page="records"
-    >
-      收繳／成績
-    </button>
-
-    <button
-      class="btn gray"
-      data-page="accounts"
-    >
-      帳號與權限
-    </button>
-
-    <button
-      class="btn gray"
-      data-page="classes"
-    >
-      班級名單
-    </button>
-
-    <button
-      class="btn gray"
-      data-page="audit"
-    >
-      操作紀錄
-    </button>
-
-  </div>
-
-
-  <section id="page-dashboard"></section>
-
-  <section
-    id="page-roles"
-    class="hidden"
-  ></section>
-
-  <section
-    id="page-records"
-    class="hidden"
-  ></section>
-
-  <section
-    id="page-accounts"
-    class="hidden"
-  ></section>
-
-  <section
-    id="page-classes"
-    class="hidden"
-  ></section>
-
-  <section
-    id="page-audit"
-    class="hidden"
-  ></section>
-
-</main>
 
 </div>
 
+</main>
 
+
+<!-- Modal -->
 <div
   id="modal"
   class="modal hidden"
 >
-
   <div class="modal-card">
-
     <div id="modalBody"></div>
-
   </div>
-
 </div>
 
 
 <script type="module">
+
+/* =========================================================
+   Firebase
+========================================================= */
 
 import{
   initializeApp,
@@ -569,7 +1415,6 @@ from
 
 
 const firebaseConfig={
-
   apiKey:
     "AIzaSyB56F4wJ-IMUiBsqJ5P33HoDK642h7671U",
 
@@ -587,7 +1432,6 @@ const firebaseConfig={
 
   appId:
     "1:24186422479:web:8dee260f34b2e506fd63ba"
-
 };
 
 
@@ -624,7 +1468,8 @@ let collections=[];
 
 let assessments=[];
 
-let currentSemester="115-1";
+let currentSemester=
+  "115-1";
 
 let semesterHistory=[
   "115-1"
@@ -633,6 +1478,10 @@ let semesterHistory=[
 let recordSemester=
   "115-1";
 
+
+/* =========================================================
+   班級預設名單
+========================================================= */
 
 const defaultRosters={
 
@@ -801,42 +1650,49 @@ const standardRoles=[
 
   ...officerRoles.map(
     name=>({
-
       kind:"officer",
-
       scopeType:"officer",
-
       scopeName:name,
-
       label:name,
-
       canCollection:true,
-
       canScores:false
-
     })
   ),
 
   ...subjects.map(
     name=>({
-
       kind:"assistant",
-
       scopeType:"subject",
-
       scopeName:name,
-
       label:`${name}小老師`,
-
       canCollection:true,
-
       canScores:true
-
     })
   )
 
 ];
 
+
+const statusOptions=[
+  ["submitted","已繳"],
+  ["missing","未繳"],
+  ["late","補交"],
+  ["exempt","免繳"]
+];
+
+
+const scoreStatusOptions=[
+  ["normal","正常"],
+  ["absent","缺考"],
+  ["makeup","補考"],
+  ["exempt","免試"],
+  ["not_entered","未登記"]
+];
+
+
+/* =========================================================
+   共用
+========================================================= */
 
 function esc(v=""){
 
@@ -880,16 +1736,6 @@ function msg(
 }
 
 
-function today(){
-
-  return new Date()
-    .toLocaleDateString(
-      "sv-SE"
-    );
-
-}
-
-
 function randomPwd(){
 
   const c=
@@ -909,9 +1755,122 @@ function randomPwd(){
 }
 
 
+function today(){
+
+  return new Date()
+    .toLocaleDateString(
+      "sv-SE"
+    );
+
+}
+
+
 function scopeKey(a){
 
   return `${a.semester}|${a.classId}|${a.scopeType}|${a.scopeName}`;
+
+}
+
+
+function dictLabel(
+  list,
+  v
+){
+
+  return(
+    list.find(
+      x=>x[0]===v
+    )
+    ||
+    [v,v]
+  )[1];
+
+}
+
+
+function hasScore(r){
+
+  return r
+    &&
+    r.score!==null
+    &&
+    r.score!==""
+    &&
+    Number.isFinite(
+      Number(r.score)
+    );
+
+}
+
+
+function computeAccess(
+  assignments=[],
+  semester=currentSemester
+){
+
+  const viewKeys=[];
+  const collectionWriteKeys=[];
+  const scoreWriteKeys=[];
+  const classAccess=[];
+
+
+  assignments
+    .filter(
+      a=>
+        a.semester===semester
+    )
+    .forEach(
+      a=>{
+
+        const key=
+          scopeKey(a);
+
+
+        if(
+          !viewKeys.includes(key)
+        ){
+          viewKeys.push(key);
+        }
+
+
+        if(
+          a.canCollection
+          &&
+          !collectionWriteKeys.includes(key)
+        ){
+          collectionWriteKeys.push(key);
+        }
+
+
+        if(
+          a.canScores
+          &&
+          !scoreWriteKeys.includes(key)
+        ){
+          scoreWriteKeys.push(key);
+        }
+
+
+        if(
+          !classAccess.includes(
+            a.classId
+          )
+        ){
+          classAccess.push(
+            a.classId
+          );
+        }
+
+      }
+    );
+
+
+  return{
+    viewKeys,
+    collectionWriteKeys,
+    scoreWriteKeys,
+    classAccess
+  };
 
 }
 
@@ -934,96 +1893,22 @@ function semesterOptions(
   .reverse();
 
 
-  return list.map(
-    s=>`
-      <option
-        value="${esc(s)}"
-        ${
-          s===selected
-            ?"selected"
-            :""
-        }
-      >
-        ${esc(s)}
-      </option>
-    `
-  )
-  .join("");
-
-}
-
-
-function computeAccess(
-  assignments=[],
-  semester=currentSemester
-){
-
-  const viewKeys=[];
-
-  const collectionWriteKeys=[];
-
-  const scoreWriteKeys=[];
-
-  const classAccess=[];
-
-
-  for(
-    const a
-    of assignments.filter(
-      x=>
-        x.semester
-        ===semester
+  return list
+    .map(
+      s=>`
+        <option
+          value="${esc(s)}"
+          ${
+            s===selected
+              ?"selected"
+              :""
+          }
+        >
+          ${esc(s)}
+        </option>
+      `
     )
-  ){
-
-    const k=
-      scopeKey(a);
-
-
-    if(
-      !viewKeys.includes(k)
-    ){
-      viewKeys.push(k);
-    }
-
-
-    if(
-      a.canCollection
-      &&
-      !collectionWriteKeys.includes(k)
-    ){
-      collectionWriteKeys.push(k);
-    }
-
-
-    if(
-      a.canScores
-      &&
-      !scoreWriteKeys.includes(k)
-    ){
-      scoreWriteKeys.push(k);
-    }
-
-
-    if(
-      !classAccess.includes(
-        a.classId
-      )
-    ){
-      classAccess.push(
-        a.classId
-      );
-    }
-
-  }
-
-
-  return{
-    viewKeys,
-    collectionWriteKeys,
-    scoreWriteKeys,
-    classAccess
-  };
+    .join("");
 
 }
 
@@ -1036,43 +1921,54 @@ async function audit(
   semester=currentSemester
 ){
 
-  await addDoc(
-    collection(
-      db,
-      "auditLogs"
-    ),
-    {
+  try{
 
-      actorUid:
-        auth.currentUser.uid,
+    await addDoc(
+      collection(
+        db,
+        "auditLogs"
+      ),
+      {
 
-      actorName:
-        me.displayName
-        ||
-        me.username,
+        actorUid:
+          auth.currentUser.uid,
 
-      semester,
+        actorName:
+          me.displayName
+          ||
+          me.username,
 
-      action,
+        semester,
 
-      targetType,
+        action,
 
-      targetId,
+        targetType,
 
-      detail,
+        targetId,
 
-      createdAt:
-        serverTimestamp()
+        detail,
 
-    }
-  );
+        createdAt:
+          serverTimestamp()
+
+      }
+    );
+
+  }catch(e){
+
+    console.warn(
+      "audit log error",
+      e
+    );
+
+  }
 
 }
 
 
 function activePage(){
 
-  return (
+  return(
     $(".nav .active")
       ?.dataset.page
     ||
@@ -1082,8 +1978,18 @@ function activePage(){
 }
 
 
+/* =========================================================
+   登入
+========================================================= */
+
 $("#loginBtn").onclick=
 async()=>{
+
+  msg(
+    $("#loginMsg"),
+    ""
+  );
+
 
   try{
 
@@ -1099,7 +2005,7 @@ async()=>{
 
     msg(
       $("#loginMsg"),
-      "登入失敗，請確認管理員帳號與密碼。",
+      `登入失敗：${esc(e.code||e.message)}`,
       "error"
     );
 
@@ -1108,15 +2014,33 @@ async()=>{
 };
 
 
+$("#loginPass")
+  .addEventListener(
+    "keydown",
+    e=>{
+
+      if(
+        e.key==="Enter"
+      ){
+
+        $("#loginBtn")
+          .click();
+
+      }
+
+    }
+  );
+
+
 $("#logoutBtn").onclick=
 ()=>signOut(auth);
 
 
 onAuthStateChanged(
   auth,
-  async u=>{
+  async user=>{
 
-    if(!u){
+    if(!user){
 
       $("#loginView")
         .classList
@@ -1124,107 +2048,122 @@ onAuthStateChanged(
           "hidden"
         );
 
+
       $("#appView")
         .classList
         .add(
           "hidden"
         );
 
+
       return;
 
     }
 
 
-    const s=
-      await getDoc(
-        doc(
-          db,
-          "users",
-          u.uid
-        )
-      );
+    try{
+
+      const snap=
+        await getDoc(
+          doc(
+            db,
+            "users",
+            user.uid
+          )
+        );
 
 
-    if(
-      !s.exists()
-      ||
-      s.data().active!==true
-      ||
-      s.data().type!=="admin"
-    ){
+      if(
+        !snap.exists()
+        ||
+        snap.data().active!==true
+        ||
+        snap.data().type!=="admin"
+      ){
 
-      await signOut(auth);
+        await signOut(auth);
+
+
+        msg(
+          $("#loginMsg"),
+          "此帳號沒有管理員權限。",
+          "error"
+        );
+
+
+        return;
+
+      }
+
+
+      me={
+        uid:user.uid,
+        ...snap.data()
+      };
+
+
+      $("#loginView")
+        .classList
+        .add(
+          "hidden"
+        );
+
+
+      $("#appView")
+        .classList
+        .remove(
+          "hidden"
+        );
+
+
+      $("#who")
+        .textContent=
+          me.displayName
+          ||
+          me.username;
+
+
+      await ensureSystemSettings();
+
+      await refreshAll();
+
+    }catch(e){
+
+      console.error(e);
 
 
       msg(
         $("#loginMsg"),
-        "此帳號沒有管理員權限。",
+        `讀取管理員資料失敗：${esc(e.code||e.message)}`,
         "error"
       );
 
-
-      return;
-
     }
-
-
-    me={
-      uid:u.uid,
-      ...s.data()
-    };
-
-
-    $("#loginView")
-      .classList
-      .add(
-        "hidden"
-      );
-
-
-    $("#appView")
-      .classList
-      .remove(
-        "hidden"
-      );
-
-
-    $("#who")
-      .textContent=
-        `${
-          me.displayName
-          ||
-          me.username
-        }｜管理員`;
-
-
-    await ensureSystemSettings();
-
-    await refreshAll();
 
   }
 );
 
 
+/* =========================================================
+   NAV
+========================================================= */
+
 $$(".nav button")
 .forEach(
-  b=>
-    b.onclick=
+  button=>
+    button.onclick=
     ()=>{
 
       $$(".nav button")
         .forEach(
           x=>
             x.classList
-              .remove(
-                "active"
-              )
+              .remove("active")
         );
 
 
-      b.classList
-        .add(
-          "active"
-        );
+      button.classList
+        .add("active");
 
 
       [
@@ -1236,23 +2175,30 @@ $$(".nav button")
         "audit"
       ]
       .forEach(
-        p=>
-          $(`#page-${p}`)
+        page=>{
+
+          $(`#page-${page}`)
             .classList
             .toggle(
               "hidden",
-              p!==b.dataset.page
-            )
+              page!==button.dataset.page
+            );
+
+        }
       );
 
 
       renderPage(
-        b.dataset.page
+        button.dataset.page
       );
 
     }
 );
 
+
+/* =========================================================
+   SYSTEM
+========================================================= */
 
 async function ensureSystemSettings(){
 
@@ -1264,13 +2210,11 @@ async function ensureSystemSettings(){
     );
 
 
-  const s=
+  const snap=
     await getDoc(ref);
 
 
-  if(
-    !s.exists()
-  ){
+  if(!snap.exists()){
 
     await setDoc(
       ref,
@@ -1300,23 +2244,23 @@ async function ensureSystemSettings(){
 
   }else{
 
-    const d=
-      s.data();
+    const data=
+      snap.data();
 
 
     currentSemester=
-      d.currentSemester
+      data.currentSemester
       ||
       "115-1";
 
 
     semesterHistory=
       Array.isArray(
-        d.semesterHistory
+        data.semesterHistory
       )
       &&
-      d.semesterHistory.length
-        ?d.semesterHistory
+      data.semesterHistory.length
+        ?data.semesterHistory
         :[
             currentSemester
           ];
@@ -1343,171 +2287,190 @@ async function ensureSystemSettings(){
 
   $("#semesterBadge")
     .textContent=
-      `目前學期：${currentSemester}`;
+      `本學期 ${currentSemester}`;
 
 }
 
 
 async function refreshAll(){
 
-  const[
-    us,
-    cs,
-    co,
-    as
-  ]=
-  await Promise.all([
+  try{
 
-    getDocs(
-      collection(
-        db,
-        "users"
-      )
-    ),
+    const[
+      userSnap,
+      classSnap,
+      collectionSnap,
+      assessmentSnap
+    ]=
+      await Promise.all([
 
-    getDocs(
-      collection(
-        db,
-        "classes"
-      )
-    ),
+        getDocs(
+          collection(
+            db,
+            "users"
+          )
+        ),
 
-    getDocs(
-      collection(
-        db,
-        "collectionItems"
-      )
-    ),
+        getDocs(
+          collection(
+            db,
+            "classes"
+          )
+        ),
 
-    getDocs(
-      collection(
-        db,
-        "assessments"
-      )
-    )
+        getDocs(
+          collection(
+            db,
+            "collectionItems"
+          )
+        ),
 
-  ]);
+        getDocs(
+          collection(
+            db,
+            "assessments"
+          )
+        )
+
+      ]);
 
 
-  users=
-    us.docs.map(
-      d=>({
-        uid:d.id,
-        ...d.data()
-      })
+    users=
+      userSnap.docs.map(
+        d=>({
+          uid:d.id,
+          ...d.data()
+        })
+      );
+
+
+    classes=
+      classSnap.docs.map(
+        d=>({
+          id:d.id,
+          ...d.data()
+        })
+      );
+
+
+    collections=
+      collectionSnap.docs.map(
+        d=>({
+          id:d.id,
+          ...d.data()
+        })
+      );
+
+
+    assessments=
+      assessmentSnap.docs.map(
+        d=>({
+          id:d.id,
+          ...d.data()
+        })
+      );
+
+
+    renderPage(
+      activePage()
     );
 
+  }catch(e){
 
-  classes=
-    cs.docs.map(
-      d=>({
-        id:d.id,
-        ...d.data()
-      })
+    msg(
+      $("#appMsg"),
+      `資料載入失敗：${esc(e.message)}`,
+      "error"
     );
 
-
-  collections=
-    co.docs.map(
-      d=>({
-        id:d.id,
-        ...d.data()
-      })
-    );
-
-
-  assessments=
-    as.docs.map(
-      d=>({
-        id:d.id,
-        ...d.data()
-      })
-    );
-
-
-  $("#semesterBadge")
-    .textContent=
-      `目前學期：${currentSemester}`;
-
-
-  renderPage(
-    activePage()
-  );
+  }
 
 }
 
 
-function renderPage(p){
+function renderPage(page){
 
-  if(
-    p==="dashboard"
-  ){
+  if(page==="dashboard"){
     renderDashboard();
   }
 
-  if(
-    p==="roles"
-  ){
+  if(page==="roles"){
     renderRoleAssignments();
   }
 
-  if(
-    p==="records"
-  ){
+  if(page==="records"){
     renderRecords();
   }
 
-  if(
-    p==="accounts"
-  ){
+  if(page==="accounts"){
     renderAccounts();
   }
 
-  if(
-    p==="classes"
-  ){
+  if(page==="classes"){
     renderClasses();
   }
 
-  if(
-    p==="audit"
-  ){
+  if(page==="audit"){
     renderAudit();
   }
 
 }
 
 
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
 function renderDashboard(){
 
-  const cc=
+  const semesterCollections=
     collections.filter(
       x=>
-        x.semester
-        ===currentSemester
+        x.semester===currentSemester
     );
 
 
-  const aa=
+  const semesterAssessments=
     assessments.filter(
       x=>
-        x.semester
-        ===currentSemester
+        x.semester===currentSemester
     );
 
 
   const pending=
-    cc.filter(
+    semesterCollections.filter(
       x=>
-        x.reviewStatus
-        !=="confirmed"
+        x.reviewStatus!=="confirmed"
     ).length
     +
-    aa.filter(
+    semesterAssessments.filter(
       x=>
-        x.reviewStatus
-        !=="confirmed"
+        x.reviewStatus!=="confirmed"
     ).length;
+
+
+  const confirmed=
+    semesterCollections.filter(
+      x=>
+        x.reviewStatus==="confirmed"
+    ).length
+    +
+    semesterAssessments.filter(
+      x=>
+        x.reviewStatus==="confirmed"
+    ).length;
+
+
+  const total=
+    confirmed+pending;
+
+
+  const progress=
+    total
+      ?Math.round(
+          confirmed/total*100
+        )
+      :0;
 
 
   const activeUsers=
@@ -1519,178 +2482,291 @@ function renderDashboard(){
     ).length;
 
 
+  const latest=[
+    ...semesterCollections.map(
+      x=>({
+        ...x,
+        _type:"collection"
+      })
+    ),
+    ...semesterAssessments.map(
+      x=>({
+        ...x,
+        _type:"assessment"
+      })
+    )
+  ]
+  .sort(
+    (
+      a,
+      b
+    )=>
+      String(
+        b.date||""
+      )
+      .localeCompare(
+        String(
+          a.date||""
+        )
+      )
+  )
+  .slice(
+    0,
+    6
+  );
+
+
   $("#page-dashboard")
     .innerHTML=`
 
-      <div class="grid g4">
+      <div class="page-title">
+        今日航海總覽
+      </div>
 
-        <div class="card stat">
 
-          <div class="sub">
-            使用中帳號
+      <div class="stats-grid">
+
+        <div class="dashboard-stat stat-blue">
+
+          <div class="stat-label">
+            👥 使用中帳號
           </div>
 
-          <b>
+          <span class="stat-number">
             ${activeUsers}
-          </b>
+          </span>
+
+          <div class="stat-msg">
+            一起前進！每個人都很重要！
+          </div>
 
         </div>
 
 
-        <div class="card stat">
+        <div class="dashboard-stat stat-green">
 
-          <div class="sub">
-            ${esc(currentSemester)}
-            收繳項目
+          <div class="stat-label">
+            ✅ 已確認項目
           </div>
 
-          <b>
-            ${cc.length}
-          </b>
+          <span class="stat-number">
+            ${confirmed}
+          </span>
+
+          <div class="stat-msg">
+            繼續保持，做得很棒！
+          </div>
 
         </div>
 
 
-        <div class="card stat">
+        <div class="dashboard-stat stat-orange">
 
-          <div class="sub">
-            ${esc(currentSemester)}
-            小考紀錄
+          <div class="stat-label">
+            ⏳ 待確認項目
           </div>
 
-          <b>
-            ${aa.length}
-          </b>
-
-        </div>
-
-
-        <div class="card stat">
-
-          <div class="sub">
-            本學期待確認
-          </div>
-
-          <b>
+          <span class="stat-number">
             ${pending}
-          </b>
+          </span>
+
+          <div class="stat-msg">
+            再檢查一下，就更完整了！
+          </div>
+
+        </div>
+
+
+        <div class="dashboard-stat stat-purple">
+
+          <div class="stat-label">
+            🚩 本學期進度
+          </div>
+
+          <span class="stat-number">
+            ${progress}%
+          </span>
+
+          <div class="stat-msg">
+            持續航行中，朝著目標前進！
+          </div>
 
         </div>
 
       </div>
 
 
-      <div
-        class="two"
-        style="margin-top:12px"
-      >
+      <div class="two">
 
         <div class="card">
 
           <div class="section-title">
-            📅 學期設定
+            ☸️ 今日重點／近期回報
           </div>
 
 
-          <div class="notice">
+          ${
+            latest.length
+            ?
+            latest.map(
+              x=>{
 
-            <b>
-              目前學期：
-              ${esc(currentSemester)}
-            </b>
-
-            <br>
-
-            學生與小老師登入後，
-            只會讀取目前學期的職務與資料；
-
-            上一學期的權限不會出現，
-            也無法讀取上一學期收繳／成績。
-
-          </div>
+                const confirmed=
+                  x.reviewStatus==="confirmed";
 
 
-          <div class="field">
+                return`
 
-            <label>
-              切換／建立目前學期
-            </label>
+                  <div class="item">
 
-            <input
-              id="newSemester"
-              value="${esc(currentSemester)}"
-              placeholder="例如 115-1、115-2"
-            >
+                    <div class="item-head">
 
-          </div>
+                      <div>
 
+                        <b>
+                          ${
+                            x._type==="collection"
+                              ?"📥"
+                              :"📊"
+                          }
 
-          <button
-            id="changeSemesterBtn"
-            class="btn primary"
-          >
-            設定為目前學期
-          </button>
+                          ${esc(
+                            x.itemName
+                            ||
+                            x.name
+                          )}
+                        </b>
 
+                        <div class="meta">
 
-          <div
-            class="meta"
-            style="margin-top:8px"
-          >
+                          ${esc(x.classId)}
 
-            切換學期不會刪除舊資料，
-            也不會刪除舊職務；
+                          班 ｜
 
-            舊職務保留作歷史，
-            但學生端只載入目前學期。
+                          ${esc(x.scopeName)}
 
-          </div>
+                          ｜
+
+                          ${esc(x.date||"")}
+
+                        </div>
+
+                      </div>
+
+                      <span
+                        class="pill ${
+                          confirmed
+                            ?"good"
+                            :"warn"
+                        }"
+                      >
+                        ${
+                          confirmed
+                            ?"✅ 已確認"
+                            :"⏳ 待確認"
+                        }
+                      </span>
+
+                    </div>
+
+                  </div>
+                `;
+
+              }
+            )
+            .join("")
+            :
+            `
+              <div class="notice success">
+                🌞 今天目前沒有新的待辦，航行順利！
+              </div>
+            `
+          }
 
         </div>
 
 
-        <div class="card">
+        <div>
 
-          <div class="section-title">
-            本學期待確認資料
+          <div class="card">
+
+            <div class="section-title">
+              📅 學期設定
+            </div>
+
+            <div class="notice">
+
+              <b>
+                目前學期：${esc(currentSemester)}
+              </b>
+
+              <br>
+
+              切換學期不會刪除舊資料，
+              學生端只會顯示目前學期權限。
+
+            </div>
+
+
+            <div class="field">
+
+              <label>
+                切換／建立學期
+              </label>
+
+              <input
+                id="newSemester"
+                value="${esc(currentSemester)}"
+                placeholder="例如 115-1"
+              >
+
+            </div>
+
+
+            <button
+              id="changeSemesterBtn"
+              class="btn primary"
+            >
+              🚩 設定為目前學期
+            </button>
+
           </div>
 
-          ${
-            [
-              ...cc.map(
-                x=>({
-                  ...x,
-                  _type:"collection"
-                })
-              ),
 
-              ...aa.map(
-                x=>({
-                  ...x,
-                  _type:"assessment"
-                })
-              )
-            ]
-            .filter(
-              x=>
-                x.reviewStatus
-                !=="confirmed"
-            )
-            .slice(
-              0,
-              10
-            )
-            .map(
-              recordCard
-            )
-            .join("")
-            ||
-            `
-              <div class="sub">
-                目前沒有待確認資料。
-              </div>
-            `
-          }
+          <div class="ship-card">
+            ⛵
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="encouragement">
+
+        <div class="quote-card">
+
+          <div class="quote-main">
+            教育是一場偉大的冒險，<br>
+            而你正帶領孩子航向更寬廣的世界。
+          </div>
+
+          <div class="quote-sub">
+            每一次確認、每一次提醒，都是陪伴孩子前進的一小步。
+          </div>
+
+        </div>
+
+        <div class="quote-card">
+
+          <div class="quote-main">
+            🌟 好的班級，<br>
+            能讓每個人發光！
+          </div>
+
+          <div class="quote-sub">
+            今天也一起把班級經營得更好。
+          </div>
 
         </div>
 
@@ -1702,15 +2778,12 @@ function renderDashboard(){
     .onclick=
       changeCurrentSemester;
 
-
-  bindRecordButtons();
-
 }
 
 
 async function changeCurrentSemester(){
 
-  const sem=
+  const semester=
     $("#newSemester")
       .value
       .trim();
@@ -1718,20 +2791,18 @@ async function changeCurrentSemester(){
 
   if(
     !/^\d{2,3}-[12]$/
-      .test(
-        sem
-      )
+      .test(semester)
   ){
 
     return alert(
-      "學期格式建議使用 115-1 或 115-2。"
+      "學期格式請使用例如 115-1 或 115-2。"
     );
 
   }
 
 
   if(
-    sem===currentSemester
+    semester===currentSemester
   ){
 
     return alert(
@@ -1743,9 +2814,7 @@ async function changeCurrentSemester(){
 
   if(
     !confirm(
-      `確定把目前學期從「${currentSemester}」切換為「${sem}」？
-
-舊資料會保留；學生登入後只會看到 ${sem} 的職務與資料。`
+      `確定將目前學期改成 ${semester}？`
     )
   ){
 
@@ -1754,12 +2823,16 @@ async function changeCurrentSemester(){
   }
 
 
+  const old=
+    currentSemester;
+
+
   const history=[
     ...new Set(
       [
         ...semesterHistory,
-        currentSemester,
-        sem
+        old,
+        semester
       ]
     )
   ];
@@ -1774,7 +2847,7 @@ async function changeCurrentSemester(){
     {
 
       currentSemester:
-        sem,
+        semester,
 
       semesterHistory:
         history,
@@ -1789,12 +2862,8 @@ async function changeCurrentSemester(){
   );
 
 
-  const old=
-    currentSemester;
-
-
   currentSemester=
-    sem;
+    semester;
 
 
   semesterHistory=
@@ -1802,7 +2871,7 @@ async function changeCurrentSemester(){
 
 
   recordSemester=
-    sem;
+    semester;
 
 
   await recalcAllAccess();
@@ -1812,22 +2881,17 @@ async function changeCurrentSemester(){
     "change_semester",
     "settings",
     "system",
-    `目前學期：${old} → ${sem}`,
-    sem
+    `${old} → ${semester}`,
+    semester
   );
 
 
   $("#semesterBadge")
     .textContent=
-      `目前學期：${currentSemester}`;
+      `本學期 ${semester}`;
 
 
   await refreshAll();
-
-
-  alert(
-    `已切換為 ${sem}。現在可到「職務派發總表」分配本學期幹部與小老師。`
-  );
 
 }
 
@@ -1835,18 +2899,15 @@ async function changeCurrentSemester(){
 async function recalcAllAccess(){
 
   for(
-    const u
+    const user
     of users.filter(
-      x=>
-        x.type!=="admin"
+      x=>x.type!=="admin"
     )
   ){
 
     const access=
       computeAccess(
-        u.assignments
-        ||
-        [],
+        user.assignments||[],
         currentSemester
       );
 
@@ -1855,7 +2916,7 @@ async function recalcAllAccess(){
       doc(
         db,
         "users",
-        u.uid
+        user.uid
       ),
       {
 
@@ -1869,11 +2930,81 @@ async function recalcAllAccess(){
 
 
     Object.assign(
-      u,
+      user,
       access
     );
 
   }
+
+}
+
+
+/* =========================================================
+   ROLE TABLE
+========================================================= */
+
+function getRosterForClass(
+  classId
+){
+
+  const found=
+    classes.find(
+      x=>x.id===classId
+    );
+
+
+  if(
+    found
+    &&
+    Array.isArray(
+      found.students
+    )
+  ){
+
+    return found.students;
+
+  }
+
+
+  return(
+    defaultRosters[classId]
+    ||
+    []
+  )
+  .map(
+    (
+      [
+        seat,
+        name
+      ]
+    )=>({
+      id:String(seat),
+      seat,
+      name
+    })
+  );
+
+}
+
+
+function studentUserFor(
+  classId,
+  seat
+){
+
+  const username=
+    `${classId}${String(seat).padStart(2,"0")}`
+      .toLowerCase();
+
+
+  return users.find(
+    user=>
+      String(
+        user.username||""
+      )
+      .toLowerCase()
+      ===username
+  );
 
 }
 
@@ -1883,12 +3014,12 @@ function renderRoleAssignments(){
   const classIds=
     (
       classes.length
-        ?classes.map(
-            c=>c.id
-          )
-        :Object.keys(
-            defaultRosters
-          )
+      ?classes.map(
+          x=>x.id
+        )
+      :Object.keys(
+          defaultRosters
+        )
     )
     .sort();
 
@@ -1900,7 +3031,7 @@ function renderRoleAssignments(){
     "804";
 
 
-  const sem=
+  const selectedSemester=
     $("#roleSemester")
       ?.value
     ||
@@ -1910,60 +3041,44 @@ function renderRoleAssignments(){
   $("#page-roles")
     .innerHTML=`
 
+      <div class="page-title">
+        職務派發總表
+      </div>
+
       <div class="card">
 
-        <div class="section-title">
-          👥 職務派發總表
-        </div>
-
-
-        <div class="notice">
-
-          每位學生帳號長期保留。
-
-          你只需要每學期在這裡重新派發
-          幹部／小老師。
-
-          沒有被派到本學期職務的學生
-          仍可登入，
-
-          但只會看到
-          「目前尚未被指派權限，請聯絡導師」。
-
+        <div class="notice success">
+          🏴‍☠️ 每個人都是航海團隊的重要夥伴。
+          每學期只要重新分派職務，學生帳號不需重新建立。
         </div>
 
 
         <div class="toolbar">
 
           <label>
-
             學期
-
             <select id="roleSemester">
-              ${semesterOptions(sem)}
+              ${semesterOptions(selectedSemester)}
             </select>
-
           </label>
 
 
           <label>
-
             班級
-
             <select id="roleClass">
 
               ${
                 classIds.map(
-                  c=>`
+                  id=>`
                     <option
-                      value="${c}"
+                      value="${id}"
                       ${
-                        c===selectedClass
+                        id===selectedClass
                           ?"selected"
                           :""
                       }
                     >
-                      ${c}
+                      ${id}
                     </option>
                   `
                 )
@@ -1971,23 +3086,14 @@ function renderRoleAssignments(){
               }
 
             </select>
-
           </label>
-
-
-          <button
-            id="loadRoleTable"
-            class="btn gray"
-          >
-            載入
-          </button>
 
 
           <button
             id="saveRoleTable"
             class="btn primary"
           >
-            儲存這份職務表
+            💾 儲存職務表
           </button>
 
         </div>
@@ -1997,11 +3103,6 @@ function renderRoleAssignments(){
 
       </div>
     `;
-
-
-  $("#loadRoleTable")
-    .onclick=
-      renderRoleTable;
 
 
   $("#roleClass")
@@ -2024,92 +3125,14 @@ function renderRoleAssignments(){
 }
 
 
-function getRosterForClass(
-  classId
-){
-
-  const c=
-    classes.find(
-      x=>
-        x.id===classId
-    );
-
-
-  if(
-    c
-    &&
-    Array.isArray(
-      c.students
-    )
-  ){
-
-    return c.students;
-
-  }
-
-
-  return (
-    defaultRosters[
-      classId
-    ]
-    ||
-    []
-  )
-  .map(
-    (
-      [
-        seat,
-        name
-      ]
-    )=>({
-
-      seat,
-
-      name,
-
-      id:
-        String(seat)
-
-    })
-  );
-
-}
-
-
-function studentUserFor(
-  classId,
-  seat
-){
-
-  const username=
-    `${classId}${String(seat).padStart(2,"0")}`
-      .toLowerCase();
-
-
-  return users.find(
-    u=>
-      (
-        u.username
-        ||
-        ""
-      )
-      .toLowerCase()
-      ===username
-  );
-
-}
-
-
 function renderRoleTable(){
 
   const classId=
-    $("#roleClass")
-      .value;
+    $("#roleClass").value;
 
 
-  const sem=
-    $("#roleSemester")
-      .value;
+  const semester=
+    $("#roleSemester").value;
 
 
   const roster=
@@ -2119,7 +3142,6 @@ function renderRoleTable(){
 
 
   const studentOptions=
-
     `
       <option value="">
         — 未指派 —
@@ -2127,48 +3149,32 @@ function renderRoleTable(){
     `
     +
     roster.map(
-      s=>{
+      student=>{
 
-        const u=
+        const user=
           studentUserFor(
             classId,
-            s.seat
+            student.seat
           );
 
 
-        return `
+        return`
 
           <option
-            value="${
-              u?.uid
-              ||
-              ""
-            }"
+            value="${user?.uid||""}"
             ${
-              u
+              user
                 ?""
                 :"disabled"
             }
           >
-
+            ${String(student.seat).padStart(2,"0")}
+            ${esc(student.name)}
             ${
-              String(
-                s.seat
-              )
-              .padStart(
-                2,
-                "0"
-              )
-            }
-
-            ${esc(s.name)}
-
-            ${
-              u
+              user
                 ?""
                 :"（帳號尚未建立）"
             }
-
           </option>
         `;
 
@@ -2177,37 +3183,34 @@ function renderRoleTable(){
     .join("");
 
 
-  const selectedFor=
-    role=>{
+  function selectedFor(role){
 
-      const u=
-        users.find(
-          u=>
-            (
-              u.assignments
-              ||
-              []
-            )
-            .some(
-              a=>
-                a.semester===sem
-                &&
-                a.classId===classId
-                &&
-                a.kind===role.kind
-                &&
-                a.scopeType===role.scopeType
-                &&
-                a.scopeName===role.scopeName
-            )
-        );
+    const user=
+      users.find(
+        user=>
+          (
+            user.assignments
+            ||
+            []
+          )
+          .some(
+            assignment=>
+              assignment.semester===semester
+              &&
+              assignment.classId===classId
+              &&
+              assignment.kind===role.kind
+              &&
+              assignment.scopeType===role.scopeType
+              &&
+              assignment.scopeName===role.scopeName
+          )
+      );
 
 
-      return u?.uid
-      ||
-      "";
+    return user?.uid||"";
 
-    };
+  }
 
 
   $("#roleTable")
@@ -2218,30 +3221,28 @@ function renderRoleTable(){
         <div>
 
           <div class="section-title">
-            班級幹部
+            🏴 班級幹部
           </div>
 
           ${
             standardRoles
               .filter(
-                r=>
-                  r.kind
-                  ==="officer"
+                role=>role.kind==="officer"
               )
               .map(
-                r=>`
+                role=>`
 
                   <div class="role-row">
 
                     <b>
-                      ${esc(r.label)}
+                      ${esc(role.label)}
                     </b>
 
                     <select
                       class="role-select"
-                      data-kind="${r.kind}"
-                      data-type="${r.scopeType}"
-                      data-name="${esc(r.scopeName)}"
+                      data-kind="${role.kind}"
+                      data-type="${role.scopeType}"
+                      data-name="${esc(role.scopeName)}"
                     >
                       ${studentOptions}
                     </select>
@@ -2258,30 +3259,28 @@ function renderRoleTable(){
         <div>
 
           <div class="section-title">
-            各科小老師
+            📚 各科小老師
           </div>
 
           ${
             standardRoles
               .filter(
-                r=>
-                  r.kind
-                  ==="assistant"
+                role=>role.kind==="assistant"
               )
               .map(
-                r=>`
+                role=>`
 
                   <div class="role-row">
 
                     <b>
-                      ${esc(r.label)}
+                      ${esc(role.label)}
                     </b>
 
                     <select
                       class="role-select"
-                      data-kind="${r.kind}"
-                      data-type="${r.scopeType}"
-                      data-name="${esc(r.scopeName)}"
+                      data-kind="${role.kind}"
+                      data-type="${role.scopeType}"
+                      data-name="${esc(role.scopeName)}"
                     >
                       ${studentOptions}
                     </select>
@@ -2300,26 +3299,14 @@ function renderRoleTable(){
 
   $$(".role-select")
     .forEach(
-      sel=>{
+      select=>{
 
-        const role={
-
-          kind:
-            sel.dataset.kind,
-
-          scopeType:
-            sel.dataset.type,
-
-          scopeName:
-            sel.dataset.name
-
-        };
-
-
-        sel.value=
-          selectedFor(
-            role
-          );
+        select.value=
+          selectedFor({
+            kind:select.dataset.kind,
+            scopeType:select.dataset.type,
+            scopeName:select.dataset.name
+          });
 
       }
     );
@@ -2330,20 +3317,16 @@ function renderRoleTable(){
 async function saveRoleTable(){
 
   const classId=
-    $("#roleClass")
-      .value;
+    $("#roleClass").value;
 
 
-  const sem=
-    $("#roleSemester")
-      .value;
+  const semester=
+    $("#roleSemester").value;
 
 
   if(
     !confirm(
-      `確定儲存 ${classId} 班 ${sem} 的幹部／小老師職務表？
-
-這會更新此班此學期的標準職務，不會刪除其他學期資料。`
+      `確定儲存 ${classId} 班 ${semester} 的職務表？`
     )
   ){
 
@@ -2355,20 +3338,11 @@ async function saveRoleTable(){
   const selections=
     $$(".role-select")
       .map(
-        sel=>({
-
-          uid:
-            sel.value,
-
-          kind:
-            sel.dataset.kind,
-
-          scopeType:
-            sel.dataset.type,
-
-          scopeName:
-            sel.dataset.name
-
+        select=>({
+          uid:select.value,
+          kind:select.dataset.kind,
+          scopeType:select.dataset.type,
+          scopeName:select.dataset.name
         })
       );
 
@@ -2376,89 +3350,74 @@ async function saveRoleTable(){
   const roleKeys=
     new Set(
       standardRoles.map(
-        r=>
-          `${r.kind}|${r.scopeType}|${r.scopeName}`
+        role=>
+          `${role.kind}|${role.scopeType}|${role.scopeName}`
       )
     );
 
 
   for(
-    const u
+    const user
     of users.filter(
-      x=>
-        x.type==="student"
+      x=>x.type==="student"
     )
   ){
 
-    let arr=
+    let assignments=
       (
-        u.assignments
+        user.assignments
         ||
         []
       )
       .filter(
-        a=>
+        assignment=>
           !(
-            a.semester===sem
+            assignment.semester===semester
             &&
-            a.classId===classId
+            assignment.classId===classId
             &&
             roleKeys.has(
-              `${a.kind}|${a.scopeType}|${a.scopeName}`
+              `${assignment.kind}|${assignment.scopeType}|${assignment.scopeName}`
             )
           )
       );
 
 
-    for(
-      const s
-      of selections.filter(
-        x=>
-          x.uid===u.uid
+    selections
+      .filter(
+        x=>x.uid===user.uid
       )
-    ){
+      .forEach(
+        selection=>{
 
-      const base=
-        standardRoles.find(
-          r=>
-            r.kind===s.kind
-            &&
-            r.scopeType===s.scopeType
-            &&
-            r.scopeName===s.scopeName
-        );
+          const base=
+            standardRoles.find(
+              role=>
+                role.kind===selection.kind
+                &&
+                role.scopeType===selection.scopeType
+                &&
+                role.scopeName===selection.scopeName
+            );
 
 
-      arr.push({
+          assignments.push({
+            semester,
+            classId,
+            kind:selection.kind,
+            scopeType:selection.scopeType,
+            scopeName:selection.scopeName,
+            canCollection:base.canCollection,
+            canScores:base.canScores
+          });
 
-        semester:
-          sem,
-
-        classId,
-
-        kind:
-          s.kind,
-
-        scopeType:
-          s.scopeType,
-
-        scopeName:
-          s.scopeName,
-
-        canCollection:
-          base.canCollection,
-
-        canScores:
-          base.canScores
-
-      });
-
-    }
+        }
+      );
 
 
     const access=
       computeAccess(
-        arr,
+        assignments,
         currentSemester
       );
 
@@ -2467,12 +3426,11 @@ async function saveRoleTable(){
       doc(
         db,
         "users",
-        u.uid
+        user.uid
       ),
       {
 
-        assignments:
-          arr,
+        assignments,
 
         ...access,
 
@@ -2483,12 +3441,12 @@ async function saveRoleTable(){
     );
 
 
-    u.assignments=
-      arr;
+    user.assignments=
+      assignments;
 
 
     Object.assign(
-      u,
+      user,
       access
     );
 
@@ -2498,14 +3456,14 @@ async function saveRoleTable(){
   await audit(
     "save_role_table",
     "roles",
-    `${sem}-${classId}`,
-    `儲存 ${sem} ${classId} 幹部與小老師職務`,
-    sem
+    `${semester}-${classId}`,
+    `儲存 ${semester} ${classId} 職務表`,
+    semester
   );
 
 
   alert(
-    "職務派發已儲存。學生下次登入就會依本學期權限顯示功能。"
+    "✅ 職務派發已儲存！新的航海任務準備出發！"
   );
 
 
@@ -2514,15 +3472,17 @@ async function saveRoleTable(){
 }
 
 
-function recordCard(x){
+/* =========================================================
+   RECORD CARDS
+========================================================= */
 
-  const title=
-    x._type==="collection"
-      ?x.itemName
-      :x.name;
+function recordCard(record){
+
+  const confirmed=
+    record.reviewStatus==="confirmed";
 
 
-  return `
+  return`
 
     <div class="item">
 
@@ -2531,74 +3491,50 @@ function recordCard(x){
         <div>
 
           <b>
-            ${esc(title)}
+            ${
+              record._type==="collection"
+                ?"📥"
+                :"📊"
+            }
+
+            ${esc(
+              record.itemName
+              ||
+              record.name
+            )}
           </b>
 
           <div class="meta">
 
-            ${esc(
-              x.semester
-              ||
-              "舊資料"
-            )}
+            ${esc(record.semester||"")}
 
-            ｜
+            ｜${esc(record.classId)}
 
-            ${esc(x.classId)}
+            ｜${esc(record.scopeName)}
 
-            ｜
-
-            ${esc(x.scopeName)}
-
-            ｜
-
-            ${esc(x.date||"")}
+            ｜${esc(record.date||"")}
 
             ｜建立：
-
-            ${esc(
-              x.createdByName
-              ||
-              ""
-            )}
+            ${esc(record.createdByName||"")}
 
           </div>
 
         </div>
 
 
-        <div>
-
-          <span
-            class="pill ${
-              x.reviewStatus
-              ==="confirmed"
-                ?"good"
-                :"warn"
-            }"
-          >
-
-            ${
-              x.reviewStatus
-              ==="confirmed"
-                ?"已確認"
-                :"尚未確認"
-            }
-
-          </span>
-
-
+        <span
+          class="pill ${
+            confirmed
+              ?"good"
+              :"warn"
+          }"
+        >
           ${
-            x.locked
-              ?`
-                <span class="pill bad">
-                  已鎖定
-                </span>
-              `
-              :""
+            confirmed
+              ?"✅ 已確認"
+              :"⏳ 待確認"
           }
-
-        </div>
+        </span>
 
       </div>
 
@@ -2606,37 +3542,58 @@ function recordCard(x){
       <div class="toolbar">
 
         <button
-          class="btn gray small edit-record"
-          data-type="${x._type}"
-          data-id="${x.id}"
+          class="btn primary small edit-record"
+          data-type="${record._type}"
+          data-id="${record.id}"
         >
-          查看/修改
+          👀 查看／修改
         </button>
 
 
         <button
           class="btn good small confirm-record"
-          data-type="${x._type}"
-          data-id="${x.id}"
+          data-type="${record._type}"
+          data-id="${record.id}"
         >
-
           ${
-            x.reviewStatus
-            ==="confirmed"
-              ?"取消確認"
-              :"確認並鎖定"
+            confirmed
+              ?"↩️ 取消確認"
+              :"✅ 確認"
           }
-
         </button>
 
 
         <button
-          class="btn danger small delete-record"
-          data-type="${x._type}"
-          data-id="${x.id}"
+          class="btn gray small print-record"
+          data-type="${record._type}"
+          data-id="${record.id}"
         >
-          刪除
+          🖨️ 列印
         </button>
+
+
+        <button
+          class="btn gray small xlsx-record"
+          data-type="${record._type}"
+          data-id="${record.id}"
+        >
+          📥 Excel
+        </button>
+
+
+        ${
+          !confirmed
+            ?`
+              <button
+                class="btn danger small delete-record"
+                data-type="${record._type}"
+                data-id="${record.id}"
+              >
+                🗑️ 刪除
+              </button>
+            `
+            :""
+        }
 
       </div>
 
@@ -2646,16 +3603,19 @@ function recordCard(x){
 }
 
 
+/* =========================================================
+   RECORD PAGE
+========================================================= */
+
 function renderRecords(){
 
-  const sem=
+  const semester=
     recordSemester
     ||
     currentSemester;
 
 
   const all=[
-
     ...collections.map(
       x=>({
         ...x,
@@ -2669,31 +3629,22 @@ function renderRecords(){
         _type:"assessment"
       })
     )
-
   ]
   .filter(
-    x=>
-      (
-        x.semester
-        ||
-        ""
-      )
-      ===sem
+    x=>x.semester===semester
   )
   .sort(
     (
       a,
       b
     )=>
-      (
-        b.date
-        ||
-        ""
+      String(
+        b.date||""
       )
       .localeCompare(
-        a.date
-        ||
-        ""
+        String(
+          a.date||""
+        )
       )
   );
 
@@ -2701,38 +3652,36 @@ function renderRecords(){
   $("#page-records")
     .innerHTML=`
 
+      <div class="page-title">
+        收繳／成績航海紀錄
+      </div>
+
+
       <div class="card">
-
-        <div class="section-title">
-          收繳／成績資料
-        </div>
-
 
         <div class="toolbar">
 
           <label>
-
             查看學期
 
             <select id="recordSemester">
-              ${semesterOptions(sem)}
+              ${semesterOptions(semester)}
             </select>
-
           </label>
 
 
           <input
             id="recordSearch"
-            placeholder="搜尋班級、科目、項目"
-            style="padding:9px;border:1px solid #d0d5dd;border-radius:9px"
+            placeholder="🔍 搜尋班級、科目、項目"
+            style="max-width:300px"
           >
 
 
           <button
-            class="btn gray"
             id="refreshRecords"
+            class="btn primary"
           >
-            重新整理
+            🔄 重新整理
           </button>
 
         </div>
@@ -2740,10 +3689,16 @@ function renderRecords(){
 
         <div class="notice">
 
-          管理員可以查看歷史學期；
+          📥 收繳確認後：
+          已繳／免繳鎖定，
+          未繳／補交仍可修改。
 
-          學生、小老師與任課老師
-          只會讀取目前學期。
+          <br>
+
+          📊 成績確認後：
+          已有成績鎖定，
+          空白成績仍可補登；
+          已有成績如需更正，需先解鎖。
 
         </div>
 
@@ -2757,8 +3712,8 @@ function renderRecords(){
             .join("")
             ||
             `
-              <div class="sub">
-                這個學期尚無資料。
+              <div class="notice success">
+                🌊 這個學期目前沒有資料。
               </div>
             `
           }
@@ -2774,10 +3729,10 @@ function renderRecords(){
 
   $("#recordSemester")
     .onchange=
-      e=>{
+      event=>{
 
         recordSemester=
-          e.target.value;
+          event.target.value;
 
 
         renderRecords();
@@ -2787,44 +3742,40 @@ function renderRecords(){
 
   $("#refreshRecords")
     .onclick=
-    async()=>{
-
-      await refreshAll();
-
-      renderRecords();
-
-    };
+      refreshAll;
 
 
   $("#recordSearch")
     .oninput=
-      e=>{
+      event=>{
 
-        const q=
-          e.target.value
+        const word=
+          event.target.value
             .trim()
             .toLowerCase();
 
 
-        $("#recordList")
-          .innerHTML=
-
+        const filtered=
           all.filter(
             x=>
               `${x.classId} ${x.scopeName} ${x.itemName||x.name}`
                 .toLowerCase()
-                .includes(q)
-          )
-          .map(
-            recordCard
-          )
-          .join("")
-          ||
-          `
-            <div class="sub">
-              沒有符合資料。
-            </div>
-          `;
+                .includes(word)
+          );
+
+
+        $("#recordList")
+          .innerHTML=
+            filtered.map(
+              recordCard
+            )
+            .join("")
+            ||
+            `
+              <div class="notice">
+                找不到符合的資料。
+              </div>
+            `;
 
 
         bindRecordButtons();
@@ -2838,148 +3789,123 @@ function bindRecordButtons(){
 
   $$(".confirm-record")
     .forEach(
-      b=>
-        b.onclick=
+      button=>
+        button.onclick=
           ()=>confirmRecord(
-            b.dataset.type,
-            b.dataset.id
+            button.dataset.type,
+            button.dataset.id
           )
     );
 
 
   $$(".delete-record")
     .forEach(
-      b=>
-        b.onclick=
+      button=>
+        button.onclick=
           ()=>deleteRecord(
-            b.dataset.type,
-            b.dataset.id
+            button.dataset.type,
+            button.dataset.id
           )
     );
 
 
   $$(".edit-record")
     .forEach(
-      b=>
-        b.onclick=
+      button=>
+        button.onclick=
           ()=>editRecord(
-            b.dataset.type,
-            b.dataset.id
+            button.dataset.type,
+            button.dataset.id
+          )
+    );
+
+
+  $$(".print-record")
+    .forEach(
+      button=>
+        button.onclick=
+          ()=>printRecord(
+            button.dataset.type,
+            button.dataset.id
+          )
+    );
+
+
+  $$(".xlsx-record")
+    .forEach(
+      button=>
+        button.onclick=
+          ()=>exportRecord(
+            button.dataset.type,
+            button.dataset.id
           )
     );
 
 }
 
 
+/* =========================================================
+   CONFIRM
+========================================================= */
+
 async function confirmRecord(
   type,
   id
 ){
 
-  const col=
+  const collectionName=
     type==="collection"
       ?"collectionItems"
       :"assessments";
 
 
-  const arr=
+  const source=
     type==="collection"
       ?collections
       :assessments;
 
 
-  const x=
-    arr.find(
-      y=>y.id===id
+  const record=
+    source.find(
+      x=>x.id===id
     );
+
+
+  if(!record){
+
+    return alert(
+      "找不到這筆資料。"
+    );
+
+  }
 
 
   const confirming=
-    x.reviewStatus
-    !=="confirmed";
-
-
-  await updateDoc(
-    doc(
-      db,
-      col,
-      id
-    ),
-    {
-
-      reviewStatus:
-        confirming
-          ?"confirmed"
-          :"pending",
-
-      locked:
-        confirming,
-
-      confirmedBy:
-        confirming
-          ?auth.currentUser.uid
-          :null,
-
-      confirmedAt:
-        confirming
-          ?serverTimestamp()
-          :null,
-
-      updatedAt:
-        serverTimestamp()
-
-    }
-  );
-
-
-  await audit(
-    confirming
-      ?"confirm"
-      :"unconfirm",
-    type,
-    id,
-    `${
-      confirming
-        ?"確認並鎖定"
-        :"取消確認"
-    }：${x.itemName||x.name}`,
-    x.semester
-    ||
-    currentSemester
-  );
-
-
-  await refreshAll();
-
-}
-
-
-async function deleteRecord(
-  type,
-  id
-){
-
-  const col=
-    type==="collection"
-      ?"collectionItems"
-      :"assessments";
-
-
-  const arr=
-    type==="collection"
-      ?collections
-      :assessments;
-
-
-  const x=
-    arr.find(
-      y=>y.id===id
-    );
+    record.reviewStatus!=="confirmed";
 
 
   if(
     !confirm(
-      `確定刪除「${x.itemName||x.name}」？`
+      confirming
+        ?
+          (
+            type==="collection"
+            ?`確定確認「${record.itemName}」？
+
+確認後：
+• 已繳、免繳鎖定
+• 未繳、補交仍可修改
+• 後續改為已繳會標記「已繳交（遲交）」`
+            :
+            `確定確認「${record.name}」？
+
+確認後：
+• 已有成績鎖定
+• 無成績仍可補登
+• 已有成績需解鎖後才能修改`
+          )
+        :
+          `確定取消確認？取消後全部恢復可修改。`
     )
   ){
 
@@ -2988,23 +3914,163 @@ async function deleteRecord(
   }
 
 
-  await deleteDoc(
-    doc(
-      db,
-      col,
-      id
-    )
-  );
+  if(type==="collection"){
+
+    const lockedRecords={};
+
+
+    if(confirming){
+
+      Object.entries(
+        record.records||{}
+      )
+      .forEach(
+        (
+          [
+            studentId,
+            status
+          ]
+        )=>{
+
+          lockedRecords[studentId]=
+            status==="submitted"
+            ||
+            status==="exempt";
+
+        }
+      );
+
+    }
+
+
+    await updateDoc(
+      doc(
+        db,
+        collectionName,
+        id
+      ),
+      {
+
+        reviewStatus:
+          confirming
+            ?"confirmed"
+            :"pending",
+
+        locked:false,
+
+        lockedRecords:
+          confirming
+            ?lockedRecords
+            :{},
+
+        confirmedBy:
+          confirming
+            ?auth.currentUser.uid
+            :null,
+
+        confirmedByName:
+          confirming
+            ?(
+                me.displayName
+                ||
+                me.username
+              )
+            :null,
+
+        confirmedAt:
+          confirming
+            ?serverTimestamp()
+            :null,
+
+        updatedAt:
+          serverTimestamp()
+
+      }
+    );
+
+  }else{
+
+    const scoreLocks={};
+
+
+    if(confirming){
+
+      Object.entries(
+        record.scores||{}
+      )
+      .forEach(
+        (
+          [
+            studentId,
+            score
+          ]
+        )=>{
+
+          scoreLocks[studentId]=
+            hasScore(score);
+
+        }
+      );
+
+    }
+
+
+    await updateDoc(
+      doc(
+        db,
+        collectionName,
+        id
+      ),
+      {
+
+        reviewStatus:
+          confirming
+            ?"confirmed"
+            :"pending",
+
+        locked:false,
+
+        scoreLocks:
+          confirming
+            ?scoreLocks
+            :{},
+
+        confirmedBy:
+          confirming
+            ?auth.currentUser.uid
+            :null,
+
+        confirmedByName:
+          confirming
+            ?(
+                me.displayName
+                ||
+                me.username
+              )
+            :null,
+
+        confirmedAt:
+          confirming
+            ?serverTimestamp()
+            :null,
+
+        updatedAt:
+          serverTimestamp()
+
+      }
+    );
+
+  }
 
 
   await audit(
-    "delete",
+    confirming
+      ?"confirm"
+      :"unconfirm",
     type,
     id,
-    `管理員刪除：${x.itemName||x.name}`,
-    x.semester
-    ||
-    currentSemester
+    `${confirming?"確認":"取消確認"}：${record.itemName||record.name}`,
+    record.semester||currentSemester
   );
 
 
@@ -3013,152 +4079,204 @@ async function deleteRecord(
 }
 
 
+/* =========================================================
+   EDIT RECORD
+========================================================= */
+
 async function editRecord(
   type,
   id
 ){
 
-  const arr=
+  const source=
     type==="collection"
       ?collections
       :assessments;
 
 
-  const x=
-    arr.find(
-      y=>y.id===id
+  const record=
+    source.find(
+      x=>x.id===id
     );
 
 
-  const cl=
-    classes.find(
-      c=>
-        c.id===x.classId
+  if(!record){
+
+    return;
+  }
+
+
+  const roster=
+    getRosterForClass(
+      record.classId
     );
 
 
-  const students=
-    cl?.students
-    ||
-    [];
-
-
-  let body=`
+  let html=`
 
     <div class="item-head">
 
       <div>
 
         <div class="section-title">
-          ${esc(x.itemName||x.name)}
+          ${
+            type==="collection"
+              ?"📦"
+              :"📊"
+          }
+          ${esc(record.itemName||record.name)}
         </div>
 
         <div class="meta">
-
-          ${esc(x.semester||"")}
-
-          ｜
-
-          ${x.classId}
-
-          ｜
-
-          ${esc(x.scopeName)}
-
-          ｜
-
-          ${esc(x.date||"")}
-
+          ${esc(record.semester)}
+          ｜${esc(record.classId)}班
+          ｜${esc(record.scopeName)}
+          ｜${esc(record.date||"")}
         </div>
 
       </div>
 
-      <button class="btn gray close-modal">
-        關閉
+      <button
+        class="btn gray close-modal"
+      >
+        ✖ 關閉
       </button>
 
     </div>
   `;
 
 
-  if(
-    type==="collection"
-  ){
+  if(type==="collection"){
 
-    const opts=[
-      ["submitted","已繳"],
-      ["missing","未繳"],
-      ["late","補交"],
-      ["exempt","免繳"]
-    ];
+    const confirmed=
+      record.reviewStatus==="confirmed";
 
 
-    body+=`
+    html+=`
+
+      <div class="notice">
+
+        ${
+          confirmed
+            ?"✅ 已確認：已繳／免繳鎖定；未繳／補交仍可修改。"
+            :"⏳ 尚未確認：目前全部狀態皆可修改。"
+        }
+
+      </div>
+
 
       <div class="student-grid">
 
         ${
-          students.map(
-            s=>{
+          roster.map(
+            student=>{
 
-              const sid=
-                s.id
+              const studentId=
+                student.id
                 ||
                 String(
-                  s.seat
+                  student.seat
                 );
 
 
-              const v=
+              const value=
                 (
-                  x.records
+                  record.records
                   ||
                   {}
-                )[sid]
+                )[studentId]
                 ||
                 "submitted";
 
 
-              return `
+              const locked=
+                confirmed
+                &&
+                !!(
+                  record.lockedRecords
+                  ||
+                  {}
+                )[studentId];
+
+
+              const late=
+                value==="submitted"
+                &&
+                !!(
+                  record.lateSubmitted
+                  ||
+                  {}
+                )[studentId];
+
+
+              return`
 
                 <div class="student">
 
                   <b>
-                    ${s.seat}.
-                    ${esc(s.name)}
+                    ${student.seat}.
+                    ${esc(student.name)}
                   </b>
+
 
                   <select
                     class="m-col"
-                    data-id="${sid}"
+                    data-id="${esc(studentId)}"
+                    data-old="${esc(value)}"
+                    ${
+                      locked
+                        ?"disabled"
+                        :""
+                    }
                   >
 
                     ${
-                      opts.map(
+                      statusOptions.map(
                         (
                           [
-                            a,
-                            l
+                            valueCode,
+                            label
                           ]
                         )=>`
 
                           <option
-                            value="${a}"
+                            value="${valueCode}"
                             ${
-                              a===v
+                              valueCode===value
                                 ?"selected"
                                 :""
                             }
                           >
-                            ${l}
+                            ${label}
                           </option>
-
                         `
                       )
                       .join("")
                     }
 
                   </select>
+
+
+                  ${
+                    late
+                      ?`
+                        <div class="late-note">
+                          🔴 已繳交（遲交）
+                        </div>
+                      `
+                      :""
+                  }
+
+
+                  ${
+                    locked
+                      ?`
+                        <div class="lock-note">
+                          🔒 已確認鎖定
+                        </div>
+                      `
+                      :""
+                  }
 
                 </div>
               `;
@@ -3176,7 +4294,7 @@ async function editRecord(
         <button
           class="btn primary save-modal"
         >
-          儲存修改
+          💾 儲存修改
         </button>
 
       </div>
@@ -3184,83 +4302,108 @@ async function editRecord(
 
   }else{
 
-    const opts=[
-      ["normal","正常"],
-      ["absent","缺考"],
-      ["makeup","補考"],
-      ["exempt","免試"],
-      ["not_entered","未登記"]
-    ];
+    const confirmed=
+      record.reviewStatus==="confirmed";
 
 
-    body+=`
+    html+=`
+
+      <div class="notice">
+
+        ${
+          confirmed
+            ?"✅ 已確認：已有成績鎖定；尚未登記成績仍可補登。"
+            :"⏳ 尚未確認：目前所有成績皆可修改。"
+        }
+
+      </div>
+
 
       <div class="student-grid">
 
         ${
-          students.map(
-            s=>{
+          roster.map(
+            student=>{
 
-              const sid=
-                s.id
+              const studentId=
+                student.id
                 ||
                 String(
-                  s.seat
+                  student.seat
                 );
 
 
-              const r=
+              const score=
                 (
-                  x.scores
+                  record.scores
                   ||
                   {}
-                )[sid]
+                )[studentId]
                 ||
                 {};
 
 
-              return `
+              const locked=
+                confirmed
+                &&
+                !!(
+                  record.scoreLocks
+                  ||
+                  {}
+                )[studentId];
+
+
+              return`
 
                 <div class="student">
 
                   <b>
-                    ${s.seat}.
-                    ${esc(s.name)}
+                    ${student.seat}.
+                    ${esc(student.name)}
                   </b>
+
 
                   <input
                     class="m-score"
-                    data-id="${sid}"
+                    data-id="${esc(studentId)}"
                     type="number"
-                    value="${
-                      r.score
-                      ??
-                      ""
-                    }"
+                    inputmode="decimal"
+                    value="${score.score??""}"
                     min="0"
-                    max="${x.maxScore}"
+                    max="${record.maxScore}"
+                    ${
+                      locked
+                        ?"disabled"
+                        :""
+                    }
                   >
+
 
                   <select
                     class="m-status"
-                    data-id="${sid}"
+                    data-id="${esc(studentId)}"
+                    ${
+                      locked
+                        ?"disabled"
+                        :""
+                    }
                   >
 
                     ${
-                      opts.map(
+                      scoreStatusOptions.map(
                         (
                           [
-                            a,
-                            l
+                            valueCode,
+                            label
                           ]
                         )=>`
 
                           <option
-                            value="${a}"
+                            value="${valueCode}"
                             ${
-                              a===
+                              valueCode===
                               (
-                                r.status
+                                score.status
                                 ||
                                 "not_entered"
                               )
@@ -3268,15 +4411,37 @@ async function editRecord(
                                 :""
                             }
                           >
-                            ${l}
+                            ${label}
                           </option>
-
                         `
                       )
                       .join("")
                     }
 
                   </select>
+
+
+                  ${
+                    locked
+                      ?`
+                        <button
+                          class="btn warn small unlock-score-admin"
+                          data-id="${esc(studentId)}"
+                        >
+                          🔓 解鎖修改
+                        </button>
+                      `
+                      :
+                      confirmed
+                      &&
+                      !hasScore(score)
+                        ?`
+                          <div class="lock-note">
+                            ✏️ 尚未有成績，可補登
+                          </div>
+                        `
+                        :""
+                  }
 
                 </div>
               `;
@@ -3294,7 +4459,7 @@ async function editRecord(
         <button
           class="btn primary save-modal"
         >
-          儲存修改
+          💾 儲存成績
         </button>
 
       </div>
@@ -3303,28 +4468,180 @@ async function editRecord(
   }
 
 
-  showModal(body);
+  showModal(html);
+
+
+  if(type==="assessment"){
+
+    $$(".unlock-score-admin")
+      .forEach(
+        button=>
+          button.onclick=
+          async()=>{
+
+            const studentId=
+              button.dataset.id;
+
+
+            if(
+              !confirm(
+                "確定解鎖這位學生的成績？"
+              )
+            ){
+
+              return;
+
+            }
+
+
+            const scoreLocks={
+              ...(
+                record.scoreLocks
+                ||
+                {}
+              ),
+              [studentId]:false
+            };
+
+
+            await updateDoc(
+              doc(
+                db,
+                "assessments",
+                id
+              ),
+              {
+
+                scoreLocks,
+
+                updatedAt:
+                  serverTimestamp()
+
+              }
+            );
+
+
+            record.scoreLocks=
+              scoreLocks;
+
+
+            await audit(
+              "unlock_score",
+              "assessment",
+              id,
+              `導師解鎖 ${record.name}｜座號 ${studentId}`,
+              record.semester||currentSemester
+            );
+
+
+            editRecord(
+              type,
+              id
+            );
+
+          }
+      );
+
+  }
 
 
   $(".save-modal")
     .onclick=
     async()=>{
 
-      if(
-        type==="collection"
-      ){
+      if(type==="collection"){
 
-        const records={};
+        const records={
+          ...(
+            record.records
+            ||
+            {}
+          )
+        };
+
+
+        const lateSubmitted={
+          ...(
+            record.lateSubmitted
+            ||
+            {}
+          )
+        };
+
+
+        const lockedRecords={
+          ...(
+            record.lockedRecords
+            ||
+            {}
+          )
+        };
+
+
+        const confirmed=
+          record.reviewStatus==="confirmed";
 
 
         $$(".m-col")
           .forEach(
-            s=>
-              records[
-                s.dataset.id
-              ]
-              =
-              s.value
+            select=>{
+
+              if(select.disabled){
+
+                return;
+              }
+
+
+              const studentId=
+                select.dataset.id;
+
+
+              const oldValue=
+                select.dataset.old;
+
+
+              const newValue=
+                select.value;
+
+
+              records[studentId]=
+                newValue;
+
+
+              if(
+                confirmed
+                &&
+                (
+                  oldValue==="missing"
+                  ||
+                  oldValue==="late"
+                )
+                &&
+                newValue==="submitted"
+              ){
+
+                lateSubmitted[studentId]=
+                  true;
+
+
+                lockedRecords[studentId]=
+                  true;
+
+              }
+
+
+              if(
+                confirmed
+                &&
+                newValue==="exempt"
+              ){
+
+                lockedRecords[studentId]=
+                  true;
+
+              }
+
+            }
           );
 
 
@@ -3338,6 +4655,10 @@ async function editRecord(
 
             records,
 
+            lateSubmitted,
+
+            lockedRecords,
+
             updatedAt:
               serverTimestamp()
 
@@ -3346,39 +4667,106 @@ async function editRecord(
 
       }else{
 
-        const scores={};
+        const scores={
+          ...(
+            record.scores
+            ||
+            {}
+          )
+        };
 
 
-        $$(".m-score")
-          .forEach(
-            inp=>{
+        const scoreLocks={
+          ...(
+            record.scoreLocks
+            ||
+            {}
+          )
+        };
 
-              const sid=
-                inp.dataset.id;
+
+        const confirmed=
+          record.reviewStatus==="confirmed";
 
 
-              const sel=
-                document.querySelector(
-                  `.m-status[data-id="${CSS.escape(sid)}"]`
+        for(
+          const input
+          of $$(".m-score")
+        ){
+
+          if(input.disabled){
+
+            continue;
+          }
+
+
+          const studentId=
+            input.dataset.id;
+
+
+          const statusSelect=
+            document.querySelector(
+              `.m-status[data-id="${CSS.escape(studentId)}"]`
+            );
+
+
+          const score=
+            input.value===""
+              ?null
+              :Number(
+                  input.value
                 );
 
 
-              scores[sid]={
+          if(
+            score!==null
+            &&
+            (
+              score<0
+              ||
+              score>Number(
+                record.maxScore
+              )
+            )
+          ){
 
-                score:
-                  inp.value===""
-                    ?null
-                    :Number(
-                        inp.value
-                      ),
+            return alert(
+              `座號 ${studentId} 的成績超出範圍。`
+            );
 
-                status:
-                  sel.value
+          }
 
-              };
 
-            }
-          );
+          let status=
+            statusSelect.value;
+
+
+          if(
+            score!==null
+            &&
+            status==="not_entered"
+          ){
+
+            status=
+              "normal";
+
+          }
+
+
+          scores[studentId]={
+            score,
+            status
+          };
+
+
+          if(confirmed){
+
+            scoreLocks[studentId]=
+              score!==null;
+
+          }
+
+        }
 
 
         await updateDoc(
@@ -3390,6 +4778,8 @@ async function editRecord(
           {
 
             scores,
+
+            scoreLocks,
 
             updatedAt:
               serverTimestamp()
@@ -3404,10 +4794,8 @@ async function editRecord(
         "admin_update",
         type,
         id,
-        `管理員修改：${x.itemName||x.name}`,
-        x.semester
-        ||
-        currentSemester
+        `導師修改：${record.itemName||record.name}`,
+        record.semester||currentSemester
       );
 
 
@@ -3416,89 +4804,664 @@ async function editRecord(
 
       await refreshAll();
 
+
+      alert(
+        "✅ 已儲存！又完成一項航海任務！"
+      );
+
     };
 
 }
 
 
+/* =========================================================
+   DELETE
+========================================================= */
+
+async function deleteRecord(
+  type,
+  id
+){
+
+  const source=
+    type==="collection"
+      ?collections
+      :assessments;
+
+
+  const record=
+    source.find(
+      x=>x.id===id
+    );
+
+
+  if(!record){
+
+    return;
+  }
+
+
+  if(
+    !confirm(
+      `確定刪除「${record.itemName||record.name}」？`
+    )
+  ){
+
+    return;
+  }
+
+
+  await deleteDoc(
+    doc(
+      db,
+      type==="collection"
+        ?"collectionItems"
+        :"assessments",
+      id
+    )
+  );
+
+
+  await audit(
+    "delete",
+    type,
+    id,
+    `管理員刪除：${record.itemName||record.name}`,
+    record.semester||currentSemester
+  );
+
+
+  await refreshAll();
+
+}
+
+
+/* =========================================================
+   PRINT
+========================================================= */
+
+function printRecord(
+  type,
+  id
+){
+
+  const record=
+    (
+      type==="collection"
+        ?collections
+        :assessments
+    )
+    .find(
+      x=>x.id===id
+    );
+
+
+  if(!record){
+
+    return;
+  }
+
+
+  const roster=
+    getRosterForClass(
+      record.classId
+    );
+
+
+  if(type==="collection"){
+
+    const rows=
+      roster.map(
+        student=>{
+
+          const studentId=
+            student.id
+            ||
+            String(student.seat);
+
+
+          const status=
+            (
+              record.records
+              ||
+              {}
+            )[studentId]
+            ||
+            "submitted";
+
+
+          const late=
+            status==="submitted"
+            &&
+            !!(
+              record.lateSubmitted
+              ||
+              {}
+            )[studentId];
+
+
+          return[
+            student.seat,
+            esc(student.name),
+            esc(
+              dictLabel(
+                statusOptions,
+                status
+              )
+            ),
+            late
+              ?'<span class="late">已繳交（遲交）</span>'
+              :""
+          ];
+
+        }
+      );
+
+
+    openPrint(
+      `${record.classId}班｜${record.scopeName}｜${record.itemName}`,
+      `日期：${record.date||""}${record.dueDate?`　截止：${record.dueDate}`:""}`,
+      [
+        "座號",
+        "姓名",
+        "狀態",
+        "備註"
+      ],
+      rows
+    );
+
+  }else{
+
+    const rows=
+      roster.map(
+        student=>{
+
+          const studentId=
+            student.id
+            ||
+            String(student.seat);
+
+
+          const score=
+            (
+              record.scores
+              ||
+              {}
+            )[studentId]
+            ||
+            {};
+
+
+          return[
+            student.seat,
+            esc(student.name),
+            hasScore(score)
+              ?score.score
+              :"",
+            esc(
+              dictLabel(
+                scoreStatusOptions,
+                score.status||"not_entered"
+              )
+            )
+          ];
+
+        }
+      );
+
+
+    openPrint(
+      `${record.classId}班｜${record.scopeName}｜${record.name}`,
+      `日期：${record.date||""}　滿分：${record.maxScore}　及格：${record.passScore}`,
+      [
+        "座號",
+        "姓名",
+        "成績",
+        "狀態"
+      ],
+      rows
+    );
+
+  }
+
+}
+
+
+function openPrint(
+  title,
+  meta,
+  headers,
+  rows
+){
+
+  const win=
+    window.open(
+      "",
+      "_blank"
+    );
+
+
+  if(!win){
+
+    return alert(
+      "瀏覽器阻擋了列印視窗。"
+    );
+
+  }
+
+
+  win.document.write(`
+
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+
+<title>${esc(title)}</title>
+
+<style>
+
+@page{
+  size:A4;
+  margin:10mm;
+}
+
+body{
+  font-family:"Microsoft JhengHei",sans-serif;
+  color:#111;
+  font-size:12px;
+}
+
+h2{
+  margin:0 0 5px;
+}
+
+.info{
+  margin-bottom:8px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th,
+td{
+  border:1px solid #999;
+  padding:4px 6px;
+  text-align:left;
+}
+
+th{
+  background:#eee;
+}
+
+.late{
+  color:red;
+  font-weight:bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>${esc(title)}</h2>
+
+<div class="info">
+  ${esc(meta)}
+</div>
+
+<table>
+
+<thead>
+<tr>
+${headers.map(
+  x=>`<th>${esc(x)}</th>`
+).join("")}
+</tr>
+</thead>
+
+<tbody>
+${rows.map(
+  row=>`
+    <tr>
+      ${
+        row.map(
+          value=>`<td>${value}</td>`
+        )
+        .join("")
+      }
+    </tr>
+  `
+).join("")}
+</tbody>
+
+</table>
+
+<script>
+window.onload=()=>window.print();
+<\/script>
+
+</body>
+</html>
+  `);
+
+
+  win.document.close();
+
+}
+
+
+/* =========================================================
+   EXCEL
+========================================================= */
+
+async function ensureXLSX(){
+
+  if(window.XLSX){
+
+    return;
+  }
+
+
+  await new Promise(
+    (
+      resolve,
+      reject
+    )=>{
+
+      const script=
+        document.createElement(
+          "script"
+        );
+
+
+      script.src=
+        "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+
+
+      script.onload=
+        resolve;
+
+
+      script.onerror=
+        ()=>reject(
+          new Error(
+            "Excel 元件載入失敗"
+          )
+        );
+
+
+      document.head
+        .appendChild(
+          script
+        );
+
+    }
+  );
+
+}
+
+
+async function downloadXlsx(
+  filename,
+  sheetName,
+  rows
+){
+
+  try{
+
+    await ensureXLSX();
+
+
+    const worksheet=
+      XLSX.utils.json_to_sheet(
+        rows
+      );
+
+
+    const workbook=
+      XLSX.utils.book_new();
+
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      sheetName
+    );
+
+
+    XLSX.writeFile(
+      workbook,
+      filename
+    );
+
+  }catch(e){
+
+    alert(
+      `Excel 下載失敗：${e.message}`
+    );
+
+  }
+
+}
+
+
+function exportRecord(
+  type,
+  id
+){
+
+  const record=
+    (
+      type==="collection"
+        ?collections
+        :assessments
+    )
+    .find(
+      x=>x.id===id
+    );
+
+
+  if(!record){
+
+    return;
+  }
+
+
+  const roster=
+    getRosterForClass(
+      record.classId
+    );
+
+
+  if(type==="collection"){
+
+    const rows=
+      roster.map(
+        student=>{
+
+          const studentId=
+            student.id
+            ||
+            String(student.seat);
+
+
+          const status=
+            (
+              record.records
+              ||
+              {}
+            )[studentId]
+            ||
+            "submitted";
+
+
+          const late=
+            status==="submitted"
+            &&
+            !!(
+              record.lateSubmitted
+              ||
+              {}
+            )[studentId];
+
+
+          return{
+            學期:record.semester,
+            班級:record.classId,
+            科目或職務:record.scopeName,
+            項目:record.itemName,
+            日期:record.date||"",
+            截止日期:record.dueDate||"",
+            座號:student.seat,
+            姓名:student.name,
+            收繳狀態:dictLabel(statusOptions,status),
+            是否遲交:late?"是":"否",
+            備註:late?"已繳交（遲交）":""
+          };
+
+        }
+      );
+
+
+    downloadXlsx(
+      `${record.classId}-${record.scopeName}-${record.itemName}.xlsx`,
+      "收繳",
+      rows
+    );
+
+  }else{
+
+    const rows=
+      roster.map(
+        student=>{
+
+          const studentId=
+            student.id
+            ||
+            String(student.seat);
+
+
+          const score=
+            (
+              record.scores
+              ||
+              {}
+            )[studentId]
+            ||
+            {};
+
+
+          return{
+            學期:record.semester,
+            班級:record.classId,
+            科目:record.scopeName,
+            測驗名稱:record.name,
+            日期:record.date||"",
+            滿分:record.maxScore,
+            及格分:record.passScore,
+            座號:student.seat,
+            姓名:student.name,
+            成績:hasScore(score)?Number(score.score):"",
+            狀態:dictLabel(
+              scoreStatusOptions,
+              score.status||"not_entered"
+            ),
+            是否已確認:
+              record.reviewStatus==="confirmed"
+                ?"是"
+                :"否"
+          };
+
+        }
+      );
+
+
+    downloadXlsx(
+      `${record.classId}-${record.scopeName}-${record.name}.xlsx`,
+      "成績",
+      rows
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   ACCOUNT PAGE
+========================================================= */
+
 function renderAccounts(){
 
-  const rows=
+  const classIds=
+    (
+      classes.length
+        ?classes.map(
+            x=>x.id
+          )
+        :Object.keys(
+            defaultRosters
+          )
+    )
+    .sort();
+
+
+  const userRows=
     users
       .filter(
-        u=>
-          u.type!=="admin"
+        user=>user.type!=="admin"
       )
       .sort(
         (
           a,
           b
         )=>
-          (
-            a.username
-            ||
-            ""
-          )
-          .localeCompare(
-            b.username
-            ||
-            ""
-          )
+          String(a.username||"")
+            .localeCompare(
+              String(b.username||"")
+            )
       )
       .map(
-        u=>{
+        user=>{
 
           const current=
             (
-              u.assignments
+              user.assignments
               ||
               []
             )
             .filter(
-              a=>
-                a.semester
-                ===currentSemester
+              x=>x.semester===currentSemester
             );
 
 
-          const history=
-            (
-              u.assignments
-              ||
-              []
-            )
-            .filter(
-              a=>
-                a.semester
-                !==currentSemester
-            )
-            .length;
-
-
-          return `
+          return`
 
             <tr>
 
               <td>
-                ${esc(u.username)}
+                ${esc(user.username)}
               </td>
 
               <td>
-                ${esc(u.displayName||"")}
+                ${esc(user.displayName||"")}
               </td>
 
               <td>
                 ${
-                  u.type==="teacher"
-                    ?"任課老師"
-                    :"學生"
+                  user.type==="teacher"
+                    ?"👨‍🏫 任課老師"
+                    :"🎒 學生"
                 }
               </td>
 
               <td>
 
                 ${
-                  u.active
+                  user.active
                     ?`
                       <span class="pill good">
                         啟用
@@ -3516,60 +5479,28 @@ function renderAccounts(){
               <td>
 
                 ${
-                  current.map(
-                    a=>`
-
-                      <div class="assign">
-
-                        ${esc(a.semester)}
-
-                        ｜
-
-                        ${esc(a.classId)}
-
-                        ｜
-
-                        ${esc(a.scopeName)}
-
-                        ｜
-
-                        ${
-                          a.canCollection
-                            ?"收繳可寫"
-                            :"收繳唯讀"
-                        }
-
-                        ｜
-
-                        ${
-                          a.canScores
-                            ?"成績可寫"
-                            :"成績唯讀"
-                        }
-
-                      </div>
+                  current.length
+                    ?current.map(
+                        assignment=>`
+                          <div class="assign">
+                            ${esc(assignment.classId)}班
+                            ｜${esc(assignment.scopeName)}
+                            ｜${
+                              assignment.kind==="teacher"
+                                ?"任課老師"
+                                :assignment.scopeType==="subject"
+                                  ?"小老師"
+                                  :"幹部"
+                            }
+                          </div>
+                        `
+                      )
+                      .join("")
+                    :`
+                      <span class="sub">
+                        本學期尚未指派
+                      </span>
                     `
-                  )
-                  .join("")
-                  ||
-                  `
-                    <span class="sub">
-                      ${currentSemester}
-                      尚未指派
-                    </span>
-                  `
-                }
-
-
-                ${
-                  history
-                    ?`
-                      <div class="meta">
-                        另有 ${history}
-                        筆歷史學期職務
-                      </div>
-                    `
-                    :""
                 }
 
               </td>
@@ -3577,36 +5508,25 @@ function renderAccounts(){
               <td>
 
                 <button
-                  class="btn gray small edit-user"
-                  data-id="${u.uid}"
+                  class="btn primary small edit-user"
+                  data-id="${user.uid}"
                 >
-                  個別權限
+                  ⚙️ 權限
                 </button>
-
 
                 <button
                   class="btn ${
-                    u.active
+                    user.active
                       ?"danger"
                       :"good"
                   } small toggle-user"
-                  data-id="${u.uid}"
+                  data-id="${user.uid}"
                 >
-
                   ${
-                    u.active
+                    user.active
                       ?"停用"
                       :"啟用"
                   }
-
-                </button>
-
-
-                <button
-                  class="btn danger small delete-user-permanent"
-                  data-id="${u.uid}"
-                >
-                  永久刪除
                 </button>
 
               </td>
@@ -3619,166 +5539,116 @@ function renderAccounts(){
       .join("");
 
 
-  const classOpts=
-    (
-      classes.length
-        ?classes.map(
-            c=>c.id
-          )
-        :Object.keys(
-            defaultRosters
-          )
-    )
-    .sort()
-    .map(
-      id=>`
-        <option value="${id}">
-          ${id}
-        </option>
-      `
-    )
-    .join("");
-
-
   $("#page-accounts")
     .innerHTML=`
 
-      <div class="card">
-
-        <div class="section-title">
-          批次建立學生帳號
-        </div>
-
-
-        <div class="notice">
-
-          建議每位學生帳號只建立一次，
-
-          之後每學期只重新派發權限。
-
-          帳號格式為班級＋兩位座號，
-
-          例如 80407、80427。
-
-        </div>
-
-
-        <div class="toolbar">
-
-          <label>
-
-            班級
-
-            <select id="batchClass">
-              ${classOpts}
-            </select>
-
-          </label>
-
-
-          <button
-            id="loadBatchStudents"
-            class="btn gray"
-          >
-            載入名單
-          </button>
-
-
-          <button
-            id="selectAllBatch"
-            class="btn gray"
-          >
-            全選
-          </button>
-
-
-          <button
-            id="clearBatch"
-            class="btn gray"
-          >
-            全不選
-          </button>
-
-        </div>
-
-
-        <div
-          id="batchStudentList"
-          class="student-grid"
-        ></div>
-
-
-        <div class="toolbar">
-
-          <button
-            id="batchCreateBtn"
-            class="btn primary"
-          >
-            批次建立勾選帳號
-          </button>
-
-          <span class="sub">
-            已有帳號會自動略過。
-          </span>
-
-        </div>
-
-
-        <div id="batchResult"></div>
-
+      <div class="page-title">
+        帳號與權限
       </div>
 
 
-      <div
-        class="two"
-        style="margin-top:12px"
-      >
+      <div class="two">
 
         <div class="card">
 
           <div class="section-title">
-            單筆建立帳號
+            👥 批次建立學生帳號
           </div>
 
-          <div class="notice">
+          <div class="notice success">
+            建議學生帳號只建立一次，
+            往後每學期重新派發職務即可。
+          </div>
 
-            任課老師、測試帳號可在這裡建立。
 
-            學生正常帳號建議用上方批次建立。
+          <div class="toolbar">
 
+            <label>
+              班級
+
+              <select id="batchClass">
+
+                ${
+                  classIds.map(
+                    id=>`
+                      <option value="${id}">
+                        ${id}
+                      </option>
+                    `
+                  )
+                  .join("")
+                }
+
+              </select>
+
+            </label>
+
+
+            <button
+              id="selectAllBatch"
+              class="btn gray"
+            >
+              ☑ 全選
+            </button>
+
+            <button
+              id="clearBatch"
+              class="btn gray"
+            >
+              ☐ 全不選
+            </button>
+
+          </div>
+
+
+          <div
+            id="batchStudentList"
+            class="student-grid"
+          ></div>
+
+
+          <div class="toolbar">
+
+            <button
+              id="batchCreateBtn"
+              class="btn primary"
+            >
+              🚀 批次建立勾選帳號
+            </button>
+
+          </div>
+
+
+          <div id="batchResult"></div>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="section-title">
+            🔑 單筆建立帳號
           </div>
 
 
           <div class="field">
-
-            <label>
-              帳號
-            </label>
-
+            <label>帳號</label>
             <input
               id="newUsername"
-              placeholder="例如 80427 或 teacher-chinese"
+              placeholder="例如 teacher-math"
             >
-
           </div>
 
 
           <div class="field">
-
-            <label>
-              顯示姓名
-            </label>
-
+            <label>顯示姓名</label>
             <input id="newName">
-
           </div>
 
 
           <div class="field">
 
-            <label>
-              帳號類型
-            </label>
+            <label>類型</label>
 
             <select id="newType">
 
@@ -3797,18 +5667,16 @@ function renderAccounts(){
 
           <div class="field">
 
-            <label>
-              初始密碼
-            </label>
+            <label>初始密碼</label>
 
             <input id="newPwd">
 
             <button
               id="genPwd"
               class="btn gray small"
-              style="margin-top:6px"
+              style="margin-top:5px"
             >
-              產生隨機密碼
+              🎲 產生隨機密碼
             </button>
 
           </div>
@@ -3818,45 +5686,11 @@ function renderAccounts(){
             id="createUserBtn"
             class="btn primary"
           >
-            建立帳號
+            ➕ 建立帳號
           </button>
 
 
           <div id="createdInfo"></div>
-
-        </div>
-
-
-        <div class="card">
-
-          <div class="section-title">
-            帳號原則
-          </div>
-
-          <p>
-
-            學生帳號長期保留；
-
-            沒有本學期職務時，
-
-            登入後只會顯示
-            尚未被指派權限。
-
-          </p>
-
-          <p>
-
-            「永久刪除」主要提供
-
-            測試帳號、
-
-            建立錯誤、
-
-            重複帳號使用。
-
-            正常學生原則上不刪除。
-
-          </p>
 
         </div>
 
@@ -3865,11 +5699,11 @@ function renderAccounts(){
 
       <div
         class="card"
-        style="margin-top:12px"
+        style="margin-top:14px"
       >
 
         <div class="section-title">
-          帳號與目前學期權限
+          📋 帳號列表
         </div>
 
 
@@ -3880,29 +5714,18 @@ function renderAccounts(){
             <thead>
 
               <tr>
-
                 <th>帳號</th>
-
                 <th>姓名</th>
-
                 <th>類型</th>
-
                 <th>狀態</th>
-
-                <th>
-                  ${esc(currentSemester)}
-                  權限
-                </th>
-
+                <th>${esc(currentSemester)} 權限</th>
                 <th>操作</th>
-
               </tr>
 
             </thead>
 
-
             <tbody>
-              ${rows}
+              ${userRows}
             </tbody>
 
           </table>
@@ -3925,11 +5748,6 @@ function renderAccounts(){
       createAccount;
 
 
-  $("#loadBatchStudents")
-    .onclick=
-      renderBatchStudents;
-
-
   $("#batchClass")
     .onchange=
       renderBatchStudents;
@@ -3940,9 +5758,9 @@ function renderAccounts(){
       ()=>
         $$(".batch-check")
           .forEach(
-            x=>
-              x.checked=
-                !x.disabled
+            check=>
+              check.checked=
+                !check.disabled
           );
 
 
@@ -3951,9 +5769,8 @@ function renderAccounts(){
       ()=>
         $$(".batch-check")
           .forEach(
-            x=>
-              x.checked=
-                false
+            check=>
+              check.checked=false
           );
 
 
@@ -3964,30 +5781,20 @@ function renderAccounts(){
 
   $$(".toggle-user")
     .forEach(
-      b=>
-        b.onclick=
+      button=>
+        button.onclick=
           ()=>toggleUser(
-            b.dataset.id
+            button.dataset.id
           )
     );
 
 
   $$(".edit-user")
     .forEach(
-      b=>
-        b.onclick=
+      button=>
+        button.onclick=
           ()=>editUserPermissions(
-            b.dataset.id
-          )
-    );
-
-
-  $$(".delete-user-permanent")
-    .forEach(
-      b=>
-        b.onclick=
-          ()=>permanentDeleteUser(
-            b.dataset.id
+            button.dataset.id
           )
     );
 
@@ -4009,18 +5816,18 @@ function accountUsername(
 
 function renderBatchStudents(){
 
-  const el=
+  const container=
     $("#batchStudentList");
 
 
-  if(!el){
+  if(!container){
+
     return;
   }
 
 
   const classId=
-    $("#batchClass")
-      .value;
+    $("#batchClass").value;
 
 
   const roster=
@@ -4032,78 +5839,61 @@ function renderBatchStudents(){
   const existing=
     new Set(
       users.map(
-        u=>
-          (
-            u.username
-            ||
-            ""
+        user=>
+          String(
+            user.username||""
           )
           .toLowerCase()
       )
     );
 
 
-  el.innerHTML=
+  container.innerHTML=
     roster.map(
-      s=>{
+      student=>{
 
         const username=
           accountUsername(
             classId,
-            s.seat
+            student.seat
           );
 
 
-        const has=
+        const exists=
           existing.has(
             username.toLowerCase()
           );
 
 
-        return `
+        return`
 
           <label class="student">
 
             <input
               class="batch-check"
               type="checkbox"
-              data-seat="${s.seat}"
-              data-name="${esc(s.name)}"
+              data-seat="${student.seat}"
+              data-name="${esc(student.name)}"
               data-user="${username}"
               ${
-                has
+                exists
                   ?"disabled"
                   :""
               }
             >
 
             <b>
-
-              ${
-                String(
-                  s.seat
-                )
-                .padStart(
-                  2,
-                  "0"
-                )
-              }
-
-              ${esc(s.name)}
-
+              ${String(student.seat).padStart(2,"0")}
+              ${esc(student.name)}
             </b>
 
             <div class="meta">
-
-              帳號：
-              ${username}
-
+              帳號：${username}
               ${
-                has
-                  ?"｜已建立"
+                exists
+                  ?"｜✅ 已建立"
                   :""
               }
-
             </div>
 
           </label>
@@ -4111,53 +5901,45 @@ function renderBatchStudents(){
 
       }
     )
-    .join("")
-    ||
-    `
-      <div class="sub">
-        此班尚未有名單。
-      </div>
-    `;
+    .join("");
 
 }
 
+
+/* =========================================================
+   CREATE USERS
+========================================================= */
 
 async function createAuthAndProfile(
   username,
   displayName,
   type,
-  pwd
+  password
 ){
 
-  let secondary;
+  let secondaryApp;
 
 
   try{
 
-    secondary=
+    secondaryApp=
       initializeApp(
         firebaseConfig,
-        `secondary-${
-          Date.now()
-        }-${
-          Math.random()
-            .toString(36)
-            .slice(2)
-        }`
+        `secondary-${Date.now()}-${Math.random().toString(36).slice(2)}`
       );
 
 
-    const sa=
+    const secondaryAuth=
       getAuth(
-        secondary
+        secondaryApp
       );
 
 
-    const cred=
+    const credential=
       await createUserWithEmailAndPassword(
-        sa,
+        secondaryAuth,
         emailFor(username),
-        pwd
+        password
       );
 
 
@@ -4165,36 +5947,24 @@ async function createAuthAndProfile(
       doc(
         db,
         "users",
-        cred.user.uid
+        credential.user.uid
       ),
       {
 
         username,
-
         displayName,
-
         type,
 
-        active:
-          true,
+        active:true,
 
-        assignments:
-          [],
+        assignments:[],
 
-        viewKeys:
-          [],
+        viewKeys:[],
+        collectionWriteKeys:[],
+        scoreWriteKeys:[],
+        classAccess:[],
 
-        collectionWriteKeys:
-          [],
-
-        scoreWriteKeys:
-          [],
-
-        classAccess:
-          [],
-
-        mustChangePassword:
-          true,
+        mustChangePassword:true,
 
         createdAt:
           serverTimestamp(),
@@ -4207,29 +5977,20 @@ async function createAuthAndProfile(
 
 
     return{
-
-      uid:
-        cred.user.uid,
-
+      uid:credential.user.uid,
       username,
-
       displayName,
-
-      password:
-        pwd
-
+      password
     };
 
   }finally{
 
-    if(
-      secondary
-    ){
+    if(secondaryApp){
 
       try{
 
         await deleteApp(
-          secondary
+          secondaryApp
         );
 
       }catch{}
@@ -4260,7 +6021,7 @@ async function createAccount(){
       .value;
 
 
-  const pwd=
+  const password=
     $("#newPwd")
       .value;
 
@@ -4270,11 +6031,11 @@ async function createAccount(){
     ||
     !displayName
     ||
-    pwd.length<6
+    password.length<6
   ){
 
     return alert(
-      "請填完整資料，密碼至少 6 碼。"
+      "請填寫完整資料，密碼至少 6 碼。"
     );
 
   }
@@ -4282,19 +6043,19 @@ async function createAccount(){
 
   try{
 
-    const r=
+    const result=
       await createAuthAndProfile(
         username,
         displayName,
         type,
-        pwd
+        password
       );
 
 
     await audit(
       "create_user",
       "user",
-      r.uid,
+      result.uid,
       `建立帳號：${username} ${displayName}`
     );
 
@@ -4312,27 +6073,21 @@ async function createAccount(){
 
         <div class="notice success">
 
-          <b>
-            帳號建立成功
-          </b>
+          🎉 <b>帳號建立成功！</b>
 
-          <br>
+          <br><br>
 
           帳號：
-          ${esc(username)}
+          <b>${esc(username)}</b>
 
           <br>
 
           初始密碼：
-          <b>
-            ${esc(pwd)}
-          </b>
+          <b>${esc(password)}</b>
 
-          <br>
+          <br><br>
 
-          <small>
-            請現在記錄，之後不會再顯示這組密碼。
-          </small>
+          請先記錄這組初始密碼。
 
         </div>
       `;
@@ -4342,9 +6097,7 @@ async function createAccount(){
   }catch(e){
 
     alert(
-      "建立失敗："
-      +
-      e.message
+      `建立失敗：${e.message}`
     );
 
   }
@@ -4357,29 +6110,17 @@ async function batchCreateAccounts(){
   const selected=
     $$(".batch-check:checked")
       .map(
-        x=>({
-
-          username:
-            x.dataset.user,
-
-          displayName:
-            x.dataset.name,
-
-          seat:
-            Number(
-              x.dataset.seat
-            )
-
+        checkbox=>({
+          username:checkbox.dataset.user,
+          displayName:checkbox.dataset.name
         })
       );
 
 
-  if(
-    !selected.length
-  ){
+  if(!selected.length){
 
     return alert(
-      "請先勾選要建立帳號的學生。"
+      "請先勾選學生。"
     );
 
   }
@@ -4387,96 +6128,54 @@ async function batchCreateAccounts(){
 
   if(
     !confirm(
-      `確定一次建立 ${selected.length} 個學生帳號？`
+      `確定建立 ${selected.length} 個帳號？`
     )
   ){
 
     return;
-
   }
 
 
-  const btn=
-    $("#batchCreateBtn");
-
-
-  btn.disabled=
-    true;
-
-
-  btn.textContent=
-    "建立中…";
-
-
   const created=[];
-
   const failed=[];
 
 
   for(
-    const s
+    const student
     of selected
   ){
 
-    const pwd=
+    const password=
       randomPwd();
 
 
     try{
 
-      const r=
+      const result=
         await createAuthAndProfile(
-          s.username,
-          s.displayName,
+          student.username,
+          student.displayName,
           "student",
-          pwd
+          password
         );
 
 
       created.push({
-
-        ...s,
-
-        password:
-          pwd,
-
-        uid:
-          r.uid
-
+        ...student,
+        password,
+        uid:result.uid
       });
-
-
-      await audit(
-        "create_user",
-        "user",
-        r.uid,
-        `批次建立帳號：${s.username} ${s.displayName}`
-      );
 
     }catch(e){
 
       failed.push({
-
-        ...s,
-
-        error:
-          e.code
-          ||
-          e.message
-
+        ...student,
+        error:e.code||e.message
       });
 
     }
 
   }
-
-
-  btn.disabled=
-    false;
-
-
-  btn.textContent=
-    "批次建立勾選帳號";
 
 
   await refreshAll();
@@ -4498,20 +6197,17 @@ function showBatchResult(
   renderAccounts();
 
 
-  const host=
+  const box=
     $("#batchResult");
 
 
-  if(!host){
+  if(!box){
+
     return;
   }
 
 
-  window.__lastBatchCredentials=
-    created;
-
-
-  host.innerHTML=`
+  box.innerHTML=`
 
     <div
       class="notice ${
@@ -4520,105 +6216,40 @@ function showBatchResult(
           :"error"
       }"
     >
-
-      <b>
-        批次建立完成
-      </b>
-
-      ｜成功
-      ${created.length}
-      人
-
+      🏁 建立完成：
+      成功 ${created.length} 人
       ${
         failed.length
           ?`，失敗 ${failed.length} 人`
           :""
       }
-
-      <br>
-
-      <small>
-
-        初始密碼只在這次結果中顯示，
-
-        請先列印或下載。
-
-      </small>
-
     </div>
 
 
     ${
       created.length
         ?`
-
-          <div class="toolbar">
-
-            <button
-              id="printBatchCards"
-              class="btn primary"
-            >
-              🖨️ 列印全部帳密卡
-            </button>
-
-
-            <button
-              id="downloadBatchCsv"
-              class="btn gray"
-            >
-              下載帳密清單 CSV
-            </button>
-
-          </div>
-
-
           <div class="table-wrap">
 
             <table>
 
               <thead>
-
                 <tr>
-
-                  <th>
-                    帳號
-                  </th>
-
-                  <th>
-                    姓名
-                  </th>
-
-                  <th>
-                    初始密碼
-                  </th>
-
+                  <th>帳號</th>
+                  <th>姓名</th>
+                  <th>初始密碼</th>
                 </tr>
-
               </thead>
-
 
               <tbody>
 
                 ${
                   created.map(
-                    x=>`
-
+                    item=>`
                       <tr>
-
-                        <td>
-                          ${esc(x.username)}
-                        </td>
-
-                        <td>
-                          ${esc(x.displayName)}
-                        </td>
-
-                        <td>
-                          <b>
-                            ${esc(x.password)}
-                          </b>
-                        </td>
-
+                        <td>${esc(item.username)}</td>
+                        <td>${esc(item.displayName)}</td>
+                        <td><b>${esc(item.password)}</b></td>
                       </tr>
                     `
                   )
@@ -4633,302 +6264,36 @@ function showBatchResult(
         `
         :""
     }
-
-
-    ${
-      failed.length
-        ?`
-
-          <div class="notice error">
-
-            失敗：
-
-            ${
-              failed.map(
-                x=>
-                  `${esc(x.username)} ${esc(x.displayName)} (${esc(x.error)})`
-              )
-              .join("、")
-            }
-
-          </div>
-        `
-        :""
-    }
   `;
 
-
-  if(
-    created.length
-  ){
-
-    $("#printBatchCards")
-      .onclick=
-        ()=>printCredentialCards(
-          created
-        );
-
-
-    $("#downloadBatchCsv")
-      .onclick=
-        ()=>downloadCredentialCsv(
-          created
-        );
-
-  }
-
 }
 
 
-function printCredentialCards(
-  list
-){
+async function toggleUser(uid){
 
-  const cards=
-    list.map(
-      x=>`
-
-        <div class="cred-card">
-
-          <div class="cred-title">
-            班級資料回報系統
-          </div>
-
-          <div class="cred-name">
-            ${esc(x.displayName)}
-            同學
-          </div>
-
-          <div>
-
-            帳號：
-
-            <b>
-              ${esc(x.username)}
-            </b>
-
-          </div>
-
-          <div>
-
-            初始密碼：
-
-            <b>
-              ${esc(x.password)}
-            </b>
-
-          </div>
-
-          <div class="cred-note">
-
-            第一次登入後請立即修改密碼。
-
-            請勿將帳密提供給其他同學。
-
-          </div>
-
-          <div class="cred-url">
-            登入：class-work.html
-          </div>
-
-        </div>
-      `
-    )
-    .join("");
-
-
-  const w=
-    window.open(
-      "",
-      "_blank"
-    );
-
-
-  w.document.write(`
-
-<!doctype html>
-
-<html>
-
-<head>
-
-<meta charset="utf-8">
-
-<title>
-學生帳密卡
-</title>
-
-<style>
-
-@page{
-  size:A4;
-  margin:10mm
-}
-
-body{
-  font-family:"Microsoft JhengHei",sans-serif;
-  margin:0
-}
-
-.sheet{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8mm
-}
-
-.cred-card{
-  border:1px dashed #555;
-  border-radius:8px;
-  padding:10mm;
-  min-height:56mm;
-  break-inside:avoid
-}
-
-.cred-title{
-  font-weight:800;
-  font-size:18px;
-  margin-bottom:8px
-}
-
-.cred-name{
-  font-size:17px;
-  font-weight:700;
-  margin-bottom:8px
-}
-
-.cred-note,
-.cred-url{
-  font-size:12px;
-  margin-top:8px;
-  color:#444
-}
-
-</style>
-
-</head>
-
-<body>
-
-<div class="sheet">
-
-${cards}
-
-</div>
-
-<script>
-window.onload=()=>window.print()
-<\/script>
-
-</body>
-
-</html>
-
-  `);
-
-
-  w.document.close();
-
-}
-
-
-function downloadCredentialCsv(
-  list
-){
-
-  const rows=[
-
-    [
-      "帳號",
-      "姓名",
-      "初始密碼"
-    ],
-
-    ...list.map(
-      x=>[
-        x.username,
-        x.displayName,
-        x.password
-      ]
-    )
-
-  ];
-
-
-  const csv=
-    "\ufeff"
-    +
-    rows.map(
-      r=>
-        r.map(
-          v=>
-            `"${String(v).replaceAll('"','""')}"`
-        )
-        .join(",")
-    )
-    .join("\r\n");
-
-
-  const blob=
-    new Blob(
-      [
-        csv
-      ],
-      {
-        type:
-          "text/csv;charset=utf-8"
-      }
-    );
-
-
-  const a=
-    document.createElement(
-      "a"
-    );
-
-
-  a.href=
-    URL.createObjectURL(
-      blob
-    );
-
-
-  a.download=
-    `class-work-帳密-${today()}.csv`;
-
-
-  a.click();
-
-
-  URL.revokeObjectURL(
-    a.href
-  );
-
-}
-
-
-async function toggleUser(
-  uid
-){
-
-  const u=
+  const user=
     users.find(
-      x=>
-        x.uid===uid
+      x=>x.uid===uid
     );
+
+
+  if(!user){
+
+    return;
+  }
 
 
   const active=
-    !u.active;
+    !user.active;
 
 
   if(
     !confirm(
-      `確定${active?"啟用":"停用"} ${u.displayName} 的帳號？`
+      `確定${active?"啟用":"停用"} ${user.displayName}？`
     )
   ){
 
     return;
-
   }
 
 
@@ -4955,7 +6320,7 @@ async function toggleUser(
       :"disable_user",
     "user",
     uid,
-    `${active?"啟用":"停用"}帳號：${u.username}`
+    `${active?"啟用":"停用"}帳號 ${user.username}`
   );
 
 
@@ -4964,295 +6329,38 @@ async function toggleUser(
 }
 
 
-async function permanentDeleteUser(
-  uid
-){
+/* =========================================================
+   USER PERMISSIONS
+========================================================= */
 
-  const u=
+function editUserPermissions(uid){
+
+  const user=
     users.find(
-      x=>
-        x.uid===uid
+      x=>x.uid===uid
     );
 
 
-  if(!u){
-
-    return alert(
-      "找不到這個帳號。"
-    );
-
-  }
-
-
-  if(
-    u.type==="admin"
-  ){
-
-    return alert(
-      "管理員帳號不能從這裡永久刪除。"
-    );
-
-  }
-
-
-  if(
-    u.active===true
-  ){
-
-    return alert(
-      "為避免誤刪，請先將帳號「停用」，確認無誤後再永久刪除。"
-    );
-
-  }
-
-
-  const typed=
-    prompt(
-`⚠️ 永久刪除系統帳號
-
-姓名：${u.displayName||""}
-帳號：${u.username||""}
-
-這會刪除 Firestore 帳號資料與全部權限，
-歷史收繳、成績與操作紀錄會保留。
-
-請輸入帳號「${u.username}」確認刪除：`
-    );
-
-
-  if(
-    typed===null
-  ){
+  if(!user){
 
     return;
-
   }
 
 
-  if(
-    typed.trim()
-    !==
-    String(
-      u.username
-      ||
-      ""
-    )
-  ){
-
-    return alert(
-      "輸入的帳號不一致，已取消刪除。"
-    );
-
-  }
-
-
-  if(
-    !confirm(
-      `最後確認：永久刪除 ${u.displayName}（${u.username}）的系統帳號？`
-    )
-  ){
-
-    return;
-
-  }
-
-
-  await audit(
-    "permanent_delete_user",
-    "user",
-    uid,
-    `永久刪除系統帳號：${u.username} ${u.displayName||""}｜Auth UID：${uid}`
-  );
-
-
-  await deleteDoc(
-    doc(
-      db,
-      "users",
-      uid
-    )
-  );
-
-
-  await refreshAll();
-
-
-  showDeletedUserNotice(
-    u,
-    uid
-  );
-
-}
-
-
-function showDeletedUserNotice(
-  u,
-  uid
-){
-
-  showModal(`
-
-    <div class="item-head">
-
-      <div>
-
-        <div class="section-title">
-          ✅ 系統帳號已移除
-        </div>
-
-        <div class="meta">
-
-          ${esc(u.displayName||"")}
-
-          ｜
-
-          ${esc(u.username||"")}
-
-        </div>
-
-      </div>
-
-
-      <button class="btn gray close-modal">
-        關閉
-      </button>
-
-    </div>
-
-
-    <div class="notice success">
-
-      Firestore 帳號資料與系統權限已刪除；
-
-      過去的收繳、成績與操作紀錄仍保留。
-
-    </div>
-
-
-    <div class="notice">
-
-      <b>
-        若這是測試／建立錯誤帳號：
-      </b>
-
-      <br>
-
-      還需要到 Firebase Authentication
-
-      刪除同一 UID，
-
-      之後才能重新建立相同帳號。
-
-    </div>
-
-
-    <div class="field">
-
-      <label>
-        Firebase Authentication UID
-      </label>
-
-      <input
-        id="deletedUid"
-        value="${esc(uid)}"
-        readonly
-      >
-
-    </div>
-
-
-    <div class="toolbar">
-
-      <button
-        class="btn gray"
-        id="copyDeletedUid"
-      >
-        複製 UID
-      </button>
-
-
-      <button
-        class="btn primary"
-        id="openFirebaseAuth"
-      >
-        開啟 Firebase Authentication
-      </button>
-
-    </div>
-  `);
-
-
-  $("#copyDeletedUid")
-    .onclick=
-    async()=>{
-
-      try{
-
-        await navigator.clipboard
-          .writeText(
-            uid
-          );
-
-
-        alert(
-          "UID 已複製。"
-        );
-
-      }catch{
-
-        $("#deletedUid")
-          .select();
-
-
-        document.execCommand(
-          "copy"
-        );
-
-
-        alert(
-          "UID 已複製。"
-        );
-
-      }
-
-    };
-
-
-  $("#openFirebaseAuth")
-    .onclick=
-      ()=>window.open(
-        "https://console.firebase.google.com/project/class-datawork/authentication/users",
-        "_blank"
-      );
-
-}
-
-
-function editUserPermissions(
-  uid
-){
-
-  const u=
-    users.find(
-      x=>
-        x.uid===uid
-    );
-
-
-  const assigns=[
+  const assignments=[
     ...(
-      u.assignments
+      user.assignments
       ||
       []
     )
   ];
 
 
-  const classOpts=
+  const classOptions=
     (
       classes.length
         ?classes.map(
-            c=>c.id
+            x=>x.id
           )
         :Object.keys(
             defaultRosters
@@ -5260,9 +6368,9 @@ function editUserPermissions(
     )
     .sort()
     .map(
-      c=>`
-        <option value="${c}">
-          ${c}
+      id=>`
+        <option value="${id}">
+          ${id}
         </option>
       `
     )
@@ -5276,32 +6384,19 @@ function editUserPermissions(
       <div>
 
         <div class="section-title">
-
-          ${esc(u.displayName)}
-
-          ｜
-
-          ${esc(u.username)}
-
+          ⚓ ${esc(user.displayName)}
         </div>
 
         <div class="meta">
-
-          帳號跟著人保留；
-
-          這裡可做個別補充權限。
-
-          大量換學期職務請優先使用
-
-          「職務派發總表」。
-
+          帳號：${esc(user.username)}
         </div>
 
       </div>
 
-
-      <button class="btn gray close-modal">
-        關閉
+      <button
+        class="btn gray close-modal"
+      >
+        ✖ 關閉
       </button>
 
     </div>
@@ -5311,29 +6406,27 @@ function editUserPermissions(
 
 
     <hr
-      style="border:none;border-top:1px solid #e4e7ec;margin:15px 0"
+      style="
+        border:0;
+        border-top:1px dashed #c49b67;
+        margin:18px 0
+      "
     >
 
 
-    <b>
-      新增一個權限
-    </b>
+    <div class="section-title">
+      ➕ 新增航海職務
+    </div>
 
 
     <div class="two">
 
       <div class="field">
 
-        <label>
-          學期
-        </label>
+        <label>學期</label>
 
         <select id="aSemester">
-
-          ${semesterOptions(
-            currentSemester
-          )}
-
+          ${semesterOptions(currentSemester)}
         </select>
 
       </div>
@@ -5341,12 +6434,10 @@ function editUserPermissions(
 
       <div class="field">
 
-        <label>
-          班級
-        </label>
+        <label>班級</label>
 
         <select id="aClass">
-          ${classOpts}
+          ${classOptions}
         </select>
 
       </div>
@@ -5356,9 +6447,7 @@ function editUserPermissions(
 
     <div class="field">
 
-      <label>
-        身分類型
-      </label>
+      <label>身分類型</label>
 
       <select id="aKind">
 
@@ -5381,17 +6470,15 @@ function editUserPermissions(
 
     <div class="field">
 
-      <label>
-        科目／職務
-      </label>
+      <label>科目／職務</label>
 
       <select id="aName">
 
         ${
           subjects.map(
-            s=>`
+            subject=>`
               <option>
-                ${s}
+                ${subject}
               </option>
             `
           )
@@ -5406,117 +6493,69 @@ function editUserPermissions(
     <div class="toolbar">
 
       <label>
-
         <input
-          type="checkbox"
           id="aCollection"
+          type="checkbox"
           checked
         >
-
         可登記收繳
-
       </label>
 
-
       <label>
-
         <input
-          type="checkbox"
           id="aScores"
+          type="checkbox"
           checked
         >
-
         可登記成績
-
       </label>
 
     </div>
 
 
     <button
-      class="btn primary"
       id="addAssignment"
+      class="btn primary"
     >
-      加入權限
+      ➕ 加入職務
     </button>
   `);
 
 
   function rerender(){
 
-    const box=
-      $("#currentAssignments");
-
-
-    box.innerHTML=
-
-      assigns
-        .sort(
+    $("#currentAssignments")
+      .innerHTML=
+        assignments.length
+        ?
+        assignments.map(
           (
-            a,
-            b
-          )=>
-            (
-              b.semester
-              ||
-              ""
-            )
-            .localeCompare(
-              a.semester
-              ||
-              ""
-            )
-        )
-        .map(
-          (
-            a,
-            i
+            assignment,
+            index
           )=>`
 
             <div class="assign">
 
               <b>
-                ${esc(a.semester||"舊")}
+                ${esc(assignment.semester)}
               </b>
 
-              ｜
+              ｜${esc(assignment.classId)}班
 
-              ${esc(a.classId)}
+              ｜${esc(assignment.scopeName)}
 
-              ｜
-
-              ${esc(a.scopeName)}
-
-              ｜
-
-              ${
-                a.kind==="teacher"
+              ｜${
+                assignment.kind==="teacher"
                   ?"任課老師"
-                  :a.scopeType==="subject"
+                  :assignment.scopeType==="subject"
                     ?"小老師"
                     :"班級幹部"
-              }
-
-              ｜
-
-              ${
-                a.canCollection
-                  ?"收繳可寫"
-                  :"收繳唯讀"
-              }
-
-              ｜
-
-              ${
-                a.canScores
-                  ?"成績可寫"
-                  :"成績唯讀"
               }
 
 
               <button
                 class="btn danger small remove-assignment"
-                data-i="${i}"
+                data-i="${index}"
               >
                 移除
               </button>
@@ -5525,31 +6564,31 @@ function editUserPermissions(
           `
         )
         .join("")
-        ||
+        :
         `
-          <div class="sub">
-            目前尚未指派職務。
+          <div class="notice">
+            目前沒有指派職務。
           </div>
         `;
 
 
     $$(".remove-assignment")
       .forEach(
-        b=>
-          b.onclick=
+        button=>
+          button.onclick=
           async()=>{
 
-            assigns.splice(
+            assignments.splice(
               Number(
-                b.dataset.i
+                button.dataset.i
               ),
               1
             );
 
 
             await saveAssignments(
-              u,
-              assigns
+              user,
+              assignments
             );
 
 
@@ -5565,45 +6604,28 @@ function editUserPermissions(
     .onchange=
     ()=>{
 
-      const k=
-        $("#aKind")
-          .value;
+      const kind=
+        $("#aKind").value;
 
 
-      const n=
-        $("#aName");
-
-
-      n.innerHTML=
-        (
-          k==="officer"
-            ?officerRoles
-            :subjects
-        )
-        .map(
-          s=>`
-            <option>
-              ${s}
-            </option>
-          `
-        )
-        .join("");
+      $("#aName")
+        .innerHTML=
+          (
+            kind==="officer"
+              ?officerRoles
+              :subjects
+          )
+          .map(
+            name=>`
+              <option>${name}</option>
+            `
+          )
+          .join("");
 
 
       $("#aScores")
         .checked=
-          k!=="officer";
-
-
-      if(
-        k==="teacher"
-      ){
-
-        $("#aScores")
-          .checked=
-            false;
-
-      }
+          kind!=="officer";
 
     };
 
@@ -5613,30 +6635,18 @@ function editUserPermissions(
     async()=>{
 
       const kind=
-        $("#aKind")
-          .value;
+        $("#aKind").value;
 
 
-      const name=
-        $("#aName")
-          .value;
-
-
-      const sem=
-        $("#aSemester")
-          .value;
-
-
-      const a={
+      const assignment={
 
         semester:
-          sem,
-
-        kind,
+          $("#aSemester").value,
 
         classId:
-          $("#aClass")
-            .value,
+          $("#aClass").value,
+
+        kind,
 
         scopeType:
           kind==="officer"
@@ -5644,49 +6654,51 @@ function editUserPermissions(
             :"subject",
 
         scopeName:
-          name,
+          $("#aName").value,
 
         canCollection:
-          $("#aCollection")
-            .checked,
+          $("#aCollection").checked,
 
         canScores:
           kind==="officer"
             ?false
-            :$("#aScores")
-              .checked
+            :$("#aScores").checked
 
       };
 
 
-      if(
-        assigns.some(
+      const duplicate=
+        assignments.some(
           x=>
-            x.semester===a.semester
+            x.semester===assignment.semester
             &&
-            x.classId===a.classId
+            x.classId===assignment.classId
             &&
-            x.kind===a.kind
+            x.kind===assignment.kind
             &&
-            x.scopeType===a.scopeType
+            x.scopeType===assignment.scopeType
             &&
-            x.scopeName===a.scopeName
-        )
-      ){
+            x.scopeName===assignment.scopeName
+        );
+
+
+      if(duplicate){
 
         return alert(
-          "這筆權限已經存在。"
+          "這筆職務已經存在。"
         );
 
       }
 
 
-      assigns.push(a);
+      assignments.push(
+        assignment
+      );
 
 
       await saveAssignments(
-        u,
-        assigns
+        user,
+        assignments
       );
 
 
@@ -5701,7 +6713,7 @@ function editUserPermissions(
 
 
 async function saveAssignments(
-  u,
+  user,
   assignments
 ){
 
@@ -5716,7 +6728,7 @@ async function saveAssignments(
     doc(
       db,
       "users",
-      u.uid
+      user.uid
     ),
     {
 
@@ -5731,25 +6743,29 @@ async function saveAssignments(
   );
 
 
-  await audit(
-    "permissions",
-    "user",
-    u.uid,
-    `更新權限：${u.username}`
-  );
-
-
-  u.assignments=
+  user.assignments=
     assignments;
 
 
   Object.assign(
-    u,
+    user,
     access
+  );
+
+
+  await audit(
+    "permissions",
+    "user",
+    user.uid,
+    `更新權限：${user.username}`
   );
 
 }
 
+
+/* =========================================================
+   CLASSES
+========================================================= */
 
 function renderClasses(){
 
@@ -5765,7 +6781,7 @@ function renderClasses(){
           )
       )
       .map(
-        c=>`
+        cls=>`
 
           <div class="item">
 
@@ -5774,32 +6790,29 @@ function renderClasses(){
               <div>
 
                 <b>
-                  ${c.id}
-                  班
+                  🏴 ${esc(cls.id)} 班
                 </b>
 
                 <div class="meta">
-
                   ${
                     (
-                      c.students
+                      cls.students
                       ||
                       []
                     )
                     .length
                   }
                   人
-
                 </div>
 
               </div>
 
 
               <button
-                class="btn gray small edit-class"
-                data-id="${c.id}"
+                class="btn primary small edit-class"
+                data-id="${cls.id}"
               >
-                編輯
+                ✏️ 編輯名單
               </button>
 
             </div>
@@ -5813,20 +6826,25 @@ function renderClasses(){
   $("#page-classes")
     .innerHTML=`
 
+      <div class="page-title">
+        班級名單
+      </div>
+
+
       <div class="two">
 
         <div class="card">
 
           <div class="section-title">
-            班級名單
+            👥 現有班級
           </div>
 
           ${
             cards
             ||
             `
-              <div class="sub">
-                尚未建立任何班級。
+              <div class="notice">
+                尚未建立班級。
               </div>
             `
           }
@@ -5837,17 +6855,7 @@ function renderClasses(){
         <div class="card">
 
           <div class="section-title">
-            快速建立
-          </div>
-
-          <div class="notice">
-
-            第一次使用可直接匯入目前預設的
-
-            804、802、904、906 名單；
-
-            之後都能在後台修改。
-
+            🗺️ 名單管理
           </div>
 
 
@@ -5855,24 +6863,23 @@ function renderClasses(){
             id="seedClasses"
             class="btn primary"
           >
-            建立／更新預設班級名單
+            🚢 建立／更新預設班級名單
           </button>
 
 
           <hr
-            style="border:none;border-top:1px solid #e4e7ec;margin:15px 0"
+            style="
+              border:0;
+              border-top:1px dashed #c49b67;
+              margin:18px 0
+            "
           >
-
-
-          <b>
-            新增自訂班級
-          </b>
 
 
           <div class="field">
 
             <label>
-              班級
+              新增班級
             </label>
 
             <input
@@ -5891,9 +6898,9 @@ function renderClasses(){
 
             <textarea
               id="classRoster"
-              rows="10"
+              rows="12"
               placeholder="1,王小明
-2,李小華"
+2,李小美"
             ></textarea>
 
           </div>
@@ -5901,9 +6908,9 @@ function renderClasses(){
 
           <button
             id="saveClass"
-            class="btn primary"
+            class="btn good"
           >
-            儲存班級
+            💾 儲存班級
           </button>
 
         </div>
@@ -5927,10 +6934,10 @@ function renderClasses(){
 
   $$(".edit-class")
     .forEach(
-      b=>
-        b.onclick=
+      button=>
+        button.onclick=
           ()=>editClass(
-            b.dataset.id
+            button.dataset.id
           )
     );
 
@@ -5941,8 +6948,8 @@ async function seedClasses(){
 
   for(
     const[
-      id,
-      arr
+      classId,
+      roster
     ]
     of Object.entries(
       defaultRosters
@@ -5953,29 +6960,23 @@ async function seedClasses(){
       doc(
         db,
         "classes",
-        id
+        classId
       ),
       {
 
-        classId:
-          id,
+        classId,
 
         students:
-          arr.map(
+          roster.map(
             (
               [
                 seat,
                 name
               ]
             )=>({
-
-              id:
-                String(seat),
-
+              id:String(seat),
               seat,
-
               name
-
             })
           ),
 
@@ -6003,22 +7004,18 @@ async function seedClasses(){
 
 
   alert(
-    "預設班級名單已建立。"
+    "✅ 班級名單已更新！"
   );
 
 }
 
 
-function parseRoster(
-  text
-){
+function parseRoster(text){
 
   return text
-    .split(
-      /\r?\n/
-    )
+    .split(/\r?\n/)
     .map(
-      x=>x.trim()
+      line=>line.trim()
     )
     .filter(Boolean)
     .map(
@@ -6026,7 +7023,7 @@ function parseRoster(
 
         const[
           seat,
-          ...rest
+          ...nameParts
         ]=
           line.split(
             /[,，\t]/
@@ -6034,33 +7031,18 @@ function parseRoster(
 
 
         return{
-
-          id:
-            String(
-              Number(
-                seat
-              )
-            ),
-
-          seat:
-            Number(
-              seat
-            ),
-
-          name:
-            rest
-              .join("")
-              .trim()
-
+          id:String(Number(seat)),
+          seat:Number(seat),
+          name:nameParts.join("").trim()
         };
 
       }
     )
     .filter(
-      x=>
-        x.seat
+      student=>
+        student.seat
         &&
-        x.name
+        student.name
     )
     .sort(
       (
@@ -6074,37 +7056,26 @@ function parseRoster(
 
 
 async function saveClass(
-  id,
+  classId,
   text
 ){
 
-  id=
-    id.trim();
-
-
-  if(
-    !id
-  ){
-
-    return alert(
-      "請輸入班級"
-    );
-
-  }
+  classId=
+    classId.trim();
 
 
   const students=
-    parseRoster(
-      text
-    );
+    parseRoster(text);
 
 
   if(
+    !classId
+    ||
     !students.length
   ){
 
     return alert(
-      "請輸入名單"
+      "請輸入班級與名單。"
     );
 
   }
@@ -6114,13 +7085,11 @@ async function saveClass(
     doc(
       db,
       "classes",
-      id
+      classId
     ),
     {
 
-      classId:
-        id,
-
+      classId,
       students,
 
       updatedAt:
@@ -6136,8 +7105,8 @@ async function saveClass(
   await audit(
     "save_class",
     "class",
-    id,
-    `更新班級名單 ${id}`
+    classId,
+    `更新班級 ${classId}`
   );
 
 
@@ -6145,32 +7114,35 @@ async function saveClass(
 
 
   alert(
-    "已儲存"
+    "✅ 班級名單已儲存！"
   );
 
 }
 
 
-function editClass(
-  id
-){
+function editClass(classId){
 
-  const c=
+  const cls=
     classes.find(
-      x=>
-        x.id===id
+      x=>x.id===classId
     );
+
+
+  if(!cls){
+
+    return;
+  }
 
 
   const text=
     (
-      c.students
+      cls.students
       ||
       []
     )
     .map(
-      s=>
-        `${s.seat},${s.name}`
+      student=>
+        `${student.seat},${student.name}`
     )
     .join("\n");
 
@@ -6180,13 +7152,13 @@ function editClass(
     <div class="item-head">
 
       <div class="section-title">
-        編輯 ${id} 班名單
+        👥 編輯 ${esc(classId)} 班
       </div>
 
       <button
         class="btn gray close-modal"
       >
-        關閉
+        ✖ 關閉
       </button>
 
     </div>
@@ -6196,17 +7168,17 @@ function editClass(
 
       <textarea
         id="editRoster"
-        rows="18"
+        rows="20"
       >${esc(text)}</textarea>
 
     </div>
 
 
     <button
-      class="btn primary"
       id="saveEditRoster"
+      class="btn primary"
     >
-      儲存
+      💾 儲存
     </button>
   `);
 
@@ -6216,9 +7188,8 @@ function editClass(
     async()=>{
 
       await saveClass(
-        id,
-        $("#editRoster")
-          .value
+        classId,
+        $("#editRoster").value
       );
 
 
@@ -6229,14 +7200,35 @@ function editClass(
 }
 
 
+/* =========================================================
+   AUDIT
+========================================================= */
+
 async function renderAudit(){
+
+  $("#page-audit")
+    .innerHTML=`
+
+      <div class="page-title">
+        操作紀錄
+      </div>
+
+      <div class="card">
+
+        <div class="notice">
+          🧾 正在讀取近期航海紀錄……
+        </div>
+
+      </div>
+    `;
+
 
   let logs=[];
 
 
   try{
 
-    const s=
+    const snap=
       await getDocs(
         query(
           collection(
@@ -6252,7 +7244,7 @@ async function renderAudit(){
 
 
     logs=
-      s.docs
+      snap.docs
         .slice(
           0,
           250
@@ -6263,7 +7255,7 @@ async function renderAudit(){
 
   }catch(e){
 
-    const s=
+    const snap=
       await getDocs(
         collection(
           db,
@@ -6273,7 +7265,7 @@ async function renderAudit(){
 
 
     logs=
-      s.docs
+      snap.docs
         .map(
           d=>d.data()
         )
@@ -6288,10 +7280,15 @@ async function renderAudit(){
   $("#page-audit")
     .innerHTML=`
 
+      <div class="page-title">
+        操作紀錄
+      </div>
+
+
       <div class="card">
 
         <div class="section-title">
-          最近操作紀錄
+          📜 最近航海紀錄
         </div>
 
 
@@ -6300,71 +7297,50 @@ async function renderAudit(){
           <table>
 
             <thead>
-
               <tr>
-
-                <th>
-                  時間
-                </th>
-
-                <th>
-                  學期
-                </th>
-
-                <th>
-                  操作者
-                </th>
-
-                <th>
-                  動作
-                </th>
-
-                <th>
-                  內容
-                </th>
-
+                <th>時間</th>
+                <th>學期</th>
+                <th>操作者</th>
+                <th>動作</th>
+                <th>內容</th>
               </tr>
-
             </thead>
-
 
             <tbody>
 
               ${
                 logs.map(
-                  l=>`
+                  log=>`
 
                     <tr>
 
                       <td>
-
                         ${
-                          l.createdAt
+                          log.createdAt
                           ?.toDate
-                            ?l.createdAt
+                            ?log.createdAt
                               .toDate()
                               .toLocaleString(
                                 "zh-TW"
                               )
                             :""
                         }
-
                       </td>
 
                       <td>
-                        ${esc(l.semester||"")}
+                        ${esc(log.semester||"")}
                       </td>
 
                       <td>
-                        ${esc(l.actorName||"")}
+                        ${esc(log.actorName||"")}
                       </td>
 
                       <td>
-                        ${esc(l.action||"")}
+                        ${esc(log.action||"")}
                       </td>
 
                       <td>
-                        ${esc(l.detail||"")}
+                        ${esc(log.detail||"")}
                       </td>
 
                     </tr>
@@ -6385,11 +7361,15 @@ async function renderAudit(){
 }
 
 
-function showModal(h){
+/* =========================================================
+   MODAL
+========================================================= */
+
+function showModal(html){
 
   $("#modalBody")
     .innerHTML=
-      h;
+      html;
 
 
   $("#modal")
