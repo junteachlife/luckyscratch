@@ -3,100 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>幼兒園 IEP 觀察紀錄與教育目標智慧生成系統</title>
+    <title>Hello Kitty 幼兒園 IEP 雲端紀錄與智慧生成系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-</head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen p-4 md:p-8">
-    <div class="max-w-5xl mx-auto bg-white shadow-xl rounded-2xl p-6 md:p-10 border border-slate-100">
-        <header class="mb-8 border-b pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-                <h1 class="text-2xl md:text-3xl font-bold text-slate-800 flex items-center gap-2">
-                    <span>📋</span> 幼兒園 IEP 教育目標智慧生成系統
-                </h1>
-                <p class="text-sm text-slate-500 mt-1">輸入或貼上任意學生的觀察紀錄，系統將自動分類至 8 大領域，並專業產出「學年目標」與「學期目標」。</p>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="loadSample()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium px-4 py-2 rounded-xl transition border border-slate-200">
-                    📥 載入正鋌範例
-                </button>
-                <button onclick="clearAll()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 text-sm font-medium px-4 py-2 rounded-xl transition border border-rose-200">
-                    🗑️ 清空重來
-                </button>
-            </div>
-        </header>
+    <!-- Firebase SDK (v9 Modular) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc, Timestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-        <!-- 學生基本資訊輸入 -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
-            <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1">學生姓名 / 代號</label>
-                <input type="text" id="studentName" placeholder="例如：正鋌" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1">學年度 / 學期</label>
-                <input type="text" id="semester" placeholder="例如：115學年度 第1學期" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
-            </div>
-        </div>
+        // ==========================================
+        // ⚙️ 請在此填入您的 Firebase 專案設定值
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
 
-        <!-- 觀察紀錄輸入區 -->
-        <div class="mb-6">
-            <label for="rawInput" class="block text-sm font-semibold text-slate-700 mb-2">請輸入或貼上該學生的觀察紀錄（支援條列式或段落）：</label>
-            <textarea id="rawInput" rows="6" class="w-full p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm leading-relaxed" placeholder="請在此貼上觀察紀錄..."></textarea>
-        </div>
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-        <div class="mb-8">
-            <button onclick="generateIEP()" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-xl transition shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 text-base">
-                ✨ 開始分析並產出 IEP 教育目標表
-            </button>
-        </div>
-
-        <!-- 輸出結果區 (可列印/下載) -->
-        <div id="reportSection" class="hidden space-y-6 pt-6 border-t border-slate-200">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold text-slate-800">📄 產出之 IEP 教育目標對應表</h2>
-                <div class="flex gap-2">
-                    <button onclick="downloadWord()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2 rounded-xl transition flex items-center gap-1 shadow-sm">
-                        📥 下載 Word 檔 (.doc)
-                    </button>
-                    <button onclick="printPDF()" class="bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium px-4 py-2 rounded-xl transition flex items-center gap-1 shadow-sm">
-                        🖨️ 列印 / 存為 PDF
-                    </button>
-                </div>
-            </div>
-
-            <!-- 可供預覽與匯出的表單外觀 -->
-            <div id="exportContent" class="bg-white border border-slate-300 rounded-xl p-6 shadow-sm space-y-6">
-                <div class="text-center border-b pb-4">
-                    <h3 id="reportTitle" class="text-lg font-bold text-slate-800">幼兒個別化教育計畫 (IEP) - 教育目標</h3>
-                    <p id="reportSubtitle" class="text-xs text-slate-500 mt-1">學生：未填寫 | 學期：未填寫</p>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full border-collapse border border-slate-400 text-sm text-left">
-                        <thead>
-                            <tr class="bg-slate-100 text-slate-700 text-center">
-                                <th class="border border-slate-400 p-2.5 w-28">需求領域</th>
-                                <th class="border border-slate-400 p-2.5">學年目標</th>
-                                <th class="border border-slate-400 p-2.5">學期目標</th>
-                                <th class="border border-slate-400 p-2.5 w-20">評量方法</th>
-                                <th class="border border-slate-400 p-2.5 w-24">通過標準</th>
-                            </tr>
-                        </thead>
-                        <tbody id="iepTableBody">
-                            <!-- 動態生成目標列 -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="text-xs text-slate-500 space-y-1 pt-2 border-t">
-                    <p>【評量方法代號說明】I：觀察、II：操作、III：口頭、IV：作品、V：其他</p>
-                    <p>【通過標準說明】數字代表達成目標百分比（5: 80%以上, 4: 60~80%, 3: 40~60%, 2: 20~40%, 1: 20%以下），英文代表協助程度（A: 獨立完成, B: 口語提示, C: 部分動作提示, D: 完全動作協助, E: 無法完成）。</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
         const domains = [
             { id: "health", name: "健康狀況", keywords: ["發燒", "身體不適", "癲癇", "藥物", "體質", "病史", "健康"] },
             { id: "sensory", name: "感官功能", keywords: ["視力", "聽力", "視茫茫", "聽不見", "觸覺敏感", "感官"] },
@@ -114,7 +42,7 @@
                 semester: "在教室內移動與戶外活動（如騎滑步車）時，能保持安全距離與適當速度，減少奔跑、攀爬門框或追撞行為。"
             },
             behavior: {
-                annual: "在幼兒園一日作息中，能透過適當的表達與情緒調節策略取代情緒失控行為（如大叫、敲打、破壞物品）。",
+                annual: "在幼兒園一日作息中，能透過適當的表達與情緒調節策略取代情緒失控行為（如大叫, 敲打, 破壞物品）。",
                 semester: "面臨情境轉換或意見不合時，經提示能減少大叫、拿物品敲打桌面或破壞教具之行為，展現穩定的自我控制。"
             },
             social: {
@@ -143,100 +71,164 @@
             }
         };
 
-        function loadSample() {
-            document.getElementById('studentName').value = "正鋌";
-            document.getElementById('semester').value = "115學年度 第1學期";
-            const sampleText = `★上課期間 會跑去操作學習區教具 勸不回 會堅持操作 不順他意就大叫
-★下課/喝水時間 同學說了不喜歡聽的話 就會生氣 邊大喊邊拿水壺大力敲桌面……有次用水壺敲桌面後.還用力將水壺往前推動 水壺因此撞到對面同學(耘豐)的肚子
-★睡覺時間 嘴巴會發出聲音/去操作教具/搖晃椅子.敲櫃子.敲地板 製造聲音 每天都會在地上爬行 尋找飯粒 會放進嘴巴吃
-★團討時間 常和同學產生肢體推擠..生氣.大叫
-★最近幾天常問同學.你喜歡我嗎？沐炫回答不喜歡 他會一直搖晃沐炫身體追著沐炫問
-★時常在教室內奔跑/門外動靜 就會踩在門框爬在門上看
-★情緒起來時.無法聽進老師的規勸
-★圖書分享時間 將故事書拿進廁所 用水洗書
-★戶外活動 喜歡去騎滑步車 很常去追撞同學車尾
-★騎滑步車載同學 騎很快 以致同學摔倒
-★操作教具時 已經離開後 又想回去操作原本地教具 但原本教具已被收走`;
-            document.getElementById('rawInput').value = sampleText;
-            generateIEP();
-        }
+        window.saveObservation = async function() {
+            const studentName = document.getElementById('inputStudentName').value.trim();
+            const content = document.getElementById('inputContent').value.trim();
+            const date = document.getElementById('inputDate').value || new Date().toISOString().split('T')[0];
 
-        function clearAll() {
-            document.getElementById('studentName').value = '';
-            document.getElementById('semester').value = '';
-            document.getElementById('rawInput').value = '';
-            document.getElementById('reportSection').classList.add('hidden');
-        }
-
-        function generateIEP() {
-            const rawText = document.getElementById('rawInput').value.trim();
-            const studentName = document.getElementById('studentName').value.trim() || '學生';
-            const semester = document.getElementById('semester').value.trim() || '當學期';
-
-            if (!rawText) {
-                alert('請先輸入或載入觀察紀錄！');
+            if (!studentName || !content) {
+                alert('請填寫學生姓名與觀察紀錄內容！');
                 return;
             }
 
-            const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-            
-            let domainMatches = {};
-            domains.forEach(d => domainMatches[d.id] = 0);
-
-            lines.forEach(line => {
-                domains.forEach(d => {
-                    d.keywords.forEach(kw => {
-                        if (line.includes(kw)) {
-                            domainMatches[d.id]++;
-                        }
-                    });
+            try {
+                await addDoc(collection(db, "observations"), {
+                    studentName: studentName,
+                    content: content,
+                    date: date,
+                    createdAt: Timestamp.now()
                 });
-            });
+                alert('🎀 觀察紀錄已成功存入 Kitty 雲端寶庫！');
+                document.getElementById('inputContent').value = '';
+                loadCloudObservations(studentName);
+            } catch (e) {
+                console.error("寫入錯誤: ", e);
+                alert('儲存失敗，請檢查 Firebase 設定與網路連線。');
+            }
+        };
 
-            let activeDomains = domains.filter(d => domainMatches[d.id] > 0);
-            if (activeDomains.length === 0) {
-                activeDomains = [domains[2], domains[5], domains[6]];
+        window.loadCloudObservations = async function(targetName = null) {
+            const studentName = targetName || document.getElementById('targetStudentName').value.trim();
+            if (!studentName) {
+                alert('請先輸入要查詢的學生姓名！');
+                return;
             }
 
-            document.getElementById('reportTitle').innerText = `幼兒個別化教育計畫 (IEP) - 教育目標表`;
-            document.getElementById('reportSubtitle').innerText = `學生：${studentName} | 學期：${semester}`;
+            document.getElementById('targetStudentName').value = studentName;
+            const listContainer = document.getElementById('cloudLogsList');
+            listContainer.innerHTML = '<p class="text-xs text-pink-400">🎀 正在從雲端載入紀錄中...</p>';
 
-            const tbody = document.getElementById('iepTableBody');
-            tbody.innerHTML = '';
+            try {
+                const q = query(collection(db, "observations"), where("studentName", "==", studentName));
+                const querySnapshot = await getDocs(q);
+                
+                listContainer.innerHTML = '';
+                if (querySnapshot.empty) {
+                    listContainer.innerHTML = '<p class="text-xs text-pink-400">目前雲端無此學生的觀察紀錄。</p>';
+                    return;
+                }
 
-            activeDomains.forEach(d => {
-                const template = goalTemplates[d.id] || {
-                    annual: `能於各項學習與作息中展現合宜的${d.name}能力與適應表現。`,
-                    semester: `在引導與支持下，能改善${d.name}方面的困難並提升穩定表現。`
-                };
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = "bg-pink-50/60 border border-pink-200 p-3 rounded-xl text-xs flex justify-between items-start gap-2 shadow-sm";
+                    itemDiv.innerHTML = `
+                        <div>
+                            <span class="font-bold text-pink-600">[${data.date}]</span> 
+                            <span class="text-slate-700">${data.content}</span>
+                        </div>
+                        <button onclick="deleteLog('${docSnap.id}', '${studentName}')" class="text-rose-400 hover:text-rose-600 font-bold px-1">✕</button>
+                    `;
+                    listContainer.appendChild(itemDiv);
+                });
+            } catch (e) {
+                console.error("讀取錯誤: ", e);
+                listContainer.innerHTML = '<p class="text-xs text-rose-500">載入失敗，請確認 Firebase 權限與設定。</p>';
+            }
+        };
 
-                let rowHtml = `
-                    <tr class="align-top">
-                        <td class="border border-slate-400 p-2.5 font-bold text-slate-700 bg-slate-50 text-center">${d.name}</td>
-                        <td class="border border-slate-400 p-2.5 text-slate-700">${template.annual}</td>
-                        <td class="border border-slate-400 p-2.5 text-slate-700 space-y-1">
-                            <div>• <strong>第一學期：</strong>${template.semester}</div>
-                        </td>
-                        <td class="border border-slate-400 p-2.5 text-center text-slate-600 font-medium">I、II</td>
-                        <td class="border border-slate-400 p-2.5 text-center text-slate-600 font-medium">4A</td>
-                    </tr>
-                `;
-                tbody.innerHTML += rowHtml;
-            });
+        window.deleteLog = async function(docId, studentName) {
+            if (confirm('確定要刪除這筆雲端紀錄嗎？')) {
+                try {
+                    await deleteDoc(doc(db, "observations", docId));
+                    loadCloudObservations(studentName);
+                } catch (e) {
+                    console.error("刪除失敗: ", e);
+                }
+            }
+        };
 
-            document.getElementById('reportSection').classList.remove('hidden');
-            document.getElementById('reportSection').scrollIntoView({ behavior: 'smooth' });
-        }
+        window.generateIEPFromCloud = async function() {
+            const studentName = document.getElementById('targetStudentName').value.trim();
+            const semester = document.getElementById('semester').value.trim() || '當學期';
 
-        function printPDF() {
-            window.print();
-        }
+            if (!studentName) {
+                alert('請先輸入學生姓名！');
+                return;
+            }
 
-        function downloadWord() {
-            const studentName = document.getElementById('studentName').value.trim() || '學生';
+            try {
+                const q = query(collection(db, "observations"), where("studentName", "==", studentName));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    alert('雲端找不到該學生的觀察紀錄，無法生成 IEP！');
+                    return;
+                }
+
+                let allTexts = [];
+                querySnapshot.forEach((docSnap) => {
+                    allTexts.push(docSnap.data().content);
+                });
+
+                let domainMatches = {};
+                domains.forEach(d => domainMatches[d.id] = 0);
+
+                allTexts.forEach(text => {
+                    domains.forEach(d => {
+                        d.keywords.forEach(kw => {
+                            if (text.includes(kw)) {
+                                domainMatches[d.id]++;
+                            }
+                        });
+                    });
+                });
+
+                let activeDomains = domains.filter(d => domainMatches[d.id] > 0);
+                if (activeDomains.length === 0) {
+                    activeDomains = [domains[2], domains[5], domains[6]];
+                }
+
+                document.getElementById('reportTitle').innerText = `幼兒個別化教育計畫 (IEP) - 教育目標表`;
+                document.getElementById('reportSubtitle').innerText = `🎀 學生：${studentName} | 學期：${semester} 🎀`;
+
+                const tbody = document.getElementById('iepTableBody');
+                tbody.innerHTML = '';
+
+                activeDomains.forEach(d => {
+                    const template = goalTemplates[d.id] || {
+                        annual: `能於各項學習與作息中展現合宜的${d.name}能力與適應表現。`,
+                        semester: `在引導與支持下，能改善${d.name}方面的困難並提升穩定表現。`
+                    };
+
+                    let rowHtml = `
+                        <tr class="align-top">
+                            <td class="border border-pink-300 p-2.5 font-bold text-pink-700 bg-pink-50 text-center">${d.name}</td>
+                            <td class="border border-pink-300 p-2.5 text-slate-700">${template.annual}</td>
+                            <td class="border border-pink-300 p-2.5 text-slate-700 space-y-1">
+                                <div>• <strong>第一學期：</strong>${template.semester}</div>
+                            </td>
+                            <td class="border border-pink-300 p-2.5 text-center text-pink-600 font-medium">I、II</td>
+                            <td class="border border-pink-300 p-2.5 text-center text-pink-600 font-medium">4A</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += rowHtml;
+                });
+
+                document.getElementById('reportSection').classList.remove('hidden');
+                document.getElementById('reportSection').scrollIntoView({ behavior: 'smooth' });
+
+            } catch (e) {
+                console.error("生成錯誤: ", e);
+                alert('生成 IEP 失敗，請檢查網路或資料庫設定。');
+            }
+        };
+
+        window.downloadWord = function() {
+            const studentName = document.getElementById('targetStudentName').value.trim() || '學生';
             const content = document.getElementById('exportContent').innerHTML;
             
-            const htmlHeader = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>IEP教育目標-${studentName}</title><style>body{font-family:sans-serif;padding:20px;}table{width:100%;border-collapse:collapse;margin-top:20px;}th,td{border:1px solid #333;padding:8px;font-size:14px;text-align:left;}th{background-color:#f0f0f0;text-align:center;}</style></head><body>`;
+            const htmlHeader = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>IEP教育目標-${studentName}</title><style>body{font-family:sans-serif;padding:20px;}table{width:100%;border-collapse:collapse;margin-top:20px;}th,td{border:1px solid #ffb6c1;padding:8px;font-size:14px;text-align:left;}th{background-color:#ffe4e1;text-align:center;color:#db7093;}</style></head><body>`;
             const htmlFooter = `</body></html>`;
             const fullHtml = htmlHeader + content + htmlFooter;
 
@@ -249,7 +241,143 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-        }
+        };
+
+        window.printPDF = function() {
+            window.print();
+        };
+
+        window.loadSampleToCloudInput = function() {
+            document.getElementById('inputStudentName').value = "正鋌";
+            document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('inputContent').value = "上課期間會跑去操作學習區教具，勸不回且堅持操作，不順他意就大叫。";
+            document.getElementById('targetStudentName').value = "正鋌";
+        };
     </script>
+</head>
+<body class="bg-gradient-to-br from-pink-50 via-rose-50 to-red-50 text-slate-800 font-sans min-h-screen p-4 md:p-8">
+    <div class="max-w-5xl mx-auto bg-white/90 backdrop-blur-md shadow-2xl rounded-3xl p-6 md:p-10 border-2 border-pink-200 space-y-8 relative overflow-hidden">
+        
+        <!-- 裝飾性蝴蝶結小標示 -->
+        <div class="absolute -top-6 -right-6 w-24 h-24 bg-pink-200 rounded-full opacity-30 pointer-events-none"></div>
+
+        <header class="border-b-2 border-pink-100 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-pink-600 flex items-center gap-2">
+                    <span>🎀</span> 幼兒園 IEP 雲端紀錄與智慧生成系統 <span class="text-xs bg-pink-100 text-pink-600 px-2.5 py-1 rounded-full border border-pink-200">Kitty 夢幻版</span>
+                </h1>
+                <p class="text-sm text-pink-400 mt-1">天天記錄寶貝學生的成長與行為，期末一鍵變出精美 IEP 目標表 ✨</p>
+            </div>
+            <div>
+                <button onclick="loadSampleToCloudInput()" class="bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-semibold px-4 py-2.5 rounded-2xl transition border border-pink-300 shadow-sm">
+                    🎀 載入測試範例
+                </button>
+            </div>
+        </header>
+
+        <!-- 第一部分：平日隨手建置觀察紀錄到雲端 -->
+        <div class="bg-pink-50/70 p-6 rounded-3xl border-2 border-pink-200/80 space-y-4 shadow-inner">
+            <h2 class="text-lg font-bold text-pink-700 flex items-center gap-2">
+                <span>📝</span> 平日隨手記錄（上傳至雲端寶庫）
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-pink-600 mb-1">學生姓名</label>
+                    <input type="text" id="inputStudentName" placeholder="例如：正鋌" class="w-full p-2.5 bg-white border-2 border-pink-200 rounded-xl text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-pink-600 mb-1">觀察日期</label>
+                    <input type="date" id="inputDate" class="w-full p-2.5 bg-white border-2 border-pink-200 rounded-xl text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none">
+                </div>
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-semibold text-pink-600 mb-1">觀察紀錄內容</label>
+                    <textarea id="inputContent" rows="3" class="w-full p-3 bg-white border-2 border-pink-200 rounded-xl text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none" placeholder="記錄學生的特殊狀況、行為或對話..."></textarea>
+                </div>
+            </div>
+            <div>
+                <button onclick="saveObservation()" class="bg-pink-500 hover:bg-pink-600 text-white font-semibold px-6 py-2.5 rounded-2xl transition shadow-md shadow-pink-300 text-sm flex items-center gap-1">
+                    💖 新增至雲端資料庫
+                </button>
+            </div>
+        </div>
+
+        <!-- 第二部分：期末一鍵撈取與 IEP 生成 -->
+        <div class="bg-rose-50/70 p-6 rounded-3xl border-2 border-rose-200/80 space-y-4 shadow-inner">
+            <h2 class="text-lg font-bold text-rose-700 flex items-center gap-2">
+                <span>✨</span> 期末一鍵生成 IEP 目標表
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <div>
+                    <label class="block text-xs font-semibold text-rose-600 mb-1">查詢學生姓名</label>
+                    <input type="text" id="targetStudentName" placeholder="例如：正鋌" class="w-full p-2.5 bg-white border-2 border-rose-200 rounded-xl text-sm focus:ring-2 focus:ring-rose-400 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-rose-600 mb-1">學年度 / 學期</label>
+                    <input type="text" id="semester" placeholder="例如：115學年度 第1學期" class="w-full p-2.5 bg-white border-2 border-rose-200 rounded-xl text-sm focus:ring-2 focus:ring-rose-400 focus:outline-none">
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="loadCloudObservations()" class="bg-rose-400 hover:bg-rose-500 text-white font-semibold px-4 py-2.5 rounded-2xl transition text-sm shadow-sm">
+                        🔍 讀取雲端紀錄
+                    </button>
+                    <button onclick="generateIEPFromCloud()" class="bg-pink-600 hover:bg-pink-700 text-white font-semibold px-6 py-2.5 rounded-2xl transition shadow-lg shadow-pink-400/30 text-sm flex-1">
+                        🚀 一鍵生成 IEP
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-rose-200">
+                <p class="text-xs font-semibold text-rose-600 mb-2">🎀 該學生已累積的雲端觀察紀錄：</p>
+                <div id="cloudLogsList" class="space-y-2 max-h-40 overflow-y-auto pr-2">
+                    <p class="text-xs text-rose-300 italic">尚未載入紀錄，請先輸入學生姓名並點擊「讀取雲端紀錄」。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第三部分：產出結果報表區 -->
+        <div id="reportSection" class="hidden space-y-6 pt-6 border-t-2 border-pink-100">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-bold text-pink-700">📄 產出之 IEP 教育目標對應表</h2>
+                <div class="flex gap-2">
+                    <button onclick="downloadWord()" class="bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold px-4 py-2.5 rounded-2xl transition flex items-center gap-1 shadow-sm">
+                        📥 下載 Word 檔 (.doc)
+                    </button>
+                    <button onclick="printPDF()" class="bg-slate-700 hover:bg-slate-800 text-white text-sm font-semibold px-4 py-2.5 rounded-2xl transition flex items-center gap-1 shadow-sm">
+                        🖨️ 列印 / 存為 PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- 可供預覽與匯出的表單外觀 -->
+            <div id="exportContent" class="bg-white border-2 border-pink-200 rounded-3xl p-6 shadow-md space-y-6">
+                <div class="text-center border-b-2 border-pink-100 pb-4">
+                    <h3 id="reportTitle" class="text-lg font-bold text-pink-600">幼兒個別化教育計畫 (IEP) - 教育目標</h3>
+                    <p id="reportSubtitle" class="text-xs text-pink-400 mt-1">🎀 學生：未填寫 | 學期：未填寫 🎀</p>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse border border-pink-300 text-sm text-left">
+                        <thead>
+                            <tr class="bg-pink-100 text-pink-700 text-center">
+                                <th class="border border-pink-300 p-2.5 w-28">需求領域</th>
+                                <th class="border border-pink-300 p-2.5">學年目標</th>
+                                <th class="border border-pink-300 p-2.5">學期目標</th>
+                                <th class="border border-pink-300 p-2.5 w-20">評量方法</th>
+                                <th class="border border-pink-300 p-2.5 w-24">通過標準</th>
+                            </tr>
+                        </thead>
+                        <tbody id="iepTableBody">
+                            <!-- 動態生成目標列 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="text-xs text-pink-400 space-y-1 pt-2 border-t border-pink-100">
+                    <p>【評量方法代號說明】I：觀察、II：操作、III：口頭、IV：作品、V：其他</p>
+                    <p>【通過標準說明】數字代表達成目標百分比（5: 80%以上, 4: 60~80%, 3: 40~60%, 2: 20~40%, 1: 20%以下），英文代表協助程度（A: 獨立完成, B: 口語提示, C: 部分動作提示, D: 完全動作協助, E: 無法完成）。</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
 </body>
 </html>
