@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幼兒園 IEP 觀察紀錄與教育目標智慧生成系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen p-4 md:p-8">
+    <div class="max-w-5xl mx-auto bg-white shadow-xl rounded-2xl p-6 md:p-10 border border-slate-100">
+        <header class="mb-8 border-b pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-slate-800 flex items-center gap-2">
+                    <span>📋</span> 幼兒園 IEP 教育目標智慧生成系統
+                </h1>
+                <p class="text-sm text-slate-500 mt-1">輸入或貼上任意學生的觀察紀錄，系統將自動分類至 8 大領域，並專業產出「學年目標」與「學期目標」。</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="loadSample()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium px-4 py-2 rounded-xl transition border border-slate-200">
+                    📥 載入正鋌範例
+                </button>
+                <button onclick="clearAll()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 text-sm font-medium px-4 py-2 rounded-xl transition border border-rose-200">
+                    🗑️ 清空重來
+                </button>
+            </div>
+        </header>
+
+        <!-- 學生基本資訊輸入 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">學生姓名 / 代號</label>
+                <input type="text" id="studentName" placeholder="例如：正鋌" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">學年度 / 學期</label>
+                <input type="text" id="semester" placeholder="例如：115學年度 第1學期" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+        </div>
+
+        <!-- 觀察紀錄輸入區 -->
+        <div class="mb-6">
+            <label for="rawInput" class="block text-sm font-semibold text-slate-700 mb-2">請輸入或貼上該學生的觀察紀錄（支援條列式或段落）：</label>
+            <textarea id="rawInput" rows="6" class="w-full p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm leading-relaxed" placeholder="請在此貼上觀察紀錄..."></textarea>
+        </div>
+
+        <div class="mb-8">
+            <button onclick="generateIEP()" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-xl transition shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 text-base">
+                ✨ 開始分析並產出 IEP 教育目標表
+            </button>
+        </div>
+
+        <!-- 輸出結果區 (可列印/下載) -->
+        <div id="reportSection" class="hidden space-y-6 pt-6 border-t border-slate-200">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-bold text-slate-800">📄 產出之 IEP 教育目標對應表</h2>
+                <div class="flex gap-2">
+                    <button onclick="downloadWord()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2 rounded-xl transition flex items-center gap-1 shadow-sm">
+                        📥 下載 Word 檔 (.doc)
+                    </button>
+                    <button onclick="printPDF()" class="bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium px-4 py-2 rounded-xl transition flex items-center gap-1 shadow-sm">
+                        🖨️ 列印 / 存為 PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- 可供預覽與匯出的表單外觀 -->
+            <div id="exportContent" class="bg-white border border-slate-300 rounded-xl p-6 shadow-sm space-y-6">
+                <div class="text-center border-b pb-4">
+                    <h3 id="reportTitle" class="text-lg font-bold text-slate-800">幼兒個別化教育計畫 (IEP) - 教育目標</h3>
+                    <p id="reportSubtitle" class="text-xs text-slate-500 mt-1">學生：未填寫 | 學期：未填寫</p>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse border border-slate-400 text-sm text-left">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 text-center">
+                                <th class="border border-slate-400 p-2.5 w-28">需求領域</th>
+                                <th class="border border-slate-400 p-2.5">學年目標</th>
+                                <th class="border border-slate-400 p-2.5">學期目標</th>
+                                <th class="border border-slate-400 p-2.5 w-20">評量方法</th>
+                                <th class="border border-slate-400 p-2.5 w-24">通過標準</th>
+                            </tr>
+                        </thead>
+                        <tbody id="iepTableBody">
+                            <!-- 動態生成目標列 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="text-xs text-slate-500 space-y-1 pt-2 border-t">
+                    <p>【評量方法代號說明】I：觀察、II：操作、III：口頭、IV：作品、V：其他</p>
+                    <p>【通過標準說明】數字代表達成目標百分比（5: 80%以上, 4: 60~80%, 3: 40~60%, 2: 20~40%, 1: 20%以下），英文代表協助程度（A: 獨立完成, B: 口語提示, C: 部分動作提示, D: 完全動作協助, E: 無法完成）。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const domains = [
+            { id: "health", name: "健康狀況", keywords: ["發燒", "身體不適", "癲癇", "藥物", "體質", "病史", "健康"] },
+            { id: "sensory", name: "感官功能", keywords: ["視力", "聽力", "視茫茫", "聽不見", "觸覺敏感", "感官"] },
+            { id: "motor", name: "知覺動作", keywords: ["跑", "跳", "爬", "滑步車", "騎", "敲", "搖晃", "動作", "平衡", "拿", "推動", "門框", "攀爬", "跌倒"] },
+            { id: "communication", name: "溝通", keywords: ["說", "語言", "表達", "問", "回答", "大喊", "叫", "聲音", "溝通"] },
+            { id: "selfCare", name: "生活自理", keywords: ["吃飯", "穿鞋", "如廁", "洗手", "水壺", "收拾", "飯粒", "自理"] },
+            { id: "behavior", name: "情緒行為", keywords: ["生氣", "情緒", "大叫", "不順", "勸不回", "堅持", "洗書", "哭鬧", "破壞"] },
+            { id: "social", name: "人際互動", keywords: ["同學", "互動", "推擠", "喜歡", "追著", "分享", "載同學", "人際"] },
+            { id: "cognitive", name: "認知學習", keywords: ["教具", "操作", "學習", "原本", "順序", "理解", "認知"] }
+        ];
+
+        const goalTemplates = {
+            motor: {
+                annual: "能展現合宜的身體動態自主控制與空間知覺，遵循各學習情境（如教室內移動、戶外活動）的常規與安全規範。",
+                semester: "在教室內移動與戶外活動（如騎滑步車）時，能保持安全距離與適當速度，減少奔跑、攀爬門框或追撞行為。"
+            },
+            behavior: {
+                annual: "在幼兒園一日作息中，能透過適當的表達與情緒調節策略取代情緒失控行為（如大叫、敲打、破壞物品）。",
+                semester: "面臨情境轉換或意見不合時，經提示能減少大叫、拿物品敲打桌面或破壞教具之行為，展現穩定的自我控制。"
+            },
+            social: {
+                annual: "在團體活動及遊戲中，能學習合宜的社會互動技巧與溝通方式，與同儕建立正向且尊重的互動關係。",
+                semester: "在團體與自由活動時，能減少肢體推擠與過度糾纏，以合宜方式（如口語表達、保持距離）與同儕互動。"
+            },
+            communication: {
+                annual: "能增進口語表達與溝通理解能力，在需求或情緒浮動時，能主動以口語或適切方式向師長表達。",
+                semester: "在日常作息與互動中，能透過口語清楚表達自身需求或感受，減少以大喊或不當聲音吸引注意的情況。"
+            },
+            selfCare: {
+                annual: "能獨立完成日常生活自理及學習常規要求，展現良好的生活習慣與衛生照顧能力。",
+                semester: "在用餐、喝水與收拾等生活作息中，能遵循指導完成自理程序，保持環境整潔與物品歸位。"
+            },
+            cognitive: {
+                annual: "能專注參與學習區活動與各項課程，展現良好的操作專注力與認知理解能力。",
+                semester: "在操作教具或進行學習活動時，能遵循操作常規，專注完成任務且不出現不當堅持行為。"
+            },
+            health: {
+                annual: "能維持良好的身心健康狀態，配合幼兒園健康與作息規範。",
+                semester: "能配合日常健康與作息安排，身體不適時能主動向師長反映。"
+            },
+            sensory: {
+                annual: "能適應日常環境中的感官刺激，展現平穩的感官調節能力。",
+                semester: "在各類感官與環境刺激下，能保持情緒平穩，不出現過度敏感或尋求刺激行為。"
+            }
+        };
+
+        function loadSample() {
+            document.getElementById('studentName').value = "正鋌";
+            document.getElementById('semester').value = "115學年度 第1學期";
+            const sampleText = `★上課期間 會跑去操作學習區教具 勸不回 會堅持操作 不順他意就大叫
+★下課/喝水時間 同學說了不喜歡聽的話 就會生氣 邊大喊邊拿水壺大力敲桌面……有次用水壺敲桌面後.還用力將水壺往前推動 水壺因此撞到對面同學(耘豐)的肚子
+★睡覺時間 嘴巴會發出聲音/去操作教具/搖晃椅子.敲櫃子.敲地板 製造聲音 每天都會在地上爬行 尋找飯粒 會放進嘴巴吃
+★團討時間 常和同學產生肢體推擠..生氣.大叫
+★最近幾天常問同學.你喜歡我嗎？沐炫回答不喜歡 他會一直搖晃沐炫身體追著沐炫問
+★時常在教室內奔跑/門外動靜 就會踩在門框爬在門上看
+★情緒起來時.無法聽進老師的規勸
+★圖書分享時間 將故事書拿進廁所 用水洗書
+★戶外活動 喜歡去騎滑步車 很常去追撞同學車尾
+★騎滑步車載同學 騎很快 以致同學摔倒
+★操作教具時 已經離開後 又想回去操作原本地教具 但原本教具已被收走`;
+            document.getElementById('rawInput').value = sampleText;
+            generateIEP();
+        }
+
+        function clearAll() {
+            document.getElementById('studentName').value = '';
+            document.getElementById('semester').value = '';
+            document.getElementById('rawInput').value = '';
+            document.getElementById('reportSection').classList.add('hidden');
+        }
+
+        function generateIEP() {
+            const rawText = document.getElementById('rawInput').value.trim();
+            const studentName = document.getElementById('studentName').value.trim() || '學生';
+            const semester = document.getElementById('semester').value.trim() || '當學期';
+
+            if (!rawText) {
+                alert('請先輸入或載入觀察紀錄！');
+                return;
+            }
+
+            const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            
+            let domainMatches = {};
+            domains.forEach(d => domainMatches[d.id] = 0);
+
+            lines.forEach(line => {
+                domains.forEach(d => {
+                    d.keywords.forEach(kw => {
+                        if (line.includes(kw)) {
+                            domainMatches[d.id]++;
+                        }
+                    });
+                });
+            });
+
+            let activeDomains = domains.filter(d => domainMatches[d.id] > 0);
+            if (activeDomains.length === 0) {
+                activeDomains = [domains[2], domains[5], domains[6]];
+            }
+
+            document.getElementById('reportTitle').innerText = `幼兒個別化教育計畫 (IEP) - 教育目標表`;
+            document.getElementById('reportSubtitle').innerText = `學生：${studentName} | 學期：${semester}`;
+
+            const tbody = document.getElementById('iepTableBody');
+            tbody.innerHTML = '';
+
+            activeDomains.forEach(d => {
+                const template = goalTemplates[d.id] || {
+                    annual: `能於各項學習與作息中展現合宜的${d.name}能力與適應表現。`,
+                    semester: `在引導與支持下，能改善${d.name}方面的困難並提升穩定表現。`
+                };
+
+                let rowHtml = `
+                    <tr class="align-top">
+                        <td class="border border-slate-400 p-2.5 font-bold text-slate-700 bg-slate-50 text-center">${d.name}</td>
+                        <td class="border border-slate-400 p-2.5 text-slate-700">${template.annual}</td>
+                        <td class="border border-slate-400 p-2.5 text-slate-700 space-y-1">
+                            <div>• <strong>第一學期：</strong>${template.semester}</div>
+                        </td>
+                        <td class="border border-slate-400 p-2.5 text-center text-slate-600 font-medium">I、II</td>
+                        <td class="border border-slate-400 p-2.5 text-center text-slate-600 font-medium">4A</td>
+                    </tr>
+                `;
+                tbody.innerHTML += rowHtml;
+            });
+
+            document.getElementById('reportSection').classList.remove('hidden');
+            document.getElementById('reportSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function printPDF() {
+            window.print();
+        }
+
+        function downloadWord() {
+            const studentName = document.getElementById('studentName').value.trim() || '學生';
+            const content = document.getElementById('exportContent').innerHTML;
+            
+            const htmlHeader = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>IEP教育目標-${studentName}</title><style>body{font-family:sans-serif;padding:20px;}table{width:100%;border-collapse:collapse;margin-top:20px;}th,td{border:1px solid #333;padding:8px;font-size:14px;text-align:left;}th{background-color:#f0f0f0;text-align:center;}</style></head><body>`;
+            const htmlFooter = `</body></html>`;
+            const fullHtml = htmlHeader + content + htmlFooter;
+
+            const blob = new Blob(['\ufeff' + fullHtml], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${studentName}_IEP教育目標表.doc`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
