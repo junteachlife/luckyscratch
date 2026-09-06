@@ -80,10 +80,9 @@ a{
   color:inherit
 }
 
-
-/* ===============================
+/* =========================================================
    登入
-================================ */
+========================================================= */
 
 .login-shell{
   min-height:100vh;
@@ -151,10 +150,9 @@ a{
   margin-top:18px
 }
 
-
-/* ===============================
+/* =========================================================
    主畫面
-================================ */
+========================================================= */
 
 .app-layout{
   display:grid;
@@ -391,10 +389,9 @@ a{
   font-size:27px
 }
 
-
-/* ===============================
+/* =========================================================
    卡片
-================================ */
+========================================================= */
 
 .card{
   position:relative;
@@ -424,12 +421,6 @@ a{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:14px
-}
-
-.three{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:12px
 }
 
 .stats-grid{
@@ -490,10 +481,9 @@ a{
   font-weight:700
 }
 
-
-/* ===============================
+/* =========================================================
    控制項
-================================ */
+========================================================= */
 
 .toolbar{
   display:flex;
@@ -609,10 +599,9 @@ a{
   font-size:13px
 }
 
-
-/* ===============================
+/* =========================================================
    item
-================================ */
+========================================================= */
 
 .item{
   border:1px solid #dfc693;
@@ -652,10 +641,9 @@ a{
   color:#b02b3a
 }
 
-
-/* ===============================
+/* =========================================================
    表格
-================================ */
+========================================================= */
 
 .table-wrap{
   overflow:auto;
@@ -697,7 +685,8 @@ tbody tr:nth-child(even){
 
 .summary-table th,
 .summary-table td{
-  text-align:center
+  text-align:center;
+  white-space:nowrap
 }
 
 .summary-table th:nth-child(1),
@@ -705,6 +694,20 @@ tbody tr:nth-child(even){
 .summary-table td:nth-child(1),
 .summary-table td:nth-child(2){
   text-align:left
+}
+
+.summary-table .subject-head{
+  background:#e9c57d;
+  font-size:15px;
+  font-weight:900;
+  border-right:2px solid #bc8d43
+}
+
+.summary-table .test-head{
+  background:#fff1c9;
+  font-size:12px;
+  white-space:normal;
+  min-width:90px
 }
 
 .bad-text{
@@ -717,10 +720,116 @@ tbody tr:nth-child(even){
   font-weight:800
 }
 
+.student-link{
+  border:0;
+  padding:4px 7px;
+  border-radius:7px;
+  background:#e7f3ff;
+  color:#1268a8;
+  font-weight:850;
+  cursor:pointer
+}
 
-/* ===============================
+.student-link:hover{
+  background:#cfe8ff
+}
+
+/* =========================================================
+   學生詳情
+========================================================= */
+
+.student-detail-box{
+  margin-top:16px;
+  padding:15px;
+
+  border:2px solid #89bee3;
+  border-radius:12px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f4fbff,
+      #e8f6ff
+    );
+
+  box-shadow:0 5px 15px rgba(26,114,170,.12)
+}
+
+.detail-header{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:center;
+  margin-bottom:10px
+}
+
+.detail-title{
+  font-size:19px;
+  font-weight:950;
+  color:#1f5e89
+}
+
+.detail-subject{
+  margin:10px 0;
+  padding:11px 12px;
+
+  background:#fff;
+  border:1px solid #c8deed;
+  border-radius:9px
+}
+
+.detail-subject-title{
+  font-weight:900;
+  color:#4c341f;
+  margin-bottom:7px
+}
+
+.detail-line{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+
+  padding:6px 0;
+  border-bottom:1px dashed #e4d7bf
+}
+
+.detail-line:last-child{
+  border-bottom:0
+}
+
+.detail-date{
+  color:#8b7d6c;
+  font-size:12px
+}
+
+.status-submitted{
+  color:#087747;
+  font-weight:900
+}
+
+.status-missing{
+  color:#d92d20;
+  font-weight:900
+}
+
+.status-late{
+  color:#e06b00;
+  font-weight:900
+}
+
+.status-exempt{
+  color:#6750a4;
+  font-weight:900
+}
+
+.score-empty{
+  color:#a65b00;
+  font-weight:800
+}
+
+/* =========================================================
    學生 / 權限
-================================ */
+========================================================= */
 
 .student-grid{
   display:grid;
@@ -781,10 +890,9 @@ tbody tr:nth-child(even){
   margin-top:4px
 }
 
-
-/* ===============================
-   modal
-================================ */
+/* =========================================================
+   Modal
+========================================================= */
 
 .modal{
   position:fixed;
@@ -802,7 +910,7 @@ tbody tr:nth-child(even){
 }
 
 .modal-card{
-  width:min(1100px,100%);
+  width:min(1180px,100%);
   max-height:92vh;
   overflow:auto;
 
@@ -817,10 +925,9 @@ tbody tr:nth-child(even){
   box-shadow:0 20px 55px rgba(0,0,0,.35)
 }
 
-
-/* ===============================
-   彙整區
-================================ */
+/* =========================================================
+   彙整
+========================================================= */
 
 .summary-actions{
   display:flex;
@@ -851,10 +958,9 @@ tbody tr:nth-child(even){
   font-weight:800
 }
 
-
-/* ===============================
+/* =========================================================
    手機
-================================ */
+========================================================= */
 
 @media(max-width:900px){
 
@@ -901,8 +1007,7 @@ tbody tr:nth-child(even){
     grid-template-columns:1fr 1fr
   }
 
-  .two,
-  .three{
+  .two{
     grid-template-columns:1fr
   }
 
@@ -931,10 +1036,6 @@ tbody tr:nth-child(even){
 </head>
 
 <body>
-
-<!-- ===============================
-     登入
-================================ -->
 
 <section id="loginView" class="login-shell">
 
@@ -993,10 +1094,6 @@ tbody tr:nth-child(even){
 
 </section>
 
-
-<!-- ===============================
-     APP
-================================ -->
 
 <main
   id="appView"
@@ -1185,10 +1282,6 @@ tbody tr:nth-child(even){
 
 <script type="module">
 
-/* =========================================================
-   Firebase
-========================================================= */
-
 import{
   initializeApp,
   deleteApp
@@ -1275,11 +1368,8 @@ const DOMAIN=
 let me=null;
 
 let users=[];
-
 let classes=[];
-
 let collections=[];
-
 let assessments=[];
 
 let currentSemester=
@@ -1292,13 +1382,12 @@ let semesterHistory=[
 let recordSemester=
   "115-1";
 
-
 let currentHomeworkSummary=null;
 let currentScoreSummary=null;
 
 
 /* =========================================================
-   班級資料
+   預設名單
 ========================================================= */
 
 const defaultRosters={
@@ -1468,27 +1557,23 @@ const standardRoles=[
 
   ...officerRoles.map(
     name=>({
-
       kind:"officer",
       scopeType:"officer",
       scopeName:name,
       label:name,
       canCollection:true,
       canScores:false
-
     })
   ),
 
   ...subjects.map(
     name=>({
-
       kind:"assistant",
       scopeType:"subject",
       scopeName:name,
       label:`${name}小老師`,
       canCollection:true,
       canScores:true
-
     })
   )
 
@@ -1569,15 +1654,26 @@ function today(){
 
 function dateString(date){
 
-  const y=date.getFullYear();
+  const y=
+    date.getFullYear();
 
-  const m=String(
-    date.getMonth()+1
-  ).padStart(2,"0");
+  const m=
+    String(
+      date.getMonth()+1
+    )
+    .padStart(
+      2,
+      "0"
+    );
 
-  const d=String(
-    date.getDate()
-  ).padStart(2,"0");
+  const d=
+    String(
+      date.getDate()
+    )
+    .padStart(
+      2,
+      "0"
+    );
 
 
   return `${y}-${m}-${d}`;
@@ -1594,7 +1690,10 @@ function startOfWeek(
 
 
   d.setHours(
-    0,0,0,0
+    0,
+    0,
+    0,
+    0
   );
 
 
@@ -1698,41 +1797,6 @@ function hasScore(r){
         r.score
       )
     );
-
-}
-
-
-function average(
-  arr
-){
-
-  const nums=
-    arr.filter(
-      x=>
-        Number.isFinite(
-          Number(x)
-        )
-    )
-    .map(Number);
-
-
-  if(!nums.length){
-
-    return null;
-
-  }
-
-
-  return nums.reduce(
-    (
-      a,
-      b
-    )=>
-      a+b,
-    0
-  )
-  /
-  nums.length;
 
 }
 
@@ -2184,7 +2248,7 @@ $$(".nav button")
 
 
 /* =========================================================
-   系統資料
+   系統
 ========================================================= */
 
 async function ensureSystemSettings(){
@@ -2941,7 +3005,6 @@ function renderRecords(){
               </option>
 
             </select>
-
           </label>
 
 
@@ -2988,14 +3051,13 @@ function renderRecords(){
 
         <div class="notice">
 
-          可以直接選擇班級與科目，
-          快速查看該科的作業與成績。
+          可以選班級與科目，
+          直接查看該科所有作業與成績。
 
           <br>
 
-          「各科作業收繳彙整」與
-          「各科成績週紀錄」
-          可列印、下載 Excel、複製表格或文字摘要。
+          週紀錄中的成績不再計算各科平均，
+          而是直接列出每一科的每一次測驗分數。
 
         </div>
 
@@ -3336,10 +3398,16 @@ function bindRecordButtons(){
 
 function openHomeworkSummary(){
 
-  const defaultClass=
+  const selectedClass=
     $("#recordClass")
-      ?.value!=="all"
-      ?$("#recordClass").value
+      ?.value;
+
+
+  const defaultClass=
+    selectedClass
+    &&
+    selectedClass!=="all"
+      ?selectedClass
       :"804";
 
 
@@ -3354,7 +3422,7 @@ function openHomeworkSummary(){
         </div>
 
         <div class="meta">
-          統整指定期間各科作業收繳狀況
+          點學生「查看細節」可繼續查看各科每一項作業狀態
         </div>
 
       </div>
@@ -3576,6 +3644,16 @@ function generateHomeworkSummary(){
         (!start||x.date>=start)
         &&
         (!end||x.date<=end)
+    )
+    .sort(
+      (
+        a,
+        b
+      )=>
+        String(a.date||"")
+          .localeCompare(
+            String(b.date||"")
+          )
     );
 
 
@@ -3701,6 +3779,7 @@ function generateHomeworkSummary(){
 
 
         return{
+          sid,
           seat:student.seat,
           name:student.name,
           subjectData,
@@ -3737,6 +3816,7 @@ function renderHomeworkSummary(){
   if(!data){
 
     return;
+
   }
 
 
@@ -3800,7 +3880,10 @@ function renderHomeworkSummary(){
                   <tr>
 
                     <th>座號</th>
-                    <th>姓名</th>
+
+                    <th>
+                      姓名
+                    </th>
 
                     ${
                       data.subjects.map(
@@ -3813,6 +3896,7 @@ function renderHomeworkSummary(){
 
                     <th>未繳</th>
                     <th>遲交</th>
+                    <th>細節</th>
 
                   </tr>
 
@@ -3871,7 +3955,8 @@ function renderHomeworkSummary(){
                                           <div
                                             style="
                                               color:#d36b00;
-                                              font-size:12px
+                                              font-size:12px;
+                                              font-weight:800
                                             "
                                           >
                                             遲交 ${d.late}
@@ -3902,6 +3987,17 @@ function renderHomeworkSummary(){
                             ${row.totalLate}
                           </td>
 
+                          <td>
+
+                            <button
+                              class="student-link homework-detail-btn"
+                              data-sid="${esc(row.sid)}"
+                            >
+                              👀 查看細節
+                            </button>
+
+                          </td>
+
                         </tr>
                       `
                     )
@@ -3913,6 +4009,11 @@ function renderHomeworkSummary(){
               </table>
 
             </div>
+
+
+            <div
+              id="homeworkStudentDetail"
+            ></div>
           `
           :`
 
@@ -3942,6 +4043,274 @@ function renderHomeworkSummary(){
   $("#copyHomeworkText")
     .onclick=
       copyHomeworkText;
+
+
+  $$(".homework-detail-btn")
+    .forEach(
+      btn=>
+        btn.onclick=
+          ()=>showHomeworkStudentDetail(
+            btn.dataset.sid
+          )
+    );
+
+}
+
+
+function statusClass(
+  status,
+  lateSubmitted
+){
+
+  if(
+    status==="submitted"
+    &&
+    lateSubmitted
+  ){
+
+    return "status-late";
+
+  }
+
+
+  if(status==="submitted"){
+    return "status-submitted";
+  }
+
+
+  if(status==="missing"){
+    return "status-missing";
+  }
+
+
+  if(status==="late"){
+    return "status-late";
+  }
+
+
+  if(status==="exempt"){
+    return "status-exempt";
+  }
+
+
+  return "";
+
+}
+
+
+function homeworkStatusText(
+  status,
+  lateSubmitted
+){
+
+  if(
+    status==="submitted"
+    &&
+    lateSubmitted
+  ){
+
+    return "已繳交（遲交）";
+
+  }
+
+
+  return dictLabel(
+    statusOptions,
+    status
+  );
+
+}
+
+
+function showHomeworkStudentDetail(
+  sid
+){
+
+  const d=
+    currentHomeworkSummary;
+
+
+  if(!d){
+
+    return;
+
+  }
+
+
+  const row=
+    d.rows.find(
+      x=>
+        String(x.sid)
+        ===
+        String(sid)
+    );
+
+
+  if(!row){
+
+    return;
+
+  }
+
+
+  let html=`
+
+    <div class="student-detail-box">
+
+      <div class="detail-header">
+
+        <div>
+
+          <div class="detail-title">
+            👤 ${String(row.seat).padStart(2,"0")} ${esc(row.name)}
+          </div>
+
+          <div class="meta">
+            ${d.start} ～ ${d.end} 作業收繳明細
+          </div>
+
+        </div>
+
+        <button
+          class="btn gray small"
+          id="closeHomeworkDetail"
+        >
+          收起
+        </button>
+
+      </div>
+  `;
+
+
+  d.subjects.forEach(
+    subject=>{
+
+      const subjectItems=
+        d.items.filter(
+          x=>x.scopeName===subject
+        );
+
+
+      if(!subjectItems.length){
+
+        return;
+
+      }
+
+
+      html+=`
+
+        <div class="detail-subject">
+
+          <div class="detail-subject-title">
+            📚 ${esc(subject)}
+          </div>
+
+
+          ${
+            subjectItems.map(
+              item=>{
+
+                const status=
+                  (
+                    item.records
+                    ||
+                    {}
+                  )[sid]
+                  ||
+                  "submitted";
+
+
+                const lateSubmitted=
+                  status==="submitted"
+                  &&
+                  !!(
+                    item.lateSubmitted
+                    ||
+                    {}
+                  )[sid];
+
+
+                return`
+
+                  <div class="detail-line">
+
+                    <div>
+
+                      <b>
+                        ${esc(item.itemName)}
+                      </b>
+
+                      <div class="detail-date">
+                        ${esc(item.date||"")}
+                        ${
+                          item.dueDate
+                            ?`｜截止 ${esc(item.dueDate)}`
+                            :""
+                        }
+                      </div>
+
+                    </div>
+
+
+                    <div
+                      class="${
+                        statusClass(
+                          status,
+                          lateSubmitted
+                        )
+                      }"
+                    >
+                      ${
+                        esc(
+                          homeworkStatusText(
+                            status,
+                            lateSubmitted
+                          )
+                        )
+                      }
+                    </div>
+
+                  </div>
+                `;
+
+              }
+            )
+            .join("")
+          }
+
+        </div>
+      `;
+
+    }
+  );
+
+
+  html+=`
+    </div>
+  `;
+
+
+  $("#homeworkStudentDetail")
+    .innerHTML=
+      html;
+
+
+  $("#closeHomeworkDetail")
+    .onclick=
+      ()=>{
+
+        $("#homeworkStudentDetail")
+          .innerHTML="";
+
+      };
+
+
+  $("#homeworkStudentDetail")
+    .scrollIntoView({
+      behavior:"smooth",
+      block:"nearest"
+    });
 
 }
 
@@ -4063,11 +4432,8 @@ async function copyHomeworkText(){
 期間：${d.start}～${d.end}
 作業／收繳紀錄：${d.items.length}筆
 
+未繳紀錄：
 `;
-
-
-  text+=
-    `未繳紀錄：\n`;
 
 
   text+=
@@ -4220,15 +4586,22 @@ function exportHomeworkSummary(){
 
 
 /* =========================================================
-   成績週紀錄彙整
+   成績週紀錄
+   不計算平均，直接顯示每一次成績
 ========================================================= */
 
 function openScoreSummary(){
 
-  const defaultClass=
+  const selectedClass=
     $("#recordClass")
-      ?.value!=="all"
-      ?$("#recordClass").value
+      ?.value;
+
+
+  const defaultClass=
+    selectedClass
+    &&
+    selectedClass!=="all"
+      ?selectedClass
       :"804";
 
 
@@ -4243,10 +4616,11 @@ function openScoreSummary(){
         </div>
 
         <div class="meta">
-          統整一週各科測驗，方便導師做週紀錄
+          每一科底下直接顯示本週每一次測驗成績，不計算各科平均
         </div>
 
       </div>
+
 
       <button class="btn gray close-modal">
         ✖ 關閉
@@ -4413,6 +4787,50 @@ function generateScoreSummary(){
         (!start||x.date>=start)
         &&
         (!end||x.date<=end)
+    )
+    .sort(
+      (
+        a,
+        b
+      )=>{
+
+        const subjectDiff=
+          subjects.indexOf(
+            a.scopeName
+          )
+          -
+          subjects.indexOf(
+            b.scopeName
+          );
+
+
+        if(subjectDiff!==0){
+
+          return subjectDiff;
+
+        }
+
+
+        const dateDiff=
+          String(a.date||"")
+            .localeCompare(
+              String(b.date||"")
+            );
+
+
+        if(dateDiff!==0){
+
+          return dateDiff;
+
+        }
+
+
+        return String(a.name||"")
+          .localeCompare(
+            String(b.name||"")
+          );
+
+      }
     );
 
 
@@ -4434,6 +4852,21 @@ function generateScoreSummary(){
   );
 
 
+  const testsBySubject={};
+
+
+  usedSubjects.forEach(
+    subject=>{
+
+      testsBySubject[subject]=
+        tests.filter(
+          x=>x.scopeName===subject
+        );
+
+    }
+  );
+
+
   const rows=
     roster.map(
       student=>{
@@ -4444,77 +4877,36 @@ function generateScoreSummary(){
           String(student.seat);
 
 
-        const subjectData={};
-
-        const allScores=[];
+        const scoreData={};
 
 
-        usedSubjects.forEach(
-          subject=>{
+        tests.forEach(
+          test=>{
 
-            const subjectTests=
-              tests.filter(
-                x=>x.scopeName===subject
-              );
-
-
-            const entries=
-              subjectTests.map(
-                test=>{
-
-                  const r=
-                    (
-                      test.scores
-                      ||
-                      {}
-                    )[sid]
-                    ||
-                    {};
+            const r=
+              (
+                test.scores
+                ||
+                {}
+              )[sid]
+              ||
+              {};
 
 
-                  return{
-                    name:test.name,
-                    date:test.date,
-                    score:
-                      hasScore(r)
-                        ?Number(r.score)
-                        :null,
-                    status:
-                      r.status
-                      ||
-                      "not_entered"
-                  };
-
-                }
-              );
-
-
-            const nums=
-              entries
-                .filter(
-                  x=>x.score!==null
-                )
-                .map(
-                  x=>x.score
-                );
-
-
-            const avg=
-              average(nums);
-
-
-            if(avg!==null){
-
-              allScores.push(avg);
-
-            }
-
-
-            subjectData[
-              subject
+            scoreData[
+              test.id
             ]={
-              entries,
-              average:avg
+
+              score:
+                hasScore(r)
+                  ?Number(r.score)
+                  :null,
+
+              status:
+                r.status
+                ||
+                "not_entered"
+
             };
 
           }
@@ -4522,11 +4914,10 @@ function generateScoreSummary(){
 
 
         return{
+          sid,
           seat:student.seat,
           name:student.name,
-          subjectData,
-          overallAverage:
-            average(allScores)
+          scoreData
         };
 
       }
@@ -4540,6 +4931,7 @@ function generateScoreSummary(){
     end,
     subjects:usedSubjects,
     tests,
+    testsBySubject,
     rows
   };
 
@@ -4549,10 +4941,77 @@ function generateScoreSummary(){
 }
 
 
+function scoreDisplayText(
+  scoreData
+){
+
+  if(
+    scoreData
+    &&
+    scoreData.score!==null
+  ){
+
+    return String(
+      scoreData.score
+    );
+
+  }
+
+
+  if(!scoreData){
+
+    return "";
+
+  }
+
+
+  if(
+    scoreData.status==="absent"
+  ){
+
+    return "缺考";
+
+  }
+
+
+  if(
+    scoreData.status==="exempt"
+  ){
+
+    return "免試";
+
+  }
+
+
+  if(
+    scoreData.status==="makeup"
+  ){
+
+    return "補考";
+
+  }
+
+
+  return "";
+
+}
+
+
 function renderScoreSummary(){
 
   const d=
     currentScoreSummary;
+
+
+  if(!d){
+
+    return;
+
+  }
+
+
+  const totalColumns=
+    d.tests.length;
 
 
   $("#scoreSummaryResult")
@@ -4564,7 +5023,12 @@ function renderScoreSummary(){
 
         ｜${d.start} ～ ${d.end}
 
-        ｜共 ${d.tests.length} 次測驗
+        ｜共 ${totalColumns} 次測驗
+
+        <br>
+
+        以下直接呈現每一次測驗分數，
+        不計算各科平均。
 
       </div>
 
@@ -4580,11 +5044,9 @@ function renderScoreSummary(){
                   subject=>{
 
                     const count=
-                      d.tests.filter(
-                        x=>
-                          x.scopeName
-                          ===subject
-                      )
+                      d.testsBySubject[
+                        subject
+                      ]
                       .length;
 
 
@@ -4639,7 +5101,7 @@ function renderScoreSummary(){
 
 
       ${
-        d.subjects.length
+        d.tests.length
           ?`
 
             <div class="table-wrap">
@@ -4650,19 +5112,89 @@ function renderScoreSummary(){
 
                   <tr>
 
-                    <th>座號</th>
-                    <th>姓名</th>
+                    <th
+                      rowspan="2"
+                    >
+                      座號
+                    </th>
+
+                    <th
+                      rowspan="2"
+                    >
+                      姓名
+                    </th>
+
 
                     ${
                       d.subjects.map(
-                        s=>`
-                          <th>${esc(s)}</th>
-                        `
+                        subject=>{
+
+                          const count=
+                            d.testsBySubject[
+                              subject
+                            ]
+                            .length;
+
+
+                          return`
+
+                            <th
+                              class="subject-head"
+                              colspan="${count}"
+                            >
+                              ${esc(subject)}
+                            </th>
+                          `;
+
+                        }
                       )
                       .join("")
                     }
 
-                    <th>本週平均</th>
+
+                    <th
+                      rowspan="2"
+                    >
+                      細節
+                    </th>
+
+                  </tr>
+
+
+                  <tr>
+
+                    ${
+                      d.subjects.map(
+                        subject=>
+                          d.testsBySubject[
+                            subject
+                          ]
+                          .map(
+                            test=>`
+
+                              <th
+                                class="test-head"
+                                title="${esc(test.date||"")}"
+                              >
+                                ${esc(test.name)}
+
+                                ${
+                                  test.date
+                                    ?`
+                                      <div class="meta">
+                                        ${esc(test.date.slice(5))}
+                                      </div>
+                                    `
+                                    :""
+                                }
+
+                              </th>
+                            `
+                          )
+                          .join("")
+                      )
+                      .join("")
+                    }
 
                   </tr>
 
@@ -4685,61 +5217,61 @@ function renderScoreSummary(){
                             ${esc(row.name)}
                           </td>
 
+
                           ${
                             d.subjects.map(
-                              subject=>{
+                              subject=>
+                                d.testsBySubject[
+                                  subject
+                                ]
+                                .map(
+                                  test=>{
 
-                                const x=
-                                  row.subjectData[
-                                    subject
-                                  ];
-
-
-                                const scoreList=
-                                  x.entries
-                                    .filter(
-                                      e=>e.score!==null
-                                    )
-                                    .map(
-                                      e=>e.score
-                                    );
+                                    const r=
+                                      row.scoreData[
+                                        test.id
+                                      ];
 
 
-                                return`
+                                    const text=
+                                      scoreDisplayText(
+                                        r
+                                      );
 
-                                  <td>
 
-                                    ${
-                                      x.average!==null
-                                        ?x.average.toFixed(1)
-                                        :"-"
-                                    }
+                                    return`
 
-                                    ${
-                                      scoreList.length>1
-                                        ?`
-                                          <div class="meta">
-                                            (${scoreList.join("、")})
-                                          </div>
-                                        `
-                                        :""
-                                    }
+                                      <td>
 
-                                  </td>
-                                `;
+                                        ${
+                                          text
+                                            ?(
+                                                r?.score!==null
+                                                  ?`<b>${esc(text)}</b>`
+                                                  :`<span class="score-empty">${esc(text)}</span>`
+                                              )
+                                            :`<span class="meta">—</span>`
+                                        }
 
-                              }
+                                      </td>
+                                    `;
+
+                                  }
+                                )
+                                .join("")
                             )
                             .join("")
                           }
 
+
                           <td>
 
-                            ${
-                              row.overallAverage!==null
-                                ?row.overallAverage.toFixed(1)
-                                :"-"
-                            }
+                            <button
+                              class="student-link score-detail-btn"
+                              data-sid="${esc(row.sid)}"
+                            >
+                              👀 查看細節
+                            </button>
 
                           </td>
 
@@ -4754,6 +5286,11 @@ function renderScoreSummary(){
               </table>
 
             </div>
+
+
+            <div
+              id="scoreStudentDetail"
+            ></div>
           `
           :`
 
@@ -4784,8 +5321,218 @@ function renderScoreSummary(){
     .onclick=
       copyScoreText;
 
+
+  $$(".score-detail-btn")
+    .forEach(
+      btn=>
+        btn.onclick=
+          ()=>showScoreStudentDetail(
+            btn.dataset.sid
+          )
+    );
+
 }
 
+
+function showScoreStudentDetail(
+  sid
+){
+
+  const d=
+    currentScoreSummary;
+
+
+  if(!d){
+
+    return;
+
+  }
+
+
+  const row=
+    d.rows.find(
+      x=>
+        String(x.sid)
+        ===
+        String(sid)
+    );
+
+
+  if(!row){
+
+    return;
+
+  }
+
+
+  let html=`
+
+    <div class="student-detail-box">
+
+      <div class="detail-header">
+
+        <div>
+
+          <div class="detail-title">
+            👤 ${String(row.seat).padStart(2,"0")} ${esc(row.name)}
+          </div>
+
+          <div class="meta">
+            ${d.start} ～ ${d.end} 各科成績明細
+          </div>
+
+        </div>
+
+        <button
+          class="btn gray small"
+          id="closeScoreDetail"
+        >
+          收起
+        </button>
+
+      </div>
+  `;
+
+
+  d.subjects.forEach(
+    subject=>{
+
+      const subjectTests=
+        d.testsBySubject[
+          subject
+        ];
+
+
+      html+=`
+
+        <div class="detail-subject">
+
+          <div class="detail-subject-title">
+            📊 ${esc(subject)}
+          </div>
+
+
+          ${
+            subjectTests.map(
+              test=>{
+
+                const r=
+                  row.scoreData[
+                    test.id
+                  ];
+
+
+                const text=
+                  scoreDisplayText(r)
+                  ||
+                  "未登記";
+
+
+                return`
+
+                  <div class="detail-line">
+
+                    <div>
+
+                      <b>
+                        ${esc(test.name)}
+                      </b>
+
+                      <div class="detail-date">
+                        ${esc(test.date||"")}
+                        ｜滿分 ${esc(test.maxScore??"")}
+                      </div>
+
+                    </div>
+
+
+                    <div>
+
+                      <b
+                        class="${
+                          r?.score!==null
+                            ?""
+                            :"score-empty"
+                        }"
+                        style="
+                          font-size:17px
+                        "
+                      >
+                        ${esc(text)}
+                      </b>
+
+                      ${
+                        r
+                        &&
+                        r.status
+                        &&
+                        r.status!=="normal"
+                        &&
+                        r.status!=="not_entered"
+                          ?`
+                            <div class="meta">
+                              ${
+                                esc(
+                                  dictLabel(
+                                    scoreStatusOptions,
+                                    r.status
+                                  )
+                                )
+                              }
+                            </div>
+                          `
+                          :""
+                      }
+
+                    </div>
+
+                  </div>
+                `;
+
+              }
+            )
+            .join("")
+          }
+
+        </div>
+      `;
+
+    }
+  );
+
+
+  html+=`
+    </div>
+  `;
+
+
+  $("#scoreStudentDetail")
+    .innerHTML=
+      html;
+
+
+  $("#closeScoreDetail")
+    .onclick=
+      ()=>{
+
+        $("#scoreStudentDetail")
+          .innerHTML="";
+
+      };
+
+
+  $("#scoreStudentDetail")
+    .scrollIntoView({
+      behavior:"smooth",
+      block:"nearest"
+    });
+
+}
+
+
+/* =========================================================
+   成績複製表格
+========================================================= */
 
 function scoreTableText(){
 
@@ -4793,12 +5540,49 @@ function scoreTableText(){
     currentScoreSummary;
 
 
-  const headers=[
+  const subjectHeader=[
     "座號",
-    "姓名",
-    ...d.subjects,
-    "本週平均"
+    "姓名"
   ];
+
+
+  const testHeader=[
+    "",
+    ""
+  ];
+
+
+  d.subjects.forEach(
+    subject=>{
+
+      const subjectTests=
+        d.testsBySubject[
+          subject
+        ];
+
+
+      subjectTests.forEach(
+        (
+          test,
+          index
+        )=>{
+
+          subjectHeader.push(
+            index===0
+              ?subject
+              :""
+          );
+
+
+          testHeader.push(
+            test.name
+          );
+
+        }
+      );
+
+    }
+  );
 
 
   const rows=
@@ -4809,51 +5593,28 @@ function scoreTableText(){
 
         row.name,
 
-        ...d.subjects.map(
-          subject=>{
-
-            const x=
-              row.subjectData[
-                subject
-              ];
-
-
-            if(
-              x.average===null
-            ){
-
-              return "";
-
-            }
-
-
-            const scores=
-              x.entries
-                .filter(
-                  e=>e.score!==null
+        ...d.subjects.flatMap(
+          subject=>
+            d.testsBySubject[
+              subject
+            ]
+            .map(
+              test=>
+                scoreDisplayText(
+                  row.scoreData[
+                    test.id
+                  ]
                 )
-                .map(
-                  e=>e.score
-                );
-
-
-            return scores.length>1
-              ?`${x.average.toFixed(1)} (${scores.join("、")})`
-              :x.average.toFixed(1);
-
-          }
-        ),
-
-        row.overallAverage!==null
-          ?row.overallAverage.toFixed(1)
-          :""
+            )
+        )
 
       ]
     );
 
 
   return[
-    headers,
+    subjectHeader,
+    testHeader,
     ...rows
   ]
   .map(
@@ -4873,11 +5634,15 @@ async function copyScoreTable(){
 
 
   alert(
-    "成績週紀錄表格已複製。"
+    "各科每一次成績已複製，可直接貼到 Excel、試算表或 Word。"
   );
 
 }
 
+
+/* =========================================================
+   成績文字摘要
+========================================================= */
 
 async function copyScoreText(){
 
@@ -4886,7 +5651,7 @@ async function copyScoreText(){
 
 
   const lines=[
-    `【${d.classId}班 本週成績紀錄】`,
+    `【${d.classId}班 各科成績週紀錄】`,
     `期間：${d.start}～${d.end}`,
     ""
   ];
@@ -4895,41 +5660,37 @@ async function copyScoreText(){
   d.subjects.forEach(
     subject=>{
 
-      const subjectTests=
-        d.tests.filter(
-          x=>x.scopeName===subject
-        );
+      lines.push(
+        `【${subject}】`
+      );
 
 
-      const studentAverages=
-        d.rows
-          .map(
-            row=>
-              row.subjectData[
-                subject
-              ]
-              ?.average
-          )
-          .filter(
-            x=>x!==null
-            &&
-            x!==undefined
+      d.testsBySubject[
+        subject
+      ]
+      .forEach(
+        test=>{
+
+          const count=
+            d.rows.filter(
+              row=>
+                row.scoreData[
+                  test.id
+                ]
+                ?.score!==null
+            )
+            .length;
+
+
+          lines.push(
+            `${test.name}（${test.date||""}）：已登記 ${count} 人`
           );
 
-
-      const classAvg=
-        average(
-          studentAverages
-        );
-
-
-      lines.push(
-        `${subject}：${subjectTests.length}次測驗${
-          classAvg!==null
-            ?`，班級平均 ${classAvg.toFixed(1)}`
-            :""
-        }`
+        }
       );
+
+
+      lines.push("");
 
     }
   );
@@ -4941,11 +5702,15 @@ async function copyScoreText(){
 
 
   alert(
-    "成績文字摘要已複製。"
+    "成績週紀錄文字摘要已複製。"
   );
 
 }
 
+
+/* =========================================================
+   成績列印
+========================================================= */
 
 function printScoreSummary(){
 
@@ -4956,8 +5721,18 @@ function printScoreSummary(){
   const headers=[
     "座號",
     "姓名",
-    ...d.subjects,
-    "本週平均"
+
+    ...d.subjects.flatMap(
+      subject=>
+        d.testsBySubject[
+          subject
+        ]
+        .map(
+          test=>
+            `${subject}｜${test.name}`
+        )
+    )
+
   ];
 
 
@@ -4969,44 +5744,22 @@ function printScoreSummary(){
 
         esc(row.name),
 
-        ...d.subjects.map(
-          subject=>{
-
-            const x=
-              row.subjectData[
-                subject
-              ];
-
-
-            if(
-              x.average===null
-            ){
-
-              return "";
-
-            }
-
-
-            const nums=
-              x.entries
-                .filter(
-                  e=>e.score!==null
+        ...d.subjects.flatMap(
+          subject=>
+            d.testsBySubject[
+              subject
+            ]
+            .map(
+              test=>
+                esc(
+                  scoreDisplayText(
+                    row.scoreData[
+                      test.id
+                    ]
+                  )
                 )
-                .map(
-                  e=>e.score
-                );
-
-
-            return nums.length>1
-              ?`${x.average.toFixed(1)} (${nums.join("、")})`
-              :x.average.toFixed(1);
-
-          }
-        ),
-
-        row.overallAverage!==null
-          ?row.overallAverage.toFixed(1)
-          :""
+            )
+        )
 
       ]
     );
@@ -5014,7 +5767,7 @@ function printScoreSummary(){
 
   openPrint(
     `${d.classId}班 各科成績週紀錄`,
-    `${d.start} ～ ${d.end}`,
+    `${d.start} ～ ${d.end}｜每一欄為一筆實際測驗成績`,
     headers,
     rows,
     true
@@ -5023,79 +5776,221 @@ function printScoreSummary(){
 }
 
 
-function exportScoreSummary(){
+/* =========================================================
+   成績 Excel
+========================================================= */
+
+async function exportScoreSummary(){
 
   const d=
     currentScoreSummary;
 
 
-  const rows=
-    d.rows.map(
-      row=>{
+  try{
 
-        const obj={
-          座號:row.seat,
-          姓名:row.name
-        };
+    await ensureXLSX();
 
 
-        d.subjects.forEach(
-          subject=>{
+    /*
+      使用 aoa_to_sheet 做兩層表頭：
 
-            const x=
-              row.subjectData[
-                subject
-              ];
+      第一列：
+      座號 姓名 國文 國文 數學 數學
 
+      第二列：
+              第一課 第二課 第一章 第二章
+    */
 
-            const nums=
-              x.entries
-                .filter(
-                  e=>e.score!==null
-                )
-                .map(
-                  e=>e.score
-                );
+    const firstRow=[
+      "座號",
+      "姓名"
+    ];
 
 
-            obj[
-              `${subject}平均`
-            ]=
-              x.average!==null
-                ?Number(
-                    x.average.toFixed(1)
-                  )
-                :"";
+    const secondRow=[
+      "",
+      ""
+    ];
 
 
-            obj[
-              `${subject}各次成績`
-            ]=
-              nums.join("、");
+    const merges=[];
 
-          }
+
+    let colIndex=2;
+
+
+    d.subjects.forEach(
+      subject=>{
+
+        const subjectTests=
+          d.testsBySubject[
+            subject
+          ];
+
+
+        if(!subjectTests.length){
+
+          return;
+
+        }
+
+
+        firstRow.push(
+          subject
         );
 
 
-        obj["本週平均"]=
-          row.overallAverage!==null
-            ?Number(
-                row.overallAverage.toFixed(1)
-              )
-            :"";
+        for(
+          let i=1;
+          i<subjectTests.length;
+          i++
+        ){
+
+          firstRow.push("");
+
+        }
 
 
-        return obj;
+        subjectTests.forEach(
+          test=>
+            secondRow.push(
+              test.name
+            )
+        );
+
+
+        if(
+          subjectTests.length>1
+        ){
+
+          merges.push({
+
+            s:{
+              r:0,
+              c:colIndex
+            },
+
+            e:{
+              r:0,
+              c:
+                colIndex
+                +
+                subjectTests.length
+                -
+                1
+            }
+
+          });
+
+        }
+
+
+        colIndex+=
+          subjectTests.length;
 
       }
     );
 
 
-  downloadXlsx(
-    `${d.classId}-各科成績週紀錄-${d.start}-${d.end}.xlsx`,
-    "成績週紀錄",
-    rows
-  );
+    const body=
+      d.rows.map(
+        row=>[
+
+          row.seat,
+
+          row.name,
+
+          ...d.subjects.flatMap(
+            subject=>
+              d.testsBySubject[
+                subject
+              ]
+              .map(
+                test=>{
+
+                  const r=
+                    row.scoreData[
+                      test.id
+                    ];
+
+
+                  if(
+                    r
+                    &&
+                    r.score!==null
+                  ){
+
+                    return Number(
+                      r.score
+                    );
+
+                  }
+
+
+                  return scoreDisplayText(r);
+
+                }
+              )
+          )
+
+        ]
+      );
+
+
+    const aoa=[
+      firstRow,
+      secondRow,
+      ...body
+    ];
+
+
+    const ws=
+      XLSX.utils
+        .aoa_to_sheet(
+          aoa
+        );
+
+
+    ws["!merges"]=
+      merges;
+
+
+    ws["!cols"]=[
+      {wch:7},
+      {wch:12},
+      ...d.tests.map(
+        ()=>({
+          wch:12
+        })
+      )
+    ];
+
+
+    const wb=
+      XLSX.utils
+        .book_new();
+
+
+    XLSX.utils
+      .book_append_sheet(
+        wb,
+        ws,
+        "成績週紀錄"
+      );
+
+
+    XLSX.writeFile(
+      wb,
+      `${d.classId}-各科成績週紀錄-${d.start}-${d.end}.xlsx`
+    );
+
+  }catch(e){
+
+    alert(
+      `Excel 下載失敗：${e.message}`
+    );
+
+  }
 
 }
 
@@ -5315,7 +6210,7 @@ async function confirmRecord(
 
 
 /* =========================================================
-   編輯資料
+   編輯
 ========================================================= */
 
 async function editRecord(
@@ -6088,6 +6983,13 @@ function printRecord(
     );
 
 
+  if(!record){
+
+    return;
+
+  }
+
+
   const roster=
     getRosterForClass(
       record.classId
@@ -6225,6 +7127,13 @@ function exportRecord(
     .find(
       x=>x.id===id
     );
+
+
+  if(!record){
+
+    return;
+
+  }
 
 
   const roster=
@@ -6429,7 +7338,7 @@ function openPrint(
 
 body{
   font-family:"Microsoft JhengHei",sans-serif;
-  font-size:11px;
+  font-size:10.5px;
   color:#111;
 }
 
@@ -6987,6 +7896,17 @@ async function saveRoleTable(){
     $("#roleSemester").value;
 
 
+  if(
+    !confirm(
+      `確定儲存 ${classId} 班 ${semester} 的職務表？`
+    )
+  ){
+
+    return;
+
+  }
+
+
   const selections=
     $$(".role-select")
       .map(
@@ -7096,7 +8016,26 @@ async function saveRoleTable(){
       }
     );
 
+
+    user.assignments=
+      assignments;
+
+
+    Object.assign(
+      user,
+      access
+    );
+
   }
+
+
+  await audit(
+    "save_role_table",
+    "roles",
+    `${semester}-${classId}`,
+    `儲存 ${semester} ${classId} 職務表`,
+    semester
+  );
 
 
   await refreshAll();
@@ -7320,24 +8259,14 @@ function renderAccounts(){
 
 
           <div class="field">
-
-            <label>
-              帳號
-            </label>
-
+            <label>帳號</label>
             <input id="newUsername">
-
           </div>
 
 
           <div class="field">
-
-            <label>
-              姓名
-            </label>
-
+            <label>姓名</label>
             <input id="newName">
-
           </div>
 
 
@@ -7693,7 +8622,7 @@ async function createAccount(){
   ){
 
     return alert(
-      "資料未填完整。"
+      "資料未填完整，密碼至少 6 碼。"
     );
 
   }
@@ -7854,6 +8783,13 @@ async function toggleUser(uid){
     );
 
 
+  if(!user){
+
+    return;
+
+  }
+
+
   await updateDoc(
     doc(
       db,
@@ -7883,6 +8819,13 @@ function editUserPermissions(uid){
     users.find(
       x=>x.uid===uid
     );
+
+
+  if(!user){
+
+    return;
+
+  }
 
 
   const assignments=[
@@ -8218,6 +9161,20 @@ async function saveAssignments(
   user.assignments=
     assignments;
 
+
+  Object.assign(
+    user,
+    access
+  );
+
+
+  await audit(
+    "permissions",
+    "user",
+    user.uid,
+    `更新權限 ${user.username}`
+  );
+
 }
 
 
@@ -8244,46 +9201,56 @@ function renderClasses(){
           </div>
 
           ${
-            classes.map(
-              c=>`
+            classes
+              .sort(
+                (
+                  a,
+                  b
+                )=>
+                  a.id.localeCompare(
+                    b.id
+                  )
+              )
+              .map(
+                c=>`
 
-                <div class="item">
+                  <div class="item">
 
-                  <div class="item-head">
+                    <div class="item-head">
 
-                    <div>
+                      <div>
 
-                      <b>
-                        ${c.id} 班
-                      </b>
+                        <b>
+                          ${c.id} 班
+                        </b>
 
-                      <div class="meta">
-                        ${
-                          (
-                            c.students
-                            ||
-                            []
-                          )
-                          .length
-                        }
-                        人
+                        <div class="meta">
+                          ${
+                            (
+                              c.students
+                              ||
+                              []
+                            )
+                            .length
+                          }
+                          人
+                        </div>
+
                       </div>
+
+                      <button
+                        class="btn primary small edit-class"
+                        data-id="${c.id}"
+                      >
+                        編輯
+                      </button>
 
                     </div>
 
-                    <button
-                      class="btn primary small edit-class"
-                      data-id="${c.id}"
-                    >
-                      編輯
-                    </button>
-
                   </div>
-
-                </div>
-              `
-            )
-            .join("")
+                `
+              )
+              .join("")
           }
 
         </div>
@@ -8417,7 +9384,20 @@ async function seedClasses(){
   }
 
 
+  await audit(
+    "seed",
+    "classes",
+    "default",
+    "建立／更新預設班級名單"
+  );
+
+
   await refreshAll();
+
+
+  alert(
+    "班級名單已更新。"
+  );
 
 }
 
@@ -8465,6 +9445,13 @@ function parseRoster(text){
         x.seat
         &&
         x.name
+    )
+    .sort(
+      (
+        a,
+        b
+      )=>
+        a.seat-b.seat
     );
 
 }
@@ -8516,6 +9503,14 @@ async function saveClass(
   );
 
 
+  await audit(
+    "save_class",
+    "class",
+    id,
+    `更新班級 ${id}`
+  );
+
+
   await refreshAll();
 
 }
@@ -8527,6 +9522,13 @@ function editClass(id){
     classes.find(
       x=>x.id===id
     );
+
+
+  if(!c){
+
+    return;
+
+  }
 
 
   const text=
@@ -8559,7 +9561,11 @@ function editClass(id){
 
     <textarea
       id="editRoster"
-      style="width:100%;min-height:400px"
+      style="
+        width:100%;
+        min-height:400px;
+        padding:10px
+      "
     >${esc(text)}</textarea>
 
 
@@ -8628,7 +9634,32 @@ async function renderAudit(){
 
   }catch(e){
 
-    console.error(e);
+    try{
+
+      const snap=
+        await getDocs(
+          collection(
+            db,
+            "auditLogs"
+          )
+        );
+
+
+      logs=
+        snap.docs
+          .map(
+            d=>d.data()
+          )
+          .slice(
+            -250
+          )
+          .reverse();
+
+    }catch(err){
+
+      console.error(err);
+
+    }
 
   }
 
