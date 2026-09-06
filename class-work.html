@@ -3,9 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
 <title>班級工作回報系統</title>
+
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>">
+
 <style>
+
 :root{
   --bg:#f5f7fb;
   --card:#fff;
@@ -18,26 +22,47 @@
   --warn:#b54708;
   --bad:#b42318;
   --soft:#eff6ff;
-  --purple:#6941c6
+  --purple:#6941c6;
 }
 
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box;
+}
 
 body{
   margin:0;
-  font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
-  background:linear-gradient(180deg,#eef7ff,#f8fafc 38%,#f5f7fb);
-  color:var(--ink)
+  font-family:
+    "Noto Sans TC",
+    "Microsoft JhengHei",
+    system-ui,
+    sans-serif;
+
+  background:
+    linear-gradient(
+      180deg,
+      #eef7ff,
+      #f8fafc 38%,
+      #f5f7fb
+    );
+
+  color:var(--ink);
 }
 
-button,input,select,textarea{font:inherit}
+button,
+input,
+select,
+textarea{
+  font:inherit;
+}
 
-.hidden{display:none!important}
+.hidden{
+  display:none!important;
+}
 
 .wrap{
   max-width:1180px;
   margin:auto;
-  padding:18px
+  padding:18px;
 }
 
 .topbar{
@@ -45,17 +70,17 @@ button,input,select,textarea{font:inherit}
   justify-content:space-between;
   align-items:center;
   gap:12px;
-  margin-bottom:16px
+  margin-bottom:16px;
 }
 
 .brand{
   font-size:24px;
-  font-weight:900
+  font-weight:900;
 }
 
 .sub{
   color:var(--muted);
-  font-size:14px
+  font-size:14px;
 }
 
 .card{
@@ -63,22 +88,25 @@ button,input,select,textarea{font:inherit}
   border:1px solid var(--line);
   border-radius:18px;
   padding:18px;
-  box-shadow:0 8px 24px rgba(16,24,40,.06)
+
+  box-shadow:
+    0 8px 24px
+    rgba(16,24,40,.06);
 }
 
 .login{
   max-width:430px;
-  margin:8vh auto
+  margin:8vh auto;
 }
 
 .field{
   display:grid;
   gap:6px;
-  margin:12px 0
+  margin:12px 0;
 }
 
 .field label{
-  font-weight:700
+  font-weight:700;
 }
 
 .field input,
@@ -88,7 +116,7 @@ button,input,select,textarea{font:inherit}
   border:1px solid #cfd4dc;
   border-radius:10px;
   padding:11px 12px;
-  background:#fff
+  background:#fff;
 }
 
 .btn{
@@ -96,109 +124,122 @@ button,input,select,textarea{font:inherit}
   border-radius:10px;
   padding:10px 14px;
   cursor:pointer;
-  font-weight:800
+  font-weight:800;
 }
 
 .btn.primary{
   background:var(--brand);
-  color:#fff
+  color:#fff;
 }
 
 .btn.primary:hover{
-  background:var(--brand2)
+  background:var(--brand2);
 }
 
 .btn.gray{
-  background:#eef2f6
+  background:#eef2f6;
 }
 
 .btn.danger{
   background:#fee4e2;
-  color:var(--bad)
+  color:var(--bad);
 }
 
 .btn.good{
   background:#dcfae6;
-  color:var(--good)
+  color:var(--good);
 }
 
 .btn.warn{
   background:#fff4e5;
-  color:var(--warn)
+  color:var(--warn);
 }
 
 .btn.purple{
   background:#eee9ff;
-  color:var(--purple)
+  color:var(--purple);
 }
 
 .btn.small{
   padding:7px 10px;
-  font-size:13px
+  font-size:13px;
 }
 
 .btn:disabled{
   opacity:.55;
-  cursor:not-allowed
+  cursor:not-allowed;
 }
 
 .grid{
   display:grid;
-  gap:14px
+  gap:14px;
 }
 
 .roles{
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr))
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(220px,1fr)
+    );
 }
 
 .role-card{
   cursor:pointer;
-  border:2px solid transparent
+  border:2px solid transparent;
 }
 
 .role-card:hover{
-  border-color:#bfdbfe
+  border-color:#bfdbfe;
 }
 
 .role-card.active{
   border-color:var(--brand);
-  background:var(--soft)
+  background:var(--soft);
 }
 
 .role-card.teacher-role{
-  background:linear-gradient(135deg,#fff,#eef8ff)
+  background:
+    linear-gradient(
+      135deg,
+      #fff,
+      #eef8ff
+    );
 }
 
 .pill{
   display:inline-flex;
   align-items:center;
+
   border-radius:999px;
   padding:5px 9px;
+
   font-size:12px;
   font-weight:800;
+
   background:#f2f4f7;
   color:#344054;
-  margin-left:4px
+
+  margin-left:4px;
 }
 
 .pill.good{
   background:#dcfae6;
-  color:var(--good)
+  color:var(--good);
 }
 
 .pill.warn{
   background:#fff4e5;
-  color:var(--warn)
+  color:var(--warn);
 }
 
 .pill.bad{
   background:#fee4e2;
-  color:var(--bad)
+  color:var(--bad);
 }
 
 .pill.purple{
   background:#eee9ff;
-  color:var(--purple)
+  color:var(--purple);
 }
 
 .toolbar{
@@ -206,28 +247,28 @@ button,input,select,textarea{font:inherit}
   flex-wrap:wrap;
   gap:8px;
   align-items:center;
-  margin:14px 0
+  margin:14px 0;
 }
 
 .tabs{
   display:flex;
   gap:8px;
-  flex-wrap:wrap
+  flex-wrap:wrap;
 }
 
 .tab{
-  background:#eef2f6
+  background:#eef2f6;
 }
 
 .tab.active{
   background:#dbeafe;
-  color:#1d4ed8
+  color:#1d4ed8;
 }
 
 .section-title{
   font-size:20px;
   font-weight:900;
-  margin:2px 0 12px
+  margin:2px 0 12px;
 }
 
 .item{
@@ -235,47 +276,53 @@ button,input,select,textarea{font:inherit}
   border-radius:14px;
   padding:14px;
   margin:10px 0;
-  background:#fff
+  background:#fff;
 }
 
 .item.confirmed{
   border-color:#a7d7bd;
-  background:#fbfffc
+  background:#fbfffc;
 }
 
 .item-head{
   display:flex;
   justify-content:space-between;
   gap:10px;
-  align-items:flex-start
+  align-items:flex-start;
 }
 
 .meta{
   font-size:13px;
   color:var(--muted);
-  margin-top:4px
+  margin-top:4px;
 }
 
 .roster{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(170px,1fr)
+    );
+
   gap:8px;
-  margin-top:12px
+  margin-top:12px;
 }
 
 .student{
   border:1px solid var(--line);
   border-radius:12px;
   padding:10px;
-  background:#fff
+  background:#fff;
 }
 
 .student.locked{
-  background:#f8fafc
+  background:#f8fafc;
 }
 
 .student .name{
-  font-weight:700
+  font-weight:700;
 }
 
 .status{
@@ -283,29 +330,37 @@ button,input,select,textarea{font:inherit}
   margin-top:7px;
   border-radius:9px;
   border:1px solid #d0d5dd;
-  padding:7px
+  padding:7px;
 }
 
 .late-note{
   color:#d92d20;
   font-weight:900;
   font-size:13px;
-  margin-top:6px
+  margin-top:6px;
 }
 
 .lock-note{
   color:#667085;
   font-size:12px;
-  margin-top:5px
+  margin-top:5px;
 }
 
 .score-row{
   display:grid;
-  grid-template-columns:64px minmax(120px,1fr) 95px 115px 95px;
+
+  grid-template-columns:
+    64px
+    minmax(120px,1fr)
+    95px
+    115px
+    95px;
+
   gap:8px;
   align-items:center;
+
   padding:7px 0;
-  border-bottom:1px solid #f0f2f5
+  border-bottom:1px solid #f0f2f5;
 }
 
 .score-row input,
@@ -313,14 +368,14 @@ button,input,select,textarea{font:inherit}
   width:100%;
   padding:8px;
   border:1px solid #d0d5dd;
-  border-radius:8px
+  border-radius:8px;
 }
 
 .stats{
   display:flex;
   flex-wrap:wrap;
   gap:8px;
-  margin-top:10px
+  margin-top:10px;
 }
 
 .stat{
@@ -328,7 +383,7 @@ button,input,select,textarea{font:inherit}
   border:1px solid var(--line);
   border-radius:10px;
   padding:8px 10px;
-  font-size:13px
+  font-size:13px;
 }
 
 .notice{
@@ -336,144 +391,167 @@ button,input,select,textarea{font:inherit}
   border-radius:10px;
   background:#fffaeb;
   color:#93370d;
-  margin:10px 0
+  margin:10px 0;
 }
 
 .error{
   background:#fef3f2;
-  color:#b42318
+  color:#b42318;
 }
 
 .success{
   background:#ecfdf3;
-  color:#067647
+  color:#067647;
 }
 
 .empty{
   text-align:center;
   color:var(--muted);
-  padding:30px 10px
+  padding:30px 10px;
 }
 
 .semester-badge{
   display:inline-block;
+
   background:#dbeafe;
   color:#1d4ed8;
+
   border-radius:999px;
   padding:5px 10px;
+
   font-size:13px;
   font-weight:800;
-  margin-top:5px
+
+  margin-top:5px;
 }
 
 .footer-note{
   font-size:12px;
   color:var(--muted);
-  margin-top:16px
+  margin-top:16px;
 }
 
 .teacher-tools{
   border:1px solid #b9d9ff;
-  background:linear-gradient(135deg,#f8fbff,#eef7ff);
+
+  background:
+    linear-gradient(
+      135deg,
+      #f8fbff,
+      #eef7ff
+    );
+
   border-radius:14px;
   padding:14px;
-  margin:12px 0
+  margin:12px 0;
 }
 
 .teacher-tools-title{
   font-weight:900;
   color:#175cd3;
-  margin-bottom:5px
+  margin-bottom:5px;
 }
 
 .table-wrap{
   overflow:auto;
   border:1px solid var(--line);
   border-radius:12px;
-  background:#fff
+  background:#fff;
 }
 
 .summary-table{
   border-collapse:collapse;
   width:100%;
-  min-width:720px
+  min-width:720px;
 }
 
 .summary-table th,
 .summary-table td{
   padding:8px 9px;
+
   border-bottom:1px solid var(--line);
   border-right:1px solid #f0f2f5;
+
   text-align:center;
+
   font-size:13px;
-  white-space:nowrap
+  white-space:nowrap;
 }
 
 .summary-table th{
   background:#f8fafc;
   position:sticky;
   top:0;
-  z-index:1
+  z-index:1;
 }
 
 .summary-table th:first-child,
 .summary-table td:first-child,
 .summary-table th:nth-child(2),
 .summary-table td:nth-child(2){
-  text-align:left
+  text-align:left;
 }
 
 .summary-title{
   font-weight:900;
   font-size:17px;
-  margin:12px 0 8px
+  margin:12px 0 8px;
 }
 
 .version{
   font-size:11px;
   color:#98a2b3;
-  margin-top:6px
+  margin-top:6px;
 }
 
 @media(max-width:700px){
 
   .wrap{
-    padding:12px
+    padding:12px;
   }
 
   .brand{
-    font-size:20px
+    font-size:20px;
   }
 
   .score-row{
-    grid-template-columns:46px minmax(100px,1fr) 78px
+    grid-template-columns:
+      46px
+      minmax(100px,1fr)
+      78px;
   }
 
   .score-row .score-status{
-    grid-column:2/3
+    grid-column:2/3;
   }
 
   .score-row .unlock-score{
-    grid-column:3/4
+    grid-column:3/4;
   }
 
   .card{
-    padding:14px
+    padding:14px;
   }
 
   .topbar{
-    align-items:flex-start
+    align-items:flex-start;
   }
 
   .topbar .right{
     display:flex;
     gap:6px;
     flex-wrap:wrap;
-    justify-content:flex-end
+    justify-content:flex-end;
+  }
+
+  .toolbar .btn{
+    flex:0 0 auto;
   }
 
 }
+
 </style>
+
 </head>
 
 <body>
@@ -502,46 +580,91 @@ button,input,select,textarea{font:inherit}
 
   <div id="loginMsg"></div>
 
-  <div class="field">
-
-    <label>
-      帳號
-    </label>
-
-    <input
-      id="loginUser"
-      autocomplete="username"
-      placeholder="例如 80427 或老師帳號"
-    >
-
-  </div>
-
-  <div class="field">
-
-    <label>
-      密碼
-    </label>
-
-    <input
-      id="loginPass"
-      type="password"
-      autocomplete="current-password"
-      placeholder="輸入密碼"
-    >
-
-  </div>
 
   <button
-    id="loginBtn"
+    id="googleLoginBtn"
     class="btn primary"
-    style="width:100%"
+    style="width:100%;margin-top:14px"
     disabled
   >
-    登入
+    🔵 使用學校 Google 帳號登入
   </button>
 
+
+  <div
+    class="footer-note"
+    style="margin-top:10px"
+  >
+    第一次登入會依照導師後端預先建立的 Email 對照名單，
+    自動連結姓名、班級、座號與本學期權限。
+  </div>
+
+
+  <details style="margin-top:16px">
+
+    <summary
+      style="
+        cursor:pointer;
+        font-weight:800;
+        color:#667085
+      "
+    >
+      舊帳號登入（過渡／測試用）
+    </summary>
+
+
+    <div class="field">
+
+      <label>
+        舊系統帳號／Email
+      </label>
+
+      <input
+        id="loginUser"
+        autocomplete="username"
+        placeholder="例如 80427 或老師帳號"
+      >
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        密碼
+      </label>
+
+      <input
+        id="loginPass"
+        type="password"
+        autocomplete="current-password"
+        placeholder="輸入密碼"
+      >
+
+    </div>
+
+
+    <button
+      id="loginBtn"
+      class="btn gray"
+      style="width:100%"
+      disabled
+    >
+      舊帳號登入
+    </button>
+
+  </details>
+
+
   <div class="footer-note">
-    學生帳號長期保留；每學期由導師重新派發幹部／小老師／任課老師權限。
+
+    學生只會看到目前學期；
+
+    任課老師若曾在舊學期任教，
+    可切換查看自己曾任教的舊資料，
+
+    舊學期一律唯讀。
+
   </div>
 
 </section>
@@ -568,6 +691,11 @@ button,input,select,textarea{font:inherit}
       <div
         id="semesterLabel"
         class="semester-badge"
+      ></div>
+
+      <div
+        id="semesterSwitch"
+        style="margin-top:7px"
       ></div>
 
     </div>
@@ -599,7 +727,10 @@ button,input,select,textarea{font:inherit}
 
   <section class="card">
 
-    <div class="section-title">
+    <div
+      class="section-title"
+      id="rolesSectionTitle"
+    >
       本學期我的職務
     </div>
 
@@ -684,6 +815,9 @@ from
 
 import{
   getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithRedirect,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
@@ -697,6 +831,7 @@ import{
   getFirestore,
   doc,
   getDoc,
+  setDoc,
   collection,
   addDoc,
   updateDoc,
@@ -748,7 +883,8 @@ const db=
 
 
 const $=
-  s=>document.querySelector(s);
+  s=>
+    document.querySelector(s);
 
 
 const $$=
@@ -774,31 +910,59 @@ let unsubAssess=null;
 let currentSemester=
   "115-1";
 
+let viewSemester=
+  "115-1";
+
 let currentAssessmentItems=[];
 
 
 const statusOptions=[
-  ["submitted","已繳"],
-  ["missing","未繳"],
-  ["late","補交"],
-  ["exempt","免繳"]
+  [
+    "submitted",
+    "已繳"
+  ],
+  [
+    "missing",
+    "未繳"
+  ],
+  [
+    "late",
+    "補交"
+  ],
+  [
+    "exempt",
+    "免繳"
+  ]
 ];
 
 
 const scoreStatusOptions=[
-  ["normal","正常"],
-  ["absent","缺考"],
-  ["makeup","補考"],
-  ["exempt","免試"],
-  ["not_entered","未登記"]
+  [
+    "normal",
+    "正常"
+  ],
+  [
+    "absent",
+    "缺考"
+  ],
+  [
+    "makeup",
+    "補考"
+  ],
+  [
+    "exempt",
+    "免試"
+  ],
+  [
+    "not_entered",
+    "未登記"
+  ]
 ];
 
 
 function emailFor(v){
 
-  v=
-    v.trim();
-
+  v=v.trim();
 
   return v.includes("@")
     ?v
@@ -815,7 +979,11 @@ function msg(
 
   el.innerHTML=
     text
-      ?`<div class="notice ${type}">${text}</div>`
+      ?`
+        <div class="notice ${type}">
+          ${text}
+        </div>
+      `
       :"";
 
 }
@@ -839,52 +1007,176 @@ function esc(v=""){
 
 function scopeKey(a){
 
-  return `${a.semester}|${a.classId}|${a.scopeType}|${a.scopeName}`;
+  return(
+    `${a.semester}|${a.classId}|${a.scopeType}|${a.scopeName}`
+  );
 
 }
 
 
 function assignmentLabel(a){
 
-  return a.scopeType==="subject"
-    ?`${a.classId}班｜${a.scopeName}${a.kind==="teacher"?"任課老師":"小老師"}`
-    :`${a.classId}班｜${a.scopeName}`;
+  return(
+    a.scopeType==="subject"
+      ?`${a.classId}班｜${a.scopeName}${a.kind==="teacher"?"任課老師":"小老師"}`
+      :`${a.classId}班｜${a.scopeName}`
+  );
+
+}
+
+
+function isHistoricalReadOnly(){
+
+  return(
+    !!profile
+    &&
+    profile.type==="teacher"
+    &&
+    viewSemester!==currentSemester
+  );
 
 }
 
 
 function canCollection(a){
 
-  return !!a?.canCollection;
+  return(
+    !!a?.canCollection
+    &&
+    !isHistoricalReadOnly()
+  );
 
 }
 
 
 function canScores(a){
 
-  return !!a?.canScores;
+  return(
+    !!a?.canScores
+    &&
+    !isHistoricalReadOnly()
+  );
 
 }
 
 
 function canConfirm(a){
 
-  return !!a
+  return(
+    !!a
     &&
     (
       a.kind==="assistant"
       ||
       a.kind==="teacher"
-    );
+    )
+    &&
+    !isHistoricalReadOnly()
+  );
 
 }
 
 
 function isTeacherAssignment(a){
 
-  return !!a
+  return(
+    !!a
     &&
-    a.kind==="teacher";
+    a.kind==="teacher"
+  );
+
+}
+
+
+function registryId(email){
+
+  return String(
+    email||""
+  )
+  .trim()
+  .toLowerCase();
+
+}
+
+
+function computeAccess(
+  assignments=[],
+  semester=currentSemester
+){
+
+  const viewKeys=[];
+
+  const collectionWriteKeys=[];
+
+  const scoreWriteKeys=[];
+
+  const classAccess=[];
+
+
+  assignments
+    .filter(
+      a=>a.semester===semester
+    )
+    .forEach(
+      a=>{
+
+        const key=
+          scopeKey(a);
+
+
+        if(
+          !viewKeys.includes(key)
+        ){
+
+          viewKeys.push(key);
+
+        }
+
+
+        if(
+          a.canCollection
+          &&
+          !collectionWriteKeys.includes(key)
+        ){
+
+          collectionWriteKeys.push(key);
+
+        }
+
+
+        if(
+          a.canScores
+          &&
+          !scoreWriteKeys.includes(key)
+        ){
+
+          scoreWriteKeys.push(key);
+
+        }
+
+
+        if(
+          !classAccess.includes(
+            a.classId
+          )
+        ){
+
+          classAccess.push(
+            a.classId
+          );
+
+        }
+
+      }
+    );
+
+
+  return{
+    viewKeys,
+    collectionWriteKeys,
+    scoreWriteKeys,
+    classAccess
+  };
 
 }
 
@@ -901,17 +1193,17 @@ function today(){
 
 function hasScore(r){
 
-  return !!r
+  return(
+    !!r
     &&
     r.score!==null
     &&
     r.score!==""
     &&
     Number.isFinite(
-      Number(
-        r.score
-      )
-    );
+      Number(r.score)
+    )
+  );
 
 }
 
@@ -1020,9 +1312,11 @@ async function loadSystem(){
   }
 
 
-  $("#semesterLabel")
-    .textContent=
-      `目前學期：${currentSemester}`;
+  viewSemester=
+    currentSemester;
+
+
+  updateSemesterLabel();
 
 }
 
@@ -1081,6 +1375,10 @@ async function audit(
           profile.username,
 
         semester:
+          currentAssignment?.semester
+          ||
+          viewSemester
+          ||
           currentSemester,
 
         action,
@@ -1109,6 +1407,20 @@ async function audit(
 }
 
 
+/* =========================================================
+   Google 登入
+========================================================= */
+
+const googleProvider=
+  new GoogleAuthProvider();
+
+
+googleProvider
+  .setCustomParameters({
+    prompt:"select_account"
+  });
+
+
 $("#systemStatus")
   .textContent=
     "Firebase 已載入，可以登入";
@@ -1118,6 +1430,99 @@ $("#loginBtn")
   .disabled=
     false;
 
+
+$("#googleLoginBtn")
+  .disabled=
+    false;
+
+
+$("#googleLoginBtn")
+  .onclick=
+async()=>{
+
+  msg(
+    $("#loginMsg"),
+    ""
+  );
+
+
+  const btn=
+    $("#googleLoginBtn");
+
+
+  btn.disabled=
+    true;
+
+
+  btn.textContent=
+    "Google 登入中…";
+
+
+  try{
+
+    await signInWithPopup(
+      auth,
+      googleProvider
+    );
+
+  }catch(e){
+
+    console.error(e);
+
+
+    if(
+      e?.code==="auth/popup-blocked"
+    ){
+
+      await signInWithRedirect(
+        auth,
+        googleProvider
+      );
+
+      return;
+
+    }
+
+
+    if(
+      e?.code!=="auth/popup-closed-by-user"
+      &&
+      e?.code!=="auth/cancelled-popup-request"
+    ){
+
+      msg(
+        $("#loginMsg"),
+        `Google 登入失敗：${esc(e.code||e.message)}`,
+        "error"
+      );
+
+    }
+
+  }finally{
+
+    if(
+      $("#googleLoginBtn")
+    ){
+
+      $("#googleLoginBtn")
+        .disabled=
+          false;
+
+
+      $("#googleLoginBtn")
+        .textContent=
+          "🔵 使用學校 Google 帳號登入";
+
+    }
+
+  }
+
+};
+
+
+/* =========================================================
+   舊帳號登入
+========================================================= */
 
 $("#loginBtn")
   .onclick=
@@ -1158,7 +1563,7 @@ async()=>{
 
     msg(
       $("#loginMsg"),
-      `登入失敗：${esc(e.code||e.message)}`,
+      `舊帳號登入失敗：${esc(e.code||e.message)}`,
       "error"
     );
 
@@ -1169,7 +1574,7 @@ async()=>{
 
 
     btn.textContent=
-      "登入";
+      "舊帳號登入";
 
   }
 
@@ -1199,6 +1604,617 @@ $("#logoutBtn")
     ()=>signOut(auth);
 
 
+/* =========================================================
+   學期
+========================================================= */
+
+function updateSemesterLabel(){
+
+  if(
+    !$("#semesterLabel")
+  ){
+
+    return;
+
+  }
+
+
+  if(
+    profile?.type==="teacher"
+    &&
+    viewSemester!==currentSemester
+  ){
+
+    $("#semesterLabel")
+      .textContent=
+        `目前學期：${currentSemester}｜正在查看：${viewSemester}（唯讀）`;
+
+  }else{
+
+    $("#semesterLabel")
+      .textContent=
+        `目前學期：${currentSemester}`;
+
+  }
+
+}
+
+
+function renderSemesterSwitch(){
+
+  const box=
+    $("#semesterSwitch");
+
+
+  if(!box){
+
+    return;
+
+  }
+
+
+  box.innerHTML=
+    "";
+
+
+  if(
+    profile?.type!=="teacher"
+  ){
+
+    viewSemester=
+      currentSemester;
+
+
+    updateSemesterLabel();
+
+    return;
+
+  }
+
+
+  const semesters=[
+    ...new Set(
+      (
+        profile.assignments
+        ||
+        []
+      )
+      .filter(
+        a=>
+          a.kind==="teacher"
+          &&
+          a.semester
+      )
+      .map(
+        a=>a.semester
+      )
+    )
+  ]
+  .sort()
+  .reverse();
+
+
+  if(
+    !semesters.length
+  ){
+
+    viewSemester=
+      currentSemester;
+
+
+    updateSemesterLabel();
+
+    return;
+
+  }
+
+
+  viewSemester=
+    semesters.includes(
+      viewSemester
+    )
+      ?viewSemester
+      :(
+          semesters.includes(
+            currentSemester
+          )
+            ?currentSemester
+            :semesters[0]
+        );
+
+
+  if(
+    semesters.length===1
+    &&
+    semesters[0]===currentSemester
+  ){
+
+    updateSemesterLabel();
+
+    return;
+
+  }
+
+
+  box.innerHTML=`
+
+    <label
+      class="sub"
+      style="font-weight:800"
+    >
+
+      查看學期
+
+      <select
+        id="teacherSemesterSelect"
+        style="
+          margin-left:5px;
+          padding:6px 8px;
+          border:1px solid #cfd4dc;
+          border-radius:8px;
+          background:#fff
+        "
+      >
+
+        ${
+          semesters.map(
+            s=>`
+
+              <option
+                value="${esc(s)}"
+                ${
+                  s===viewSemester
+                    ?"selected"
+                    :""
+                }
+              >
+
+                ${esc(s)}
+
+                ${
+                  s===currentSemester
+                    ?"（目前）"
+                    :"（歷史唯讀）"
+                }
+
+              </option>
+            `
+          )
+          .join("")
+        }
+
+      </select>
+
+    </label>
+  `;
+
+
+  $("#teacherSemesterSelect")
+    .onchange=
+    e=>{
+
+      viewSemester=
+        e.target.value;
+
+
+      currentAssignment=
+        null;
+
+
+      if(unsubItems){
+
+        unsubItems();
+
+        unsubItems=
+          null;
+
+      }
+
+
+      if(unsubAssess){
+
+        unsubAssess();
+
+        unsubAssess=
+          null;
+
+      }
+
+
+      updateSemesterLabel();
+
+      renderRoles();
+
+    };
+
+
+  updateSemesterLabel();
+
+}
+
+
+/* =========================================================
+   identityRegistry 自動連動
+========================================================= */
+
+async function linkFromRegistry(
+  user
+){
+
+  const email=
+    registryId(
+      user.email
+    );
+
+
+  if(!email){
+
+    throw new Error(
+      "Google 帳號沒有可辨識的 Email。"
+    );
+
+  }
+
+
+  const regRef=
+    doc(
+      db,
+      "identityRegistry",
+      email
+    );
+
+
+  const regSnap=
+    await getDoc(
+      regRef
+    );
+
+
+  if(
+    !regSnap.exists()
+  ){
+
+    throw new Error(
+      `此 Google 帳號尚未列入導師後端對照名單：${email}`
+    );
+
+  }
+
+
+  const reg=
+    regSnap.data();
+
+
+  if(
+    reg.active===false
+  ){
+
+    throw new Error(
+      "此人員資料已被停用，請聯絡導師。"
+    );
+
+  }
+
+
+  if(
+    reg.linkedUid
+    &&
+    reg.linkedUid!==user.uid
+  ){
+
+    throw new Error(
+      "此 Email 已連結到另一個登入身分，請聯絡導師處理連動。"
+    );
+
+  }
+
+
+  const assignments=
+    Array.isArray(
+      reg.assignments
+    )
+      ?reg.assignments
+      :[];
+
+
+  const access=
+    computeAccess(
+      assignments,
+      currentSemester
+    );
+
+
+  const linkedAt=
+    reg.linkedAt
+    ||
+    serverTimestamp();
+
+
+  const data={
+
+    username:
+      reg.username
+      ||
+      email,
+
+    displayName:
+      reg.displayName
+      ||
+      user.displayName
+      ||
+      email,
+
+    type:
+      reg.type
+      ||
+      "student",
+
+    email,
+
+    classId:
+      reg.classId
+      ||
+      "",
+
+    seat:
+      reg.seat
+      ??
+      null,
+
+    active:true,
+
+    assignments,
+
+    ...access,
+
+    mustChangePassword:false,
+
+    authProvider:
+      "google",
+
+    linkedAt,
+
+    lastLoginAt:
+      serverTimestamp(),
+
+    updatedAt:
+      serverTimestamp()
+
+  };
+
+
+  await setDoc(
+    doc(
+      db,
+      "users",
+      user.uid
+    ),
+    data,
+    {
+      merge:true
+    }
+  );
+
+
+  await setDoc(
+    regRef,
+    {
+
+      linked:true,
+
+      linkedUid:
+        user.uid,
+
+      linkedAt,
+
+      lastLoginAt:
+        serverTimestamp(),
+
+      updatedAt:
+        serverTimestamp()
+
+    },
+    {
+      merge:true
+    }
+  );
+
+
+  return{
+    uid:user.uid,
+    ...data
+  };
+
+}
+
+
+/* =========================================================
+   載入使用者
+========================================================= */
+
+async function loadOrLinkProfile(
+  user
+){
+
+  let snap=
+    await getDoc(
+      doc(
+        db,
+        "users",
+        user.uid
+      )
+    );
+
+
+  if(
+    !snap.exists()
+  ){
+
+    const isGoogle=
+      user.providerData
+        ?.some(
+          p=>
+            p.providerId==="google.com"
+        );
+
+
+    if(!isGoogle){
+
+      throw new Error(
+        "此舊帳號尚未建立使用者資料，請聯絡導師。"
+      );
+
+    }
+
+
+    return await linkFromRegistry(
+      user
+    );
+
+  }
+
+
+  const data=
+    snap.data();
+
+
+  if(
+    data.active!==true
+  ){
+
+    throw new Error(
+      "此帳號尚未啟用或已被停用，請聯絡導師。"
+    );
+
+  }
+
+
+  const p={
+    uid:user.uid,
+    ...data
+  };
+
+
+  try{
+
+    await updateDoc(
+      doc(
+        db,
+        "users",
+        user.uid
+      ),
+      {
+
+        lastLoginAt:
+          serverTimestamp(),
+
+        updatedAt:
+          serverTimestamp()
+
+      }
+    );
+
+  }catch(e){
+
+    console.warn(
+      "lastLoginAt",
+      e
+    );
+
+  }
+
+
+  if(
+    user.email
+  ){
+
+    const email=
+      registryId(
+        user.email
+      );
+
+
+    try{
+
+      const regRef=
+        doc(
+          db,
+          "identityRegistry",
+          email
+        );
+
+
+      const regSnap=
+        await getDoc(
+          regRef
+        );
+
+
+      if(
+        regSnap.exists()
+      ){
+
+        const reg=
+          regSnap.data();
+
+
+        if(
+          !reg.linkedUid
+          ||
+          reg.linkedUid===user.uid
+        ){
+
+          await setDoc(
+            regRef,
+            {
+
+              linked:true,
+
+              linkedUid:
+                user.uid,
+
+              linkedAt:
+                reg.linkedAt
+                ||
+                serverTimestamp(),
+
+              lastLoginAt:
+                serverTimestamp(),
+
+              updatedAt:
+                serverTimestamp()
+
+            },
+            {
+              merge:true
+            }
+          );
+
+        }
+
+      }
+
+    }catch(e){
+
+      console.warn(
+        "registry status",
+        e
+      );
+
+    }
+
+  }
+
+
+  return p;
+
+}
+
+
+/* =========================================================
+   舊帳號修改密碼
+========================================================= */
+
 async function changeOwnPassword(
   force=false
 ){
@@ -1219,7 +2235,6 @@ async function changeOwnPassword(
 
     }
 
-
     return false;
 
   }
@@ -1232,7 +2247,6 @@ async function changeOwnPassword(
     alert(
       "密碼至少 6 碼。"
     );
-
 
     return changeOwnPassword(
       force
@@ -1254,7 +2268,6 @@ async function changeOwnPassword(
     alert(
       "兩次密碼不同，請重新設定。"
     );
-
 
     return changeOwnPassword(
       force
@@ -1338,8 +2351,7 @@ async function changeOwnPassword(
         ),
         {
 
-          mustChangePassword:
-            false,
+          mustChangePassword:false,
 
           updatedAt:
             serverTimestamp()
@@ -1392,10 +2404,12 @@ async function changeOwnPassword(
 
 $("#changePwdBtn")
   .onclick=
-    ()=>changeOwnPassword(
-      false
-    );
+    ()=>changeOwnPassword(false);
 
+
+/* =========================================================
+   登入後
+========================================================= */
 
 onAuthStateChanged(
   auth,
@@ -1403,9 +2417,16 @@ onAuthStateChanged(
 
     if(!user){
 
-      profile=null;
+      profile=
+        null;
 
-      currentAssignment=null;
+
+      currentAssignment=
+        null;
+
+
+      viewSemester=
+        currentSemester;
 
 
       if(unsubItems){
@@ -1443,41 +2464,13 @@ onAuthStateChanged(
 
     try{
 
-      const snap=
-        await getDoc(
-          doc(
-            db,
-            "users",
-            user.uid
-          )
+      await loadSystem();
+
+
+      profile=
+        await loadOrLinkProfile(
+          user
         );
-
-
-      if(
-        !snap.exists()
-        ||
-        snap.data().active!==true
-      ){
-
-        await signOut(auth);
-
-
-        msg(
-          $("#loginMsg"),
-          "此帳號尚未啟用或已被停用，請聯絡導師。",
-          "error"
-        );
-
-
-        return;
-
-      }
-
-
-      profile={
-        uid:user.uid,
-        ...snap.data()
-      };
 
 
       if(
@@ -1487,16 +2480,30 @@ onAuthStateChanged(
         location.href=
           "class-datawork-admin.html";
 
-
         return;
 
       }
 
 
-      await loadSystem();
+      const isGoogle=
+        user.providerData
+          ?.some(
+            p=>
+              p.providerId==="google.com"
+          );
+
+
+      $("#changePwdBtn")
+        .classList
+        .toggle(
+          "hidden",
+          !!isGoogle
+        );
 
 
       if(
+        !isGoogle
+        &&
         profile.mustChangePassword===true
       ){
 
@@ -1511,6 +2518,67 @@ onAuthStateChanged(
           return;
 
         }
+
+      }
+
+
+      /*
+        學生永遠鎖定目前學期。
+      */
+
+      if(
+        profile.type==="student"
+      ){
+
+        viewSemester=
+          currentSemester;
+
+      }
+
+
+      /*
+        任課老師：
+        優先進目前學期；
+        如果目前學期沒有任課，
+        才顯示最近一個曾任教的學期。
+      */
+
+      else if(
+        profile.type==="teacher"
+      ){
+
+        const teacherSemesters=[
+          ...new Set(
+            (
+              profile.assignments
+              ||
+              []
+            )
+            .filter(
+              a=>
+                a.kind==="teacher"
+                &&
+                a.semester
+            )
+            .map(
+              a=>a.semester
+            )
+          )
+        ]
+        .sort()
+        .reverse();
+
+
+        viewSemester=
+          teacherSemesters.includes(
+            currentSemester
+          )
+            ?currentSemester
+            :(
+                teacherSemesters[0]
+                ||
+                currentSemester
+              );
 
       }
 
@@ -1535,14 +2603,20 @@ onAuthStateChanged(
           :"學生帳號";
 
 
+      const seatText=
+        profile.type==="student"
+        &&
+        profile.classId
+          ?`｜${profile.classId}班${profile.seat?` ${profile.seat}號`:""}`
+          :"";
+
+
       $("#who")
         .textContent=
-          `${
-            profile.displayName
-            ||
-            profile.username
-          }｜${profile.username}｜${typeText}`;
+          `${profile.displayName||profile.username}${seatText}｜${typeText}`;
 
+
+      renderSemesterSwitch();
 
       renderRoles();
 
@@ -1551,9 +2625,12 @@ onAuthStateChanged(
       console.error(e);
 
 
+      await signOut(auth);
+
+
       msg(
         $("#loginMsg"),
-        `登入後讀取資料失敗：${esc(e.code||e.message)}`,
+        `登入後連動失敗：${esc(e.code||e.message)}`,
         "error"
       );
 
@@ -1563,27 +2640,82 @@ onAuthStateChanged(
 );
 
 
+/* =========================================================
+   權限
+========================================================= */
+
 function currentAssignments(){
 
-  return(
-    profile.assignments
-    ||
-    []
-  )
-  .filter(
-    a=>
-      (
-        a.semester
-        ||
-        ""
-      )
-      ===currentSemester
-  );
+  const sem=
+    profile?.type==="student"
+      ?currentSemester
+      :viewSemester;
+
+
+  let list=
+    (
+      profile.assignments
+      ||
+      []
+    )
+    .filter(
+      a=>
+        (
+          a.semester
+          ||
+          ""
+        )
+        ===sem
+    );
+
+
+  /*
+    教師查看舊學期時，
+    只保留 teacher 任課紀錄，
+    不讓以前曾是其他角色的權限混進來。
+  */
+
+  if(
+    profile?.type==="teacher"
+    &&
+    sem!==currentSemester
+  ){
+
+    list=
+      list.filter(
+        a=>a.kind==="teacher"
+      );
+
+  }
+
+
+  return list;
 
 }
 
 
 function renderRoles(){
+
+  const shownSemester=
+    profile?.type==="student"
+      ?currentSemester
+      :viewSemester;
+
+
+  if(
+    $("#rolesSectionTitle")
+  ){
+
+    $("#rolesSectionTitle")
+      .textContent=
+        profile?.type==="teacher"
+        &&
+        shownSemester!==currentSemester
+          ?`${shownSemester} 歷史任課（唯讀）`
+          :`${shownSemester} 我的職務`;
+
+  }
+
 
   const list=
     currentAssignments();
@@ -1612,6 +2744,12 @@ function renderRoles(){
     !list.length
   ){
 
+    const sem=
+      profile?.type==="student"
+        ?currentSemester
+        :viewSemester;
+
+
     box.innerHTML=`
 
       <div class="empty">
@@ -1623,7 +2761,7 @@ function renderRoles(){
         <br><br>
 
         目前尚未被指派
-        ${esc(currentSemester)}
+        ${esc(sem)}
         的任何職務或任課權限。
 
         <br>
@@ -1653,11 +2791,7 @@ function renderRoles(){
 
 
       d.className=
-        `card role-card ${
-          a.kind==="teacher"
-            ?"teacher-role"
-            :""
-        }`;
+        `card role-card ${a.kind==="teacher"?"teacher-role":""}`;
 
 
       d.innerHTML=`
@@ -1724,6 +2858,10 @@ function renderRoles(){
 }
 
 
+/* =========================================================
+   選擇職務
+========================================================= */
+
 async function selectAssignment(
   i,
   el
@@ -1736,17 +2874,15 @@ async function selectAssignment(
   $$(".role-card")
     .forEach(
       x=>
-        x.classList
-          .remove(
-            "active"
-          )
+        x.classList.remove(
+          "active"
+        )
     );
 
 
-  el.classList
-    .add(
-      "active"
-    );
+  el.classList.add(
+    "active"
+  );
 
 
   currentAssignment=
@@ -1769,29 +2905,43 @@ async function selectAssignment(
 
   $("#workspacePerm")
     .textContent=
-      `${
-        currentSemester
-      }｜${
-        canCollection(currentAssignment)
+      `${currentAssignment.semester||viewSemester}｜`
+      +
+      (
+        isHistoricalReadOnly()
+          ?"歷史學期唯讀；"
+          :""
+      )
+      +
+      (
+        canCollection(
+          currentAssignment
+        )
           ?"可登記收繳"
           :"收繳唯讀"
-      }${
+      )
+      +
+      (
         currentAssignment.scopeType==="subject"
-          ?`; ${
-              canScores(currentAssignment)
-                ?"可登記小考成績"
-                :"成績唯讀"
-            }`
+          ?`；${canScores(currentAssignment)?"可登記小考成績":"成績唯讀"}`
           :""
-      }${
-        canConfirm(currentAssignment)
+      )
+      +
+      (
+        canConfirm(
+          currentAssignment
+        )
           ?"；可確認資料"
           :""
-      }${
-        isTeacherAssignment(currentAssignment)
+      )
+      +
+      (
+        isTeacherAssignment(
+          currentAssignment
+        )
           ?"；任課老師可列印、Excel 與週成績彙整"
           :""
-      }`;
+      );
 
 
   $("#scoresTab")
@@ -1809,10 +2959,9 @@ async function selectAssignment(
     $$(".tab")
       .forEach(
         x=>
-          x.classList
-            .remove(
-              "active"
-            )
+          x.classList.remove(
+            "active"
+          )
       );
 
 
@@ -1861,6 +3010,10 @@ async function selectAssignment(
 }
 
 
+/* =========================================================
+   頁籤
+========================================================= */
+
 $$(".tab")
   .forEach(
     b=>
@@ -1881,17 +3034,15 @@ $$(".tab")
         $$(".tab")
           .forEach(
             x=>
-              x.classList
-                .remove(
-                  "active"
-                )
+              x.classList.remove(
+                "active"
+              )
           );
 
 
-        b.classList
-          .add(
-            "active"
-          );
+        b.classList.add(
+          "active"
+        );
 
 
         const t=
@@ -1917,6 +3068,10 @@ $$(".tab")
   );
 
 
+/* =========================================================
+   收繳
+========================================================= */
+
 function startCollection(){
 
   if(unsubItems){
@@ -1938,13 +3093,11 @@ function startCollection(){
         db,
         "collectionItems"
       ),
-
       where(
         "semester",
         "==",
-        currentSemester
+        viewSemester
       ),
-
       where(
         "scopeKey",
         "==",
@@ -2002,14 +3155,18 @@ function startCollection(){
 }
 
 
-function collectionCounts(it){
+function collectionCounts(
+  it
+){
 
   const counts={
+
     submitted:0,
     missing:0,
     late:0,
     exempt:0,
     lateSubmitted:0
+
   };
 
 
@@ -2059,7 +3216,9 @@ function collectionCounts(it){
 }
 
 
-function renderCollection(items){
+function renderCollection(
+  items
+){
 
   const p=
     $("#collectionPanel");
@@ -2076,13 +3235,16 @@ function renderCollection(items){
   ){
 
     html+=`
+
       <div class="toolbar">
+
         <button
           id="newCollectionBtn"
           class="btn primary"
         >
           ＋新增收繳項目
         </button>
+
       </div>
     `;
 
@@ -2115,9 +3277,12 @@ function renderCollection(items){
   }
 
 
-  if(!items.length){
+  if(
+    !items.length
+  ){
 
     html+=`
+
       <div class="empty">
         本學期目前沒有收繳紀錄。
       </div>
@@ -2139,11 +3304,13 @@ function renderCollection(items){
 
       html+=`
 
-        <div class="item ${
-          confirmed
-            ?"confirmed"
-            :""
-        }">
+        <div
+          class="item ${
+            confirmed
+              ?"confirmed"
+              :""
+          }"
+        >
 
           <div class="item-head">
 
@@ -2155,7 +3322,7 @@ function renderCollection(items){
 
               <div class="meta">
 
-                ${esc(it.semester||currentSemester)}
+                ${esc(it.semester||viewSemester)}
 
                 ｜${esc(it.date||"")}
 
@@ -2182,11 +3349,13 @@ function renderCollection(items){
                     :"warn"
                 }"
               >
+
                 ${
                   confirmed
                     ?"已確認"
                     :"尚未確認"
                 }
+
               </span>
 
             </div>
@@ -2219,7 +3388,8 @@ function renderCollection(items){
                     class="stat"
                     style="color:#d92d20"
                   >
-                    遲交後已繳 ${c.lateSubmitted}
+                    遲交後已繳
+                    ${c.lateSubmitted}
                   </span>
                 `
                 :""
@@ -2243,15 +3413,18 @@ function renderCollection(items){
                 currentAssignment
               )
                 ?`
+
                   <button
                     class="btn good small confirm-col"
                     data-id="${it.id}"
                   >
+
                     ${
                       confirmed
                         ?"取消確認"
                         :"確認"
                     }
+
                   </button>
                 `
                 :""
@@ -2263,6 +3436,7 @@ function renderCollection(items){
                 currentAssignment
               )
                 ?`
+
                   <button
                     class="btn gray small print-col"
                     data-id="${it.id}"
@@ -2288,6 +3462,7 @@ function renderCollection(items){
                 currentAssignment
               )
                 ?`
+
                   <button
                     class="btn danger small del-col"
                     data-id="${it.id}"
@@ -2386,6 +3561,10 @@ function renderCollection(items){
 }
 
 
+/* =========================================================
+   新增收繳
+========================================================= */
+
 async function createCollectionPrompt(){
 
   const name=
@@ -2436,9 +3615,8 @@ async function createCollectionPrompt(){
         s.id
         ||
         String(s.seat)
-      ]
-      =
-      "submitted"
+      ]=
+        "submitted"
   );
 
 
@@ -2451,10 +3629,11 @@ async function createCollectionPrompt(){
       {
 
         semester:
+          a.semester
+          ||
           currentSemester,
 
-        scopeKey:
-          key,
+        scopeKey:key,
 
         classId:
           a.classId,
@@ -2500,8 +3679,7 @@ async function createCollectionPrompt(){
         reviewStatus:
           "pending",
 
-        locked:
-          false
+        locked:false
 
       }
     );
@@ -2517,7 +3695,13 @@ async function createCollectionPrompt(){
 }
 
 
-async function confirmCollection(it){
+/* =========================================================
+   確認收繳
+========================================================= */
+
+async function confirmCollection(
+  it
+){
 
   const confirming=
     it.reviewStatus!=="confirmed";
@@ -2528,9 +3712,7 @@ async function confirmCollection(it){
       confirming
         ?`確定確認「${it.itemName}」？
 
-確認後：
-已繳與免繳會鎖定；
-未繳、補交仍可繼續修改。`
+確認後：已繳與免繳會鎖定；未繳、補交仍可繼續修改。`
         :`確定取消確認「${it.itemName}」？`
     )
   ){
@@ -2557,10 +3739,12 @@ async function confirmCollection(it){
           status
         ]
       )=>
+
         lockedRecords[sid]=
           status==="submitted"
           ||
           status==="exempt"
+
     );
 
   }
@@ -2579,8 +3763,7 @@ async function confirmCollection(it){
           ?"confirmed"
           :"pending",
 
-      locked:
-        false,
+      locked:false,
 
       lockedRecords:
         confirming
@@ -2619,33 +3802,33 @@ async function confirmCollection(it){
       :"unconfirm",
     "collection",
     it.id,
-    `${
-      confirming
-        ?"確認"
-        :"取消確認"
-    }收繳：${it.itemName}`
+    `${confirming?"確認":"取消確認"}收繳：${it.itemName}`
   );
 
 }
 
 
-function toggleCollectionEditor(it){
+/* =========================================================
+   收繳編輯
+========================================================= */
+
+function toggleCollectionEditor(
+  it
+){
 
   const box=
     $(`#col-${it.id}`);
 
 
   if(
-    !box.classList
-      .contains(
-        "hidden"
-      )
+    !box.classList.contains(
+      "hidden"
+    )
   ){
 
-    box.classList
-      .add(
-        "hidden"
-      );
+    box.classList.add(
+      "hidden"
+    );
 
 
     box.innerHTML=
@@ -2657,10 +3840,9 @@ function toggleCollectionEditor(it){
   }
 
 
-  box.classList
-    .remove(
-      "hidden"
-    );
+  box.classList.remove(
+    "hidden"
+  );
 
 
   const confirmed=
@@ -2691,12 +3873,15 @@ function toggleCollectionEditor(it){
       ${
         canWrite
           ?`
-            <button class="btn gray small all-submitted">
+            <button
+              class="btn gray small all-submitted"
+            >
               將可修改者設為已繳
             </button>
           `
           :""
       }
+
 
       <span class="sub">
         確認後：已繳／免繳鎖定；未繳／補交仍可修正。
@@ -2755,15 +3940,18 @@ function toggleCollectionEditor(it){
 
             return`
 
-              <div class="student ${
-                locked
-                  ?"locked"
-                  :""
-              }">
+              <div
+                class="student ${
+                  locked
+                    ?"locked"
+                    :""
+                }"
+              >
 
                 <div class="name">
                   ${s.seat}. ${esc(s.name)}
                 </div>
+
 
                 <select
                   class="status col-status"
@@ -2784,6 +3972,7 @@ function toggleCollectionEditor(it){
                           l
                         ]
                       )=>`
+
                         <option
                           value="${x}"
                           ${
@@ -2837,9 +4026,12 @@ function toggleCollectionEditor(it){
     ${
       canWrite
         ?`
+
           <div class="toolbar">
 
-            <button class="btn primary save-col">
+            <button
+              class="btn primary save-col"
+            >
               儲存收繳狀態
             </button>
 
@@ -2850,160 +4042,176 @@ function toggleCollectionEditor(it){
   `;
 
 
-  box.querySelector(
-    ".all-submitted"
-  )
-  ?.addEventListener(
-    "click",
-    ()=>
-      box.querySelectorAll(
-        ".col-status:not(:disabled)"
-      )
-      .forEach(
-        s=>
-          s.value=
-            "submitted"
-      )
-  );
+  box
+    .querySelector(
+      ".all-submitted"
+    )
+    ?.addEventListener(
+      "click",
+      ()=>{
+
+        box
+          .querySelectorAll(
+            ".col-status:not(:disabled)"
+          )
+          .forEach(
+            s=>
+              s.value=
+                "submitted"
+          );
+
+      }
+    );
 
 
-  box.querySelector(
-    ".save-col"
-  )
-  ?.addEventListener(
-    "click",
-    async()=>{
+  box
+    .querySelector(
+      ".save-col"
+    )
+    ?.addEventListener(
+      "click",
+      async()=>{
 
-      const records={
-        ...(
-          it.records
-          ||
-          {}
-        )
-      };
-
-
-      const lateSubmitted={
-        ...(
-          it.lateSubmitted
-          ||
-          {}
-        )
-      };
+        const records={
+          ...(
+            it.records
+            ||
+            {}
+          )
+        };
 
 
-      const lockedRecords={
-        ...(
-          it.lockedRecords
-          ||
-          {}
-        )
-      };
+        const lateSubmitted={
+          ...(
+            it.lateSubmitted
+            ||
+            {}
+          )
+        };
 
 
-      box.querySelectorAll(
-        ".col-status"
-      )
-      .forEach(
-        sel=>{
+        const lockedRecords={
+          ...(
+            it.lockedRecords
+            ||
+            {}
+          )
+        };
 
-          if(sel.disabled){
 
-            return;
+        box
+          .querySelectorAll(
+            ".col-status"
+          )
+          .forEach(
+            sel=>{
+
+              if(sel.disabled){
+
+                return;
+
+              }
+
+
+              const sid=
+                sel.dataset.student;
+
+
+              const oldStatus=
+                sel.dataset.old;
+
+
+              const newStatus=
+                sel.value;
+
+
+              records[sid]=
+                newStatus;
+
+
+              if(
+                confirmed
+                &&
+                (
+                  oldStatus==="missing"
+                  ||
+                  oldStatus==="late"
+                )
+                &&
+                newStatus==="submitted"
+              ){
+
+                lateSubmitted[sid]=
+                  true;
+
+
+                lockedRecords[sid]=
+                  true;
+
+              }
+
+
+              else if(
+                confirmed
+                &&
+                newStatus==="exempt"
+              ){
+
+                lockedRecords[sid]=
+                  true;
+
+              }
+
+            }
+          );
+
+
+        await updateDoc(
+          doc(
+            db,
+            "collectionItems",
+            it.id
+          ),
+          {
+
+            records,
+
+            lateSubmitted,
+
+            lockedRecords,
+
+            updatedAt:
+              serverTimestamp()
 
           }
+        );
 
 
-          const sid=
-            sel.dataset.student;
+        await audit(
+          "update",
+          "collection",
+          it.id,
+          `更新收繳：${it.itemName}`
+        );
 
 
-          const oldStatus=
-            sel.dataset.old;
+        alert(
+          "已儲存"
+        );
 
-
-          const newStatus=
-            sel.value;
-
-
-          records[sid]=
-            newStatus;
-
-
-          if(
-            confirmed
-            &&
-            (
-              oldStatus==="missing"
-              ||
-              oldStatus==="late"
-            )
-            &&
-            newStatus==="submitted"
-          ){
-
-            lateSubmitted[sid]=
-              true;
-
-
-            lockedRecords[sid]=
-              true;
-
-          }else if(
-            confirmed
-            &&
-            newStatus==="exempt"
-          ){
-
-            lockedRecords[sid]=
-              true;
-
-          }
-
-        }
-      );
-
-
-      await updateDoc(
-        doc(
-          db,
-          "collectionItems",
-          it.id
-        ),
-        {
-
-          records,
-
-          lateSubmitted,
-
-          lockedRecords,
-
-          updatedAt:
-            serverTimestamp()
-
-        }
-      );
-
-
-      await audit(
-        "update",
-        "collection",
-        it.id,
-        `更新收繳：${it.itemName}`
-      );
-
-
-      alert(
-        "已儲存"
-      );
-
-    }
-  );
+      }
+    );
 
 }
 
 
-async function removeCollection(it){
+/* =========================================================
+   刪除收繳
+========================================================= */
+
+async function removeCollection(
+  it
+){
 
   if(
     !confirm(
@@ -3035,6 +4243,10 @@ async function removeCollection(it){
 }
 
 
+/* =========================================================
+   成績
+========================================================= */
+
 function startScores(){
 
   if(unsubAssess){
@@ -3056,13 +4268,11 @@ function startScores(){
         db,
         "assessments"
       ),
-
       where(
         "semester",
         "==",
-        currentSemester
+        viewSemester
       ),
-
       where(
         "scopeKey",
         "==",
@@ -3120,10 +4330,11 @@ function startScores(){
 }
 
 
-function calcStats(it){
+function calcStats(
+  it
+){
 
   const vals=[];
-
 
   let absent=0;
 
@@ -3194,8 +4405,7 @@ function calcStats(it){
               (
                 a,
                 b
-              )=>
-                a+b,
+              )=>a+b,
               0
             )
             /
@@ -3206,16 +4416,12 @@ function calcStats(it){
 
     high:
       vals.length
-        ?Math.max(
-            ...vals
-          )
+        ?Math.max(...vals)
         :"-",
 
     low:
       vals.length
-        ?Math.min(
-            ...vals
-          )
+        ?Math.min(...vals)
         :"-",
 
     below,
@@ -3229,6 +4435,10 @@ function calcStats(it){
 
 }
 
+
+/* =========================================================
+   任課老師週成績工具
+========================================================= */
 
 function renderTeacherWeekTools(){
 
@@ -3256,15 +4466,23 @@ function renderTeacherWeekTools(){
       </div>
 
       <div class="sub">
+
         ${esc(currentAssignment.classId)}班
+
         ｜${esc(currentAssignment.scopeName)}
-        ｜預設本週 ${w.start} ～ ${w.end}
+
+        ｜預設本週
+        ${w.start}
+        ～
+        ${w.end}
+
       </div>
 
 
       <div class="toolbar">
 
         <label>
+
           開始
 
           <input
@@ -3272,10 +4490,12 @@ function renderTeacherWeekTools(){
             type="date"
             value="${w.start}"
           >
+
         </label>
 
 
         <label>
+
           結束
 
           <input
@@ -3283,6 +4503,7 @@ function renderTeacherWeekTools(){
             type="date"
             value="${w.end}"
           >
+
         </label>
 
 
@@ -3320,7 +4541,13 @@ function renderTeacherWeekTools(){
 }
 
 
-function renderScores(items){
+/* =========================================================
+   成績列表
+========================================================= */
+
+function renderScores(
+  items
+){
 
   const p=
     $("#scoresPanel");
@@ -3353,9 +4580,12 @@ function renderScores(items){
   }
 
 
-  if(!items.length){
+  if(
+    !items.length
+  ){
 
     html+=`
+
       <div class="empty">
         本學期目前沒有小考紀錄。
       </div>
@@ -3377,11 +4607,13 @@ function renderScores(items){
 
       html+=`
 
-        <div class="item ${
-          confirmed
-            ?"confirmed"
-            :""
-        }">
+        <div
+          class="item ${
+            confirmed
+              ?"confirmed"
+              :""
+          }"
+        >
 
           <div class="item-head">
 
@@ -3393,7 +4625,7 @@ function renderScores(items){
 
               <div class="meta">
 
-                ${esc(it.semester||currentSemester)}
+                ${esc(it.semester||viewSemester)}
 
                 ｜${esc(it.date||"")}
 
@@ -3418,11 +4650,13 @@ function renderScores(items){
                     :"warn"
                 }"
               >
+
                 ${
                   confirmed
                     ?"已確認"
                     :"尚未確認"
                 }
+
               </span>
 
             </div>
@@ -3470,15 +4704,18 @@ function renderScores(items){
                 currentAssignment
               )
                 ?`
+
                   <button
                     class="btn good small confirm-score"
                     data-id="${it.id}"
                   >
+
                     ${
                       confirmed
                         ?"取消確認"
                         :"確認"
                     }
+
                   </button>
                 `
                 :""
@@ -3490,6 +4727,7 @@ function renderScores(items){
                 currentAssignment
               )
                 ?`
+
                   <button
                     class="btn gray small print-score"
                     data-id="${it.id}"
@@ -3515,6 +4753,7 @@ function renderScores(items){
                 currentAssignment
               )
                 ?`
+
                   <button
                     class="btn danger small del-score"
                     data-id="${it.id}"
@@ -3634,6 +4873,10 @@ function renderScores(items){
 }
 
 
+/* =========================================================
+   新增小考
+========================================================= */
+
 async function createAssessmentPrompt(){
 
   const name=
@@ -3704,19 +4947,20 @@ async function createAssessmentPrompt(){
 
   roster.forEach(
     s=>
+
       scores[
         s.id
         ||
         String(s.seat)
-      ]
-      =
-      {
+      ]={
+
         status:
           "not_entered",
 
-        score:
-          null
+        score:null
+
       }
+
   );
 
 
@@ -3729,6 +4973,8 @@ async function createAssessmentPrompt(){
       {
 
         semester:
+          a.semester
+          ||
           currentSemester,
 
         scopeKey:
@@ -3749,14 +4995,11 @@ async function createAssessmentPrompt(){
         date:
           today(),
 
-        maxScore:
-          max,
+        maxScore:max,
 
-        passScore:
-          pass,
+        passScore:pass,
 
-        note:
-          "",
+        note:"",
 
         scores,
 
@@ -3779,8 +5022,7 @@ async function createAssessmentPrompt(){
         reviewStatus:
           "pending",
 
-        locked:
-          false
+        locked:false
 
       }
     );
@@ -3796,7 +5038,13 @@ async function createAssessmentPrompt(){
 }
 
 
-async function confirmAssessment(it){
+/* =========================================================
+   確認成績
+========================================================= */
+
+async function confirmAssessment(
+  it
+){
 
   const confirming=
     it.reviewStatus!=="confirmed";
@@ -3807,9 +5055,7 @@ async function confirmAssessment(it){
       confirming
         ?`確定確認「${it.name}」？
 
-確認後：
-已有成績會鎖定；
-尚未登記的學生仍可補登。
+確認後：已有成績會鎖定；尚未登記的學生仍可補登。
 若要修改已存在成績，請先按「解鎖」。`
         :`確定取消確認「${it.name}」？`
     )
@@ -3837,8 +5083,10 @@ async function confirmAssessment(it){
           r
         ]
       )=>
+
         scoreLocks[sid]=
           hasScore(r)
+
     );
 
   }
@@ -3857,8 +5105,7 @@ async function confirmAssessment(it){
           ?"confirmed"
           :"pending",
 
-      locked:
-        false,
+      locked:false,
 
       scoreLocks:
         confirming
@@ -3897,33 +5144,33 @@ async function confirmAssessment(it){
       :"unconfirm",
     "assessment",
     it.id,
-    `${
-      confirming
-        ?"確認"
-        :"取消確認"
-    }成績：${it.name}`
+    `${confirming?"確認":"取消確認"}成績：${it.name}`
   );
 
 }
 
 
-function toggleScoreEditor(it){
+/* =========================================================
+   編輯成績
+========================================================= */
+
+function toggleScoreEditor(
+  it
+){
 
   const box=
     $(`#score-${it.id}`);
 
 
   if(
-    !box.classList
-      .contains(
-        "hidden"
-      )
+    !box.classList.contains(
+      "hidden"
+    )
   ){
 
-    box.classList
-      .add(
-        "hidden"
-      );
+    box.classList.add(
+      "hidden"
+    );
 
 
     box.innerHTML=
@@ -3935,10 +5182,9 @@ function toggleScoreEditor(it){
   }
 
 
-  box.classList
-    .remove(
-      "hidden"
-    );
+  box.classList.remove(
+    "hidden"
+  );
 
 
   const confirmed=
@@ -3985,10 +5231,12 @@ function toggleScoreEditor(it){
               )[id]
               ||
               {
+
                 status:
                   "not_entered",
-                score:
-                  null
+
+                score:null
+
               };
 
 
@@ -4084,6 +5332,7 @@ function toggleScoreEditor(it){
                   &&
                   canWrite
                     ?`
+
                       <button
                         class="btn warn small unlock-score"
                         data-student="${esc(id)}"
@@ -4091,13 +5340,15 @@ function toggleScoreEditor(it){
                         🔓 解鎖
                       </button>
                     `
-                    :locked
-                      ?`
-                        <span class="lock-note">
-                          🔒 已鎖
-                        </span>
-                      `
-                      :""
+                    :(
+                        locked
+                          ?`
+                            <span class="lock-note">
+                              🔒 已鎖
+                            </span>
+                          `
+                          :""
+                      )
                 }
 
               </div>
@@ -4114,9 +5365,12 @@ function toggleScoreEditor(it){
     ${
       canWrite
         ?`
+
           <div class="toolbar">
 
-            <button class="btn primary save-score">
+            <button
+              class="btn primary save-score"
+            >
               儲存成績
             </button>
 
@@ -4139,6 +5393,7 @@ function toggleScoreEditor(it){
       inp,
       i
     )=>
+
       inp.addEventListener(
         "keydown",
         e=>{
@@ -4163,252 +5418,275 @@ function toggleScoreEditor(it){
 
         }
       )
+
   );
 
 
-  box.querySelectorAll(
-    ".unlock-score"
-  )
-  .forEach(
-    btn=>
-      btn.onclick=
-      async()=>{
+  box
+    .querySelectorAll(
+      ".unlock-score"
+    )
+    .forEach(
+      btn=>
 
-        const sid=
-          btn.dataset.student;
+        btn.onclick=
+        async()=>{
+
+          const sid=
+            btn.dataset.student;
 
 
-        if(
-          !confirm(
-            "確定解鎖這位學生的既有成績？"
-          )
-        ){
+          if(
+            !confirm(
+              "確定解鎖這位學生的既有成績？"
+            )
+          ){
 
-          return;
+            return;
+
+          }
+
+
+          const scoreLocks={
+
+            ...(
+              it.scoreLocks
+              ||
+              {}
+            ),
+
+            [sid]:false
+
+          };
+
+
+          await updateDoc(
+            doc(
+              db,
+              "assessments",
+              it.id
+            ),
+            {
+
+              scoreLocks,
+
+              updatedAt:
+                serverTimestamp()
+
+            }
+          );
+
+
+          await audit(
+            "unlock_score",
+            "assessment",
+            it.id,
+            `解鎖成績：${it.name}｜座號 ${sid}`
+          );
+
+
+          it.scoreLocks=
+            scoreLocks;
+
+
+          toggleScoreEditor(
+            it
+          );
+
+
+          toggleScoreEditor(
+            it
+          );
 
         }
+    );
+
+
+  box
+    .querySelector(
+      ".save-score"
+    )
+    ?.addEventListener(
+      "click",
+      async()=>{
+
+        const scores={
+
+          ...(
+            it.scores
+            ||
+            {}
+          )
+
+        };
 
 
         const scoreLocks={
+
           ...(
             it.scoreLocks
             ||
             {}
-          ),
+          )
 
-          [sid]:
-            false
         };
 
 
-        await updateDoc(
-          doc(
-            db,
-            "assessments",
-            it.id
-          ),
-          {
+        try{
 
-            scoreLocks,
-
-            updatedAt:
-              serverTimestamp()
-
-          }
-        );
-
-
-        await audit(
-          "unlock_score",
-          "assessment",
-          it.id,
-          `解鎖成績：${it.name}｜座號 ${sid}`
-        );
-
-
-        it.scoreLocks=
-          scoreLocks;
-
-
-        toggleScoreEditor(it);
-
-        toggleScoreEditor(it);
-
-      }
-  );
-
-
-  box.querySelector(
-    ".save-score"
-  )
-  ?.addEventListener(
-    "click",
-    async()=>{
-
-      const scores={
-        ...(
-          it.scores
-          ||
-          {}
-        )
-      };
-
-
-      const scoreLocks={
-        ...(
-          it.scoreLocks
-          ||
-          {}
-        )
-      };
-
-
-      try{
-
-        for(
-          const s
-          of roster
-        ){
-
-          const id=
-            s.id
-            ||
-            String(s.seat);
-
-
-          const inp=
-            box.querySelector(
-              `.score-input[data-student="${CSS.escape(id)}"]`
-            );
-
-
-          const sel=
-            box.querySelector(
-              `.score-status[data-student="${CSS.escape(id)}"]`
-            );
-
-
-          if(
-            !inp
-            ||
-            inp.disabled
+          for(
+            const s
+            of roster
           ){
 
-            continue;
-
-          }
-
-
-          let score=
-            inp.value===""
-              ?null
-              :Number(
-                  inp.value
-                );
-
-
-          if(
-            score!==null
-            &&
-            (
-              score<0
+            const id=
+              s.id
               ||
-              score>
-              Number(
-                it.maxScore
+              String(s.seat);
+
+
+            const inp=
+              box.querySelector(
+                `.score-input[data-student="${CSS.escape(id)}"]`
+              );
+
+
+            const sel=
+              box.querySelector(
+                `.score-status[data-student="${CSS.escape(id)}"]`
+              );
+
+
+            if(
+              !inp
+              ||
+              inp.disabled
+            ){
+
+              continue;
+
+            }
+
+
+            let score=
+              inp.value===""
+                ?null
+                :Number(
+                    inp.value
+                  );
+
+
+            if(
+              score!==null
+              &&
+              (
+                score<0
+                ||
+                score>
+                Number(
+                  it.maxScore
+                )
               )
-            )
-          ){
+            ){
 
-            throw new Error(
-              `${s.name} 分數超出範圍`
-            );
+              throw new Error(
+                `${s.name} 分數超出範圍`
+              );
+
+            }
+
+
+            let status=
+              sel.value;
+
+
+            if(
+              score!==null
+              &&
+              status==="not_entered"
+            ){
+
+              status=
+                "normal";
+
+            }
+
+
+            scores[id]={
+
+              score,
+
+              status
+
+            };
+
+
+            if(
+              confirmed
+              &&
+              score!==null
+            ){
+
+              scoreLocks[id]=
+                true;
+
+            }
 
           }
 
 
-          let status=
-            sel.value;
+          await updateDoc(
+            doc(
+              db,
+              "assessments",
+              it.id
+            ),
+            {
+
+              scores,
+
+              scoreLocks,
+
+              updatedAt:
+                serverTimestamp()
+
+            }
+          );
 
 
-          if(
-            score!==null
-            &&
-            status==="not_entered"
-          ){
-
-            status=
-              "normal";
-
-          }
+          await audit(
+            "update",
+            "assessment",
+            it.id,
+            `更新小考：${it.name}`
+          );
 
 
-          scores[id]={
-            score,
-            status
-          };
+          alert(
+            "已儲存"
+          );
 
+        }catch(e){
 
-          if(
-            confirmed
-            &&
-            score!==null
-          ){
-
-            scoreLocks[id]=
-              true;
-
-          }
+          alert(
+            e.message
+          );
 
         }
 
-
-        await updateDoc(
-          doc(
-            db,
-            "assessments",
-            it.id
-          ),
-          {
-
-            scores,
-
-            scoreLocks,
-
-            updatedAt:
-              serverTimestamp()
-
-          }
-        );
-
-
-        await audit(
-          "update",
-          "assessment",
-          it.id,
-          `更新小考：${it.name}`
-        );
-
-
-        alert(
-          "已儲存"
-        );
-
-      }catch(e){
-
-        alert(
-          e.message
-        );
-
       }
-
-    }
-  );
+    );
 
 }
 
 
-async function removeAssessment(it){
+/* =========================================================
+   刪除成績
+========================================================= */
+
+async function removeAssessment(
+  it
+){
 
   if(
     !confirm(
@@ -4440,9 +5718,9 @@ async function removeAssessment(it){
 }
 
 
-/* ======================================================
+/* =========================================================
    任課老師週成績
-====================================================== */
+========================================================= */
 
 function teacherWeekData(){
 
@@ -4450,20 +5728,23 @@ function teacherWeekData(){
     $("#teacherWeekStart")
       ?.value
     ||
-    weekRange(0).start;
+    weekRange(0)
+      .start;
 
 
   const end=
     $("#teacherWeekEnd")
       ?.value
     ||
-    weekRange(0).end;
+    weekRange(0)
+      .end;
 
 
   const tests=
     currentAssessmentItems
       .filter(
         x=>
+
           (
             !start
             ||
@@ -4475,12 +5756,14 @@ function teacherWeekData(){
             ||
             x.date<=end
           )
+
       )
       .sort(
         (
           a,
           b
         )=>
+
           (
             a.date
             ||
@@ -4502,6 +5785,7 @@ function teacherWeekData(){
             ||
             ""
           )
+
       );
 
 
@@ -4589,14 +5873,23 @@ function teacherWeekData(){
 
 
   return{
+
     start,
+
     end,
+
     tests,
+
     rows
+
   };
 
 }
 
+
+/* =========================================================
+   顯示週成績
+========================================================= */
 
 function showTeacherWeekSummary(){
 
@@ -4619,9 +5912,14 @@ function showTeacherWeekSummary(){
 
     <div class="summary-title">
 
-      📊 ${esc(currentAssignment.classId)}班
+      📊
+      ${esc(currentAssignment.classId)}班
+
       ｜${esc(currentAssignment.scopeName)}
-      ｜${d.start} ～ ${d.end}
+
+      ｜${d.start}
+      ～
+      ${d.end}
 
     </div>
 
@@ -4638,8 +5936,13 @@ function showTeacherWeekSummary(){
 
                 <tr>
 
-                  <th>座號</th>
-                  <th>姓名</th>
+                  <th>
+                    座號
+                  </th>
+
+                  <th>
+                    姓名
+                  </th>
 
                   ${
                     d.tests.map(
@@ -4683,6 +5986,7 @@ function showTeacherWeekSummary(){
                         ${
                           r.values.map(
                             v=>`
+
                               <td>
                                 ${esc(v)}
                               </td>
@@ -4715,9 +6019,15 @@ function showTeacherWeekSummary(){
 }
 
 
+/* =========================================================
+   Excel 元件
+========================================================= */
+
 async function ensureXLSX(){
 
-  if(window.XLSX){
+  if(
+    window.XLSX
+  ){
 
     return;
 
@@ -4761,13 +6071,19 @@ async function ensureXLSX(){
 }
 
 
+/* =========================================================
+   週成績 Excel
+========================================================= */
+
 async function exportTeacherWeekExcel(){
 
   const d=
     teacherWeekData();
 
 
-  if(!d.tests.length){
+  if(
+    !d.tests.length
+  ){
 
     return alert(
       "這個日期範圍沒有成績可下載。"
@@ -4796,9 +6112,13 @@ async function exportTeacherWeekExcel(){
 
       ...d.rows.map(
         r=>[
+
           r.seat,
+
           r.name,
+
           ...r.values
+
         ]
       )
 
@@ -4846,15 +6166,7 @@ async function exportTeacherWeekExcel(){
 
     XLSX.writeFile(
       wb,
-      `${
-        currentAssignment.classId
-      }-${
-        currentAssignment.scopeName
-      }-週成績-${
-        d.start
-      }-${
-        d.end
-      }.xlsx`
+      `${currentAssignment.classId}-${currentAssignment.scopeName}-週成績-${d.start}-${d.end}.xlsx`
     );
 
   }catch(e){
@@ -4870,13 +6182,19 @@ async function exportTeacherWeekExcel(){
 }
 
 
+/* =========================================================
+   週成績列印
+========================================================= */
+
 function printTeacherWeekSummary(){
 
   const d=
     teacherWeekData();
 
 
-  if(!d.tests.length){
+  if(
+    !d.tests.length
+  ){
 
     return alert(
       "這個日期範圍沒有成績可列印。"
@@ -4901,9 +6219,13 @@ function printTeacherWeekSummary(){
 
     d.rows.map(
       r=>[
+
         r.seat,
+
         esc(r.name),
+
         ...r.values
+
       ]
     ),
 
@@ -4914,11 +6236,13 @@ function printTeacherWeekSummary(){
 }
 
 
-/* ======================================================
-   單筆列印 / Excel
-====================================================== */
+/* =========================================================
+   收繳列印資料
+========================================================= */
 
-function collectionRows(it){
+function collectionRows(
+  it
+){
 
   return roster.map(
     s=>{
@@ -4950,15 +6274,20 @@ function collectionRows(it){
 
 
       return[
+
         s.seat,
+
         s.name,
+
         labelOf(
           statusOptions,
           status
         ),
+
         late
           ?"已繳交（遲交）"
           :""
+
       ];
 
     }
@@ -4967,17 +6296,19 @@ function collectionRows(it){
 }
 
 
-function printCollection(it){
+/* =========================================================
+   收繳列印
+========================================================= */
+
+function printCollection(
+  it
+){
 
   openPrint(
 
     `${it.classId}班｜${it.scopeName}｜${it.itemName}`,
 
-    `日期：${it.date||""}${
-      it.dueDate
-        ?`｜截止：${it.dueDate}`
-        :""
-    }`,
+    `日期：${it.date||""}${it.dueDate?`｜截止：${it.dueDate}`:""}`,
 
     [
       "座號",
@@ -4986,22 +6317,35 @@ function printCollection(it){
       "備註"
     ],
 
-    collectionRows(it)
-      .map(
-        r=>[
-          r[0],
-          esc(r[1]),
-          r[2],
-          r[3]
-        ]
-      )
+    collectionRows(
+      it
+    )
+    .map(
+      r=>[
+
+        r[0],
+
+        esc(r[1]),
+
+        r[2],
+
+        r[3]
+
+      ]
+    )
 
   );
 
 }
 
 
-async function exportCollection(it){
+/* =========================================================
+   收繳 Excel
+========================================================= */
+
+async function exportCollection(
+  it
+){
 
   try{
 
@@ -5009,20 +6353,26 @@ async function exportCollection(it){
 
 
     const rows=
-      collectionRows(it)
-        .map(
-          r=>({
+      collectionRows(
+        it
+      )
+      .map(
+        r=>({
 
-            座號:r[0],
+          座號:
+            r[0],
 
-            姓名:r[1],
+          姓名:
+            r[1],
 
-            狀態:r[2],
+          狀態:
+            r[2],
 
-            備註:r[3]
+          備註:
+            r[3]
 
-          })
-        );
+        })
+      );
 
 
     const ws=
@@ -5063,7 +6413,13 @@ async function exportCollection(it){
 }
 
 
-function assessmentRows(it){
+/* =========================================================
+   成績列印資料
+========================================================= */
+
+function assessmentRows(
+  it
+){
 
   return roster.map(
     s=>{
@@ -5085,19 +6441,24 @@ function assessmentRows(it){
 
 
       return[
+
         s.seat,
+
         s.name,
+
         hasScore(r)
           ?Number(
               r.score
             )
           :"",
+
         labelOf(
           scoreStatusOptions,
           r.status
           ||
           "not_entered"
         )
+
       ];
 
     }
@@ -5106,7 +6467,13 @@ function assessmentRows(it){
 }
 
 
-function printAssessment(it){
+/* =========================================================
+   成績列印
+========================================================= */
+
+function printAssessment(
+  it
+){
 
   openPrint(
 
@@ -5121,22 +6488,35 @@ function printAssessment(it){
       "狀態"
     ],
 
-    assessmentRows(it)
-      .map(
-        r=>[
-          r[0],
-          esc(r[1]),
-          r[2],
-          r[3]
-        ]
-      )
+    assessmentRows(
+      it
+    )
+    .map(
+      r=>[
+
+        r[0],
+
+        esc(r[1]),
+
+        r[2],
+
+        r[3]
+
+      ]
+    )
 
   );
 
 }
 
 
-async function exportAssessment(it){
+/* =========================================================
+   成績 Excel
+========================================================= */
+
+async function exportAssessment(
+  it
+){
 
   try{
 
@@ -5144,20 +6524,26 @@ async function exportAssessment(it){
 
 
     const rows=
-      assessmentRows(it)
-        .map(
-          r=>({
+      assessmentRows(
+        it
+      )
+      .map(
+        r=>({
 
-            座號:r[0],
+          座號:
+            r[0],
 
-            姓名:r[1],
+          姓名:
+            r[1],
 
-            成績:r[2],
+          成績:
+            r[2],
 
-            狀態:r[3]
+          狀態:
+            r[3]
 
-          })
-        );
+        })
+      );
 
 
     const ws=
@@ -5198,6 +6584,10 @@ async function exportAssessment(it){
 }
 
 
+/* =========================================================
+   列印
+========================================================= */
+
 function openPrint(
   title,
   meta,
@@ -5225,6 +6615,7 @@ function openPrint(
   w.document.write(`
 
 <!doctype html>
+
 <html>
 
 <head>
@@ -5239,44 +6630,44 @@ ${esc(title)}
 
 @page{
   size:A4 ${landscape?"landscape":"portrait"};
-  margin:10mm
+  margin:10mm;
 }
 
 body{
   font-family:"Microsoft JhengHei",sans-serif;
   color:#111;
-  font-size:11px
+  font-size:11px;
 }
 
 h2{
-  margin:0 0 5px
+  margin:0 0 5px;
 }
 
 .info{
-  margin-bottom:8px
+  margin-bottom:8px;
 }
 
 table{
   width:100%;
-  border-collapse:collapse
+  border-collapse:collapse;
 }
 
 th,
 td{
   border:1px solid #999;
   padding:4px 6px;
-  text-align:center
+  text-align:center;
 }
 
 th{
-  background:#eee
+  background:#eee;
 }
 
 th:nth-child(1),
 th:nth-child(2),
 td:nth-child(1),
 td:nth-child(2){
-  text-align:left
+  text-align:left;
 }
 
 </style>
@@ -5300,7 +6691,11 @@ ${esc(meta)}
 <tr>
 
 ${headers.map(
-  x=>`<th>${esc(x)}</th>`
+  x=>`
+    <th>
+      ${esc(x)}
+    </th>
+  `
 ).join("")}
 
 </tr>
@@ -5311,13 +6706,21 @@ ${headers.map(
 
 ${rows.map(
   row=>`
+
     <tr>
+
       ${
         row.map(
-          v=>`<td>${v??""}</td>`
+          v=>`
+
+            <td>
+              ${v??""}
+            </td>
+          `
         )
         .join("")
       }
+
     </tr>
   `
 ).join("")}
@@ -5327,12 +6730,13 @@ ${rows.map(
 </table>
 
 <script>
-window.onload=()=>window.print()
+window.onload=()=>window.print();
 <\/script>
 
 </body>
 
 </html>
+
   `);
 
 
