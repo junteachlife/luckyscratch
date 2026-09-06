@@ -512,6 +512,12 @@ a{
     0 2px 5px rgba(60,47,36,.12)
 }
 
+.btn:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+  filter:grayscale(.2)
+}
+
 .primary{
   color:#fff;
   background:linear-gradient(#2197f4,#1175cf)
@@ -1384,6 +1390,17 @@ let recordSemester=
 
 let currentHomeworkSummary=null;
 let currentScoreSummary=null;
+
+/*
+  防止批次建立帳號重複執行
+*/
+let batchCreating=false;
+
+/*
+  防止單一帳號「啟用／停用／永久刪除」重複點擊
+*/
+const userActionLocks=
+  new Set();
 
 
 /* =========================================================
@@ -8073,6 +8090,12 @@ function renderAccounts(){
             );
 
 
+          const busy=
+            userActionLocks.has(
+              u.uid
+            );
+
+
           return`
 
             <tr>
@@ -8135,6 +8158,7 @@ function renderAccounts(){
                 <button
                   class="btn primary small edit-user"
                   data-id="${u.uid}"
+                  ${busy?"disabled":""}
                 >
                   ⚙ 權限
                 </button>
@@ -8146,11 +8170,14 @@ function renderAccounts(){
                       :"good"
                   } small toggle-user"
                   data-id="${u.uid}"
+                  ${busy?"disabled":""}
                 >
                   ${
-                    u.active
-                      ?"停用"
-                      :"啟用"
+                    busy
+                      ?"處理中…"
+                      :u.active
+                        ?"停用"
+                        :"啟用"
                   }
                 </button>
 
@@ -8169,8 +8196,13 @@ function renderAccounts(){
                         class="btn danger small delete-user-permanent"
                         data-id="${u.uid}"
                         style="margin-top:6px"
+                        ${busy?"disabled":""}
                       >
-                        🗑 永久刪除
+                        ${
+                          busy
+                            ?"處理中…"
+                            :"🗑 永久刪除"
+                        }
                       </button>
                     `
                 }
@@ -8202,12 +8234,32 @@ function renderAccounts(){
           </div>
 
 
+          <div class="notice">
+
+            ${
+              batchCreating
+                ?`
+                  ⏳ 帳號正在建立中。
+                  建立完成前不需要再次按按鈕。
+                `
+                :`
+                  每位學生帳號只需要建立一次。
+                  已建立帳號的學生會自動鎖定，無法再次勾選。
+                `
+            }
+
+          </div>
+
+
           <div class="toolbar">
 
             <label>
               班級
 
-              <select id="batchClass">
+              <select
+                id="batchClass"
+                ${batchCreating?"disabled":""}
+              >
 
                 ${
                   classIds().map(
@@ -8227,6 +8279,7 @@ function renderAccounts(){
             <button
               id="selectAllBatch"
               class="btn gray"
+              ${batchCreating?"disabled":""}
             >
               全選
             </button>
@@ -8235,6 +8288,7 @@ function renderAccounts(){
             <button
               id="clearBatch"
               class="btn gray"
+              ${batchCreating?"disabled":""}
             >
               全不選
             </button>
@@ -8252,8 +8306,13 @@ function renderAccounts(){
             id="batchCreateBtn"
             class="btn primary"
             style="margin-top:10px"
+            ${batchCreating?"disabled":""}
           >
-            🚀 批次建立帳號
+            ${
+              batchCreating
+                ?"⏳ 帳號建立中……"
+                :"🚀 批次建立帳號"
+            }
           </button>
 
 
@@ -8474,8 +8533,27 @@ function renderAccounts(){
 
 function renderBatchStudents(){
 
+  const classSelect=
+    $("#batchClass");
+
+
+  const list=
+    $("#batchStudentList");
+
+
+  if(
+    !classSelect
+    ||
+    !list
+  ){
+
+    return;
+
+  }
+
+
   const classId=
-    $("#batchClass").value;
+    classSelect.value;
 
 
   const roster=
@@ -8491,65 +8569,75 @@ function renderBatchStudents(){
           String(
             u.username||""
           )
+          .trim()
           .toLowerCase()
       )
     );
 
 
-  $("#batchStudentList")
-    .innerHTML=
-      roster.map(
-        student=>{
+  list.innerHTML=
+    roster.map(
+      student=>{
 
-          const username=
-            `${classId}${String(student.seat).padStart(2,"0")}`;
-
-
-          const exists=
-            existing.has(
-              username.toLowerCase()
-            );
+        const username=
+          `${classId}${String(student.seat).padStart(2,"0")}`;
 
 
-          return`
+        const exists=
+          existing.has(
+            username
+              .trim()
+              .toLowerCase()
+          );
 
-            <label class="student">
 
-              <input
-                class="batch-check"
-                type="checkbox"
-                data-user="${username}"
-                data-name="${esc(student.name)}"
-                ${
-                  exists
-                    ?"disabled"
+        return`
+
+          <label class="student">
+
+            <input
+              class="batch-check"
+              type="checkbox"
+              data-user="${username}"
+              data-name="${esc(student.name)}"
+              ${
+                exists
+                ||
+                batchCreating
+                  ?"disabled"
+                  :""
+              }
+            >
+
+            <b>
+              ${student.seat}.
+              ${esc(student.name)}
+            </b>
+
+            <div class="meta">
+              ${username}
+              ${
+                exists
+                  ?"｜已建立"
+                  :batchCreating
+                    ?"｜建立程序進行中"
                     :""
-                }
-              >
+              }
+            </div>
 
-              <b>
-                ${student.seat}.
-                ${esc(student.name)}
-              </b>
+          </label>
+        `;
 
-              <div class="meta">
-                ${username}
-                ${
-                  exists
-                    ?"｜已建立"
-                    :""
-                }
-              </div>
-
-            </label>
-          `;
-
-        }
-      )
-      .join("");
+      }
+    )
+    .join("");
 
 }
 
+
+/* =========================================================
+   建立 Auth + Firestore 使用者
+========================================================= */
 
 async function createAuthAndProfile(
   username,
@@ -8558,7 +8646,7 @@ async function createAuthAndProfile(
   pwd
 ){
 
-  let secondary;
+  let secondary=null;
 
 
   try{
@@ -8570,13 +8658,15 @@ async function createAuthAndProfile(
       );
 
 
-    const sa=
-      getAuth(secondary);
+    const secondaryAuth=
+      getAuth(
+        secondary
+      );
 
 
     const cred=
       await createUserWithEmailAndPassword(
-        sa,
+        secondaryAuth,
         emailFor(username),
         pwd
       );
@@ -8619,13 +8709,35 @@ async function createAuthAndProfile(
       uid:cred.user.uid
     };
 
+  }catch(e){
+
+    console.error(
+      "createAuthAndProfile：",
+      username,
+      e
+    );
+
+
+    throw e;
+
   }finally{
 
     if(secondary){
 
       try{
-        await deleteApp(secondary);
-      }catch{}
+
+        await deleteApp(
+          secondary
+        );
+
+      }catch(e){
+
+        console.warn(
+          "secondary Firebase app 清除失敗：",
+          e
+        );
+
+      }
 
     }
 
@@ -8633,6 +8745,10 @@ async function createAuthAndProfile(
 
 }
 
+
+/* =========================================================
+   單筆建立帳號
+========================================================= */
 
 async function createAccount(){
 
@@ -8671,6 +8787,40 @@ async function createAccount(){
   }
 
 
+  const exists=
+    users.some(
+      u=>
+        String(
+          u.username||""
+        )
+        .trim()
+        .toLowerCase()
+        ===
+        username.toLowerCase()
+    );
+
+
+  if(exists){
+
+    return alert(
+      "這個帳號已經存在，請勿重複建立。"
+    );
+
+  }
+
+
+  const button=
+    $("#createUserBtn");
+
+
+  button.disabled=
+    true;
+
+
+  button.textContent=
+    "⏳ 建立中…";
+
+
   try{
 
     const r=
@@ -8690,7 +8840,25 @@ async function createAccount(){
     );
 
 
-    await refreshAll();
+    const userSnap=
+      await getDocs(
+        collection(
+          db,
+          "users"
+        )
+      );
+
+
+    users=
+      userSnap.docs.map(
+        d=>({
+          uid:d.id,
+          ...d.data()
+        })
+      );
+
+
+    renderAccounts();
 
 
     const box=
@@ -8702,6 +8870,10 @@ async function createAccount(){
       box.innerHTML=`
 
         <div class="notice success">
+
+          ✅ 帳號建立成功
+
+          <br><br>
 
           帳號：
           <b>${esc(username)}</b>
@@ -8718,16 +8890,80 @@ async function createAccount(){
 
   }catch(e){
 
-    alert(
+    let reason=
+      e.code
+      ||
       e.message
+      ||
+      "未知錯誤";
+
+
+    if(
+      String(reason)
+        .includes(
+          "auth/email-already-in-use"
+        )
+    ){
+
+      reason=
+        "Firebase Authentication 已存在這個帳號。請先檢查 Authentication 中是否已有舊帳號或重複帳號。";
+
+    }
+
+
+    alert(
+      `建立失敗：${reason}`
     );
+
+  }finally{
+
+    const currentButton=
+      $("#createUserBtn");
+
+
+    if(currentButton){
+
+      currentButton.disabled=
+        false;
+
+
+      currentButton.textContent=
+        "➕ 建立帳號";
+
+    }
 
   }
 
 }
 
 
+/* =========================================================
+   批次建立帳號
+========================================================= */
+
 async function batchCreateAccounts(){
+
+  /*
+    第一層防護：
+    整個批次程序正在執行時，
+    第二次、第三次點擊直接停止。
+  */
+
+  if(batchCreating){
+
+    return alert(
+      "帳號正在建立中，請稍候，不需要重複按。"
+    );
+
+  }
+
+
+  const selectedClass=
+    $("#batchClass")
+      ?.value
+    ||
+    "";
+
 
   const selected=
     $$(".batch-check:checked")
@@ -8735,90 +8971,850 @@ async function batchCreateAccounts(){
         x=>({
 
           username:
-            x.dataset.user,
+            String(
+              x.dataset.user||""
+            )
+            .trim(),
 
           displayName:
-            x.dataset.name
+            String(
+              x.dataset.name||""
+            )
+            .trim()
 
         })
+      )
+      .filter(
+        x=>
+          x.username
+          &&
+          x.displayName
       );
 
 
   if(!selected.length){
 
     return alert(
-      "請勾選學生。"
+      "請先勾選要建立帳號的學生。"
     );
 
   }
 
 
-  const result=[];
+  /*
+    避免選取內容本身就重複
+  */
+
+  const seen=
+    new Set();
 
 
-  for(
-    const s
-    of selected
+  const uniqueSelected=
+    selected.filter(
+      item=>{
+
+        const key=
+          item.username
+            .toLowerCase();
+
+
+        if(
+          seen.has(key)
+        ){
+
+          return false;
+
+        }
+
+
+        seen.add(key);
+
+        return true;
+
+      }
+    );
+
+
+  if(
+    !confirm(
+      `確定要建立 ${uniqueSelected.length} 個學生帳號嗎？
+
+建立開始後，請等待完成，不需要再次按「批次建立帳號」。`
+    )
   ){
 
-    const pwd=
-      randomPwd();
-
-
-    try{
-
-      await createAuthAndProfile(
-        s.username,
-        s.displayName,
-        "student",
-        pwd
-      );
-
-
-      result.push({
-        ...s,
-        pwd
-      });
-
-    }catch(e){
-
-      console.error(e);
-
-    }
+    return;
 
   }
 
 
-  await refreshAll();
+  /*
+    第二層防護：
+    在第一個 await 之前立即鎖住。
+  */
+
+  batchCreating=
+    true;
 
 
-  const box=
+  const button=
+    $("#batchCreateBtn");
+
+
+  const resultBox=
     $("#batchResult");
 
 
-  if(box){
+  if(button){
 
-    box.innerHTML=`
+    button.disabled=
+      true;
 
-      <div class="notice success">
 
-        ${
-          result.map(
-            x=>
-              `${x.username} ${x.displayName}｜${x.pwd}`
-          )
-          .join("<br>")
-        }
+    button.textContent=
+      "⏳ 帳號建立中……";
+
+  }
+
+
+  /*
+    同時鎖住班級、全選、全不選與學生 checkbox
+  */
+
+  if(
+    $("#batchClass")
+  ){
+
+    $("#batchClass")
+      .disabled=
+        true;
+
+  }
+
+
+  if(
+    $("#selectAllBatch")
+  ){
+
+    $("#selectAllBatch")
+      .disabled=
+        true;
+
+  }
+
+
+  if(
+    $("#clearBatch")
+  ){
+
+    $("#clearBatch")
+      .disabled=
+        true;
+
+  }
+
+
+  $$(".batch-check")
+    .forEach(
+      x=>x.disabled=true
+    );
+
+
+  if(resultBox){
+
+    resultBox.innerHTML=`
+
+      <div class="notice">
+
+        ⏳ 正在建立 ${uniqueSelected.length} 個學生帳號。
+
+        <br>
+
+        建立完成前請不要再次按按鈕。
 
       </div>
     `;
 
   }
 
+
+  const success=[];
+  const skipped=[];
+  const failed=[];
+
+
+  try{
+
+    for(
+      let i=0;
+      i<uniqueSelected.length;
+      i++
+    ){
+
+      const student=
+        uniqueSelected[i];
+
+
+      /*
+        每建立一個人之前，
+        再從 Firestore 重新抓一次 users。
+
+        這樣即使上一個帳號剛建立完成，
+        下一輪也會看到最新資料。
+      */
+
+      const latestSnap=
+        await getDocs(
+          collection(
+            db,
+            "users"
+          )
+        );
+
+
+      const latestUsers=
+        latestSnap.docs.map(
+          d=>({
+            uid:d.id,
+            ...d.data()
+          })
+        );
+
+
+      users=
+        latestUsers;
+
+
+      const alreadyExists=
+        latestUsers.some(
+          u=>
+            String(
+              u.username||""
+            )
+            .trim()
+            .toLowerCase()
+            ===
+            student.username
+              .toLowerCase()
+        );
+
+
+      if(alreadyExists){
+
+        skipped.push({
+
+          username:
+            student.username,
+
+          displayName:
+            student.displayName,
+
+          reason:
+            "Firestore 已存在這個帳號"
+
+        });
+
+
+        continue;
+
+      }
+
+
+      const pwd=
+        randomPwd();
+
+
+      const currentButton=
+        $("#batchCreateBtn");
+
+
+      if(currentButton){
+
+        currentButton.textContent=
+          `⏳ 建立中 ${i+1}/${uniqueSelected.length}`;
+
+      }
+
+
+      const currentResult=
+        $("#batchResult");
+
+
+      if(currentResult){
+
+        currentResult.innerHTML=`
+
+          <div class="notice">
+
+            ⏳ 正在建立帳號……
+
+            <br><br>
+
+            進度：
+            <b>${i+1}/${uniqueSelected.length}</b>
+
+            <br>
+
+            ${esc(student.username)}
+            ｜${esc(student.displayName)}
+
+          </div>
+        `;
+
+      }
+
+
+      try{
+
+        const created=
+          await createAuthAndProfile(
+            student.username,
+            student.displayName,
+            "student",
+            pwd
+          );
+
+
+        success.push({
+
+          username:
+            student.username,
+
+          displayName:
+            student.displayName,
+
+          password:
+            pwd,
+
+          uid:
+            created.uid
+
+        });
+
+
+        /*
+          立即加入本地 users，
+          防止同一個執行流程後續再次判斷不存在。
+        */
+
+        users.push({
+
+          uid:
+            created.uid,
+
+          username:
+            student.username,
+
+          displayName:
+            student.displayName,
+
+          type:
+            "student",
+
+          active:
+            true,
+
+          assignments:
+            [],
+
+          viewKeys:
+            [],
+
+          collectionWriteKeys:
+            [],
+
+          scoreWriteKeys:
+            [],
+
+          classAccess:
+            [],
+
+          mustChangePassword:
+            true
+
+        });
+
+
+        await audit(
+          "create_user",
+          "user",
+          created.uid,
+          `批次建立帳號 ${student.username} ${student.displayName}`
+        );
+
+
+      }catch(e){
+
+        console.error(
+          "批次建立帳號失敗：",
+          student.username,
+          e
+        );
+
+
+        let reason=
+          e.code
+          ||
+          e.message
+          ||
+          "未知錯誤";
+
+
+        if(
+          String(reason)
+            .includes(
+              "auth/email-already-in-use"
+            )
+        ){
+
+          reason=
+            "Firebase Authentication 已存在這個帳號。請勿再次建立，請先檢查 Authentication 中的舊帳號／重複帳號。";
+
+        }
+
+
+        if(
+          String(reason)
+            .includes(
+              "auth/invalid-email"
+            )
+        ){
+
+          reason=
+            "帳號轉換後的 Email 格式錯誤";
+
+        }
+
+
+        if(
+          String(reason)
+            .includes(
+              "auth/weak-password"
+            )
+        ){
+
+          reason=
+            "初始密碼強度不足";
+
+        }
+
+
+        if(
+          String(reason)
+            .includes(
+              "auth/operation-not-allowed"
+            )
+        ){
+
+          reason=
+            "Firebase 尚未啟用 Email/Password 登入";
+
+        }
+
+
+        if(
+          String(reason)
+            .includes(
+              "auth/unauthorized-domain"
+            )
+        ){
+
+          reason=
+            "目前 GitHub Pages 網域尚未加入 Firebase Authorized domains";
+
+        }
+
+
+        if(
+          String(reason)
+            .includes(
+              "permission-denied"
+            )
+          ||
+          String(reason)
+            .includes(
+              "Missing or insufficient permissions"
+            )
+        ){
+
+          reason=
+            "Firestore 權限不足";
+
+        }
+
+
+        failed.push({
+
+          username:
+            student.username,
+
+          displayName:
+            student.displayName,
+
+          reason
+
+        });
+
+      }
+
+    }
+
+
+    /*
+      全部建立完後，
+      最後只重新讀取一次完整 users。
+    */
+
+    const finalUserSnap=
+      await getDocs(
+        collection(
+          db,
+          "users"
+        )
+      );
+
+
+    users=
+      finalUserSnap.docs.map(
+        d=>({
+          uid:d.id,
+          ...d.data()
+        })
+      );
+
+
+    /*
+      建立流程已完成。
+      先解除鎖，再重新繪製帳號頁。
+    */
+
+    batchCreating=
+      false;
+
+
+    renderAccounts();
+
+
+    /*
+      保持原本正在操作的班級
+    */
+
+    if(
+      selectedClass
+      &&
+      $("#batchClass")
+    ){
+
+      $("#batchClass").value=
+        selectedClass;
+
+
+      renderBatchStudents();
+
+    }
+
+
+    const newResultBox=
+      $("#batchResult");
+
+
+    if(newResultBox){
+
+      newResultBox.innerHTML=`
+
+        <div
+          class="notice ${
+            success.length
+              ?"success"
+              :"error"
+          }"
+        >
+
+          <b>
+            ${
+              success.length
+                ?"✅ 批次建立完成"
+                :"⚠️ 本次沒有建立新帳號"
+            }
+          </b>
+
+          <br><br>
+
+          成功：
+          <b>${success.length}</b> 人
+
+          ｜已存在而略過：
+          <b>${skipped.length}</b> 人
+
+          ｜失敗：
+          <b>${failed.length}</b> 人
+
+        </div>
+
+
+        ${
+          success.length
+            ?`
+
+              <div
+                class="table-wrap"
+                style="margin-top:10px"
+              >
+
+                <table>
+
+                  <thead>
+
+                    <tr>
+                      <th>帳號</th>
+                      <th>姓名</th>
+                      <th>初始密碼</th>
+                    </tr>
+
+                  </thead>
+
+
+                  <tbody>
+
+                    ${
+                      success.map(
+                        item=>`
+
+                          <tr>
+
+                            <td>
+                              <b>
+                                ${esc(item.username)}
+                              </b>
+                            </td>
+
+                            <td>
+                              ${esc(item.displayName)}
+                            </td>
+
+                            <td>
+                              <b>
+                                ${esc(item.password)}
+                              </b>
+                            </td>
+
+                          </tr>
+                        `
+                      )
+                      .join("")
+                    }
+
+                  </tbody>
+
+                </table>
+
+              </div>
+
+
+              <div class="notice">
+
+                ⚠️ 初始密碼只會在本次建立結果中顯示。
+
+                <br>
+
+                請先記錄帳號與初始密碼。
+
+              </div>
+            `
+            :""
+        }
+
+
+        ${
+          skipped.length
+            ?`
+
+              <div class="notice">
+
+                <b>
+                  ⏭ 已存在，因此未重新建立
+                </b>
+
+                <br><br>
+
+                ${
+                  skipped.map(
+                    item=>
+                      `${esc(item.username)} ${esc(item.displayName)}`
+                  )
+                  .join("<br>")
+                }
+
+              </div>
+            `
+            :""
+        }
+
+
+        ${
+          failed.length
+            ?`
+
+              <div class="notice error">
+
+                <b>
+                  ❌ 建立失敗
+                </b>
+
+                <br><br>
+
+                ${
+                  failed.map(
+                    item=>
+                      `${esc(item.username)} ${esc(item.displayName)}：${esc(item.reason)}`
+                  )
+                  .join("<br><br>")
+                }
+
+              </div>
+            `
+            :""
+        }
+      `;
+
+    }
+
+
+  }catch(e){
+
+    console.error(
+      "批次建立程序發生錯誤：",
+      e
+    );
+
+
+    const currentResult=
+      $("#batchResult");
+
+
+    if(currentResult){
+
+      currentResult.innerHTML=`
+
+        <div class="notice error">
+
+          <b>
+            ❌ 批次建立發生錯誤
+          </b>
+
+          <br><br>
+
+          ${esc(
+            e.code
+            ||
+            e.message
+            ||
+            "未知錯誤"
+          )}
+
+        </div>
+      `;
+
+    }
+
+
+  }finally{
+
+    /*
+      無論成功或失敗都必須解除鎖定。
+    */
+
+    batchCreating=
+      false;
+
+
+    const currentButton=
+      $("#batchCreateBtn");
+
+
+    if(currentButton){
+
+      currentButton.disabled=
+        false;
+
+
+      currentButton.textContent=
+        "🚀 批次建立帳號";
+
+    }
+
+
+    if(
+      $("#batchClass")
+    ){
+
+      $("#batchClass")
+        .disabled=
+          false;
+
+    }
+
+
+    if(
+      $("#selectAllBatch")
+    ){
+
+      $("#selectAllBatch")
+        .disabled=
+          false;
+
+    }
+
+
+    if(
+      $("#clearBatch")
+    ){
+
+      $("#clearBatch")
+        .disabled=
+          false;
+
+    }
+
+
+    /*
+      重新依照已建立帳號決定哪些 checkbox 可以使用。
+    */
+
+    if(
+      $("#batchStudentList")
+      &&
+      $("#batchClass")
+    ){
+
+      renderBatchStudents();
+
+    }
+
+  }
+
 }
 
 
+/* =========================================================
+   啟用／停用帳號
+========================================================= */
+
 async function toggleUser(uid){
+
+  /*
+    同一個帳號如果正在處理，
+    第二次點擊直接忽略。
+  */
+
+  if(
+    userActionLocks.has(uid)
+  ){
+
+    return;
+
+  }
+
 
   const user=
     users.find(
@@ -8833,22 +9829,86 @@ async function toggleUser(uid){
   }
 
 
-  await updateDoc(
-    doc(
-      db,
-      "users",
-      uid
-    ),
-    {
-
-      active:
-        !user.active,
-
-      updatedAt:
-        serverTimestamp()
-
-    }
+  userActionLocks.add(
+    uid
   );
+
+
+  /*
+    立即停用該列按鈕
+  */
+
+  document
+    .querySelectorAll(
+      `[data-id="${CSS.escape(uid)}"]`
+    )
+    .forEach(
+      button=>{
+
+        if(
+          button instanceof HTMLButtonElement
+        ){
+
+          button.disabled=
+            true;
+
+        }
+
+      }
+    );
+
+
+  try{
+
+    await updateDoc(
+      doc(
+        db,
+        "users",
+        uid
+      ),
+      {
+
+        active:
+          !user.active,
+
+        updatedAt:
+          serverTimestamp()
+
+      }
+    );
+
+
+    await audit(
+      user.active
+        ?"disable_user"
+        :"enable_user",
+      "user",
+      uid,
+      `${
+        user.active
+          ?"停用"
+          :"啟用"
+      }帳號 ${user.username}`
+    );
+
+
+  }catch(e){
+
+    console.error(e);
+
+
+    alert(
+      `帳號狀態更新失敗：${e.code||e.message}`
+    );
+
+
+  }finally{
+
+    userActionLocks.delete(
+      uid
+    );
+
+  }
 
 
   await refreshAll();
@@ -8861,6 +9921,17 @@ async function toggleUser(uid){
 ========================================================= */
 
 async function permanentDeleteUser(uid){
+
+  if(
+    userActionLocks.has(uid)
+  ){
+
+    return alert(
+      "這個帳號目前正在處理中，請稍候。"
+    );
+
+  }
+
 
   const user=
     users.find(
@@ -8959,6 +10030,31 @@ ${user.displayName||""}（${user.username||""}）
   }
 
 
+  userActionLocks.add(
+    uid
+  );
+
+
+  document
+    .querySelectorAll(
+      `[data-id="${CSS.escape(uid)}"]`
+    )
+    .forEach(
+      button=>{
+
+        if(
+          button instanceof HTMLButtonElement
+        ){
+
+          button.disabled=
+            true;
+
+        }
+
+      }
+    );
+
+
   try{
 
     /*
@@ -8983,6 +10079,11 @@ ${user.displayName||""}（${user.username||""}）
     );
 
 
+    userActionLocks.delete(
+      uid
+    );
+
+
     await refreshAll();
 
 
@@ -8993,7 +10094,15 @@ ${user.displayName||""}（${user.username||""}）
 
   }catch(e){
 
+    userActionLocks.delete(
+      uid
+    );
+
+
     console.error(e);
+
+
+    await refreshAll();
 
 
     alert(
@@ -9148,6 +10257,10 @@ function showDeletedUserNotice(
 
 }
 
+
+/* =========================================================
+   個別權限
+========================================================= */
 
 function editUserPermissions(uid){
 
