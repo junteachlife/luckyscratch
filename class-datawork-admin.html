@@ -398,6 +398,27 @@ function editTeacherRegistry(id){
   const rerender=()=>{const box=$('#teacherAssignments');box.innerHTML=assignments.filter(a=>a.kind==='teacher').sort((a,b)=>String(b.semester).localeCompare(String(a.semester))).map((a,i)=>`<div class="assign">${esc(a.semester)}｜${esc(a.classId)}班｜${esc(a.scopeName)} <button class="btn danger small remove-ta" data-key="${esc(assignmentKey(a))}">移除</button></div>`).join('')||'<div class="meta">尚未設定任課。</div>';$$('.remove-ta').forEach(b=>b.onclick=async()=>{const key=b.dataset.key;const idx=assignments.findIndex(a=>assignmentKey(a)===key);if(idx>=0)assignments.splice(idx,1);reg.assignments=assignments;await saveRegistry(reg);rerender()})};
   $('#addTeacherAssignment').onclick=async()=>{const a={semester:$('#taSemester').value,classId:$('#taClass').value,kind:'teacher',scopeType:'subject',scopeName:$('#taSubject').value,canCollection:true,canScores:true};if(assignments.some(x=>assignmentKey(x)===assignmentKey(a)))return alert('這筆任課已存在。');assignments.push(a);reg.assignments=assignments;await saveRegistry(reg);await audit('teacher_assignment','identityRegistry',reg.id,`新增任課 ${a.semester} ${a.classId} ${a.scopeName}`,a.semester);rerender()};rerender();
 }
+async function addQuickTeacherAssignment(){
+  const id=$('#quickTeacher')?.value;
+  if(!id)return alert('請先選擇任課教師。');
+  const reg=registries.find(r=>r.id===id);
+  if(!reg)return alert('找不到這位任課教師。');
+  const semester=$('#quickTeacherSemester').value;
+  const classId=$('#quickTeacherClass').value;
+  const subject=$('#quickTeacherSubject').value;
+  const canCollection=$('#quickTeacherCollection').checked;
+  const canScores=$('#quickTeacherScores').checked;
+  const a={semester,classId,kind:'teacher',scopeType:'subject',scopeName:subject,canCollection,canScores};
+  const assignments=[...(reg.assignments||[])];
+  if(assignments.some(x=>assignmentKey(x)===assignmentKey(a)))return alert(`${reg.displayName} 已經有 ${semester}｜${classId}班｜${subject} 的任課設定。`);
+  assignments.push(a);
+  reg.assignments=assignments;
+  await saveRegistry(reg);
+  await audit('teacher_assignment','identityRegistry',reg.id,`新增任課 ${semester} ${classId} ${subject}`,semester);
+  await refreshAll();
+  alert(`✅ 已設定：${reg.displayName}｜${semester}｜${classId}班｜${subject}`);
+}
+
 async function toggleRegistry(id){const reg=registries.find(r=>r.id===id);if(!reg)return;reg.active=reg.active===false;await saveRegistry(reg);await audit(reg.active?'enable_registry':'disable_registry','identityRegistry',id,`${reg.active?'啟用':'停用'} ${reg.displayName||id}`);await refreshAll()}
 
 function renderAccounts(){
@@ -410,22 +431,38 @@ function renderAccounts(){
       <div class="card">
         <div class="section-title">🎒 學生 Email 對照名單</div>
         <div class="notice">不建立新 Firebase 密碼。你只要先把「學生 ↔ 學校 Google Email」存進後端；學生第一次 Google 登入後會自動連結 UID。</div>
-        <div class="toolbar"><label>班級 <select id="registryClass">${classIds.map(id=>`<option value="${id}" ${id==='804'?'selected':''}>${id}</option>`).join('')}</select></label><button id="loadRegistryClass" class="btn gray">載入</button><button id="saveStudentRegistry" class="btn primary">💾 儲存這班 Email</button></div>
+        <div class="toolbar"><label>班級 <select id="registryClass">${classIds.map(id=>`<option value="${id}" ${id==='804'?'selected':''}>${id}</option>`).join('')}</select></label><button id="saveStudentRegistry" class="btn primary">💾 儲存這班 Email</button></div>
         <div id="studentRegistryList"></div>
         <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:900">📥 批次貼上 Email 名單</summary><div class="field"><label>每行格式：座號,姓名,Email</label><textarea id="studentRegistryPaste" rows="8" placeholder="1,王禹涵,xxx@smail.ilc.edu.tw\n2,江育緹,yyy@smail.ilc.edu.tw"></textarea></div><button id="applyStudentPaste" class="btn good">套用到上方名單</button></details>
       </div>
       <div class="card">
         <div class="section-title">👨‍🏫 任課教師名單</div>
-        <div class="notice">任課老師也使用自己的 Google 學校帳號。你可以先建立姓名＋Email，再先派 115-1／115-2 的班級與科目；不必等老師先登入。</div>
+        <div class="notice">任課老師也使用自己的 Google 學校帳號。先建立姓名＋Email，建立後直接使用下方「任課教師快速任課設定」指定學期、班級與科目；不必等老師先登入。</div>
         <div class="field"><label>老師姓名</label><input id="teacherName" placeholder="例如 王老師"></div>
         <div class="field"><label>學校 Google Email</label><input id="teacherEmail" type="email" placeholder="teacher@ilc.edu.tw"></div>
         <button id="addTeacherRegistry" class="btn primary">➕ 新增任課教師</button>
         <div class="field"><label>也可批次貼上：姓名,Email</label><textarea id="teacherPaste" rows="5" placeholder="王老師,wang@ilc.edu.tw\n李老師,lee@ilc.edu.tw"></textarea></div><button id="applyTeacherPaste" class="btn good">📥 批次加入教師</button>
       </div>
     </div>
+    <div class="card" style="margin-top:14px">
+      <div class="section-title">📚 任課教師快速任課設定</div>
+      <div class="notice"><b>在這裡直接指定「哪位老師 → 哪個學期 → 哪一班 → 哪一科」。</b><br>例如：王老師｜115-1｜804班｜數學。老師不必先登入，設定完成後第一次 Google 登入就會自動取得這些任課權限。</div>
+      <div class="toolbar" style="align-items:end">
+        <label>任課教師 <select id="quickTeacher">${teachers.map(reg=>`<option value="${esc(reg.id)}">${esc(reg.displayName||reg.email||reg.id)}</option>`).join('')}</select></label>
+        <label>學期 <select id="quickTeacherSemester">${semesterOptions(currentSemester)}</select></label>
+        <label>班級 <select id="quickTeacherClass">${classIds.map(id=>`<option value="${esc(id)}">${esc(id)}</option>`).join('')}</select></label>
+        <label>科目 <select id="quickTeacherSubject">${subjects.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('')}</select></label>
+      </div>
+      <div class="toolbar">
+        <label><input type="checkbox" id="quickTeacherCollection" checked> 可登記／查看收繳</label>
+        <label><input type="checkbox" id="quickTeacherScores" checked> 可登記／查看成績</label>
+        <button id="quickAddTeacherAssignment" class="btn primary" ${teachers.length?'':'disabled'}>➕ 加入任課</button>
+      </div>
+      ${teachers.length?'':'<div class="meta">請先在上方建立至少一位任課教師姓名與 Google Email。</div>'}
+    </div>
     <div class="card" style="margin-top:14px"><div class="section-title">👨‍🏫 任課教師設定與連動狀態</div><div class="table-wrap"><table><thead><tr><th>姓名</th><th>Email</th><th>連動</th><th>最近登入</th><th>${esc(currentSemester)} 任課</th><th>操作</th></tr></thead><tbody>${teachers.map(reg=>`<tr><td><b>${esc(reg.displayName||'')}</b></td><td class="registry-email">${esc(reg.email||reg.id)}</td><td>${reg.linkedUid?'<span class="registry-status linked">🟢 已連動</span>':'<span class="registry-status unlinked">⚪ 尚未連動</span>'}</td><td>${esc(fmtTs(reg.lastLoginAt))}</td><td>${(reg.assignments||[]).filter(a=>a.semester===currentSemester&&a.kind==='teacher').map(a=>`<div class="assign">${esc(a.classId)}班｜${esc(a.scopeName)}</div>`).join('')||'尚未指派'}</td><td><button class="btn primary small edit-teacher-reg" data-id="${esc(reg.id)}">⚙ 任課設定</button> <button class="btn ${reg.active===false?'good':'danger'} small toggle-reg" data-id="${esc(reg.id)}">${reg.active===false?'啟用':'停用'}</button></td></tr>`).join('')||'<tr><td colspan="6">尚未建立任課教師名單。</td></tr>'}</tbody></table></div></div>
     <div class="card" style="margin-top:14px"><div class="section-title">🧹 舊系統／測試帳號（過渡區）</div><div class="notice">這些是 users 裡沒有對應 identityRegistry 的舊帳號。新 Google 連動模式不需要再建立這類學生帳號；你可以暫時保留，等新模式測試完成再清理。</div><div class="table-wrap"><table><thead><tr><th>帳號</th><th>姓名</th><th>類型</th><th>狀態</th><th>操作</th></tr></thead><tbody>${legacy.map(u=>`<tr><td>${esc(u.username||'')}</td><td>${esc(u.displayName||'')}</td><td>${esc(u.type||'')}</td><td>${u.active?'<span class="pill good">啟用</span>':'<span class="pill bad">停用</span>'}</td><td><button class="btn ${u.active?'danger':'good'} small toggle-user" data-id="${u.uid}">${u.active?'停用':'啟用'}</button>${!u.active?` <button class="btn danger small delete-user-permanent" data-id="${u.uid}">🗑 永久刪除 Firestore</button>`:''}</td></tr>`).join('')||'<tr><td colspan="5">沒有未連動的舊帳號。</td></tr>'}</tbody></table></div></div>`;
-  $('#registryClass').onchange=renderStudentRegistryList;$('#loadRegistryClass').onclick=renderStudentRegistryList;$('#saveStudentRegistry').onclick=saveStudentRegistryClass;$('#applyStudentPaste').onclick=applyStudentRegistryPaste;$('#addTeacherRegistry').onclick=addTeacherRegistry;$('#applyTeacherPaste').onclick=applyTeacherRegistryPaste;
+  $('#registryClass').onchange=renderStudentRegistryList;$('#saveStudentRegistry').onclick=saveStudentRegistryClass;$('#applyStudentPaste').onclick=applyStudentRegistryPaste;$('#addTeacherRegistry').onclick=addTeacherRegistry;$('#applyTeacherPaste').onclick=applyTeacherRegistryPaste;$('#quickAddTeacherAssignment')?.addEventListener('click',addQuickTeacherAssignment);
   $$('.edit-teacher-reg').forEach(b=>b.onclick=()=>editTeacherRegistry(b.dataset.id));$$('.toggle-reg').forEach(b=>b.onclick=()=>toggleRegistry(b.dataset.id));$$('.toggle-user').forEach(b=>b.onclick=()=>toggleUser(b.dataset.id));$$('.delete-user-permanent').forEach(b=>b.onclick=()=>permanentDeleteUser(b.dataset.id));
   renderStudentRegistryList();
 }
