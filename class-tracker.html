@@ -6,806 +6,947 @@
 <title>班級收繳航海日誌</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23f4dfad%27/%3E%3Crect x=%273%27 y=%273%27 width=%2758%27 height=%2758%27 rx=%2712%27 fill=%27none%27 stroke=%27%237d241f%27 stroke-width=%276%27/%3E%3Ctext x=%2732%27 y=%2744%27 text-anchor=%27middle%27 font-size=%2738%27 font-weight=%27900%27 font-family=%27sans-serif%27 fill=%27%237d241f%27%3E%E8%B3%87%3C/text%3E%3C/svg%3E">
 <meta name="theme-color" content="#7d241f" />
+
 <style>
-  :root{
-    --ink:#2d241b;
-    --paper:#f4dfad;
-    --paper2:#fff2c9;
-    --red:#c93b2f;
-    --red2:#8f251f;
-    --blue:#1d5875;
-    --blue2:#10394d;
-    --gold:#d9a62e;
-    --green:#2c8a63;
-    --orange:#d97924;
-    --gray:#7b756c;
-    --shadow:0 8px 20px rgba(35,28,18,.18);
-  }
+:root{
+  --ink:#2d241b;
+  --paper:#f4dfad;
+  --paper2:#fff2c9;
+  --red:#c93b2f;
+  --red2:#8f251f;
+  --blue:#1d5875;
+  --blue2:#10394d;
+  --gold:#d9a62e;
+  --green:#2c8a63;
+  --orange:#d97924;
+  --gray:#7b756c;
+  --shadow:0 8px 20px rgba(35,28,18,.18);
+}
 
-  *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  body{
-    margin:0;
-    font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
-    color:var(--ink);
-    background:
-      radial-gradient(circle at 20% 15%, rgba(255,255,255,.35), transparent 22%),
-      linear-gradient(180deg,#88cce4 0,#56a7c8 33%,#26769d 100%);
-    min-height:100vh;
-  }
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
 
-  body::before{
-    content:"";
-    position:fixed;
-    inset:0;
-    pointer-events:none;
-    opacity:.16;
-    background-image:
-      repeating-linear-gradient(0deg,transparent 0 28px,rgba(255,255,255,.18) 29px 30px),
-      repeating-linear-gradient(90deg,transparent 0 52px,rgba(255,255,255,.08) 53px 54px);
-  }
+body{
+  margin:0;
+  font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(circle at 20% 15%,rgba(255,255,255,.35),transparent 22%),
+    linear-gradient(180deg,#88cce4 0,#56a7c8 33%,#26769d 100%);
+  min-height:100vh;
+}
 
-  .app{width:min(1180px,94vw); margin:24px auto 50px; position:relative; z-index:1}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  opacity:.16;
+  background-image:
+    repeating-linear-gradient(0deg,transparent 0 28px,rgba(255,255,255,.18) 29px 30px),
+    repeating-linear-gradient(90deg,transparent 0 52px,rgba(255,255,255,.08) 53px 54px);
+}
+
+.app{
+  width:min(1180px,94vw);
+  margin:24px auto 50px;
+  position:relative;
+  z-index:1;
+}
+
+.hero{
+  position:relative;
+  overflow:hidden;
+  background:linear-gradient(135deg,#fff0bd,#e7bd68);
+  border:5px solid #51371d;
+  border-radius:24px;
+  box-shadow:var(--shadow);
+  padding:24px 24px 20px;
+}
+
+.hero::before,
+.hero::after{
+  content:"☠";
+  position:absolute;
+  font-size:100px;
+  opacity:.07;
+  top:-18px;
+}
+
+.hero::before{
+  left:18px;
+  transform:rotate(-12deg);
+}
+
+.hero::after{
+  right:18px;
+  transform:rotate(12deg);
+}
+
+.hero-top{
+  display:flex;
+  gap:18px;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+
+.emblem{
+  width:72px;
+  height:72px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:#1f2933;
+  color:white;
+  border:5px solid var(--gold);
+  font-size:38px;
+  box-shadow:0 4px 0 #6b491f;
+}
+
+h1{
+  margin:0;
+  font-size:clamp(28px,5vw,48px);
+  letter-spacing:2px;
+  color:#7d241f;
+  text-shadow:2px 2px 0 #fff3c7;
+}
+
+.subtitle{
+  margin:6px 0 0;
+  color:#5b4329;
+  font-weight:800;
+}
+
+.panel{
+  margin-top:18px;
+  background:linear-gradient(180deg,rgba(255,247,216,.98),rgba(243,219,166,.98));
+  border:3px solid #63451f;
+  border-radius:20px;
+  box-shadow:var(--shadow);
+  padding:18px;
+}
+
+.section-title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:20px;
+  font-weight:900;
+  margin:0 0 12px;
+  color:#6e2b22;
+}
+
+.form-grid{
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr;
+  gap:12px;
+}
+
+label{
+  font-weight:800;
+  font-size:14px;
+  color:#503a27;
+  display:block;
+  margin-bottom:6px;
+}
+
+input,
+select,
+textarea,
+button{
+  font:inherit;
+}
+
+input[type="text"],
+input[type="date"],
+select{
+  width:100%;
+  border:2px solid #8b6a38;
+  background:#fffaf0;
+  color:#2d241b;
+  border-radius:12px;
+  padding:11px 12px;
+  outline:none;
+}
+
+input:focus,
+select:focus{
+  border-color:var(--blue);
+  box-shadow:0 0 0 3px rgba(29,88,117,.14);
+}
+
+.toolbar{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:12px;
+  align-items:center;
+}
+
+button{
+  border:0;
+  border-radius:12px;
+  padding:10px 14px;
+  font-weight:900;
+  cursor:pointer;
+  transition:.15s transform,.15s filter;
+  box-shadow:0 3px 0 rgba(0,0,0,.18);
+}
+
+button:hover{
+  filter:brightness(1.05);
+  transform:translateY(-1px);
+}
+
+button:active{
+  transform:translateY(2px);
+  box-shadow:none;
+}
+
+button:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+
+.btn-primary{
+  background:var(--red);
+  color:#fff;
+}
+
+.btn-blue{
+  background:var(--blue);
+  color:#fff;
+}
+
+.btn-gold{
+  background:var(--gold);
+  color:#2d241b;
+}
+
+.btn-dark{
+  background:#3f352a;
+  color:#fff;
+}
+
+.btn-light{
+  background:#fff7df;
+  color:#493721;
+  border:1px solid #ac8952;
+}
+
+.history-row{
+  display:grid;
+  grid-template-columns:minmax(240px,1fr) auto auto auto;
+  gap:8px;
+  margin-top:12px;
+  align-items:end;
+}
+
+.archive-box{
+  display:none;
+  margin-top:10px;
+  padding:12px;
+  border:2px dashed #87663b;
+  border-radius:14px;
+  background:rgba(255,250,232,.78);
+}
+
+.archive-box.show{
+  display:block;
+}
+
+.archive-row{
+  display:grid;
+  grid-template-columns:minmax(240px,1fr) auto auto;
+  gap:8px;
+  align-items:end;
+}
+
+.archive-hint{
+  margin-top:7px;
+  font-size:12px;
+  font-weight:800;
+  color:#705638;
+}
+
+.archive-viewing{
+  margin-top:10px;
+  padding:8px 10px;
+  border-radius:10px;
+  background:#ece9e3;
+  color:#5f5a53;
+  font-size:13px;
+  font-weight:900;
+  display:none;
+}
+
+.archive-viewing.show{
+  display:block;
+}
+
+.archived-readonly .status-btn,
+.archived-readonly .note-input{
+  pointer-events:none;
+  opacity:.72;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:10px;
+  margin-top:16px;
+}
+
+.stat{
+  border:2px solid rgba(71,51,29,.35);
+  border-radius:16px;
+  padding:12px;
+  text-align:center;
+  background:#fff9e9;
+}
+
+.stat b{
+  display:block;
+  font-size:28px;
+  line-height:1.05;
+}
+
+.stat span{
+  font-size:13px;
+  font-weight:800;
+  color:#64543e;
+}
+
+.stat.all b{color:var(--blue)}
+.stat.paid b{color:var(--green)}
+.stat.unpaid b{color:var(--red)}
+.stat.late b{color:var(--orange)}
+.stat.exempt b{color:var(--gray)}
+
+.progress-wrap{
+  margin-top:12px;
+  background:#d4c39d;
+  border-radius:999px;
+  overflow:hidden;
+  border:2px solid #73542c;
+  height:24px;
+}
+
+.progress{
+  height:100%;
+  width:0;
+  background:linear-gradient(90deg,#3ca678,#68c792);
+  transition:.25s width;
+}
+
+.progress-text{
+  text-align:right;
+  margin-top:5px;
+  font-size:13px;
+  font-weight:800;
+}
+
+.controls{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.left-controls,
+.right-controls{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.search{
+  min-width:230px;
+}
+
+.filter-btn.active{
+  background:#1e536d;
+  color:#fff;
+  border-color:#1e536d;
+}
+
+.table-wrap{
+  overflow:auto;
+  border-radius:16px;
+  border:2px solid #70502e;
+  background:#fff9e7;
+}
+
+table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  min-width:900px;
+}
+
+thead th{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:#4a3524;
+  color:#fff7db;
+  padding:12px 9px;
+  border-right:1px solid #765b3e;
+  font-size:14px;
+}
+
+tbody td{
+  padding:9px;
+  border-bottom:1px dashed #c7ae80;
+  vertical-align:middle;
+  background:rgba(255,250,236,.88);
+}
+
+tbody tr:hover td{
+  background:#fff4cd;
+}
+
+tbody tr.overdue td{
+  background:#fff0e6;
+}
+
+tbody tr.overdue td:first-child{
+  box-shadow:inset 5px 0 0 #d95e3e;
+}
+
+.seat{
+  width:68px;
+  text-align:center;
+  font-weight:900;
+  color:var(--blue);
+}
+
+.name{
+  font-weight:900;
+  font-size:16px;
+  white-space:nowrap;
+}
+
+.status-cell{
+  min-width:330px;
+}
+
+.status-actions{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+}
+
+.status-btn{
+  padding:7px 10px;
+  border-radius:999px;
+  box-shadow:none;
+  border:2px solid transparent;
+  font-size:13px;
+}
+
+.status-btn.unpaid{
+  background:#fde7e3;
+  color:#922e24;
+}
+
+.status-btn.paid{
+  background:#dcf4e9;
+  color:#166643;
+}
+
+.status-btn.late{
+  background:#fff0d8;
+  color:#a95a13;
+}
+
+.status-btn.exempt{
+  background:#ece9e3;
+  color:#5f5a53;
+}
+
+.status-btn.selected{
+  border-color:#27231e;
+  box-shadow:0 2px 0 rgba(0,0,0,.15);
+}
+
+.status-badge{
+  display:inline-block;
+  border-radius:999px;
+  padding:5px 9px;
+  font-weight:900;
+  font-size:12px;
+  white-space:nowrap;
+}
+
+.status-badge.overdue{
+  background:#c53c2f;
+  color:#fff;
+}
+
+.status-badge.normal{
+  background:#e8ddc5;
+  color:#5f503d;
+}
+
+.note-input{
+  width:100%;
+  min-width:160px;
+  border:1.5px solid #ad9369;
+  border-radius:10px;
+  padding:8px;
+  background:#fffdf6;
+}
+
+.empty{
+  padding:34px;
+  text-align:center;
+  font-weight:800;
+  color:#735f46;
+}
+
+.footer-note{
+  text-align:center;
+  color:#eef8fb;
+  margin-top:14px;
+  font-weight:700;
+  text-shadow:0 1px 2px rgba(0,0,0,.2);
+}
+
+.toast{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  background:#2f2923;
+  color:white;
+  padding:12px 16px;
+  border-radius:12px;
+  box-shadow:var(--shadow);
+  opacity:0;
+  transform:translateY(10px);
+  pointer-events:none;
+  transition:.2s;
+  z-index:20;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translateY(0);
+}
+
+.cloud-bar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:14px;
+  padding:10px 12px;
+  border-radius:14px;
+  background:rgba(255,250,232,.72);
+  border:2px dashed #87663b;
+}
+
+.cloud-left,
+.cloud-right{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.sync-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:7px 11px;
+  border-radius:999px;
+  font-weight:900;
+  font-size:13px;
+  background:#e8ddc5;
+  color:#5f503d;
+}
+
+.sync-badge.ok{
+  background:#dcf4e9;
+  color:#166643;
+}
+
+.sync-badge.saving{
+  background:#fff0d8;
+  color:#9a570f;
+}
+
+.sync-badge.error{
+  background:#fde7e3;
+  color:#922e24;
+}
+
+.account-email{
+  font-size:13px;
+  font-weight:800;
+  color:#5e4930;
+}
+
+.login-screen{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  background:linear-gradient(180deg,#7bc5e1,#277ca4);
+  display:grid;
+  place-items:center;
+  padding:20px;
+}
+
+.login-screen.hidden{
+  display:none;
+}
+
+.login-card{
+  width:min(440px,94vw);
+  background:linear-gradient(180deg,#fff3c8,#e6bd71);
+  border:5px solid #51371d;
+  border-radius:24px;
+  padding:24px;
+  box-shadow:0 16px 45px rgba(0,0,0,.28);
+  text-align:center;
+}
+
+.login-skull{
+  font-size:58px;
+  line-height:1;
+}
+
+.login-card h2{
+  margin:8px 0 4px;
+  color:#7d241f;
+  font-size:30px;
+}
+
+.login-card p{
+  margin:0 0 18px;
+  color:#60482d;
+  font-weight:800;
+}
+
+.login-card input{
+  width:100%;
+  margin:6px 0 10px;
+  border:2px solid #8b6a38;
+  background:#fffaf0;
+  color:#2d241b;
+  border-radius:12px;
+  padding:12px;
+  outline:none;
+}
+
+.login-card button{
+  width:100%;
+  margin-top:4px;
+}
+
+.login-error{
+  min-height:22px;
+  margin-top:10px;
+  color:#9a2b22;
+  font-weight:900;
+  font-size:13px;
+}
+
+@media (max-width:760px){
+  .app{
+    width:96vw;
+    margin-top:10px;
+  }
 
   .hero{
-    position:relative;
-    overflow:hidden;
-    background:linear-gradient(135deg,#fff0bd,#e7bd68);
-    border:5px solid #51371d;
-    border-radius:24px;
-    box-shadow:var(--shadow);
-    padding:24px 24px 20px;
-  }
-
-  .hero::before,.hero::after{
-    content:"☠";
-    position:absolute;
-    font-size:100px;
-    opacity:.07;
-    top:-18px;
-  }
-
-  .hero::before{left:18px; transform:rotate(-12deg)}
-  .hero::after{right:18px; transform:rotate(12deg)}
-
-  .hero-top{
-    display:flex;
-    gap:18px;
-    align-items:center;
-    justify-content:center;
-    text-align:center
+    padding:18px 12px;
   }
 
   .emblem{
-    width:72px;
-    height:72px;
-    display:grid;
-    place-items:center;
-    border-radius:50%;
-    background:#1f2933;
-    color:white;
-    border:5px solid var(--gold);
-    font-size:38px;
-    box-shadow:0 4px 0 #6b491f;
+    width:58px;
+    height:58px;
+    font-size:30px;
   }
 
   h1{
-    margin:0;
-    font-size:clamp(28px,5vw,48px);
-    letter-spacing:2px;
-    color:#7d241f;
-    text-shadow:2px 2px 0 #fff3c7
-  }
-
-  .subtitle{
-    margin:6px 0 0;
-    color:#5b4329;
-    font-weight:800
-  }
-
-  .panel{
-    margin-top:18px;
-    background:linear-gradient(180deg,rgba(255,247,216,.98),rgba(243,219,166,.98));
-    border:3px solid #63451f;
-    border-radius:20px;
-    box-shadow:var(--shadow);
-    padding:18px;
-  }
-
-  .section-title{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    font-size:20px;
-    font-weight:900;
-    margin:0 0 12px;
-    color:#6e2b22
+    font-size:30px;
   }
 
   .form-grid{
-    display:grid;
-    grid-template-columns:2fr 1fr 1fr;
-    gap:12px
-  }
-
-  label{
-    font-weight:800;
-    font-size:14px;
-    color:#503a27;
-    display:block;
-    margin-bottom:6px
-  }
-
-  input,select,textarea,button{
-    font:inherit
-  }
-
-  input[type="text"],
-  input[type="date"],
-  select{
-    width:100%;
-    border:2px solid #8b6a38;
-    background:#fffaf0;
-    color:#2d241b;
-    border-radius:12px;
-    padding:11px 12px;
-    outline:none;
-  }
-
-  input:focus,
-  select:focus{
-    border-color:var(--blue);
-    box-shadow:0 0 0 3px rgba(29,88,117,.14)
-  }
-
-  .toolbar{
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-    margin-top:12px;
-    align-items:center
-  }
-
-  button{
-    border:0;
-    border-radius:12px;
-    padding:10px 14px;
-    font-weight:900;
-    cursor:pointer;
-    transition:.15s transform,.15s filter;
-    box-shadow:0 3px 0 rgba(0,0,0,.18);
-  }
-
-  button:hover{
-    filter:brightness(1.05);
-    transform:translateY(-1px)
-  }
-
-  button:active{
-    transform:translateY(2px);
-    box-shadow:none
-  }
-
-  .btn-primary{background:var(--red);color:#fff}
-  .btn-blue{background:var(--blue);color:#fff}
-  .btn-gold{background:var(--gold);color:#2d241b}
-  .btn-dark{background:#3f352a;color:#fff}
-  .btn-light{
-    background:#fff7df;
-    color:#493721;
-    border:1px solid #ac8952
+    grid-template-columns:1fr;
   }
 
   .history-row{
-    display:grid;
-    grid-template-columns:minmax(240px,1fr) auto auto;
-    gap:8px;
-    margin-top:12px;
-    align-items:end
+    grid-template-columns:1fr;
+  }
+
+  .archive-row{
+    grid-template-columns:1fr;
   }
 
   .stats{
-    display:grid;
-    grid-template-columns:repeat(5,1fr);
-    gap:10px;
-    margin-top:16px
+    grid-template-columns:repeat(2,1fr);
   }
 
-  .stat{
-    border:2px solid rgba(71,51,29,.35);
-    border-radius:16px;
-    padding:12px;
-    text-align:center;
-    background:#fff9e9
-  }
-
-  .stat b{
-    display:block;
-    font-size:28px;
-    line-height:1.05
-  }
-
-  .stat span{
-    font-size:13px;
-    font-weight:800;
-    color:#64543e
-  }
-
-  .stat.all b{color:var(--blue)}
-  .stat.paid b{color:var(--green)}
-  .stat.unpaid b{color:var(--red)}
-  .stat.late b{color:var(--orange)}
-  .stat.exempt b{color:var(--gray)}
-
-  .progress-wrap{
-    margin-top:12px;
-    background:#d4c39d;
-    border-radius:999px;
-    overflow:hidden;
-    border:2px solid #73542c;
-    height:24px
-  }
-
-  .progress{
-    height:100%;
-    width:0;
-    background:linear-gradient(90deg,#3ca678,#68c792);
-    transition:.25s width
-  }
-
-  .progress-text{
-    text-align:right;
-    margin-top:5px;
-    font-size:13px;
-    font-weight:800
+  .stats .stat:first-child{
+    grid-column:1/-1;
   }
 
   .controls{
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-    align-items:center;
-    justify-content:space-between
+    align-items:stretch;
   }
 
   .left-controls,
   .right-controls{
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-    align-items:center
+    width:100%;
   }
 
-  .search{min-width:230px}
+  .search{
+    min-width:100%;
+  }
 
-  .filter-btn.active{
-    background:#1e536d;
-    color:#fff;
-    border-color:#1e536d
+  .left-controls button,
+  .right-controls button{
+    flex:1;
+  }
+}
+
+
+/* =========================
+   列印模式
+========================= */
+
+.print-summary{
+  display:none;
+}
+
+@page{
+  size:A4 portrait;
+  margin:7mm;
+}
+
+@media print{
+
+  html,
+  body{
+    background:#fff!important;
+    margin:0!important;
+    padding:0!important;
+  }
+
+  body::before{
+    display:none!important;
+  }
+
+  .app{
+    width:100%!important;
+    margin:0!important;
+    padding:0!important;
+  }
+
+  .hero,
+  .toolbar,
+  .controls,
+  .history-row,
+  .archive-box,
+  .archive-viewing,
+  .footer-note,
+  .toast,
+  .cloud-bar{
+    display:none!important;
+  }
+
+  .print-summary{
+    display:block!important;
+    margin:0 0 4mm 0;
+    padding:0 0 2.5mm 0;
+    border-bottom:1.2px solid #333;
+    color:#111;
+  }
+
+  .print-summary-title{
+    font-size:15pt;
+    line-height:1.25;
+    font-weight:900;
+    text-align:center;
+    margin:0 0 2mm 0;
+  }
+
+  .print-summary-stats{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:0;
+    flex-wrap:wrap;
+    font-size:10.5pt;
+    line-height:1.4;
+    font-weight:800;
+  }
+
+  .print-summary-stats span{
+    white-space:nowrap;
+  }
+
+  .print-summary-stats span:not(:last-child)::after{
+    content:"　｜　";
+    font-weight:400;
+  }
+
+  .panel{
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    background:#fff!important;
+  }
+
+  #rosterTitle{
+    display:none!important;
   }
 
   .table-wrap{
-    overflow:auto;
-    border-radius:16px;
-    border:2px solid #70502e;
-    background:#fff9e7
+    overflow:visible!important;
+    border:1px solid #555!important;
+    border-radius:0!important;
+    background:#fff!important;
   }
 
   table{
-    width:100%;
-    border-collapse:separate;
-    border-spacing:0;
-    min-width:900px
+    min-width:0!important;
+    width:100%!important;
+    border-collapse:collapse!important;
+    table-layout:fixed!important;
+    font-size:9.5pt!important;
+    line-height:1.15!important;
+  }
+
+  thead{
+    display:table-header-group;
   }
 
   thead th{
-    position:sticky;
-    top:0;
-    z-index:2;
-    background:#4a3524;
-    color:#fff7db;
-    padding:12px 9px;
-    border-right:1px solid #765b3e;
-    font-size:14px;
+    position:static!important;
+    background:#eee!important;
+    color:#111!important;
+    padding:1.7mm 1.2mm!important;
+    border:1px solid #777!important;
+    font-size:9.5pt!important;
+  }
+
+  tbody tr{
+    break-inside:avoid;
+    page-break-inside:avoid;
   }
 
   tbody td{
-    padding:9px;
-    border-bottom:1px dashed #c7ae80;
-    vertical-align:middle;
-    background:rgba(255,250,236,.88)
+    padding:1.45mm 1.2mm!important;
+    border:1px solid #aaa!important;
+    background:#fff!important;
+    vertical-align:middle!important;
   }
 
-  tbody tr:hover td{background:#fff4cd}
-  tbody tr.overdue td{background:#fff0e6}
-  tbody tr.overdue td:first-child{box-shadow:inset 5px 0 0 #d95e3e}
+  tbody tr:hover td,
+  tbody tr.overdue td{
+    background:#fff!important;
+  }
+
+  tbody tr.overdue td:first-child{
+    box-shadow:none!important;
+  }
+
+  th:nth-child(1),
+  td:nth-child(1){
+    width:9%;
+    text-align:center;
+  }
+
+  th:nth-child(2),
+  td:nth-child(2){
+    width:18%;
+  }
+
+  th:nth-child(3),
+  td:nth-child(3){
+    width:23%;
+  }
+
+  th:nth-child(4),
+  td:nth-child(4){
+    width:16%;
+    text-align:center;
+  }
+
+  th:nth-child(5),
+  td:nth-child(5){
+    width:34%;
+  }
 
   .seat{
-    width:68px;
-    text-align:center;
-    font-weight:900;
-    color:var(--blue)
+    font-size:9.5pt!important;
   }
 
   .name{
-    font-weight:900;
-    font-size:16px;
-    white-space:nowrap
+    font-size:9.5pt!important;
   }
 
-  .status-cell{min-width:330px}
+  .status-cell{
+    min-width:0!important;
+  }
 
   .status-actions{
-    display:flex;
-    gap:6px;
-    flex-wrap:wrap
+    display:block!important;
   }
 
-  .status-btn{
-    padding:7px 10px;
-    border-radius:999px;
-    box-shadow:none;
-    border:2px solid transparent;
-    font-size:13px
+  .status-actions .status-btn{
+    display:none!important;
   }
 
-  .status-btn.unpaid{
-    background:#fde7e3;
-    color:#922e24
-  }
-
-  .status-btn.paid{
-    background:#dcf4e9;
-    color:#166643
-  }
-
-  .status-btn.late{
-    background:#fff0d8;
-    color:#a95a13
-  }
-
-  .status-btn.exempt{
-    background:#ece9e3;
-    color:#5f5a53
-  }
-
-  .status-btn.selected{
-    border-color:#27231e;
-    box-shadow:0 2px 0 rgba(0,0,0,.15)
+  .status-actions .status-btn.selected{
+    display:inline!important;
+    background:transparent!important;
+    color:#111!important;
+    border:0!important;
+    box-shadow:none!important;
+    padding:0!important;
+    margin:0!important;
+    font-size:9.5pt!important;
+    font-weight:800!important;
   }
 
   .status-badge{
-    display:inline-block;
-    border-radius:999px;
-    padding:5px 9px;
-    font-weight:900;
-    font-size:12px;
-    white-space:nowrap
-  }
-
-  .status-badge.overdue{
-    background:#c53c2f;
-    color:#fff
-  }
-
-  .status-badge.normal{
-    background:#e8ddc5;
-    color:#5f503d
+    padding:0!important;
+    background:transparent!important;
+    color:#111!important;
+    font-size:9pt!important;
+    font-weight:700!important;
   }
 
   .note-input{
-    width:100%;
-    min-width:160px;
-    border:1.5px solid #ad9369;
-    border-radius:10px;
-    padding:8px;
-    background:#fffdf6
+    width:100%!important;
+    min-width:0!important;
+    border:0!important;
+    background:transparent!important;
+    padding:0!important;
+    margin:0!important;
+    color:#111!important;
+    font-size:9pt!important;
+    box-shadow:none!important;
+  }
+
+  .note-input::placeholder{
+    color:transparent!important;
   }
 
   .empty{
-    padding:34px;
-    text-align:center;
-    font-weight:800;
-    color:#735f46
+    display:none!important;
   }
+}
 
-  .footer-note{
-    text-align:center;
-    color:#eef8fb;
-    margin-top:14px;
-    font-weight:700;
-    text-shadow:0 1px 2px rgba(0,0,0,.2)
-  }
-
-  .toast{
-    position:fixed;
-    right:20px;
-    bottom:20px;
-    background:#2f2923;
-    color:white;
-    padding:12px 16px;
-    border-radius:12px;
-    box-shadow:var(--shadow);
-    opacity:0;
-    transform:translateY(10px);
-    pointer-events:none;
-    transition:.2s;
-    z-index:20
-  }
-
-  .toast.show{
-    opacity:1;
-    transform:translateY(0)
-  }
-
-  @media (max-width:760px){
-    .app{width:96vw;margin-top:10px}
-    .hero{padding:18px 12px}
-    .emblem{width:58px;height:58px;font-size:30px}
-    h1{font-size:30px}
-    .form-grid{grid-template-columns:1fr}
-    .history-row{grid-template-columns:1fr}
-    .stats{grid-template-columns:repeat(2,1fr)}
-    .stats .stat:first-child{grid-column:1/-1}
-    .controls{align-items:stretch}
-    .left-controls,.right-controls{width:100%}
-    .search{min-width:100%}
-    .left-controls button,.right-controls button{flex:1}
-  }
-
-  .cloud-bar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-top:14px;
-    padding:10px 12px;
-    border-radius:14px;
-    background:rgba(255,250,232,.72);
-    border:2px dashed #87663b
-  }
-
-  .cloud-left,
-  .cloud-right{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    flex-wrap:wrap
-  }
-
-  .sync-badge{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    padding:7px 11px;
-    border-radius:999px;
-    font-weight:900;
-    font-size:13px;
-    background:#e8ddc5;
-    color:#5f503d
-  }
-
-  .sync-badge.ok{
-    background:#dcf4e9;
-    color:#166643
-  }
-
-  .sync-badge.saving{
-    background:#fff0d8;
-    color:#9a570f
-  }
-
-  .sync-badge.error{
-    background:#fde7e3;
-    color:#922e24
-  }
-
-  .account-email{
-    font-size:13px;
-    font-weight:800;
-    color:#5e4930
-  }
-
-  .login-screen{
-    position:fixed;
-    inset:0;
-    z-index:100;
-    background:linear-gradient(180deg,#7bc5e1,#277ca4);
-    display:grid;
-    place-items:center;
-    padding:20px
-  }
-
-  .login-screen.hidden{display:none}
-
-  .login-card{
-    width:min(440px,94vw);
-    background:linear-gradient(180deg,#fff3c8,#e6bd71);
-    border:5px solid #51371d;
-    border-radius:24px;
-    padding:24px;
-    box-shadow:0 16px 45px rgba(0,0,0,.28);
-    text-align:center
-  }
-
-  .login-skull{
-    font-size:58px;
-    line-height:1
-  }
-
-  .login-card h2{
-    margin:8px 0 4px;
-    color:#7d241f;
-    font-size:30px
-  }
-
-  .login-card p{
-    margin:0 0 18px;
-    color:#60482d;
-    font-weight:800
-  }
-
-  .login-card input{
-    width:100%;
-    margin:6px 0 10px;
-    border:2px solid #8b6a38;
-    background:#fffaf0;
-    color:#2d241b;
-    border-radius:12px;
-    padding:12px;
-    outline:none
-  }
-
-  .login-card button{
-    width:100%;
-    margin-top:4px
-  }
-
-  .login-error{
-    min-height:22px;
-    margin-top:10px;
-    color:#9a2b22;
-    font-weight:900;
-    font-size:13px
-  }
-
-
-  /* ==================================================
-     列印專用
-     僅改變列印版面，不影響原網頁設定
-  ================================================== */
-
-  .print-summary{
-    display:none
-  }
-
-  @page{
-    size:A4 portrait;
-    margin:7mm
-  }
-
-  @media print{
-
-    html,
-    body{
-      background:#fff!important;
-      margin:0!important;
-      padding:0!important
-    }
-
-    body::before{
-      display:none!important
-    }
-
-    .app{
-      width:100%!important;
-      margin:0!important;
-      padding:0!important
-    }
-
-    /* 隱藏網頁操作區 */
-    .hero,
-    .toolbar,
-    .controls,
-    .history-row,
-    .footer-note,
-    .toast,
-    .cloud-bar{
-      display:none!important
-    }
-
-    /* 列印上方摘要 */
-    .print-summary{
-      display:block!important;
-      margin:0 0 4mm 0;
-      padding:0 0 2.5mm 0;
-      border-bottom:1.2px solid #333;
-      color:#111
-    }
-
-    .print-summary-title{
-      font-size:15pt;
-      line-height:1.25;
-      font-weight:900;
-      text-align:center;
-      margin:0 0 2mm 0
-    }
-
-    .print-summary-stats{
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      gap:0;
-      flex-wrap:wrap;
-      font-size:10.5pt;
-      line-height:1.4;
-      font-weight:800
-    }
-
-    .print-summary-stats span{
-      white-space:nowrap
-    }
-
-    .print-summary-stats span:not(:last-child)::after{
-      content:"　｜　";
-      font-weight:400
-    }
-
-    /* 移除原本卡片外觀 */
-    .panel{
-      margin:0!important;
-      padding:0!important;
-      border:0!important;
-      border-radius:0!important;
-      box-shadow:none!important;
-      background:#fff!important
-    }
-
-    #rosterTitle{
-      display:none!important
-    }
-
-    .table-wrap{
-      overflow:visible!important;
-      border:1px solid #555!important;
-      border-radius:0!important;
-      background:#fff!important
-    }
-
-    /* 壓縮表格 */
-    table{
-      min-width:0!important;
-      width:100%!important;
-      border-collapse:collapse!important;
-      table-layout:fixed!important;
-      font-size:9.5pt!important;
-      line-height:1.15!important
-    }
-
-    thead{
-      display:table-header-group
-    }
-
-    thead th{
-      position:static!important;
-      background:#eee!important;
-      color:#111!important;
-      padding:1.7mm 1.2mm!important;
-      border:1px solid #777!important;
-      font-size:9.5pt!important
-    }
-
-    tbody tr{
-      break-inside:avoid;
-      page-break-inside:avoid
-    }
-
-    tbody td{
-      padding:1.45mm 1.2mm!important;
-      border:1px solid #aaa!important;
-      background:#fff!important;
-      vertical-align:middle!important
-    }
-
-    tbody tr:hover td,
-    tbody tr.overdue td{
-      background:#fff!important
-    }
-
-    tbody tr.overdue td:first-child{
-      box-shadow:none!important
-    }
-
-    /* A4 欄寬 */
-    th:nth-child(1),
-    td:nth-child(1){
-      width:9%;
-      text-align:center
-    }
-
-    th:nth-child(2),
-    td:nth-child(2){
-      width:18%
-    }
-
-    th:nth-child(3),
-    td:nth-child(3){
-      width:23%
-    }
-
-    th:nth-child(4),
-    td:nth-child(4){
-      width:16%;
-      text-align:center
-    }
-
-    th:nth-child(5),
-    td:nth-child(5){
-      width:34%
-    }
-
-    .seat{
-      font-size:9.5pt!important
-    }
-
-    .name{
-      font-size:9.5pt!important
-    }
-
-    .status-cell{
-      min-width:0!important
-    }
-
-    /* 列印時只留下真正選取的狀態 */
-    .status-actions{
-      display:block!important
-    }
-
-    .status-actions .status-btn{
-      display:none!important
-    }
-
-    .status-actions .status-btn.selected{
-      display:inline!important;
-      background:transparent!important;
-      color:#111!important;
-      border:0!important;
-      box-shadow:none!important;
-      padding:0!important;
-      margin:0!important;
-      font-size:9.5pt!important;
-      font-weight:800!important
-    }
-
-    .status-badge{
-      padding:0!important;
-      background:transparent!important;
-      color:#111!important;
-      font-size:9pt!important;
-      font-weight:700!important
-    }
-
-    .note-input{
-      width:100%!important;
-      min-width:0!important;
-      border:0!important;
-      background:transparent!important;
-      padding:0!important;
-      margin:0!important;
-      color:#111!important;
-      font-size:9pt!important;
-      box-shadow:none!important
-    }
-
-    .note-input::placeholder{
-      color:transparent!important
-    }
-
-    .empty{
-      display:none!important
-    }
-  }
 </style>
 </head>
 
@@ -875,7 +1016,6 @@
         🧭 收繳任務設定
       </div>
 
-
       <div class="form-grid">
 
         <div>
@@ -890,7 +1030,6 @@
           />
         </div>
 
-
         <div>
           <label for="receiveDate">
             開始收繳日期
@@ -901,7 +1040,6 @@
             type="date"
           />
         </div>
-
 
         <div>
           <label for="dueDate">
@@ -960,7 +1098,6 @@
       <div class="history-row">
 
         <div>
-
           <label for="historySelect">
             歷史收繳紀錄
           </label>
@@ -970,7 +1107,6 @@
               — 尚未建立紀錄 —
             </option>
           </select>
-
         </div>
 
         <button
@@ -981,12 +1117,82 @@
         </button>
 
         <button
+          class="btn-gold"
+          id="archiveBtn"
+        >
+          📦 封存目前紀錄
+        </button>
+
+        <button
           class="btn-light"
           id="deleteBtn"
         >
           🗑️ 刪除目前紀錄
         </button>
 
+      </div>
+
+
+      <div
+        class="toolbar"
+        style="margin-top:10px"
+      >
+        <button
+          class="btn-light"
+          id="toggleArchiveBtn"
+        >
+          📦 查看封存紀錄
+        </button>
+      </div>
+
+
+      <div
+        class="archive-box"
+        id="archiveBox"
+      >
+
+        <div class="archive-row">
+
+          <div>
+            <label for="archiveSelect">
+              封存紀錄
+            </label>
+
+            <select id="archiveSelect">
+              <option value="">
+                — 尚無封存紀錄 —
+              </option>
+            </select>
+          </div>
+
+          <button
+            class="btn-dark"
+            id="loadArchiveBtn"
+          >
+            📖 查看封存
+          </button>
+
+          <button
+            class="btn-light"
+            id="restoreArchiveBtn"
+          >
+            ↩ 取消封存
+          </button>
+
+        </div>
+
+        <div class="archive-hint">
+          封存紀錄不會出現在上方「歷史收繳紀錄」，需要時可在這裡查看或取消封存。
+        </div>
+
+      </div>
+
+
+      <div
+        class="archive-viewing"
+        id="archiveViewing"
+      >
+        📦 目前正在查看封存紀錄；為避免誤改，內容暫時設為唯讀。若要修改，請先按「取消封存」。
       </div>
 
 
@@ -1007,7 +1213,6 @@
           ></span>
 
         </div>
-
 
         <div class="cloud-right">
 
@@ -1080,51 +1285,22 @@
 
   <section class="panel">
 
-    <!-- 只有列印時顯示 -->
     <div
       class="print-summary"
       id="printSummary"
     >
-
       <div
         class="print-summary-title"
         id="printSummaryTitle"
       ></div>
 
       <div class="print-summary-stats">
-
-        <span>
-          全班
-          <b id="printCountAll">0</b>
-          人
-        </span>
-
-        <span>
-          已繳
-          <b id="printCountPaid">0</b>
-          人
-        </span>
-
-        <span>
-          未繳
-          <b id="printCountUnpaid">0</b>
-          人
-        </span>
-
-        <span>
-          補交
-          <b id="printCountLate">0</b>
-          人
-        </span>
-
-        <span>
-          免繳
-          <b id="printCountExempt">0</b>
-          人
-        </span>
-
+        <span>全班 <b id="printCountAll">0</b> 人</span>
+        <span>已繳 <b id="printCountPaid">0</b> 人</span>
+        <span>未繳 <b id="printCountUnpaid">0</b> 人</span>
+        <span>補交 <b id="printCountLate">0</b> 人</span>
+        <span>免繳 <b id="printCountExempt">0</b> 人</span>
       </div>
-
     </div>
 
 
@@ -1221,7 +1397,6 @@
       <table>
 
         <thead>
-
           <tr>
             <th>座號</th>
             <th>姓名</th>
@@ -1229,7 +1404,6 @@
             <th>期限提醒</th>
             <th>備註</th>
           </tr>
-
         </thead>
 
         <tbody id="studentBody"></tbody>
@@ -1266,18 +1440,14 @@
 
 import {
   initializeApp
-} from
-"https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
-
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
 
 import {
   getAuth,
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut
-} from
-"https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
-
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 
 import {
   getFirestore,
@@ -1289,8 +1459,7 @@ import {
   query,
   orderBy,
   serverTimestamp
-} from
-"https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
 
 const firebaseConfig = {
@@ -1321,12 +1490,10 @@ initializeApp(
   firebaseConfig
 );
 
-
 const auth =
 getAuth(
   app
 );
-
 
 const db =
 getFirestore(
@@ -1394,22 +1561,23 @@ const STATUS_LABEL = {
 let currentUser =
 null;
 
-
 let currentId =
 null;
-
 
 let filter =
 "all";
 
-
 let studentState =
 createBlankState();
-
 
 let historyRecords =
 [];
 
+let archivedRecords =
+[];
+
+let currentIsArchived =
+false;
 
 let autosaveTimer =
 null;
@@ -1423,7 +1591,7 @@ document.getElementById(
 
 
 /* ==============================
-   建立空白狀態
+   建立空白資料
 ============================== */
 
 function createBlankState(){
@@ -1459,10 +1627,8 @@ function todayISO(){
   const d =
   new Date();
 
-
   const y =
   d.getFullYear();
-
 
   const m =
   String(
@@ -1472,7 +1638,6 @@ function todayISO(){
     "0"
   );
 
-
   const day =
   String(
     d.getDate()
@@ -1480,7 +1645,6 @@ function todayISO(){
     2,
     "0"
   );
-
 
   return `${y}-${m}-${day}`;
 
@@ -1493,7 +1657,6 @@ function isOverdue(
 
   const due =
   $("dueDate").value;
-
 
   return (
     !!due
@@ -1512,10 +1675,8 @@ function formatDate(s){
     return "未設定";
   }
 
-
   const [y,m,d] =
   s.split("-");
-
 
   return `${y}/${m}/${d}`;
 
@@ -1537,13 +1698,9 @@ function escapeHTML(
     ch => ({
 
       "&":"&amp;",
-
       "<":"&lt;",
-
       ">":"&gt;",
-
       "'":"&#39;",
-
       '"':"&quot;"
 
     }[ch])
@@ -1554,7 +1711,7 @@ function escapeHTML(
 
 
 /* ==============================
-   Toast
+   提示
 ============================== */
 
 function showToast(
@@ -1564,20 +1721,16 @@ function showToast(
   const t =
   $("toast");
 
-
   t.textContent =
   msg;
-
 
   t.classList.add(
     "show"
   );
 
-
   clearTimeout(
     showToast.timer
   );
-
 
   showToast.timer =
   setTimeout(
@@ -1606,7 +1759,6 @@ function setSync(
   const b =
   $("syncBadge");
 
-
   b.className =
   "sync-badge" +
   (
@@ -1616,7 +1768,6 @@ function setSync(
     :
     ""
   );
-
 
   b.textContent =
   text;
@@ -1651,7 +1802,7 @@ function currentMeta(){
 
 
 /* ==============================
-   Firestore
+   Firestore 路徑
 ============================== */
 
 function recordsCollection(){
@@ -1663,7 +1814,6 @@ function recordsCollection(){
     );
 
   }
-
 
   return collection(
 
@@ -1692,7 +1842,6 @@ function recordRef(
 
   }
 
-
   return doc(
 
     db,
@@ -1711,7 +1860,7 @@ function recordRef(
 
 
 /* ==============================
-   學生名冊
+   顯示學生
 ============================== */
 
 function render(){
@@ -1722,14 +1871,39 @@ function render(){
     .trim()
     .toLowerCase();
 
-
   const tbody =
   $("studentBody");
-
 
   tbody.innerHTML =
   "";
 
+  document.body.classList.toggle(
+    "archived-readonly",
+    currentIsArchived
+  );
+
+  $("archiveViewing")
+    .classList
+    .toggle(
+      "show",
+      currentIsArchived
+    );
+
+  [
+    "itemName",
+    "receiveDate",
+    "dueDate"
+  ].forEach(
+
+    id =>
+      $(id).disabled =
+      currentIsArchived
+
+  );
+
+  $("saveRecordBtn")
+  .disabled =
+  currentIsArchived;
 
   let shown =
   0;
@@ -1747,12 +1921,10 @@ function render(){
         note:""
       };
 
-
       const overdue =
       isOverdue(
         st.status
       );
-
 
       const matchesSearch =
       !q
@@ -1769,7 +1941,6 @@ function render(){
           q
         );
 
-
       const matchesFilter =
       filter === "all"
       ||
@@ -1781,7 +1952,6 @@ function render(){
         st.status === filter
       );
 
-
       if(
         !matchesSearch
         ||
@@ -1792,15 +1962,12 @@ function render(){
 
       }
 
-
       shown++;
-
 
       const tr =
       document.createElement(
         "tr"
       );
-
 
       if(overdue){
 
@@ -1809,7 +1976,6 @@ function render(){
         );
 
       }
-
 
       tr.innerHTML = `
 
@@ -1890,7 +2056,6 @@ function render(){
 
       `;
 
-
       tbody.appendChild(
         tr
       );
@@ -1899,13 +2064,11 @@ function render(){
 
   );
 
-
-  $("emptyState").hidden =
+  $("emptyState")
+  .hidden =
   shown !== 0;
 
-
   bindRowEvents();
-
 
   updateStats();
 
@@ -1934,7 +2097,6 @@ function statusButton(
 
   }[status];
 
-
   return `
 
     <button
@@ -1962,7 +2124,7 @@ function statusButton(
 
 
 /* ==============================
-   每列事件
+   每列操作
 ============================== */
 
 function bindRowEvents(){
@@ -1981,19 +2143,29 @@ function bindRowEvents(){
 
           async () => {
 
+            if(
+              currentIsArchived
+            ){
+
+              showToast(
+                "封存紀錄為唯讀；請先取消封存再修改"
+              );
+
+              return;
+
+            }
+
             const seat =
             Number(
               btn.dataset.seat
             );
 
-
-            studentState[seat]
-            .status =
+            studentState[
+              seat
+            ].status =
             btn.dataset.status;
 
-
             render();
-
 
             if(currentId){
 
@@ -2034,13 +2206,18 @@ function bindRowEvents(){
 
           () => {
 
+            if(
+              currentIsArchived
+            ){
+              return;
+            }
+
             studentState[
               Number(
                 input.dataset.note
               )
             ].note =
             input.value;
-
 
             scheduleAutosave();
 
@@ -2066,14 +2243,12 @@ function updateStats(){
     studentState
   );
 
-
   const paid =
   values.filter(
     x =>
       x.status ===
       "paid"
   ).length;
-
 
   const unpaid =
   values.filter(
@@ -2082,14 +2257,12 @@ function updateStats(){
       "unpaid"
   ).length;
 
-
   const late =
   values.filter(
     x =>
       x.status ===
       "late"
   ).length;
-
 
   const exempt =
   values.filter(
@@ -2098,12 +2271,10 @@ function updateStats(){
       "exempt"
   ).length;
 
-
   const completed =
   paid +
   late +
   exempt;
-
 
   const pct =
   Math.round(
@@ -2116,37 +2287,30 @@ function updateStats(){
 
   );
 
-
   $("countAll")
   .textContent =
   STUDENTS.length;
-
 
   $("countPaid")
   .textContent =
   paid;
 
-
   $("countUnpaid")
   .textContent =
   unpaid;
-
 
   $("countLate")
   .textContent =
   late;
 
-
   $("countExempt")
   .textContent =
   exempt;
-
 
   $("progress")
   .style
   .width =
   pct + "%";
-
 
   $("progressText")
   .textContent =
@@ -2168,35 +2332,29 @@ function updatePrintSummary(){
   ||
   "未命名項目";
 
-
   $("printSummaryTitle")
   .textContent =
   `804班｜收繳項目：${item}`;
-
 
   $("printCountAll")
   .textContent =
   $("countAll")
   .textContent;
 
-
   $("printCountPaid")
   .textContent =
   $("countPaid")
   .textContent;
-
 
   $("printCountUnpaid")
   .textContent =
   $("countUnpaid")
   .textContent;
 
-
   $("printCountLate")
   .textContent =
   $("countLate")
   .textContent;
-
 
   $("printCountExempt")
   .textContent =
@@ -2205,11 +2363,6 @@ function updatePrintSummary(){
 
 }
 
-
-/*
-瀏覽器用快捷鍵 Ctrl+P 時，
-也會先更新列印摘要
-*/
 
 window.addEventListener(
   "beforeprint",
@@ -2223,21 +2376,22 @@ window.addEventListener(
 
 function scheduleAutosave(){
 
-  if(!currentId){
+  if(
+    !currentId
+    ||
+    currentIsArchived
+  ){
     return;
   }
-
 
   clearTimeout(
     autosaveTimer
   );
 
-
   setSync(
     "saving",
     "☁️ 等待儲存…"
   );
-
 
   autosaveTimer =
   setTimeout(
@@ -2272,17 +2426,24 @@ async function saveCurrentCloud(
 
   }
 
-
   if(!currentId){
 
     return false;
 
   }
 
+  if(currentIsArchived){
+
+    showToast(
+      "封存紀錄為唯讀；請先取消封存"
+    );
+
+    return false;
+
+  }
 
   const meta =
   currentMeta();
-
 
   if(
     meta.receiveDate
@@ -2301,14 +2462,12 @@ async function saveCurrentCloud(
 
   }
 
-
   try{
 
     setSync(
       "saving",
       "☁️ 儲存中…"
     );
-
 
     await setDoc(
 
@@ -2334,12 +2493,10 @@ async function saveCurrentCloud(
 
     );
 
-
     setSync(
       "ok",
       "☁️ 已同步"
     );
-
 
     if(showSuccess){
 
@@ -2349,11 +2506,9 @@ async function saveCurrentCloud(
 
     }
 
-
     await refreshHistory(
       false
     );
-
 
     return true;
 
@@ -2365,12 +2520,10 @@ async function saveCurrentCloud(
       err
     );
 
-
     setSync(
       "error",
       "⚠️ 同步失敗"
     );
-
 
     showToast(
       `Firebase 儲存失敗：${
@@ -2382,7 +2535,6 @@ async function saveCurrentCloud(
       }`
     );
 
-
     return false;
 
   }
@@ -2391,14 +2543,25 @@ async function saveCurrentCloud(
 
 
 /* ==============================
-   建立／儲存
+   建立／儲存項目
 ============================== */
 
 async function saveRecord(){
 
+  if(
+    currentIsArchived
+  ){
+
+    showToast(
+      "封存紀錄為唯讀；請先取消封存"
+    );
+
+    return;
+
+  }
+
   const meta =
   currentMeta();
-
 
   if(!currentUser){
 
@@ -2410,22 +2573,18 @@ async function saveRecord(){
 
   }
 
-
   if(!meta.itemName){
 
     showToast(
       "請先填寫收繳項目名稱"
     );
 
-
     $("itemName")
     .focus();
-
 
     return;
 
   }
-
 
   if(
     meta.receiveDate
@@ -2444,7 +2603,6 @@ async function saveRecord(){
 
   }
 
-
   try{
 
     setSync(
@@ -2452,10 +2610,8 @@ async function saveRecord(){
       "☁️ 儲存中…"
     );
 
-
     const isNew =
     !currentId;
-
 
     if(isNew){
 
@@ -2465,7 +2621,6 @@ async function saveRecord(){
       ).id;
 
     }
-
 
     const payload = {
 
@@ -2479,14 +2634,15 @@ async function saveRecord(){
 
     };
 
-
     if(isNew){
 
       payload.createdAt =
       serverTimestamp();
 
-    }
+      payload.archived =
+      false;
 
+    }
 
     await setDoc(
 
@@ -2502,22 +2658,18 @@ async function saveRecord(){
 
     );
 
-
     setSync(
       "ok",
       "☁️ 已同步"
     );
 
-
     await refreshHistory(
       false
     );
 
-
     $("historySelect")
     .value =
     currentId;
-
 
     showToast(
       "收繳紀錄已儲存到雲端"
@@ -2531,12 +2683,10 @@ async function saveRecord(){
       err
     );
 
-
     setSync(
       "error",
       "⚠️ 同步失敗"
     );
-
 
     showToast(
       `無法儲存：${
@@ -2562,51 +2712,43 @@ function newRecord(){
   currentId =
   null;
 
+  currentIsArchived =
+  false;
 
   studentState =
   createBlankState();
-
 
   $("itemName")
   .value =
   "";
 
-
   $("receiveDate")
   .value =
   todayISO();
-
 
   $("dueDate")
   .value =
   "";
 
-
   $("historySelect")
   .value =
   "";
 
-
   filter =
   "all";
 
-
   setActiveFilter();
-
 
   $("searchInput")
   .value =
   "";
 
-
   render();
-
 
   setSync(
     "ok",
     "☁️ 已連線"
   );
-
 
   showToast(
     "已開啟新的收繳項目"
@@ -2616,7 +2758,7 @@ function newRecord(){
 
 
 /* ==============================
-   歷史紀錄
+   讀取歷史與封存
 ============================== */
 
 async function refreshHistory(
@@ -2627,14 +2769,12 @@ async function refreshHistory(
     return;
   }
 
-
   try{
 
     setSync(
       "saving",
       "☁️ 同步中…"
     );
-
 
     const q =
     query(
@@ -2648,20 +2788,17 @@ async function refreshHistory(
 
     );
 
-
     const snap =
     await getDocs(
       q
     );
 
-
-    historyRecords =
+    const allRecords =
     snap.docs.map(
 
       d => ({
 
-        id:
-        d.id,
+        id:d.id,
 
         ...d.data()
 
@@ -2669,18 +2806,33 @@ async function refreshHistory(
 
     );
 
+    historyRecords =
+    allRecords.filter(
+
+      r =>
+        r.archived !==
+        true
+
+    );
+
+    archivedRecords =
+    allRecords.filter(
+
+      r =>
+        r.archived ===
+        true
+
+    );
+
 
     const sel =
     $("historySelect");
 
-
     const old =
     sel.value;
 
-
     sel.innerHTML =
     '<option value="">— 選擇歷史收繳紀錄 —</option>';
-
 
     historyRecords.forEach(
 
@@ -2691,10 +2843,8 @@ async function refreshHistory(
           "option"
         );
 
-
         op.value =
         r.id;
-
 
         op.textContent =
         `${
@@ -2707,7 +2857,6 @@ async function refreshHistory(
           )
         }`;
 
-
         sel.appendChild(
           op
         );
@@ -2715,7 +2864,6 @@ async function refreshHistory(
       }
 
     );
-
 
     if(
       [...sel.options]
@@ -2729,6 +2877,78 @@ async function refreshHistory(
       old;
 
     }
+
+
+    const archiveSel =
+    $("archiveSelect");
+
+    const oldArchive =
+    archiveSel.value;
+
+    archiveSel.innerHTML =
+    '<option value="">— 選擇封存紀錄 —</option>';
+
+    archivedRecords.forEach(
+
+      r => {
+
+        const op =
+        document.createElement(
+          "option"
+        );
+
+        op.value =
+        r.id;
+
+        op.textContent =
+        `${
+          r.itemName
+          ||
+          "未命名"
+        }｜截止 ${
+          formatDate(
+            r.dueDate
+          )
+        }`;
+
+        archiveSel.appendChild(
+          op
+        );
+
+      }
+
+    );
+
+    if(
+      [...archiveSel.options]
+      .some(
+        o =>
+          o.value === oldArchive
+      )
+    ){
+
+      archiveSel.value =
+      oldArchive;
+
+    }
+
+
+    const archiveOpen =
+    $("archiveBox")
+    .classList
+    .contains(
+      "show"
+    );
+
+    $("toggleArchiveBtn")
+    .textContent =
+    archiveOpen
+
+    ?
+    `📦 收起封存紀錄 (${archivedRecords.length})`
+
+    :
+    `📦 查看封存紀錄 (${archivedRecords.length})`;
 
 
     setSync(
@@ -2753,12 +2973,10 @@ async function refreshHistory(
       err
     );
 
-
     setSync(
       "error",
       "⚠️ 同步失敗"
     );
-
 
     showToast(
       `讀取 Firestore 失敗：${
@@ -2776,7 +2994,7 @@ async function refreshHistory(
 
 
 /* ==============================
-   載入紀錄
+   載入一般歷史紀錄
 ============================== */
 
 function loadRecord(){
@@ -2784,7 +3002,6 @@ function loadRecord(){
   const id =
   $("historySelect")
   .value;
-
 
   if(!id){
 
@@ -2796,13 +3013,13 @@ function loadRecord(){
 
   }
 
-
   const rec =
   historyRecords.find(
+
     r =>
       r.id === id
-  );
 
+  );
 
   if(!rec){
 
@@ -2814,10 +3031,11 @@ function loadRecord(){
 
   }
 
-
   currentId =
   rec.id;
 
+  currentIsArchived =
+  false;
 
   $("itemName")
   .value =
@@ -2825,13 +3043,11 @@ function loadRecord(){
   ||
   "";
 
-
   $("receiveDate")
   .value =
   rec.receiveDate
   ||
   "";
-
 
   $("dueDate")
   .value =
@@ -2839,24 +3055,23 @@ function loadRecord(){
   ||
   "";
 
-
   studentState =
   createBlankState();
-
 
   STUDENTS.forEach(
 
     s => {
 
       const saved =
-      rec.students?.[s.seat]
+      rec.students?.[
+        s.seat
+      ]
       ||
       rec.students?.[
         String(
           s.seat
         )
       ];
-
 
       if(saved){
 
@@ -2878,21 +3093,16 @@ function loadRecord(){
 
   );
 
-
   filter =
   "all";
 
-
   setActiveFilter();
-
 
   $("searchInput")
   .value =
   "";
 
-
   render();
-
 
   showToast(
     "已載入雲端收繳紀錄"
@@ -2902,10 +3112,467 @@ function loadRecord(){
 
 
 /* ==============================
-   刪除
+   是否全班完成
+============================== */
+
+function recordIsComplete(){
+
+  return STUDENTS.every(
+
+    s => {
+
+      const st =
+      studentState[
+        s.seat
+      ]?.status
+      ||
+      "unpaid";
+
+      return st !==
+      "unpaid";
+
+    }
+
+  );
+
+}
+
+
+/* ==============================
+   封存
+============================== */
+
+async function archiveRecord(){
+
+  if(!currentId){
+
+    showToast(
+      "請先載入要封存的收繳紀錄"
+    );
+
+    return;
+
+  }
+
+  if(currentIsArchived){
+
+    showToast(
+      "這筆紀錄已經封存"
+    );
+
+    return;
+
+  }
+
+  if(
+    !recordIsComplete()
+  ){
+
+    showToast(
+      "目前仍有未繳交學生，全部完成後才能封存"
+    );
+
+    return;
+
+  }
+
+  if(
+    !confirm(
+      "確定要封存目前這筆收繳紀錄嗎？封存後會從一般歷史紀錄中隱藏。"
+    )
+  ){
+
+    return;
+
+  }
+
+  try{
+
+    setSync(
+      "saving",
+      "☁️ 封存中…"
+    );
+
+    await setDoc(
+
+      recordRef(
+        currentId
+      ),
+
+      {
+
+        archived:
+        true,
+
+        archivedAt:
+        serverTimestamp(),
+
+        updatedAt:
+        serverTimestamp()
+
+      },
+
+      {
+        merge:true
+      }
+
+    );
+
+    const archivedId =
+    currentId;
+
+    currentId =
+    null;
+
+    currentIsArchived =
+    false;
+
+    await refreshHistory(
+      false
+    );
+
+    newRecord();
+
+    $("archiveSelect")
+    .value =
+    archivedId;
+
+    showToast(
+      "已封存完成，可從「查看封存紀錄」查閱"
+    );
+
+  }
+
+  catch(err){
+
+    console.error(
+      err
+    );
+
+    setSync(
+      "error",
+      "⚠️ 封存失敗"
+    );
+
+    showToast(
+      `封存失敗：${
+        err.code
+        ||
+        err.message
+        ||
+        "未知錯誤"
+      }`
+    );
+
+  }
+
+}
+
+
+/* ==============================
+   查看封存
+============================== */
+
+function loadArchivedRecord(){
+
+  const id =
+  $("archiveSelect")
+  .value;
+
+  if(!id){
+
+    showToast(
+      "請先選擇一筆封存紀錄"
+    );
+
+    return;
+
+  }
+
+  const rec =
+  archivedRecords.find(
+
+    r =>
+      r.id === id
+
+  );
+
+  if(!rec){
+
+    showToast(
+      "找不到這筆封存紀錄，請重新同步"
+    );
+
+    return;
+
+  }
+
+  currentId =
+  rec.id;
+
+  currentIsArchived =
+  true;
+
+  $("itemName")
+  .value =
+  rec.itemName
+  ||
+  "";
+
+  $("receiveDate")
+  .value =
+  rec.receiveDate
+  ||
+  "";
+
+  $("dueDate")
+  .value =
+  rec.dueDate
+  ||
+  "";
+
+  studentState =
+  createBlankState();
+
+  STUDENTS.forEach(
+
+    s => {
+
+      const saved =
+      rec.students?.[
+        s.seat
+      ]
+      ||
+      rec.students?.[
+        String(
+          s.seat
+        )
+      ];
+
+      if(saved){
+
+        studentState[
+          s.seat
+        ] = {
+
+          ...studentState[
+            s.seat
+          ],
+
+          ...saved
+
+        };
+
+      }
+
+    }
+
+  );
+
+  filter =
+  "all";
+
+  setActiveFilter();
+
+  $("searchInput")
+  .value =
+  "";
+
+  render();
+
+  showToast(
+    "已載入封存紀錄（唯讀）"
+  );
+
+}
+
+
+/* ==============================
+   取消封存
+============================== */
+
+async function restoreArchivedRecord(){
+
+  const id =
+  $("archiveSelect")
+  .value
+  ||
+  (
+    currentIsArchived
+    ?
+    currentId
+    :
+    ""
+  );
+
+  if(!id){
+
+    showToast(
+      "請先選擇要取消封存的紀錄"
+    );
+
+    return;
+
+  }
+
+  const rec =
+  archivedRecords.find(
+
+    r =>
+      r.id === id
+
+  );
+
+  if(!rec){
+
+    showToast(
+      "找不到這筆封存紀錄，請重新同步"
+    );
+
+    return;
+
+  }
+
+  if(
+    !confirm(
+      `確定要取消封存「${
+        rec.itemName
+        ||
+        "未命名"
+      }」嗎？取消後會重新出現在歷史收繳紀錄。`
+    )
+  ){
+
+    return;
+
+  }
+
+  try{
+
+    setSync(
+      "saving",
+      "☁️ 還原中…"
+    );
+
+    await setDoc(
+
+      recordRef(
+        id
+      ),
+
+      {
+
+        archived:
+        false,
+
+        restoredAt:
+        serverTimestamp(),
+
+        updatedAt:
+        serverTimestamp()
+
+      },
+
+      {
+        merge:true
+      }
+
+    );
+
+    currentIsArchived =
+    false;
+
+    await refreshHistory(
+      false
+    );
+
+    $("historySelect")
+    .value =
+    id;
+
+    loadRecord();
+
+    showToast(
+      "已取消封存，紀錄已回到一般歷史清單"
+    );
+
+  }
+
+  catch(err){
+
+    console.error(
+      err
+    );
+
+    setSync(
+      "error",
+      "⚠️ 還原失敗"
+    );
+
+    showToast(
+      `取消封存失敗：${
+        err.code
+        ||
+        err.message
+        ||
+        "未知錯誤"
+      }`
+    );
+
+  }
+
+}
+
+
+/* ==============================
+   顯示／收起封存區
+============================== */
+
+function toggleArchiveBox(){
+
+  const box =
+  $("archiveBox");
+
+  const show =
+  !box.classList.contains(
+    "show"
+  );
+
+  box.classList.toggle(
+    "show",
+    show
+  );
+
+  $("toggleArchiveBtn")
+  .textContent =
+  show
+
+  ?
+  `📦 收起封存紀錄 (${archivedRecords.length})`
+
+  :
+  `📦 查看封存紀錄 (${archivedRecords.length})`;
+
+}
+
+
+/* ==============================
+   刪除紀錄
 ============================== */
 
 async function deleteRecord(){
+
+  if(
+    currentIsArchived
+  ){
+
+    showToast(
+      "封存紀錄請先取消封存，再進行刪除"
+    );
+
+    return;
+
+  }
 
   if(!currentId){
 
@@ -2917,7 +3584,6 @@ async function deleteRecord(){
 
   }
 
-
   if(
     !confirm(
       "確定要刪除目前這筆收繳紀錄嗎？Firebase 雲端資料也會一起刪除。"
@@ -2928,14 +3594,12 @@ async function deleteRecord(){
 
   }
 
-
   try{
 
     setSync(
       "saving",
       "☁️ 刪除中…"
     );
-
 
     await deleteDoc(
 
@@ -2945,18 +3609,17 @@ async function deleteRecord(){
 
     );
 
-
     currentId =
     null;
 
+    currentIsArchived =
+    false;
 
     await refreshHistory(
       false
     );
 
-
     newRecord();
-
 
     showToast(
       "雲端紀錄已刪除"
@@ -2970,12 +3633,10 @@ async function deleteRecord(){
       err
     );
 
-
     setSync(
       "error",
       "⚠️ 刪除失敗"
     );
-
 
     showToast(
       `刪除失敗：${
@@ -2993,18 +3654,29 @@ async function deleteRecord(){
 
 
 /* ==============================
-   全班狀態
+   全部狀態
 ============================== */
 
 async function setAll(
   status
 ){
 
+  if(
+    currentIsArchived
+  ){
+
+    showToast(
+      "封存紀錄為唯讀；請先取消封存"
+    );
+
+    return;
+
+  }
+
   const label =
   STATUS_LABEL[
     status
   ];
-
 
   if(
     !confirm(
@@ -3016,7 +3688,6 @@ async function setAll(
 
   }
 
-
   STUDENTS.forEach(
 
     s =>
@@ -3027,9 +3698,7 @@ async function setAll(
 
   );
 
-
   render();
-
 
   if(currentId){
 
@@ -3038,7 +3707,6 @@ async function setAll(
     );
 
   }
-
 
   showToast(
     `全班已設為${label}`
@@ -3102,7 +3770,6 @@ async function copyUnpaid(){
   const list =
   unpaidList();
 
-
   const item =
   $("itemName")
     .value
@@ -3110,21 +3777,22 @@ async function copyUnpaid(){
   ||
   "本次資料";
 
-
   const due =
   $("dueDate").value
+
   ?
   `（截止：${
     formatDate(
       $("dueDate").value
     )
   }）`
+
   :
   "";
 
-
   const text =
   list.length
+
   ?
   `${item}${due}
 未繳交：
@@ -3136,10 +3804,10 @@ ${
     )
     .join("\n")
 }`
+
   :
   `${item}${due}
 全班皆已完成繳交。`;
-
 
   try{
 
@@ -3148,7 +3816,6 @@ ${
       .writeText(
         text
       );
-
 
     showToast(
       "未繳名單已複製"
@@ -3197,7 +3864,6 @@ function exportCSV(){
   ||
   "班級收繳紀錄";
 
-
   const rows = [
 
     [
@@ -3227,7 +3893,6 @@ function exportCSV(){
 
   ];
 
-
   STUDENTS.forEach(
 
     s => {
@@ -3236,7 +3901,6 @@ function exportCSV(){
       studentState[
         s.seat
       ];
-
 
       rows.push([
 
@@ -3264,7 +3928,6 @@ function exportCSV(){
 
   );
 
-
   const csv =
   "\uFEFF"
   +
@@ -3279,7 +3942,6 @@ function exportCSV(){
   )
   .join("\r\n");
 
-
   const blob =
   new Blob(
 
@@ -3292,18 +3954,15 @@ function exportCSV(){
 
   );
 
-
   const a =
   document.createElement(
     "a"
   );
 
-
   a.href =
   URL.createObjectURL(
     blob
   );
-
 
   a.download =
   `${
@@ -3313,9 +3972,7 @@ function exportCSV(){
     )
   }_收繳紀錄.csv`;
 
-
   a.click();
-
 
   URL.revokeObjectURL(
     a.href
@@ -3348,7 +4005,6 @@ function friendlyAuthError(
 
   };
 
-
   return map[code]
   ||
   "登入失敗，請確認 Firebase Authentication 已開啟 Email/Password。";
@@ -3367,16 +4023,13 @@ async function login(){
     .value
     .trim();
 
-
   const password =
   $("loginPassword")
     .value;
 
-
   $("loginError")
   .textContent =
   "";
-
 
   if(
     !email
@@ -3388,21 +4041,17 @@ async function login(){
     .textContent =
     "請輸入 Email 與密碼。";
 
-
     return;
 
   }
-
 
   $("loginBtn")
   .disabled =
   true;
 
-
   $("loginBtn")
   .textContent =
   "登入中…";
-
 
   try{
 
@@ -3424,7 +4073,6 @@ async function login(){
       err
     );
 
-
     $("loginError")
     .textContent =
     friendlyAuthError(
@@ -3439,7 +4087,6 @@ async function login(){
     .disabled =
     false;
 
-
     $("loginBtn")
     .textContent =
     "🏴‍☠️ 登入收繳系統";
@@ -3450,7 +4097,7 @@ async function login(){
 
 
 /* ==============================
-   按鈕事件
+   事件
 ============================== */
 
 $("loginBtn")
@@ -3459,39 +4106,50 @@ $("loginBtn")
   login
 );
 
-
 $("loginPassword")
 .addEventListener(
+
   "keydown",
+
   e => {
 
-    if(e.key === "Enter"){
+    if(
+      e.key ===
+      "Enter"
+    ){
 
       login();
 
     }
 
   }
+
 );
 
 
 $("logoutBtn")
 .addEventListener(
+
   "click",
+
   () =>
     signOut(
       auth
     )
+
 );
 
 
 $("refreshCloudBtn")
 .addEventListener(
+
   "click",
+
   () =>
     refreshHistory(
       true
     )
+
 );
 
 
@@ -3516,6 +4174,34 @@ $("loadBtn")
 );
 
 
+$("archiveBtn")
+.addEventListener(
+  "click",
+  archiveRecord
+);
+
+
+$("toggleArchiveBtn")
+.addEventListener(
+  "click",
+  toggleArchiveBox
+);
+
+
+$("loadArchiveBtn")
+.addEventListener(
+  "click",
+  loadArchivedRecord
+);
+
+
+$("restoreArchiveBtn")
+.addEventListener(
+  "click",
+  restoreArchivedRecord
+);
+
+
 $("deleteBtn")
 .addEventListener(
   "click",
@@ -3537,11 +4223,6 @@ $("exportBtn")
 );
 
 
-/*
-按下網頁上的列印按鈕前，
-先把班級、項目及統計資料寫入列印摘要。
-*/
-
 $("printBtn")
 .addEventListener(
 
@@ -3560,21 +4241,27 @@ $("printBtn")
 
 $("allPaidBtn")
 .addEventListener(
+
   "click",
+
   () =>
     setAll(
       "paid"
     )
+
 );
 
 
 $("allUnpaidBtn")
 .addEventListener(
+
   "click",
+
   () =>
     setAll(
       "unpaid"
     )
+
 );
 
 
@@ -3652,9 +4339,7 @@ document
         filter =
         btn.dataset.filter;
 
-
         setActiveFilter();
-
 
         render();
 
@@ -3678,14 +4363,13 @@ onAuthStateChanged(
     currentUser =
     user;
 
-
     if(user){
 
       $("loginScreen")
-      .classList.add(
+      .classList
+      .add(
         "hidden"
       );
-
 
       $("accountEmail")
       .textContent =
@@ -3695,12 +4379,10 @@ onAuthStateChanged(
         "已登入"
       }`;
 
-
       setSync(
         "saving",
         "☁️ 連線中…"
       );
-
 
       $("receiveDate")
       .value =
@@ -3709,11 +4391,9 @@ onAuthStateChanged(
       ||
       todayISO();
 
-
       await refreshHistory(
         false
       );
-
 
       render();
 
@@ -3724,31 +4404,32 @@ onAuthStateChanged(
       currentId =
       null;
 
+      currentIsArchived =
+      false;
 
       historyRecords =
       [];
 
+      archivedRecords =
+      [];
 
       studentState =
       createBlankState();
 
-
       $("accountEmail")
       .textContent =
       "";
-
 
       setSync(
         "",
         "☁️ 等待登入"
       );
 
-
       $("loginScreen")
-      .classList.remove(
+      .classList
+      .remove(
         "hidden"
       );
-
 
       render();
 
@@ -3766,7 +4447,6 @@ onAuthStateChanged(
 $("receiveDate")
 .value =
 todayISO();
-
 
 render();
 
