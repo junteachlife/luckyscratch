@@ -173,20 +173,30 @@ summary{color:#6b4b2b!important}
   <div id="systemStatus" class="version">系統載入中…</div>
   <div id="loginMsg"></div>
 
-  <button id="googleLoginBtn" class="btn primary" style="width:100%;margin-top:14px" disabled>
+  <div class="field" style="margin-top:16px">
+    <label for="loginRole">先選擇登入身分</label>
+    <select id="loginRole">
+      <option value="student">🎓 學生</option>
+      <option value="teacher">👨‍🏫 老師／管理員</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="schoolAccount">學校 Google 帳號</label>
+    <div style="display:flex;align-items:stretch;gap:0">
+      <input id="schoolAccount" autocomplete="username" inputmode="email" placeholder="只輸入 @ 前面的帳號" style="border-radius:10px 0 0 10px;min-width:0">
+      <div id="schoolDomain" style="display:flex;align-items:center;padding:0 12px;border:1px solid #cfd4dc;border-left:0;border-radius:0 10px 10px 0;background:#f8fafc;font-weight:800;white-space:nowrap;color:#475467">@smail.ilc.edu.tw</div>
+    </div>
+    <div id="accountHint" class="sub">學生帳號只要輸入 @smail.ilc.edu.tw 前面的部分即可。</div>
+  </div>
+
+  <button id="googleLoginBtn" class="btn primary" style="width:100%;margin-top:8px" disabled>
     🔵 使用學校 Google 帳號登入
   </button>
 
   <div class="footer-note" style="margin-top:10px">
-    第一次登入會依照導師後端預先建立的 Email 對照名單，自動連結姓名、班級、座號與本學期權限。
+    系統會依身分自動補上學校網域：學生為 <b>@smail.ilc.edu.tw</b>，老師／管理員為 <b>@tmail.ilc.edu.tw</b>。第一次登入會依照導師後端預先建立的 Email 對照名單，自動連結姓名、班級、座號與本學期權限。
   </div>
-
-  <details style="margin-top:16px">
-    <summary style="cursor:pointer;font-weight:800;color:#667085">舊帳號登入（過渡／測試用）</summary>
-    <div class="field"><label>舊系統帳號／Email</label><input id="loginUser" autocomplete="username" placeholder="例如 80427 或老師帳號"></div>
-    <div class="field"><label>密碼</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="輸入密碼"></div>
-    <button id="loginBtn" class="btn gray" style="width:100%" disabled>舊帳號登入</button>
-  </details>
 
   <div class="footer-note">
     學生只會看到目前學期；任課老師若曾在舊學期任教，可切換查看自己曾任教的舊資料，舊學期一律唯讀。
@@ -221,17 +231,16 @@ summary{color:#6b4b2b!important}
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import {getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,signInWithEmailAndPassword,signOut,onAuthStateChanged,updatePassword} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import {getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,signOut,onAuthStateChanged,updatePassword} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import {getFirestore,doc,getDoc,setDoc,collection,addDoc,updateDoc,deleteDoc,query,where,onSnapshot,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig={apiKey:"AIzaSyB56F4wJ-IMUiBsqJ5P33HoDK642h7671U",authDomain:"class-datawork.firebaseapp.com",projectId:"class-datawork",storageBucket:"class-datawork.firebasestorage.app",messagingSenderId:"24186422479",appId:"1:24186422479:web:8dee260f34b2e506fd63ba"};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
-const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],SYNTH_DOMAIN="class-datawork.local";
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 let profile=null,currentAssignment=null,roster=[],unsubItems=null,unsubAssess=null,currentSemester='115-1',viewSemester='115-1',currentCollectionItems=[],currentAssessmentItems=[];
 const statusOptions=[['submitted','已繳'],['missing','未繳'],['late','補交'],['exempt','免繳']];
 const scoreStatusOptions=[['normal','正常'],['absent','缺考'],['makeup','補考'],['exempt','免試'],['not_entered','未登記']];
 
-function emailFor(v){v=v.trim();return v.includes('@')?v:`${v}@${SYNTH_DOMAIN}`}
 function msg(el,text,type='notice'){el.innerHTML=text?`<div class="notice ${type}">${text}</div>`:''}
 function esc(v=''){return String(v).replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
 function scopeKey(a){return `${a.semester}|${a.classId}|${a.scopeType}|${a.scopeName}`}
@@ -263,25 +272,83 @@ async function loadSystem(){const s=await getDoc(doc(db,'settings','system'));if
 async function loadRoster(classId){const s=await getDoc(doc(db,'classes',classId));roster=s.exists()?(s.data().students||[]):[];return roster}
 async function audit(action,targetType,targetId,detail){try{await addDoc(collection(db,'auditLogs'),{actorUid:auth.currentUser.uid,actorName:profile.displayName||profile.username,semester:currentAssignment?.semester||viewSemester||currentSemester,action,targetType,targetId,detail,createdAt:serverTimestamp()})}catch(e){console.warn('audit',e)}}
 
-const googleProvider=new GoogleAuthProvider();
-googleProvider.setCustomParameters({prompt:'select_account'});
+const SCHOOL_DOMAINS={
+  student:'smail.ilc.edu.tw',
+  teacher:'tmail.ilc.edu.tw'
+};
+
+function selectedSchoolDomain(){
+  return SCHOOL_DOMAINS[$('#loginRole')?.value]||SCHOOL_DOMAINS.student;
+}
+function normalizeSchoolAccount(raw,domain){
+  let value=String(raw||'').trim().toLowerCase();
+  if(!value)return '';
+  if(value.includes('@')){
+    const [local,typedDomain]=value.split('@');
+    if(typedDomain!==domain)return '';
+    value=local;
+  }
+  return value?`${value}@${domain}`:'';
+}
+function updateLoginIdentityUI(){
+  const role=$('#loginRole')?.value||'student';
+  const domain=selectedSchoolDomain();
+  $('#schoolDomain').textContent=`@${domain}`;
+  $('#accountHint').textContent=role==='student'
+    ?'學生帳號只要輸入 @smail.ilc.edu.tw 前面的部分即可。'
+    :'老師／管理員帳號只要輸入 @tmail.ilc.edu.tw 前面的部分即可。';
+}
+
+$('#loginRole').addEventListener('change',()=>{
+  updateLoginIdentityUI();
+  msg($('#loginMsg'),'');
+  $('#schoolAccount').focus();
+});
+updateLoginIdentityUI();
 
 $('#systemStatus').textContent='Firebase 已載入，可以登入';
-$('#loginBtn').disabled=false;
 $('#googleLoginBtn').disabled=false;
 
 $('#googleLoginBtn').onclick=async()=>{
   msg($('#loginMsg'),'');
+  const role=$('#loginRole').value;
+  const domain=selectedSchoolDomain();
+  const fullEmail=normalizeSchoolAccount($('#schoolAccount').value,domain);
+  if(!fullEmail){
+    msg($('#loginMsg'),`請輸入正確的${role==='student'?'學生':'老師'}學校帳號，只需要輸入 @${domain} 前面的部分。`,'error');
+    $('#schoolAccount').focus();
+    return;
+  }
+
+  const provider=new GoogleAuthProvider();
+  provider.setCustomParameters({
+    prompt:'select_account',
+    login_hint:fullEmail,
+    hd:domain
+  });
+
   const btn=$('#googleLoginBtn');
   btn.disabled=true;btn.textContent='Google 登入中…';
   try{
-    await signInWithPopup(auth,googleProvider)
+    sessionStorage.setItem('classWorkPendingLoginRole',role);
+    sessionStorage.setItem('classWorkPendingLoginDomain',domain);
+    const result=await signInWithPopup(auth,provider);
+    const actualEmail=String(result?.user?.email||'').trim().toLowerCase();
+    if(!actualEmail.endsWith(`@${domain}`)){
+      await signOut(auth);
+      msg($('#loginMsg'),`你選擇的是「${role==='student'?'學生':'老師／管理員'}」登入，請使用 @${domain} 的學校 Google 帳號。`,'error');
+      return;
+    }
+    sessionStorage.removeItem('classWorkPendingLoginRole');
+    sessionStorage.removeItem('classWorkPendingLoginDomain');
   }catch(e){
     console.error(e);
     if(e?.code==='auth/popup-blocked'){
-      await signInWithRedirect(auth,googleProvider);
-      return
+      await signInWithRedirect(auth,provider);
+      return;
     }
+    sessionStorage.removeItem('classWorkPendingLoginRole');
+    sessionStorage.removeItem('classWorkPendingLoginDomain');
     if(e?.code!=='auth/popup-closed-by-user'&&e?.code!=='auth/cancelled-popup-request'){
       msg($('#loginMsg'),`Google 登入失敗：${esc(e.code||e.message)}`,'error')
     }
@@ -290,14 +357,7 @@ $('#googleLoginBtn').onclick=async()=>{
   }
 };
 
-$('#loginBtn').onclick=async()=>{
-  msg($('#loginMsg'),'');
-  const btn=$('#loginBtn');btn.disabled=true;btn.textContent='登入中…';
-  try{await signInWithEmailAndPassword(auth,emailFor($('#loginUser').value),$('#loginPass').value)}
-  catch(e){console.error(e);msg($('#loginMsg'),`舊帳號登入失敗：${esc(e.code||e.message)}`,'error')}
-  finally{btn.disabled=false;btn.textContent='舊帳號登入'}
-};
-$('#loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')$('#loginBtn').click()});
+$('#schoolAccount').addEventListener('keydown',e=>{if(e.key==='Enter')$('#googleLoginBtn').click()});
 $('#logoutBtn').onclick=()=>signOut(auth);
 
 function updateSemesterLabel(){
