@@ -224,7 +224,7 @@ summary{color:#6b4b2b!important}
   <section id="workspace" class="card hidden" style="margin-top:14px">
     <div class="item-head"><div><div id="workspaceTitle" class="section-title"></div><div id="workspacePerm" class="sub"></div></div></div>
     <div id="teacherAggregatePanel" class="hidden" style="margin-top:12px"></div>
-    <div class="tabs" style="margin-top:12px"><button class="btn tab active" data-tab="collection">📥 收繳</button><button id="scoresTab" class="btn tab" data-tab="scores">📊 小考成績</button></div>
+    <div class="tabs" style="margin-top:12px"><button class="btn tab active" data-tab="collection">📥 作業繳交</button><button id="scoresTab" class="btn tab" data-tab="scores">📊 小考成績</button></div>
     <div id="collectionPanel"></div>
     <div id="scoresPanel" class="hidden"></div>
   </section>
@@ -538,11 +538,11 @@ function renderRoles(){
   if($('#rolesSectionTitle'))$('#rolesSectionTitle').textContent=isTeacherModeProfile()&&shownSemester!==currentSemester?`${shownSemester} 歷史任課（唯讀）`:(profile?.type==='admin'?`${shownSemester} 我的任課科目`:`${shownSemester} 我的職務`);
   const list=currentAssignments(),box=$('#roleGrid');box.innerHTML='';$('#workspace').classList.add('hidden');currentAssignment=null;
   if(!list.length){const sem=profile?.type==='student'?currentSemester:viewSemester;const hint=profile?.type==='admin'?'目前尚未設定你的任課教師班級／科目。請到管理後台「任課教師設定」用同一個 Google Email 建立任課資料。':`目前尚未被指派 ${esc(sem)} 的任何職務或任課權限。<br>如你本學期應有權限但未看到，請聯絡導師確認。`;box.innerHTML=`<div class="empty"><b>${esc(profile.displayName||profile.username)}</b><br><br>${hint}</div>`;return}
-  list.forEach((a,i)=>{const d=document.createElement('div');d.className=`card role-card ${a.kind==='teacher'?'teacher-role':''}`;d.innerHTML=`<div style="font-weight:900">${a.kind==='teacher'?'👨‍🏫 ':'🎯 '}${esc(assignmentLabel(a))}</div><div class="meta">${canCollection(a)?'📥 可登記收繳':'📥 收繳唯讀'}　${a.scopeType==='subject'?(canScores(a)?'📊 可登記成績':'📊 成績唯讀'):''}${canConfirm(a)?'　✅ 可確認資料':''}${a.kind==='teacher'?'　📥 教師週成績 Excel':''}</div>`;d.onclick=()=>selectAssignment(i,d);box.appendChild(d)})
+  list.forEach((a,i)=>{const d=document.createElement('div');d.className=`card role-card ${a.kind==='teacher'?'teacher-role':''}`;d.innerHTML=`<div style="font-weight:900">${a.kind==='teacher'?'👨‍🏫 ':'🎯 '}${esc(assignmentLabel(a))}</div><div class="meta">${canCollection(a)?'📥 可登記作業繳交':'📥 作業繳交唯讀'}　${a.scopeType==='subject'?(canScores(a)?'📊 可登記成績':'📊 成績唯讀'):''}${canConfirm(a)?'　✅ 可確認資料':''}${a.kind==='teacher'?'　📥 教師週成績 Excel':''}</div>`;d.onclick=()=>selectAssignment(i,d);box.appendChild(d)})
 }
 
 async function selectAssignment(i,el){
-  const list=currentAssignments();$$('.role-card').forEach(x=>x.classList.remove('active'));el.classList.add('active');currentAssignment=list[i];currentCollectionItems=[];currentAssessmentItems=[];$('#workspace').classList.remove('hidden');$('#workspaceTitle').textContent=assignmentLabel(currentAssignment);$('#workspacePerm').textContent=`${currentAssignment.semester||viewSemester}｜${isHistoricalReadOnly()?'歷史學期唯讀；':''}${canCollection(currentAssignment)?'可登記收繳':'收繳唯讀'}${currentAssignment.scopeType==='subject'?`；${canScores(currentAssignment)?'可登記小考成績':'成績唯讀'}`:''}${canConfirm(currentAssignment)?'；可確認資料':''}${isTeacherAssignment(currentAssignment)?'；任課老師可列印、Excel 與週成績彙整':''}`;
+  const list=currentAssignments();$$('.role-card').forEach(x=>x.classList.remove('active'));el.classList.add('active');currentAssignment=list[i];currentCollectionItems=[];currentAssessmentItems=[];$('#workspace').classList.remove('hidden');$('#workspaceTitle').textContent=assignmentLabel(currentAssignment);$('#workspacePerm').textContent=`${currentAssignment.semester||viewSemester}｜${isHistoricalReadOnly()?'歷史學期唯讀；':''}${canCollection(currentAssignment)?'可登記作業繳交':'作業繳交唯讀'}${currentAssignment.scopeType==='subject'?`；${canScores(currentAssignment)?'可登記小考成績':'成績唯讀'}`:''}${canConfirm(currentAssignment)?'；可確認資料':''}${isTeacherAssignment(currentAssignment)?'；任課老師可列印、Excel 與週成績彙整':''}`;
   $('#scoresTab').classList.toggle('hidden',currentAssignment.scopeType!=='subject');if(currentAssignment.scopeType!=='subject'){$$('.tab').forEach(x=>x.classList.remove('active'));document.querySelector('[data-tab="collection"]').classList.add('active');$('#collectionPanel').classList.remove('hidden');$('#scoresPanel').classList.add('hidden')}
   renderTeacherAggregatePanel();
   await loadRoster(currentAssignment.classId);startCollection();if(currentAssignment.scopeType==='subject')startScores();
@@ -550,16 +550,16 @@ async function selectAssignment(i,el){
 
 $$('.tab').forEach(b=>b.onclick=()=>{if(b.classList.contains('hidden'))return;$$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');const t=b.dataset.tab;$('#collectionPanel').classList.toggle('hidden',t!=='collection');$('#scoresPanel').classList.toggle('hidden',t!=='scores')});
 
-/* ========================= 收繳 ========================= */
-function startCollection(){if(unsubItems)unsubItems();const key=scopeKey(currentAssignment),q=query(collection(db,'collectionItems'),where('semester','==',viewSemester),where('scopeKey','==',key));unsubItems=onSnapshot(q,snap=>{const items=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.date||'').localeCompare(a.date||''));currentCollectionItems=items;renderCollection(items);renderTeacherAggregatePanel()},e=>msg($('#appMsg'),'讀取收繳資料失敗：'+esc(e.message),'error'))}
+/* ========================= 作業繳交 ========================= */
+function startCollection(){if(unsubItems)unsubItems();const key=scopeKey(currentAssignment),q=query(collection(db,'collectionItems'),where('semester','==',viewSemester),where('scopeKey','==',key));unsubItems=onSnapshot(q,snap=>{const items=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.date||'').localeCompare(a.date||''));currentCollectionItems=items;renderCollection(items);renderTeacherAggregatePanel()},e=>msg($('#appMsg'),'讀取作業繳交資料失敗：'+esc(e.message),'error'))}
 
 function collectionCounts(it){const counts={submitted:0,missing:0,late:0,exempt:0,lateSubmitted:0};Object.entries(it.records||{}).forEach(([sid,v])=>{counts[v]=(counts[v]||0)+1;if(v==='submitted'&&(it.lateSubmitted||{})[sid])counts.lateSubmitted++});return counts}
 
 function renderCollection(items){
   const p=$('#collectionPanel');let html='';
-  if(canCollection(currentAssignment))html+='<div class="toolbar"><button id="newCollectionBtn" class="btn primary">＋新增收繳項目</button></div>';
-  if(isTeacherAssignment(currentAssignment)&&items.length)html+=`<div class="teacher-tools"><div class="teacher-tools-title">👨‍🏫 任課老師工具</div><div class="sub">可直接列印或下載每一筆收繳名單。</div></div>`;
-  if(!items.length)html+='<div class="empty">本學期目前沒有收繳紀錄。</div>';
+  if(canCollection(currentAssignment))html+='<div class="toolbar"><button id="newCollectionBtn" class="btn primary">＋新增作業繳交項目</button></div>';
+  if(isTeacherAssignment(currentAssignment)&&items.length)html+=`<div class="teacher-tools"><div class="teacher-tools-title">👨‍🏫 任課老師工具</div><div class="sub">可直接列印或下載每一筆作業繳交名單。</div></div>`;
+  if(!items.length)html+='<div class="empty">本學期目前沒有作業繳交紀錄。</div>';
   items.forEach(it=>{const c=collectionCounts(it),confirmed=it.reviewStatus==='confirmed';html+=`<div class="item ${confirmed?'confirmed':''}"><div class="item-head"><div><b>${esc(it.itemName)}</b><div class="meta">${esc(it.semester||viewSemester)}｜${esc(it.date||'')}${it.dueDate?`｜截止 ${esc(it.dueDate)}`:''}｜建立：${esc(it.createdByName||'')}</div></div><div><span class="pill ${confirmed?'good':'warn'}">${confirmed?'已確認':'尚未確認'}</span></div></div><div class="stats"><span class="stat">已繳 ${c.submitted}</span><span class="stat">未繳 ${c.missing}</span><span class="stat">補交 ${c.late}</span><span class="stat">免繳 ${c.exempt}</span>${c.lateSubmitted?`<span class="stat" style="color:#d92d20">遲交後已繳 ${c.lateSubmitted}</span>`:''}</div><div class="toolbar"><button class="btn gray small open-col" data-id="${it.id}">查看／登記</button>${canConfirm(currentAssignment)?`<button class="btn good small confirm-col" data-id="${it.id}">${confirmed?'取消確認':'確認'}</button>`:''}${isTeacherAssignment(currentAssignment)?`<button class="btn gray small print-col" data-id="${it.id}">🖨 列印</button><button class="btn gray small xlsx-col" data-id="${it.id}">📥 Excel</button>`:''}${!confirmed&&canCollection(currentAssignment)?`<button class="btn danger small del-col" data-id="${it.id}">刪除</button>`:''}</div><div id="col-${it.id}" class="hidden"></div></div>`});
   p.innerHTML=html;
   $('#newCollectionBtn')?.addEventListener('click',createCollectionPrompt);
@@ -570,7 +570,7 @@ function renderCollection(items){
   $$('.xlsx-col').forEach(b=>b.onclick=()=>exportCollection(items.find(x=>x.id===b.dataset.id)));
 }
 
-async function createCollectionPrompt(){const name=prompt('收繳項目名稱：');if(!name)return;const due=prompt('截止日期（可留空，格式 YYYY-MM-DD）：','')||'',note=prompt('備註（可留空）：','')||'',a=currentAssignment,key=scopeKey(a),records={};roster.forEach(s=>records[s.id||String(s.seat)]='submitted');const ref=await addDoc(collection(db,'collectionItems'),{semester:a.semester||currentSemester,scopeKey:key,classId:a.classId,scopeType:a.scopeType,scopeName:a.scopeName,itemName:name.trim(),date:today(),dueDate:due.trim(),note:note.trim(),records,lateSubmitted:{},lockedRecords:{},createdBy:auth.currentUser.uid,createdByName:profile.displayName||profile.username,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),reviewStatus:'pending',locked:false});await audit('create','collection',ref.id,`新增收繳：${name}`)}
+async function createCollectionPrompt(){const name=prompt('作業繳交項目名稱：');if(!name)return;const due=prompt('截止日期（可留空，格式 YYYY-MM-DD）：','')||'',note=prompt('備註（可留空）：','')||'',a=currentAssignment,key=scopeKey(a),records={};roster.forEach(s=>records[s.id||String(s.seat)]='submitted');const ref=await addDoc(collection(db,'collectionItems'),{semester:a.semester||currentSemester,scopeKey:key,classId:a.classId,scopeType:a.scopeType,scopeName:a.scopeName,itemName:name.trim(),date:today(),dueDate:due.trim(),note:note.trim(),records,lateSubmitted:{},lockedRecords:{},createdBy:auth.currentUser.uid,createdByName:profile.displayName||profile.username,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),reviewStatus:'pending',locked:false});await audit('create','collection',ref.id,`新增作業繳交：${name}`)}
 
 async function confirmCollection(it){
   const confirming=it.reviewStatus!=='confirmed';
@@ -578,22 +578,22 @@ async function confirmCollection(it){
   const lockedRecords={};
   if(confirming)Object.entries(it.records||{}).forEach(([sid,status])=>lockedRecords[sid]=(status==='submitted'||status==='exempt'));
   await updateDoc(doc(db,'collectionItems',it.id),{reviewStatus:confirming?'confirmed':'pending',locked:false,lockedRecords:confirming?lockedRecords:{},confirmedBy:confirming?auth.currentUser.uid:null,confirmedByName:confirming?(profile.displayName||profile.username):null,confirmedAt:confirming?serverTimestamp():null,updatedAt:serverTimestamp()});
-  await audit(confirming?'confirm':'unconfirm','collection',it.id,`${confirming?'確認':'取消確認'}收繳：${it.itemName}`)
+  await audit(confirming?'confirm':'unconfirm','collection',it.id,`${confirming?'確認':'取消確認'}作業繳交：${it.itemName}`)
 }
 
 function toggleCollectionEditor(it){
   const box=$(`#col-${it.id}`);if(!box.classList.contains('hidden')){box.classList.add('hidden');box.innerHTML='';return}box.classList.remove('hidden');
   const confirmed=it.reviewStatus==='confirmed',canWrite=canCollection(currentAssignment);
-  box.innerHTML=`${it.note?`<div class="notice">備註：${esc(it.note)}</div>`:''}<div class="toolbar">${canWrite?'<button class="btn gray small all-submitted">將可修改者設為已繳</button>':''}<span class="sub">確認後：已繳／免繳鎖定；未繳／補交仍可修正。</span></div><div class="roster">${roster.map(s=>{const id=s.id||String(s.seat),v=(it.records||{})[id]||'submitted',locked=confirmed&&!!(it.lockedRecords||{})[id],late=v==='submitted'&&!!(it.lateSubmitted||{})[id],editable=canWrite&&!locked;return `<div class="student ${locked?'locked':''}"><div class="name">${s.seat}. ${esc(s.name)}</div><select class="status col-status" data-student="${esc(id)}" data-old="${esc(v)}" ${editable?'':'disabled'}>${statusOptions.map(([x,l])=>`<option value="${x}" ${x===v?'selected':''}>${l}</option>`).join('')}</select>${late?'<div class="late-note">已繳交（遲交）</div>':''}${locked?'<div class="lock-note">🔒 已確認鎖定</div>':''}</div>`}).join('')}</div>${canWrite?'<div class="toolbar"><button class="btn primary save-col">儲存收繳狀態</button></div>':''}`;
+  box.innerHTML=`${it.note?`<div class="notice">備註：${esc(it.note)}</div>`:''}<div class="toolbar">${canWrite?'<button class="btn gray small all-submitted">將可修改者設為已繳</button>':''}<span class="sub">確認後：已繳／免繳鎖定；未繳／補交仍可修正。</span></div><div class="roster">${roster.map(s=>{const id=s.id||String(s.seat),v=(it.records||{})[id]||'submitted',locked=confirmed&&!!(it.lockedRecords||{})[id],late=v==='submitted'&&!!(it.lateSubmitted||{})[id],editable=canWrite&&!locked;return `<div class="student ${locked?'locked':''}"><div class="name">${s.seat}. ${esc(s.name)}</div><select class="status col-status" data-student="${esc(id)}" data-old="${esc(v)}" ${editable?'':'disabled'}>${statusOptions.map(([x,l])=>`<option value="${x}" ${x===v?'selected':''}>${l}</option>`).join('')}</select>${late?'<div class="late-note">已繳交（遲交）</div>':''}${locked?'<div class="lock-note">🔒 已確認鎖定</div>':''}</div>`}).join('')}</div>${canWrite?'<div class="toolbar"><button class="btn primary save-col">儲存作業繳交狀態</button></div>':''}`;
   box.querySelector('.all-submitted')?.addEventListener('click',()=>box.querySelectorAll('.col-status:not(:disabled)').forEach(s=>s.value='submitted'));
   box.querySelector('.save-col')?.addEventListener('click',async()=>{
     const records={...(it.records||{})},lateSubmitted={...(it.lateSubmitted||{})},lockedRecords={...(it.lockedRecords||{})};
     box.querySelectorAll('.col-status').forEach(sel=>{if(sel.disabled)return;const sid=sel.dataset.student,oldStatus=sel.dataset.old,newStatus=sel.value;records[sid]=newStatus;if(confirmed&&(oldStatus==='missing'||oldStatus==='late')&&newStatus==='submitted'){lateSubmitted[sid]=true;lockedRecords[sid]=true}else if(confirmed&&newStatus==='exempt'){lockedRecords[sid]=true}});
-    await updateDoc(doc(db,'collectionItems',it.id),{records,lateSubmitted,lockedRecords,updatedAt:serverTimestamp()});await audit('update','collection',it.id,`更新收繳：${it.itemName}`);alert('已儲存')
+    await updateDoc(doc(db,'collectionItems',it.id),{records,lateSubmitted,lockedRecords,updatedAt:serverTimestamp()});await audit('update','collection',it.id,`更新作業繳交：${it.itemName}`);alert('已儲存')
   })
 }
 
-async function removeCollection(it){if(!confirm(`確定刪除「${it.itemName}」？`))return;await deleteDoc(doc(db,'collectionItems',it.id));await audit('delete','collection',it.id,`刪除收繳：${it.itemName}`)}
+async function removeCollection(it){if(!confirm(`確定刪除「${it.itemName}」？`))return;await deleteDoc(doc(db,'collectionItems',it.id));await audit('delete','collection',it.id,`刪除作業繳交：${it.itemName}`)}
 
 /* ========================= 成績 ========================= */
 function startScores(){if(unsubAssess)unsubAssess();const key=scopeKey(currentAssignment),q=query(collection(db,'assessments'),where('semester','==',viewSemester),where('scopeKey','==',key));unsubAssess=onSnapshot(q,snap=>{currentAssessmentItems=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.date||'').localeCompare(a.date||''));renderScores(currentAssessmentItems);renderTeacherAggregatePanel()},e=>msg($('#appMsg'),'讀取成績資料失敗：'+esc(e.message),'error'))}
@@ -700,9 +700,9 @@ function renderTeacherAggregatePanel(){
   const old=aggregateSelectionState();
   box.classList.remove('hidden');
   const collections=currentCollectionItems||[],tests=currentAssessmentItems||[];
-  const colHtml=collections.length?collections.map(it=>{const k=`collection:${it.id}`,checked=old.has(k)?'checked':'';return `<label style="display:flex;gap:8px;align-items:flex-start;padding:7px 8px;border:1px solid #d6c39a;border-radius:10px;background:rgba(255,255,255,.55)"><input class="aggregate-choice" data-kind="collection" type="checkbox" value="${esc(it.id)}" ${checked}><span><b>📥 ${esc(it.itemName)}</b><span class="meta" style="display:block">${esc(it.date||'')}${it.dueDate?`｜截止 ${esc(it.dueDate)}`:''}</span></span></label>`}).join(''):'<div class="meta">目前沒有收繳／作業資料。</div>';
+  const colHtml=collections.length?collections.map(it=>{const k=`collection:${it.id}`,checked=old.has(k)?'checked':'';return `<label style="display:flex;gap:8px;align-items:flex-start;padding:7px 8px;border:1px solid #d6c39a;border-radius:10px;background:rgba(255,255,255,.55)"><input class="aggregate-choice" data-kind="collection" type="checkbox" value="${esc(it.id)}" ${checked}><span><b>📥 ${esc(it.itemName)}</b><span class="meta" style="display:block">${esc(it.date||'')}${it.dueDate?`｜截止 ${esc(it.dueDate)}`:''}</span></span></label>`}).join(''):'<div class="meta">目前沒有作業繳交／作業資料。</div>';
   const scoreHtml=tests.length?tests.map(it=>{const k=`assessment:${it.id}`,checked=old.has(k)?'checked':'';return `<label style="display:flex;gap:8px;align-items:flex-start;padding:7px 8px;border:1px solid #d6c39a;border-radius:10px;background:rgba(255,255,255,.55)"><input class="aggregate-choice" data-kind="assessment" type="checkbox" value="${esc(it.id)}" ${checked}><span><b>📊 ${esc(it.name)}</b><span class="meta" style="display:block">${esc(it.date||'')}｜滿分 ${esc(it.maxScore??'')}</span></span></label>`}).join(''):'<div class="meta">目前沒有成績資料。</div>';
-  box.innerHTML=`<div class="teacher-tools"><div class="teacher-tools-title">🧭 任課老師｜自選資料彙整</div><div class="sub">勾選你要的作業／收繳與成績，可合併成同一張學生總表，再下載 Excel 或列印。</div><details style="margin-top:10px"><summary style="cursor:pointer;font-weight:900">📚 選擇要彙整的資料</summary><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:10px"><div><div style="font-weight:900;margin-bottom:7px">📥 作業／收繳</div><div style="display:grid;gap:6px">${colHtml}</div></div><div><div style="font-weight:900;margin-bottom:7px">📊 成績</div><div style="display:grid;gap:6px">${scoreHtml}</div></div></div><div class="toolbar" style="margin-top:10px"><button id="aggregateSelectAll" class="btn gray small">☑ 全選</button><button id="aggregateClear" class="btn gray small">☐ 清除</button><button id="aggregatePreview" class="btn purple small">👀 預覽彙整</button><button id="aggregateExcel" class="btn primary small">📥 下載彙整 Excel</button><button id="aggregatePrint" class="btn gray small">🖨 列印彙整</button></div><div id="aggregatePreviewBox"></div></details></div>`;
+  box.innerHTML=`<div class="teacher-tools"><div class="teacher-tools-title">🧭 任課老師｜自選資料彙整</div><div class="sub">勾選你要的作業／作業繳交與成績，可合併成同一張學生總表，再下載 Excel 或列印。</div><details style="margin-top:10px"><summary style="cursor:pointer;font-weight:900">📚 選擇要彙整的資料</summary><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:10px"><div><div style="font-weight:900;margin-bottom:7px">📥 作業／作業繳交</div><div style="display:grid;gap:6px">${colHtml}</div></div><div><div style="font-weight:900;margin-bottom:7px">📊 成績</div><div style="display:grid;gap:6px">${scoreHtml}</div></div></div><div class="toolbar" style="margin-top:10px"><button id="aggregateSelectAll" class="btn gray small">☑ 全選</button><button id="aggregateClear" class="btn gray small">☐ 清除</button><button id="aggregatePreview" class="btn purple small">👀 預覽彙整</button><button id="aggregateExcel" class="btn primary small">📥 下載彙整 Excel</button><button id="aggregatePrint" class="btn gray small">🖨 列印彙整</button></div><div id="aggregatePreviewBox"></div></details></div>`;
   $('#aggregateSelectAll')?.addEventListener('click',()=>$$('#teacherAggregatePanel input.aggregate-choice').forEach(x=>x.checked=true));
   $('#aggregateClear')?.addEventListener('click',()=>{ $$('#teacherAggregatePanel input.aggregate-choice').forEach(x=>x.checked=false);const p=$('#aggregatePreviewBox');if(p)p.innerHTML=''; });
   $('#aggregatePreview')?.addEventListener('click',showAggregatePreview);
@@ -730,8 +730,8 @@ function aggregateScoreValue(it,sid){
   return labelOf(scoreStatusOptions,r.status||'not_entered');
 }
 function aggregateTitle(){return `${currentAssignment.classId}班｜${currentAssignment.scopeName}｜任課資料彙整`}
-function aggregateMeta(d){return `學期：${viewSemester}｜作業／收繳 ${d.selectedCollections.length} 項｜成績 ${d.selectedTests.length} 項`}
-function ensureAggregateSelected(){const d=selectedAggregateData();if(!d.columns.length){alert('請至少勾選一筆作業、收繳或成績資料。');return null}return d}
+function aggregateMeta(d){return `學期：${viewSemester}｜作業／作業繳交 ${d.selectedCollections.length} 項｜成績 ${d.selectedTests.length} 項`}
+function ensureAggregateSelected(){const d=selectedAggregateData();if(!d.columns.length){alert('請至少勾選一筆作業、作業繳交或成績資料。');return null}return d}
 function showAggregatePreview(){
   const d=ensureAggregateSelected();if(!d)return;const box=$('#aggregatePreviewBox');if(!box)return;
   box.innerHTML=`<div class="summary-title" style="margin-top:12px">📚 ${esc(aggregateTitle())}</div><div class="meta" style="margin-bottom:6px">${esc(aggregateMeta(d))}</div><div class="table-wrap"><table class="summary-table"><thead><tr><th>座號</th><th>姓名</th>${d.columns.map(c=>`<th>${esc(c.label)}<div class="meta">${esc(c.date)}</div></th>`).join('')}</tr></thead><tbody>${d.rows.map(r=>`<tr>${r.map((v,i)=>`<td>${i===1?esc(v):esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
@@ -745,7 +745,7 @@ async function exportAggregateExcel(){
     XLSX.writeFile(wb,`${safeFileName(currentAssignment.classId)}-${safeFileName(currentAssignment.scopeName)}-任課資料彙整.xlsx`)
   }catch(e){alert('Excel 下載失敗：'+e.message)}
 }
-function printAggregateSummary(){const d=ensureAggregateSelected();if(!d)return;openPrint(aggregateTitle(),aggregateMeta(d),['座號','姓名',...d.columns.map(c=>c.label)],d.rows.map(r=>[r[0],esc(r[1]),...r.slice(2)]),true)}
+function printAggregateSummary(){const d=ensureAggregateSelected();if(!d)return;openPrint(aggregateTitle(),aggregateMeta(d),['座號','姓名',...d.columns.map(c=>c.label)],d.rows.map(r=>[r[0],esc(r[1]),...r.slice(2)]),true,true)}
 
 /* ========================= 單筆列印 / Excel ========================= */
 function collectionRows(it){return roster.map(s=>{const sid=s.id||String(s.seat),status=(it.records||{})[sid]||'submitted',late=status==='submitted'&&!!(it.lateSubmitted||{})[sid];return[s.seat,s.name,labelOf(statusOptions,status),late?'已繳交（遲交）':'']})}
@@ -754,7 +754,7 @@ async function exportCollection(it){
   try{
     await ensureXLSX();const title=`${it.classId}班｜${it.scopeName}｜${it.itemName}`,meta=`學期：${it.semester||viewSemester}｜日期：${it.date||''}${it.dueDate?`｜截止：${it.dueDate}`:''}`;
     const headers=['座號','姓名','狀態','備註'],rows=collectionRows(it),ws=makeTitledSheet(title,meta,headers,rows,[{wch:7},{wch:12},{wch:14},{wch:20}]),wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,ws,'收繳');XLSX.writeFile(wb,`${safeFileName(it.classId)}-${safeFileName(it.scopeName)}-${safeFileName(it.itemName)}.xlsx`)
+    XLSX.utils.book_append_sheet(wb,ws,'作業繳交');XLSX.writeFile(wb,`${safeFileName(it.classId)}-${safeFileName(it.scopeName)}-${safeFileName(it.itemName)}.xlsx`)
   }catch(e){alert('Excel 下載失敗：'+e.message)}
 }
 function assessmentRows(it){return roster.map(s=>{const sid=s.id||String(s.seat),r=(it.scores||{})[sid]||{};return[s.seat,s.name,hasScore(r)?Number(r.score):'',labelOf(scoreStatusOptions,r.status||'not_entered')]})}
@@ -766,7 +766,36 @@ async function exportAssessment(it){
     XLSX.utils.book_append_sheet(wb,ws,'成績');XLSX.writeFile(wb,`${safeFileName(it.classId)}-${safeFileName(it.scopeName)}-${safeFileName(it.name)}.xlsx`)
   }catch(e){alert('Excel 下載失敗：'+e.message)}
 }
-function openPrint(title,meta,headers,rows,landscape=false){const w=window.open('','_blank');if(!w)return alert('瀏覽器阻擋了列印視窗。');w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title><style>@page{size:A4 ${landscape?'landscape':'portrait'};margin:10mm}body{font-family:"Microsoft JhengHei",sans-serif;color:#111;font-size:11px}h2{margin:0 0 5px}.info{margin-bottom:8px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #999;padding:4px 6px;text-align:center}th{background:#eee}th:nth-child(1),th:nth-child(2),td:nth-child(1),td:nth-child(2){text-align:left}</style></head><body><h2>${esc(title)}</h2><div class="info">${esc(meta)}</div><table><thead><tr>${headers.map(x=>`<th>${esc(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map(v=>`<td>${v??''}</td>`).join('')}</tr>`).join('')}</tbody></table><script>window.onload=()=>window.print()<\/script></body></html>`);w.document.close()}
+function openPrint(title,meta,headers,rows,landscape=false,fitOnePage=false){
+  const w=window.open('','_blank');
+  if(!w)return alert('瀏覽器阻擋了列印視窗。');
+
+  const manyCols=headers.length>=8;
+  const manyRows=rows.length>=28;
+  const printMargin=fitOnePage?'4mm':'10mm';
+  const bodyFont=fitOnePage?(manyCols?'7.2px':manyRows?'7.8px':'8.5px'):'11px';
+  const cellPad=fitOnePage?(manyRows?'1.1px 2px':'1.6px 2.5px'):'4px 6px';
+  const titleSize=fitOnePage?'13px':'1.5em';
+  const infoSize=fitOnePage?'8px':'inherit';
+
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title><style>
+  @page{size:A4 ${landscape?'landscape':'portrait'};margin:${printMargin}}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:"Microsoft JhengHei",sans-serif;color:#111;font-size:${bodyFont};line-height:${fitOnePage?'1.05':'1.25'}}
+  h2{font-size:${titleSize};margin:0 0 ${fitOnePage?'2px':'5px'};line-height:1.1}
+  .info{font-size:${infoSize};margin-bottom:${fitOnePage?'3px':'8px'};line-height:1.1}
+  table{width:100%;border-collapse:collapse;table-layout:${fitOnePage?'fixed':'auto'};page-break-inside:avoid}
+  thead{display:table-header-group}
+  tr{page-break-inside:avoid;break-inside:avoid}
+  th,td{border:1px solid #888;padding:${cellPad};text-align:center;vertical-align:middle;white-space:${fitOnePage?'nowrap':'normal'};overflow:hidden;text-overflow:ellipsis}
+  th{background:#eee;font-weight:700}
+  th:nth-child(1),td:nth-child(1){width:${fitOnePage?'6%':'auto'};text-align:left}
+  th:nth-child(2),td:nth-child(2){width:${fitOnePage?'13%':'auto'};text-align:left}
+  @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+  </style></head><body><h2>${esc(title)}</h2><div class="info">${esc(meta)}</div><table><thead><tr>${headers.map(x=>`<th>${esc(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map(v=>`<td>${v??''}</td>`).join('')}</tr>`).join('')}</tbody></table><script>window.onload=()=>window.print()<\/script></body></html>`);
+  w.document.close()
+}
 </script>
 </body>
 </html>
