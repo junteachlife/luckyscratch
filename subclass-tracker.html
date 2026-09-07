@@ -99,6 +99,36 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
 .login-card input{width:100%;margin:6px 0 10px;border:2px solid #8b6a38;background:#fffaf0;color:#2d241b;border-radius:12px;padding:12px;outline:none}
 .login-card button{width:100%;margin-top:4px}.login-error{min-height:22px;margin-top:10px;color:#9a2b22;font-weight:900;font-size:13px}
 
+
+/* ===== 學生名單／Email 匯入 ===== */
+.roster-import-panel{
+  margin-top:18px;
+  background:linear-gradient(180deg,rgba(255,247,216,.98),rgba(243,219,166,.98));
+  border:3px solid #63451f;border-radius:20px;box-shadow:var(--shadow);padding:18px;
+}
+.roster-import-grid{
+  display:grid;grid-template-columns:minmax(240px,1fr) auto auto;gap:10px;align-items:end;
+}
+.roster-import-info{
+  margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff9e9;
+  border:2px dashed #9b7746;font-size:13px;font-weight:800;color:#5f4a31;line-height:1.7;
+}
+.roster-import-status{
+  margin-top:9px;padding:9px 11px;border-radius:10px;background:#e8ddc5;
+  color:#5f503d;font-size:13px;font-weight:900;
+}
+.roster-import-status.ok{background:#dcf4e9;color:#166643}
+.roster-import-status.warn{background:#fff0d8;color:#9a570f}
+.roster-import-status.error{background:#fde7e3;color:#922e24}
+.roster-file-input{display:none}
+@media(max-width:760px){
+  .roster-import-grid{grid-template-columns:1fr}
+  .roster-import-grid button{width:100%}
+}
+@media print{
+  .roster-import-panel{display:none!important}
+}
+
 @media(max-width:760px){
   .app{width:96vw;margin-top:10px}.hero{padding:18px 12px}.emblem{width:58px;height:58px;font-size:30px}h1{font-size:30px}
   .class-switch{grid-template-columns:1fr}.form-grid,.history-row,.archive-row{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}
@@ -331,6 +361,32 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
     </div>
   </section>
 
+
+  <section class="roster-import-panel">
+    <div class="section-title">📚 學生名單與 Email</div>
+
+    <div class="roster-import-grid">
+      <div>
+        <label>目前班級名單</label>
+        <div class="roster-import-info" id="rosterInfo">尚未讀取名單資訊。</div>
+      </div>
+
+      <button class="btn-blue" id="importRosterBtn">📥 匯入／更新 Excel 名單</button>
+      <button class="btn-light" id="downloadRosterTemplateBtn">📄 下載目前班級範本</button>
+    </div>
+
+    <input
+      id="rosterFileInput"
+      class="roster-file-input"
+      type="file"
+      accept=".xlsx,.xls,.csv"
+    />
+
+    <div class="roster-import-status" id="rosterImportStatus">
+      Excel 欄位可使用：班級、座號、姓名、Email。匯入後會儲存到 Firebase，之後登入自動載入。
+    </div>
+  </section>
+
   <section class="panel">
     <div class="print-summary" id="printSummary">
       <div class="print-summary-title" id="printSummaryTitle"></div>
@@ -375,11 +431,12 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 import {
-  getFirestore, collection, doc, setDoc, getDocs, deleteDoc,
+  getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc,
   query, orderBy, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
@@ -396,7 +453,7 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-/* ===== 三個任課班名單：依上傳 Excel 原始座號保留 ===== */
+/* ===== 四個任課班內建備援名單；Firebase 匯入名單會優先使用 ===== */
 const CLASS_CONFIG={
   "904":{
     name:"904",
@@ -481,7 +538,7 @@ function setSync(state,text){const b=$("syncBadge");b.className="sync-badge"+(st
 function isOverdue(status){const due=$("dueDate").value;return !!due&&todayISO()>due&&status==="unpaid";}
 function currentMeta(){return {classId:currentClassId,className:currentClass().name,itemName:$("itemName").value.trim(),receiveDate:$("receiveDate").value,dueDate:$("dueDate").value};}
 
-/* Firestore：三班分開存放 */
+/* Firestore：四班分開存放 */
 function recordsCollection(){
   if(!currentUser)throw new Error("尚未登入");
   return collection(db,"users",currentUser.uid,"subjectClassTrackers",currentClassId,"records");
@@ -489,6 +546,326 @@ function recordsCollection(){
 function recordRef(id){
   if(!currentUser)throw new Error("尚未登入");
   return doc(db,"users",currentUser.uid,"subjectClassTrackers",currentClassId,"records",id);
+}
+
+
+/* ==========================================================
+   學生名單／Email：Excel → Firebase → 自動載入
+========================================================== */
+
+function rosterDocRef(classId){
+  if(!currentUser)throw new Error("尚未登入");
+  return doc(db,"users",currentUser.uid,"subjectStudentRosters",String(classId));
+}
+
+function normalizeEmail(value){
+  return String(value ?? "").trim();
+}
+
+function normalizeSeat(value){
+  const n=Number(String(value ?? "").trim());
+  return Number.isInteger(n) && n>0 ? n : null;
+}
+
+function normalizeStudent(student){
+  return {
+    seat:normalizeSeat(student?.seat),
+    name:String(student?.name ?? "").trim(),
+    email:normalizeEmail(student?.email)
+  };
+}
+
+function currentRosterEmailCount(){
+  return students().filter(s=>normalizeEmail(s.email)).length;
+}
+
+function updateRosterInfo(sourceText=""){
+  if(!$("rosterInfo"))return;
+  const list=students();
+  const emailCount=currentRosterEmailCount();
+  const missing=list.length-emailCount;
+  const source=sourceText || (currentClass().rosterSource==="firebase" ? "Firebase 匯入名單" : "程式內建備援名單");
+
+  $("rosterInfo").innerHTML=
+    `<b>${escapeHTML(currentClass().name)} 班</b>｜學生 ${list.length} 人｜`+
+    `已有 Email ${emailCount} 人｜缺 Email ${missing} 人<br>`+
+    `目前來源：${escapeHTML(source)}`;
+}
+
+function setRosterImportStatus(type,text){
+  const el=$("rosterImportStatus");
+  if(!el)return;
+  el.className="roster-import-status"+(type?` ${type}`:"");
+  el.textContent=text;
+}
+
+async function loadRosterFromCloud(classId,showMessage=false){
+  if(!currentUser || !CLASS_CONFIG[classId])return false;
+
+  try{
+    const snap=await getDoc(rosterDocRef(classId));
+
+    if(!snap.exists()){
+      CLASS_CONFIG[classId].rosterSource="builtin";
+      if(classId===currentClassId)updateRosterInfo();
+      return false;
+    }
+
+    const data=snap.data()||{};
+    const loaded=Array.isArray(data.students)
+      ? data.students
+          .map(normalizeStudent)
+          .filter(s=>s.seat && s.name)
+          .sort((a,b)=>a.seat-b.seat)
+      : [];
+
+    if(!loaded.length){
+      CLASS_CONFIG[classId].rosterSource="builtin";
+      if(classId===currentClassId)updateRosterInfo();
+      return false;
+    }
+
+    CLASS_CONFIG[classId].students=loaded;
+    CLASS_CONFIG[classId].rosterSource="firebase";
+
+    if(classId===currentClassId){
+      updateRosterInfo("Firebase 匯入名單");
+      if(showMessage)showToast(`${classId} 名單已從 Firebase 載入`);
+    }
+
+    return true;
+  }catch(err){
+    console.error("讀取學生名單失敗",err);
+    if(classId===currentClassId){
+      setRosterImportStatus("error",`名單讀取失敗：${err.code||err.message||"未知錯誤"}`);
+      updateRosterInfo("程式內建備援名單");
+    }
+    return false;
+  }
+}
+
+async function loadAllRostersFromCloud(){
+  if(!currentUser)return;
+  await Promise.all(Object.keys(CLASS_CONFIG).map(id=>loadRosterFromCloud(id,false)));
+  updateRosterInfo();
+}
+
+function getCellValue(row,aliases){
+  const normalized={};
+  Object.entries(row||{}).forEach(([k,v])=>{
+    normalized[String(k).trim().toLowerCase().replace(/\s+/g,"")]=v;
+  });
+
+  for(const alias of aliases){
+    const key=String(alias).trim().toLowerCase().replace(/\s+/g,"");
+    if(Object.prototype.hasOwnProperty.call(normalized,key))return normalized[key];
+  }
+  return "";
+}
+
+function resolveRowClassId(row,sheetName){
+  const value=getCellValue(row,["班級","class","classid","班別"]);
+  const direct=String(value??"").trim();
+
+  if(direct && CLASS_CONFIG[direct])return direct;
+
+  const sheet=String(sheetName??"").trim();
+  if(CLASS_CONFIG[sheet])return sheet;
+
+  return currentClassId;
+}
+
+function buildImportedStudent(row,classId){
+  const seat=normalizeSeat(getCellValue(row,["座號","seat","number","no","id","號碼"]));
+  if(!seat)return null;
+
+  const importedName=String(
+    getCellValue(row,["姓名","name","學生姓名","studentname"]) ?? ""
+  ).trim();
+
+  const importedEmail=normalizeEmail(
+    getCellValue(row,["email","e-mail","信箱","電子郵件","郵件","學生信箱"])
+  );
+
+  const existing=CLASS_CONFIG[classId]?.students?.find(s=>Number(s.seat)===seat);
+  const name=importedName || existing?.name || "";
+
+  if(!name)return null;
+
+  return {
+    seat,
+    name,
+    email:importedEmail || normalizeEmail(existing?.email)
+  };
+}
+
+function parseWorkbookRosters(workbook){
+  const grouped={};
+  const skipped=[];
+
+  workbook.SheetNames.forEach(sheetName=>{
+    const sheet=workbook.Sheets[sheetName];
+    const rows=window.XLSX.utils.sheet_to_json(sheet,{defval:"",raw:false});
+
+    rows.forEach((row,index)=>{
+      const classId=resolveRowClassId(row,sheetName);
+
+      if(!CLASS_CONFIG[classId]){
+        skipped.push(`${sheetName} 第 ${index+2} 列：未知班級`);
+        return;
+      }
+
+      const student=buildImportedStudent(row,classId);
+
+      if(!student){
+        const anyValue=Object.values(row||{}).some(v=>String(v??"").trim());
+        if(anyValue)skipped.push(`${sheetName} 第 ${index+2} 列：座號或姓名不足`);
+        return;
+      }
+
+      if(!grouped[classId])grouped[classId]=new Map();
+      grouped[classId].set(student.seat,student);
+    });
+  });
+
+  const result={};
+  Object.entries(grouped).forEach(([classId,map])=>{
+    result[classId]=[...map.values()].sort((a,b)=>a.seat-b.seat);
+  });
+
+  return {result,skipped};
+}
+
+async function saveRosterToCloud(classId,list){
+  const cleaned=list
+    .map(normalizeStudent)
+    .filter(s=>s.seat && s.name)
+    .sort((a,b)=>a.seat-b.seat);
+
+  if(!cleaned.length)throw new Error(`${classId} 沒有可儲存的學生資料`);
+
+  await setDoc(
+    rosterDocRef(classId),
+    {
+      classId,
+      className:CLASS_CONFIG[classId]?.name || classId,
+      students:cleaned,
+      updatedAt:serverTimestamp()
+    },
+    {merge:true}
+  );
+
+  CLASS_CONFIG[classId].students=cleaned;
+  CLASS_CONFIG[classId].rosterSource="firebase";
+}
+
+async function importRosterFile(file){
+  if(!currentUser){
+    showToast("請先登入");
+    return;
+  }
+
+  if(!file)return;
+
+  if(!window.XLSX){
+    setRosterImportStatus("error","Excel 讀取套件尚未載入，請重新整理頁面後再試。");
+    return;
+  }
+
+  try{
+    setRosterImportStatus("warn","正在讀取 Excel 並儲存到 Firebase…");
+
+    const buffer=await file.arrayBuffer();
+    const workbook=window.XLSX.read(buffer,{type:"array"});
+    const {result,skipped}=parseWorkbookRosters(workbook);
+    const classIds=Object.keys(result);
+
+    if(!classIds.length){
+      setRosterImportStatus("error","找不到可匯入資料。請確認欄位至少包含「座號、姓名」，建議另有「班級、Email」。");
+      return;
+    }
+
+    for(const classId of classIds){
+      await saveRosterToCloud(classId,result[classId]);
+    }
+
+    const oldState=studentState;
+    studentState=createBlankState();
+
+    students().forEach(s=>{
+      if(oldState?.[s.seat]){
+        studentState[s.seat]={...studentState[s.seat],...oldState[s.seat]};
+      }
+    });
+
+    renderClassButtons();
+    render();
+    updateRosterInfo("Firebase 匯入名單");
+
+    const summary=classIds.map(id=>{
+      const list=CLASS_CONFIG[id].students;
+      const emails=list.filter(s=>normalizeEmail(s.email)).length;
+      return `${id}：${list.length} 人／Email ${emails} 人`;
+    }).join("；");
+
+    const skipText=skipped.length?`；略過 ${skipped.length} 列`:"";
+    setRosterImportStatus("ok",`匯入完成並已存到 Firebase。${summary}${skipText}`);
+    showToast("學生名單已匯入並同步到 Firebase");
+  }catch(err){
+    console.error(err);
+    setRosterImportStatus("error",`匯入失敗：${err.code||err.message||"未知錯誤"}`);
+  }finally{
+    $("rosterFileInput").value="";
+  }
+}
+
+function downloadCurrentRosterTemplate(){
+  if(!window.XLSX){
+    showToast("Excel 套件尚未載入，請重新整理後再試");
+    return;
+  }
+
+  const classId=currentClassId;
+  const rows=students().map(s=>({
+    班級:classId,
+    座號:s.seat,
+    姓名:s.name,
+    Email:normalizeEmail(s.email)
+  }));
+
+  const ws=window.XLSX.utils.json_to_sheet(rows,{
+    header:["班級","座號","姓名","Email"]
+  });
+
+  ws["!cols"]=[{wch:10},{wch:8},{wch:14},{wch:32}];
+
+  const wb=window.XLSX.utils.book_new();
+  window.XLSX.utils.book_append_sheet(wb,ws,classId);
+  window.XLSX.writeFile(wb,`${classId}_學生Email名單.xlsx`);
+}
+
+async function refreshCurrentClassData(showMessage=true){
+  if(!currentUser)return;
+
+  await loadRosterFromCloud(currentClassId,false);
+
+  const oldState=studentState;
+  studentState=createBlankState();
+
+  students().forEach(s=>{
+    if(oldState?.[s.seat]){
+      studentState[s.seat]={...studentState[s.seat],...oldState[s.seat]};
+    }
+  });
+
+  renderClassButtons();
+  render();
+  await refreshHistory(false);
+
+  if(showMessage){
+    updateRosterInfo();
+    showToast("名單與收繳資料已重新同步");
+  }
 }
 
 function renderClassButtons(){
@@ -503,6 +880,7 @@ function renderClassButtons(){
   });
   $("currentClassName").textContent=currentClass().name;
   $("rosterTitle").textContent=`🏴‍☠️ ${currentClass().name} 船員收繳名冊`;
+  if($("rosterInfo"))updateRosterInfo();
 }
 
 async function switchClass(newClassId){
@@ -517,6 +895,11 @@ async function switchClass(newClassId){
 
   currentClassId=newClassId;
   localStorage.setItem("subjectTrackerCurrentClass",currentClassId);
+
+  if(currentUser){
+    await loadRosterFromCloud(currentClassId,false);
+  }
+
   currentId=null;historyRecords=[];archivedRecords=[];filter="all";studentState=createBlankState();
   $("itemName").value="";$("receiveDate").value=todayISO();$("dueDate").value="";
   $("searchInput").value="";$("historySelect").innerHTML='<option value="">— 選擇歷史收繳紀錄 —</option>';$("archiveSelect").innerHTML='<option value="">— 尚無封存紀錄 —</option>';
@@ -851,7 +1234,7 @@ async function login(){
 $("loginBtn").addEventListener("click",login);
 $("loginPassword").addEventListener("keydown",e=>{if(e.key==="Enter")login();});
 $("logoutBtn").addEventListener("click",()=>signOut(auth));
-$("refreshCloudBtn").addEventListener("click",()=>refreshHistory(true));
+$("refreshCloudBtn").addEventListener("click",()=>refreshCurrentClassData(true));
 $("saveRecordBtn").addEventListener("click",saveRecord);
 $("newRecordBtn").addEventListener("click",()=>newRecord(true));
 $("loadBtn").addEventListener("click",loadRecord);
@@ -864,6 +1247,17 @@ $("archiveSelect").addEventListener("change",()=>{if($("archiveSelect").value)lo
 $("copyUnpaidBtn").addEventListener("click",copyUnpaid);
 $("exportBtn").addEventListener("click",exportCSV);
 $("printBtn").addEventListener("click",()=>{updatePrintSummary();window.print();});
+
+$("importRosterBtn").addEventListener("click",()=>{
+  if(!currentUser){showToast("請先登入");return;}
+  $("rosterFileInput").click();
+});
+$("rosterFileInput").addEventListener("change",e=>{
+  const file=e.target.files?.[0];
+  if(file)importRosterFile(file);
+});
+$("downloadRosterTemplateBtn").addEventListener("click",downloadCurrentRosterTemplate);
+
 $("allPaidBtn").addEventListener("click",()=>setAll("paid"));
 $("allUnpaidBtn").addEventListener("click",()=>setAll("unpaid"));
 $("searchInput").addEventListener("input",render);
@@ -878,10 +1272,13 @@ onAuthStateChanged(auth,async user=>{
   if(user){
     $("loginScreen").classList.add("hidden");$("accountEmail").textContent=`👤 ${user.email||"已登入"}`;
     setSync("saving","☁️ 連線中…");$("receiveDate").value=$("receiveDate").value||todayISO();
+    await loadAllRostersFromCloud();
     studentState=createBlankState();renderClassButtons();render();await refreshHistory(false);
+    updateRosterInfo();
   }else{
     currentId=null;historyRecords=[];archivedRecords=[];studentState=createBlankState();$("accountEmail").textContent="";
     setSync("","☁️ 等待登入");$("loginScreen").classList.remove("hidden");renderClassButtons();render();
+    if($("rosterImportStatus"))setRosterImportStatus("","登入後可匯入 Excel 名單並同步到 Firebase。");
   }
 });
 
