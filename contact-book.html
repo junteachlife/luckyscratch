@@ -355,7 +355,7 @@
         @media print {
             @page {
                 size: A4 landscape;
-                margin: 7mm;
+                margin: 5mm;
             }
 
             body.print-weekly {
@@ -402,7 +402,7 @@
             body.print-weekly #weeklyReportCard h4 {
                 color: #000000 !important;
                 text-shadow: none !important;
-                font-size: 12pt !important;
+                font-size: 13.5pt !important;
                 margin: 0 !important;
             }
 
@@ -413,7 +413,7 @@
             body.print-weekly #weeklyReportCard .print-only {
                 display: block !important;
                 color: #000000 !important;
-                font-size: 9pt !important;
+                font-size: 10pt !important;
                 font-weight: bold !important;
                 margin: 2px 0 5px 0 !important;
             }
@@ -436,9 +436,9 @@
                 left: auto !important;
                 min-width: 0 !important;
                 width: auto !important;
-                padding: 1.5px 2px !important;
+                padding: 1px 1.5px !important;
                 border: 1px solid #555 !important;
-                font-size: 6.8pt !important;
+                font-size: 8pt !important;
                 line-height: 1.05 !important;
                 color: #000000 !important;
                 background: #ffffff !important;
@@ -450,6 +450,22 @@
                 font-weight: 700 !important;
             }
 
+            body.print-weekly #weeklyStatsTable th:first-child,
+            body.print-weekly #weeklyStatsTable td:first-child {
+                width: 4.5% !important;
+            }
+
+            body.print-weekly #weeklyStatsTable th:nth-child(2),
+            body.print-weekly #weeklyStatsTable td:nth-child(2) {
+                width: 10.5% !important;
+            }
+
+            body.print-weekly #weeklyStatsTable th:not(:first-child):not(:nth-child(2)),
+            body.print-weekly #weeklyStatsTable td:not(:first-child):not(:nth-child(2)) {
+                width: auto !important;
+            }
+
+
             body.print-weekly #weeklyStatsTable td:nth-child(2),
             body.print-weekly #weeklyStatsTable th:nth-child(2) {
                 text-align: left !important;
@@ -460,7 +476,7 @@
                 color: #000000 !important;
                 border: none !important;
                 padding: 0 !important;
-                font-size: 6.8pt !important;
+                font-size: 8pt !important;
                 font-weight: 700 !important;
             }
 
