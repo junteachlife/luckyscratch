@@ -346,6 +346,137 @@
             justify-content: center;
             align-items: center;
         }
+
+        /* ===== 每週航行統計報告列印設定 ===== */
+        .print-only {
+            display: none;
+        }
+
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 7mm;
+            }
+
+            body.print-weekly {
+                background: #ffffff !important;
+                color: #000000 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                min-height: auto !important;
+            }
+
+            body.print-weekly #loginOverlay {
+                display: none !important;
+            }
+
+            body.print-weekly #mainSystemContainer {
+                display: block !important;
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            /* 列印時只顯示每週統計報告 */
+            body.print-weekly #mainSystemContainer > * {
+                display: none !important;
+            }
+
+            body.print-weekly #weeklyReportCard {
+                display: block !important;
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+            }
+
+            body.print-weekly #weeklyReportCard .d-flex.justify-content-between.align-items-center.mb-3 {
+                margin-bottom: 4px !important;
+            }
+
+            body.print-weekly #weeklyReportCard h4 {
+                color: #000000 !important;
+                text-shadow: none !important;
+                font-size: 12pt !important;
+                margin: 0 !important;
+            }
+
+            body.print-weekly #weeklyReportCard .print-hide {
+                display: none !important;
+            }
+
+            body.print-weekly #weeklyReportCard .print-only {
+                display: block !important;
+                color: #000000 !important;
+                font-size: 9pt !important;
+                font-weight: bold !important;
+                margin: 2px 0 5px 0 !important;
+            }
+
+            body.print-weekly #weeklyReportCard .table-responsive {
+                overflow: visible !important;
+            }
+
+            body.print-weekly #weeklyStatsTable {
+                width: 100% !important;
+                table-layout: fixed !important;
+                border-collapse: collapse !important;
+                margin: 0 !important;
+                color: #000000 !important;
+            }
+
+            body.print-weekly #weeklyStatsTable th,
+            body.print-weekly #weeklyStatsTable td {
+                position: static !important;
+                left: auto !important;
+                min-width: 0 !important;
+                width: auto !important;
+                padding: 1.5px 2px !important;
+                border: 1px solid #555 !important;
+                font-size: 6.8pt !important;
+                line-height: 1.05 !important;
+                color: #000000 !important;
+                background: #ffffff !important;
+                box-shadow: none !important;
+                white-space: normal !important;
+            }
+
+            body.print-weekly #weeklyStatsTable th {
+                font-weight: 700 !important;
+            }
+
+            body.print-weekly #weeklyStatsTable td:nth-child(2),
+            body.print-weekly #weeklyStatsTable th:nth-child(2) {
+                text-align: left !important;
+            }
+
+            body.print-weekly #weeklyStatsTable .badge {
+                background: transparent !important;
+                color: #000000 !important;
+                border: none !important;
+                padding: 0 !important;
+                font-size: 6.8pt !important;
+                font-weight: 700 !important;
+            }
+
+            body.print-weekly #weeklyStatsTable .text-muted,
+            body.print-weekly #weeklyStatsTable .text-danger,
+            body.print-weekly #weeklyStatsTable .text-warning,
+            body.print-weekly #weeklyStatsTable .text-success {
+                color: #000000 !important;
+            }
+
+            body.print-weekly #weeklyStatsTable tr {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -633,12 +764,14 @@
         <div class="card p-3 p-md-4" id="weeklyReportCard" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="mb-0">📊 每週航行統計報告（全班 1~28 號總表）</h4>
-                <div>
+                <div class="d-flex gap-2 align-items-center print-hide">
                     <select class="form-select form-select-sm d-inline-block w-auto" id="weekSelect" style="font-size: 0.9rem;">
                         <!-- 動態產生週次選項 -->
                     </select>
+                    <button type="button" class="btn btn-outline-warning btn-sm fw-bold" id="printWeeklyBtn">🖨️ 列印</button>
                 </div>
             </div>
+            <div class="print-only" id="weeklyPrintPeriod"></div>
             <div class="table-responsive sticky-audit-scroll">
                 <table class="table table-hover align-middle sticky-audit-table" id="weeklyStatsTable">
                     <thead class="table-light">
@@ -1535,7 +1668,35 @@ ${currentDate} 登記為「請假／缺席」嗎？`);
             renderWeeklyTable();
         }
 
+
         document.getElementById('weekSelect').addEventListener('change', renderWeeklyTable);
+
+        // 每週航行統計報告列印
+        document.getElementById('printWeeklyBtn').addEventListener('click', function() {
+            const weekSelect = document.getElementById('weekSelect');
+            const weeklyReportCard = document.getElementById('weeklyReportCard');
+            const printPeriod = document.getElementById('weeklyPrintPeriod');
+
+            const selectedText = weekSelect.options[weekSelect.selectedIndex]
+                ? weekSelect.options[weekSelect.selectedIndex].textContent
+                : '';
+
+            printPeriod.textContent = selectedText;
+
+            const previousDisplay = weeklyReportCard.style.display;
+            weeklyReportCard.style.display = 'block';
+            document.body.classList.add('print-weekly');
+
+            const cleanup = () => {
+                document.body.classList.remove('print-weekly');
+                weeklyReportCard.style.display = previousDisplay;
+                window.removeEventListener('afterprint', cleanup);
+            };
+
+            window.addEventListener('afterprint', cleanup);
+            window.print();
+        });
+
 
         // 渲染每週統計表格
         function renderWeeklyTable() {
