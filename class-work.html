@@ -211,6 +211,7 @@ summary{color:#6b4b2b!important}
 
   <section id="workspace" class="card hidden" style="margin-top:14px">
     <div class="item-head"><div><div id="workspaceTitle" class="section-title"></div><div id="workspacePerm" class="sub"></div></div></div>
+    <div id="teacherAggregatePanel" class="hidden" style="margin-top:12px"></div>
     <div class="tabs" style="margin-top:12px"><button class="btn tab active" data-tab="collection">📥 收繳</button><button id="scoresTab" class="btn tab" data-tab="scores">📊 小考成績</button></div>
     <div id="collectionPanel"></div>
     <div id="scoresPanel" class="hidden"></div>
@@ -226,7 +227,7 @@ import {getFirestore,doc,getDoc,setDoc,collection,addDoc,updateDoc,deleteDoc,que
 const firebaseConfig={apiKey:"AIzaSyB56F4wJ-IMUiBsqJ5P33HoDK642h7671U",authDomain:"class-datawork.firebaseapp.com",projectId:"class-datawork",storageBucket:"class-datawork.firebasestorage.app",messagingSenderId:"24186422479",appId:"1:24186422479:web:8dee260f34b2e506fd63ba"};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],SYNTH_DOMAIN="class-datawork.local";
-let profile=null,currentAssignment=null,roster=[],unsubItems=null,unsubAssess=null,currentSemester='115-1',viewSemester='115-1',currentAssessmentItems=[];
+let profile=null,currentAssignment=null,roster=[],unsubItems=null,unsubAssess=null,currentSemester='115-1',viewSemester='115-1',currentCollectionItems=[],currentAssessmentItems=[];
 const statusOptions=[['submitted','已繳'],['missing','未繳'],['late','補交'],['exempt','免繳']];
 const scoreStatusOptions=[['normal','正常'],['absent','缺考'],['makeup','補考'],['exempt','免試'],['not_entered','未登記']];
 
@@ -480,15 +481,16 @@ function renderRoles(){
 }
 
 async function selectAssignment(i,el){
-  const list=currentAssignments();$$('.role-card').forEach(x=>x.classList.remove('active'));el.classList.add('active');currentAssignment=list[i];$('#workspace').classList.remove('hidden');$('#workspaceTitle').textContent=assignmentLabel(currentAssignment);$('#workspacePerm').textContent=`${currentAssignment.semester||viewSemester}｜${isHistoricalReadOnly()?'歷史學期唯讀；':''}${canCollection(currentAssignment)?'可登記收繳':'收繳唯讀'}${currentAssignment.scopeType==='subject'?`；${canScores(currentAssignment)?'可登記小考成績':'成績唯讀'}`:''}${canConfirm(currentAssignment)?'；可確認資料':''}${isTeacherAssignment(currentAssignment)?'；任課老師可列印、Excel 與週成績彙整':''}`;
+  const list=currentAssignments();$$('.role-card').forEach(x=>x.classList.remove('active'));el.classList.add('active');currentAssignment=list[i];currentCollectionItems=[];currentAssessmentItems=[];$('#workspace').classList.remove('hidden');$('#workspaceTitle').textContent=assignmentLabel(currentAssignment);$('#workspacePerm').textContent=`${currentAssignment.semester||viewSemester}｜${isHistoricalReadOnly()?'歷史學期唯讀；':''}${canCollection(currentAssignment)?'可登記收繳':'收繳唯讀'}${currentAssignment.scopeType==='subject'?`；${canScores(currentAssignment)?'可登記小考成績':'成績唯讀'}`:''}${canConfirm(currentAssignment)?'；可確認資料':''}${isTeacherAssignment(currentAssignment)?'；任課老師可列印、Excel 與週成績彙整':''}`;
   $('#scoresTab').classList.toggle('hidden',currentAssignment.scopeType!=='subject');if(currentAssignment.scopeType!=='subject'){$$('.tab').forEach(x=>x.classList.remove('active'));document.querySelector('[data-tab="collection"]').classList.add('active');$('#collectionPanel').classList.remove('hidden');$('#scoresPanel').classList.add('hidden')}
+  renderTeacherAggregatePanel();
   await loadRoster(currentAssignment.classId);startCollection();if(currentAssignment.scopeType==='subject')startScores();
 }
 
 $$('.tab').forEach(b=>b.onclick=()=>{if(b.classList.contains('hidden'))return;$$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');const t=b.dataset.tab;$('#collectionPanel').classList.toggle('hidden',t!=='collection');$('#scoresPanel').classList.toggle('hidden',t!=='scores')});
 
 /* ========================= 收繳 ========================= */
-function startCollection(){if(unsubItems)unsubItems();const key=scopeKey(currentAssignment),q=query(collection(db,'collectionItems'),where('semester','==',viewSemester),where('scopeKey','==',key));unsubItems=onSnapshot(q,snap=>{const items=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.date||'').localeCompare(a.date||''));renderCollection(items)},e=>msg($('#appMsg'),'讀取收繳資料失敗：'+esc(e.message),'error'))}
+function startCollection(){if(unsubItems)unsubItems();const key=scopeKey(currentAssignment),q=query(collection(db,'collectionItems'),where('semester','==',viewSemester),where('scopeKey','==',key));unsubItems=onSnapshot(q,snap=>{const items=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.date||'').localeCompare(a.date||''));currentCollectionItems=items;renderCollection(items);renderTeacherAggregatePanel()},e=>msg($('#appMsg'),'讀取收繳資料失敗：'+esc(e.message),'error'))}
 
 function collectionCounts(it){const counts={submitted:0,missing:0,late:0,exempt:0,lateSubmitted:0};Object.entries(it.records||{}).forEach(([sid,v])=>{counts[v]=(counts[v]||0)+1;if(v==='submitted'&&(it.lateSubmitted||{})[sid])counts.lateSubmitted++});return counts}
 
@@ -533,7 +535,7 @@ function toggleCollectionEditor(it){
 async function removeCollection(it){if(!confirm(`確定刪除「${it.itemName}」？`))return;await deleteDoc(doc(db,'collectionItems',it.id));await audit('delete','collection',it.id,`刪除收繳：${it.itemName}`)}
 
 /* ========================= 成績 ========================= */
-function startScores(){if(unsubAssess)unsubAssess();const key=scopeKey(currentAssignment),q=query(collection(db,'assessments'),where('semester','==',viewSemester),where('scopeKey','==',key));unsubAssess=onSnapshot(q,snap=>{currentAssessmentItems=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.date||'').localeCompare(a.date||''));renderScores(currentAssessmentItems)},e=>msg($('#appMsg'),'讀取成績資料失敗：'+esc(e.message),'error'))}
+function startScores(){if(unsubAssess)unsubAssess();const key=scopeKey(currentAssignment),q=query(collection(db,'assessments'),where('semester','==',viewSemester),where('scopeKey','==',key));unsubAssess=onSnapshot(q,snap=>{currentAssessmentItems=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.date||'').localeCompare(a.date||''));renderScores(currentAssessmentItems);renderTeacherAggregatePanel()},e=>msg($('#appMsg'),'讀取成績資料失敗：'+esc(e.message),'error'))}
 function calcStats(it){const vals=[];let absent=0,below=0;Object.values(it.scores||{}).forEach(r=>{if(r.status==='absent')absent++;if((r.status==='normal'||r.status==='makeup')&&hasScore(r)){const n=Number(r.score);vals.push(n);if(n<Number(it.passScore||0))below++}});return{avg:vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1):'-',high:vals.length?Math.max(...vals):'-',low:vals.length?Math.min(...vals):'-',below,absent,count:vals.length}}
 
 function renderTeacherWeekTools(){
@@ -599,19 +601,110 @@ function showTeacherWeekSummary(){
 }
 
 async function ensureXLSX(){if(window.XLSX)return;await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';s.onload=resolve;s.onerror=()=>reject(new Error('Excel 元件載入失敗'));document.head.appendChild(s)})}
+
+function excelColumnName(n){let s='';while(n>0){n--;s=String.fromCharCode(65+n%26)+s;n=Math.floor(n/26)}return s}
+function makeTitledSheet(title,meta,headers,rows,widths=[]){
+  const aoa=[[title],[meta],[],headers,...rows],ws=XLSX.utils.aoa_to_sheet(aoa),last=Math.max(0,headers.length-1);
+  ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:last}},{s:{r:1,c:0},e:{r:1,c:last}}];
+  ws['!cols']=widths.length?widths:[{wch:8},{wch:14},...headers.slice(2).map(()=>({wch:18}))];
+  ws['!autofilter']={ref:`A4:${excelColumnName(headers.length)}4`};
+  return ws;
+}
+function safeFileName(v){return String(v||'資料').replace(/[\\/:*?"<>|]/g,'-')}
+
 async function exportTeacherWeekExcel(){
   const d=teacherWeekData();if(!d.tests.length)return alert('這個日期範圍沒有成績可下載。');
-  try{await ensureXLSX();const aoa=[['座號','姓名',...d.tests.map(t=>`${t.name} (${t.date||''})`)],...d.rows.map(r=>[r.seat,r.name,...r.values])];const ws=XLSX.utils.aoa_to_sheet(aoa);ws['!cols']=[{wch:7},{wch:12},...d.tests.map(()=>({wch:16}))];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'週成績');XLSX.writeFile(wb,`${currentAssignment.classId}-${currentAssignment.scopeName}-週成績-${d.start}-${d.end}.xlsx`)}catch(e){alert('Excel 下載失敗：'+e.message)}
+  try{
+    await ensureXLSX();
+    const title=`${currentAssignment.classId}班｜${currentAssignment.scopeName}｜週成績`;
+    const meta=`學期：${viewSemester}｜期間：${d.start} ～ ${d.end}`;
+    const headers=['座號','姓名',...d.tests.map(t=>`${t.name} (${t.date||''})`)];
+    const rows=d.rows.map(r=>[r.seat,r.name,...r.values]);
+    const ws=makeTitledSheet(title,meta,headers,rows,[{wch:7},{wch:12},...d.tests.map(()=>({wch:16}))]),wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'週成績');
+    XLSX.writeFile(wb,`${safeFileName(currentAssignment.classId)}-${safeFileName(currentAssignment.scopeName)}-週成績-${d.start}-${d.end}.xlsx`)
+  }catch(e){alert('Excel 下載失敗：'+e.message)}
 }
 function printTeacherWeekSummary(){const d=teacherWeekData();if(!d.tests.length)return alert('這個日期範圍沒有成績可列印。');openPrint(`${currentAssignment.classId}班｜${currentAssignment.scopeName}｜週成績`,`期間：${d.start} ～ ${d.end}`,['座號','姓名',...d.tests.map(t=>t.name)],d.rows.map(r=>[r.seat,esc(r.name),...r.values]),true)}
+
+/* ========================= 任課老師自選資料彙整 ========================= */
+function aggregateSelectionState(){
+  const state=new Set();
+  $$('#teacherAggregatePanel input.aggregate-choice:checked').forEach(x=>state.add(`${x.dataset.kind}:${x.value}`));
+  return state;
+}
+function renderTeacherAggregatePanel(){
+  const box=$('#teacherAggregatePanel');if(!box)return;
+  if(!currentAssignment||!isTeacherAssignment(currentAssignment)||currentAssignment.scopeType!=='subject'){box.classList.add('hidden');box.innerHTML='';return}
+  const old=aggregateSelectionState();
+  box.classList.remove('hidden');
+  const collections=currentCollectionItems||[],tests=currentAssessmentItems||[];
+  const colHtml=collections.length?collections.map(it=>{const k=`collection:${it.id}`,checked=old.has(k)?'checked':'';return `<label style="display:flex;gap:8px;align-items:flex-start;padding:7px 8px;border:1px solid #d6c39a;border-radius:10px;background:rgba(255,255,255,.55)"><input class="aggregate-choice" data-kind="collection" type="checkbox" value="${esc(it.id)}" ${checked}><span><b>📥 ${esc(it.itemName)}</b><span class="meta" style="display:block">${esc(it.date||'')}${it.dueDate?`｜截止 ${esc(it.dueDate)}`:''}</span></span></label>`}).join(''):'<div class="meta">目前沒有收繳／作業資料。</div>';
+  const scoreHtml=tests.length?tests.map(it=>{const k=`assessment:${it.id}`,checked=old.has(k)?'checked':'';return `<label style="display:flex;gap:8px;align-items:flex-start;padding:7px 8px;border:1px solid #d6c39a;border-radius:10px;background:rgba(255,255,255,.55)"><input class="aggregate-choice" data-kind="assessment" type="checkbox" value="${esc(it.id)}" ${checked}><span><b>📊 ${esc(it.name)}</b><span class="meta" style="display:block">${esc(it.date||'')}｜滿分 ${esc(it.maxScore??'')}</span></span></label>`}).join(''):'<div class="meta">目前沒有成績資料。</div>';
+  box.innerHTML=`<div class="teacher-tools"><div class="teacher-tools-title">🧭 任課老師｜自選資料彙整</div><div class="sub">勾選你要的作業／收繳與成績，可合併成同一張學生總表，再下載 Excel 或列印。</div><details style="margin-top:10px"><summary style="cursor:pointer;font-weight:900">📚 選擇要彙整的資料</summary><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:10px"><div><div style="font-weight:900;margin-bottom:7px">📥 作業／收繳</div><div style="display:grid;gap:6px">${colHtml}</div></div><div><div style="font-weight:900;margin-bottom:7px">📊 成績</div><div style="display:grid;gap:6px">${scoreHtml}</div></div></div><div class="toolbar" style="margin-top:10px"><button id="aggregateSelectAll" class="btn gray small">☑ 全選</button><button id="aggregateClear" class="btn gray small">☐ 清除</button><button id="aggregatePreview" class="btn purple small">👀 預覽彙整</button><button id="aggregateExcel" class="btn primary small">📥 下載彙整 Excel</button><button id="aggregatePrint" class="btn gray small">🖨 列印彙整</button></div><div id="aggregatePreviewBox"></div></details></div>`;
+  $('#aggregateSelectAll')?.addEventListener('click',()=>$$('#teacherAggregatePanel input.aggregate-choice').forEach(x=>x.checked=true));
+  $('#aggregateClear')?.addEventListener('click',()=>{ $$('#teacherAggregatePanel input.aggregate-choice').forEach(x=>x.checked=false);const p=$('#aggregatePreviewBox');if(p)p.innerHTML=''; });
+  $('#aggregatePreview')?.addEventListener('click',showAggregatePreview);
+  $('#aggregateExcel')?.addEventListener('click',exportAggregateExcel);
+  $('#aggregatePrint')?.addEventListener('click',printAggregateSummary);
+}
+function selectedAggregateData(){
+  const chosen=$$('#teacherAggregatePanel input.aggregate-choice:checked');
+  const selectedCollections=[],selectedTests=[];
+  chosen.forEach(x=>{if(x.dataset.kind==='collection'){const it=currentCollectionItems.find(v=>v.id===x.value);if(it)selectedCollections.push(it)}else{const it=currentAssessmentItems.find(v=>v.id===x.value);if(it)selectedTests.push(it)}});
+  selectedCollections.sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.itemName||'').localeCompare(b.itemName||''));
+  selectedTests.sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.name||'').localeCompare(b.name||''));
+  const columns=[...selectedCollections.map(it=>({kind:'collection',item:it,label:`作業｜${it.itemName}`,date:it.date||''})),...selectedTests.map(it=>({kind:'assessment',item:it,label:`成績｜${it.name}`,date:it.date||''}))];
+  const rows=roster.map(s=>{const sid=s.id||String(s.seat),values=columns.map(c=>c.kind==='collection'?aggregateCollectionValue(c.item,sid):aggregateScoreValue(c.item,sid));return[s.seat,s.name,...values]});
+  return{selectedCollections,selectedTests,columns,rows};
+}
+function aggregateCollectionValue(it,sid){
+  const status=(it.records||{})[sid]||'submitted';
+  if(status==='submitted'&&(it.lateSubmitted||{})[sid])return'已繳（遲交）';
+  return labelOf(statusOptions,status);
+}
+function aggregateScoreValue(it,sid){
+  const r=(it.scores||{})[sid]||{};
+  if(hasScore(r)){const score=Number(r.score);if(r.status==='makeup')return`${score}（補考）`;return score}
+  return labelOf(scoreStatusOptions,r.status||'not_entered');
+}
+function aggregateTitle(){return `${currentAssignment.classId}班｜${currentAssignment.scopeName}｜任課資料彙整`}
+function aggregateMeta(d){return `學期：${viewSemester}｜作業／收繳 ${d.selectedCollections.length} 項｜成績 ${d.selectedTests.length} 項`}
+function ensureAggregateSelected(){const d=selectedAggregateData();if(!d.columns.length){alert('請至少勾選一筆作業、收繳或成績資料。');return null}return d}
+function showAggregatePreview(){
+  const d=ensureAggregateSelected();if(!d)return;const box=$('#aggregatePreviewBox');if(!box)return;
+  box.innerHTML=`<div class="summary-title" style="margin-top:12px">📚 ${esc(aggregateTitle())}</div><div class="meta" style="margin-bottom:6px">${esc(aggregateMeta(d))}</div><div class="table-wrap"><table class="summary-table"><thead><tr><th>座號</th><th>姓名</th>${d.columns.map(c=>`<th>${esc(c.label)}<div class="meta">${esc(c.date)}</div></th>`).join('')}</tr></thead><tbody>${d.rows.map(r=>`<tr>${r.map((v,i)=>`<td>${i===1?esc(v):esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+async function exportAggregateExcel(){
+  const d=ensureAggregateSelected();if(!d)return;
+  try{
+    await ensureXLSX();const headers=['座號','姓名',...d.columns.map(c=>`${c.label}${c.date?` (${c.date})`:''}`)];
+    const ws=makeTitledSheet(aggregateTitle(),aggregateMeta(d),headers,d.rows,[{wch:7},{wch:12},...d.columns.map(()=>({wch:20}))]),wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'任課資料彙整');
+    XLSX.writeFile(wb,`${safeFileName(currentAssignment.classId)}-${safeFileName(currentAssignment.scopeName)}-任課資料彙整.xlsx`)
+  }catch(e){alert('Excel 下載失敗：'+e.message)}
+}
+function printAggregateSummary(){const d=ensureAggregateSelected();if(!d)return;openPrint(aggregateTitle(),aggregateMeta(d),['座號','姓名',...d.columns.map(c=>c.label)],d.rows.map(r=>[r[0],esc(r[1]),...r.slice(2)]),true)}
 
 /* ========================= 單筆列印 / Excel ========================= */
 function collectionRows(it){return roster.map(s=>{const sid=s.id||String(s.seat),status=(it.records||{})[sid]||'submitted',late=status==='submitted'&&!!(it.lateSubmitted||{})[sid];return[s.seat,s.name,labelOf(statusOptions,status),late?'已繳交（遲交）':'']})}
 function printCollection(it){openPrint(`${it.classId}班｜${it.scopeName}｜${it.itemName}`,`日期：${it.date||''}${it.dueDate?`｜截止：${it.dueDate}`:''}`,['座號','姓名','狀態','備註'],collectionRows(it).map(r=>[r[0],esc(r[1]),r[2],r[3]]))}
-async function exportCollection(it){try{await ensureXLSX();const rows=collectionRows(it).map(r=>({座號:r[0],姓名:r[1],狀態:r[2],備註:r[3]}));const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'收繳');XLSX.writeFile(wb,`${it.classId}-${it.scopeName}-${it.itemName}.xlsx`)}catch(e){alert('Excel 下載失敗：'+e.message)}}
+async function exportCollection(it){
+  try{
+    await ensureXLSX();const title=`${it.classId}班｜${it.scopeName}｜${it.itemName}`,meta=`學期：${it.semester||viewSemester}｜日期：${it.date||''}${it.dueDate?`｜截止：${it.dueDate}`:''}`;
+    const headers=['座號','姓名','狀態','備註'],rows=collectionRows(it),ws=makeTitledSheet(title,meta,headers,rows,[{wch:7},{wch:12},{wch:14},{wch:20}]),wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'收繳');XLSX.writeFile(wb,`${safeFileName(it.classId)}-${safeFileName(it.scopeName)}-${safeFileName(it.itemName)}.xlsx`)
+  }catch(e){alert('Excel 下載失敗：'+e.message)}
+}
 function assessmentRows(it){return roster.map(s=>{const sid=s.id||String(s.seat),r=(it.scores||{})[sid]||{};return[s.seat,s.name,hasScore(r)?Number(r.score):'',labelOf(scoreStatusOptions,r.status||'not_entered')]})}
 function printAssessment(it){openPrint(`${it.classId}班｜${it.scopeName}｜${it.name}`,`日期：${it.date||''}｜滿分：${it.maxScore}｜及格：${it.passScore}`,['座號','姓名','成績','狀態'],assessmentRows(it).map(r=>[r[0],esc(r[1]),r[2],r[3]]))}
-async function exportAssessment(it){try{await ensureXLSX();const rows=assessmentRows(it).map(r=>({座號:r[0],姓名:r[1],成績:r[2],狀態:r[3]}));const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'成績');XLSX.writeFile(wb,`${it.classId}-${it.scopeName}-${it.name}.xlsx`)}catch(e){alert('Excel 下載失敗：'+e.message)}}
+async function exportAssessment(it){
+  try{
+    await ensureXLSX();const title=`${it.classId}班｜${it.scopeName}｜${it.name}`,meta=`學期：${it.semester||viewSemester}｜日期：${it.date||''}｜滿分：${it.maxScore}｜及格：${it.passScore}`;
+    const headers=['座號','姓名','成績','狀態'],rows=assessmentRows(it),ws=makeTitledSheet(title,meta,headers,rows,[{wch:7},{wch:12},{wch:12},{wch:14}]),wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'成績');XLSX.writeFile(wb,`${safeFileName(it.classId)}-${safeFileName(it.scopeName)}-${safeFileName(it.name)}.xlsx`)
+  }catch(e){alert('Excel 下載失敗：'+e.message)}
+}
 function openPrint(title,meta,headers,rows,landscape=false){const w=window.open('','_blank');if(!w)return alert('瀏覽器阻擋了列印視窗。');w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title><style>@page{size:A4 ${landscape?'landscape':'portrait'};margin:10mm}body{font-family:"Microsoft JhengHei",sans-serif;color:#111;font-size:11px}h2{margin:0 0 5px}.info{margin-bottom:8px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #999;padding:4px 6px;text-align:center}th{background:#eee}th:nth-child(1),th:nth-child(2),td:nth-child(1),td:nth-child(2){text-align:left}</style></head><body><h2>${esc(title)}</h2><div class="info">${esc(meta)}</div><table><thead><tr>${headers.map(x=>`<th>${esc(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map(v=>`<td>${v??''}</td>`).join('')}</tr>`).join('')}</tbody></table><script>window.onload=()=>window.print()<\/script></body></html>`);w.document.close()}
 </script>
 </body>
