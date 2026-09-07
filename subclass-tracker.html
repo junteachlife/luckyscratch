@@ -58,7 +58,11 @@ button{border:0;border-radius:12px;padding:10px 14px;font-weight:900;cursor:poin
 button:hover{filter:brightness(1.05);transform:translateY(-1px)} button:active{transform:translateY(2px);box-shadow:none}
 .btn-primary{background:var(--red);color:#fff}.btn-blue{background:var(--blue);color:#fff}.btn-gold{background:var(--gold);color:#2d241b}
 .btn-dark{background:#3f352a;color:#fff}.btn-light{background:#fff7df;color:#493721;border:1px solid #ac8952}
-.history-row{display:grid;grid-template-columns:minmax(240px,1fr) auto auto;gap:8px;margin-top:12px;align-items:end}
+.history-row{display:grid;grid-template-columns:minmax(240px,1fr) auto auto auto auto;gap:8px;margin-top:12px;align-items:end}
+.archive-panel{display:none;margin-top:10px;padding:12px;border:2px dashed #8b6a38;border-radius:14px;background:rgba(255,250,232,.78)}
+.archive-panel.show{display:block}
+.archive-row{display:grid;grid-template-columns:minmax(240px,1fr) auto auto;gap:8px;align-items:end}
+.archive-note{margin-top:7px;font-size:12px;font-weight:800;color:#6a5539}
 .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:16px}
 .stat{border:2px solid rgba(71,51,29,.35);border-radius:16px;padding:12px;text-align:center;background:#fff9e9}
 .stat b{display:block;font-size:28px;line-height:1.05}.stat span{font-size:13px;font-weight:800;color:#64543e}
@@ -97,7 +101,7 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
 
 @media(max-width:760px){
   .app{width:96vw;margin-top:10px}.hero{padding:18px 12px}.emblem{width:58px;height:58px;font-size:30px}h1{font-size:30px}
-  .class-switch{grid-template-columns:1fr}.form-grid,.history-row{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}
+  .class-switch{grid-template-columns:1fr}.form-grid,.history-row,.archive-row{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}
   .stats .stat:first-child{grid-column:1/-1}.controls{align-items:stretch}.left-controls,.right-controls{width:100%}.search{min-width:100%}
   .left-controls button,.right-controls button{flex:1}
 }
@@ -112,7 +116,7 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
   .app{width:100%!important;margin:0!important;padding:0!important}
 
   /* 上方操作介面列印時全部隱藏；原網頁畫面不變 */
-  .hero,.toolbar,.controls,.history-row,.footer-note,.toast,.cloud-bar,.class-switch-panel{display:none!important}
+  .hero,.toolbar,.controls,.history-row,.archive-panel,.footer-note,.toast,.cloud-bar,.class-switch-panel{display:none!important}
 
   /* 只留下列印專用的班級、項目與精簡統計 */
   .print-summary{
@@ -287,6 +291,21 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
         </div>
         <button class="btn-dark" id="loadBtn">📖 載入紀錄</button>
         <button class="btn-light" id="deleteBtn">🗑️ 刪除目前紀錄</button>
+        <button class="btn-gold" id="archiveBtn">📦 封存目前紀錄</button>
+        <button class="btn-light" id="toggleArchiveBtn">🗄️ 查看封存</button>
+      </div>
+
+      <div class="archive-panel" id="archivePanel">
+        <div class="section-title" style="margin-bottom:8px">📦 封存收繳紀錄</div>
+        <div class="archive-row">
+          <div>
+            <label for="archiveSelect">目前班級已封存紀錄</label>
+            <select id="archiveSelect"><option value="">— 尚無封存紀錄 —</option></select>
+          </div>
+          <button class="btn-dark" id="loadArchiveBtn">📖 載入封存紀錄</button>
+          <button class="btn-light" id="unarchiveBtn">↩ 取消封存</button>
+        </div>
+        <div class="archive-note">封存後不會出現在上方「歷史收繳紀錄」清單；資料仍保留在 Firebase，可隨時載入或取消封存。</div>
       </div>
 
       <div class="cloud-bar">
@@ -440,7 +459,7 @@ const STATUS_LABEL={unpaid:"未繳交",paid:"已繳交",late:"補交",exempt:"�
 let currentUser=null;
 let currentClassId=localStorage.getItem("subjectTrackerCurrentClass")||"904";
 if(!CLASS_CONFIG[currentClassId]) currentClassId="904";
-let currentId=null, filter="all", historyRecords=[], autosaveTimer=null, classSwitchSerial=0;
+let currentId=null, filter="all", historyRecords=[], archivedRecords=[], autosaveTimer=null, classSwitchSerial=0;
 let studentState=createBlankState();
 
 const $=id=>document.getElementById(id);
@@ -498,9 +517,9 @@ async function switchClass(newClassId){
 
   currentClassId=newClassId;
   localStorage.setItem("subjectTrackerCurrentClass",currentClassId);
-  currentId=null;historyRecords=[];filter="all";studentState=createBlankState();
+  currentId=null;historyRecords=[];archivedRecords=[];filter="all";studentState=createBlankState();
   $("itemName").value="";$("receiveDate").value=todayISO();$("dueDate").value="";
-  $("searchInput").value="";$("historySelect").innerHTML='<option value="">— 選擇歷史收繳紀錄 —</option>';
+  $("searchInput").value="";$("historySelect").innerHTML='<option value="">— 選擇歷史收繳紀錄 —</option>';$("archiveSelect").innerHTML='<option value="">— 尚無封存紀錄 —</option>';
   setActiveFilter();renderClassButtons();render();
 
   if(currentUser){setSync("saving","☁️ 切換班級中…");await refreshHistory(false);}
@@ -640,7 +659,11 @@ async function refreshHistory(showMessage=false){
     setSync("saving","☁️ 同步中…");
     const q=query(recordsCollection(),orderBy("updatedAt","desc")),snap=await getDocs(q);
     if(requestedClassId!==currentClassId)return;
-    historyRecords=snap.docs.map(d=>({id:d.id,...d.data()}));
+
+    const allRecords=snap.docs.map(d=>({id:d.id,...d.data()}));
+    historyRecords=allRecords.filter(r=>r.archived!==true);
+    archivedRecords=allRecords.filter(r=>r.archived===true);
+
     const sel=$("historySelect"),old=sel.value;
     sel.innerHTML='<option value="">— 選擇歷史收繳紀錄 —</option>';
     historyRecords.forEach(r=>{
@@ -648,10 +671,26 @@ async function refreshHistory(showMessage=false){
       op.textContent=`${r.itemName||"未命名"}｜截止 ${formatDate(r.dueDate)}`;sel.appendChild(op);
     });
     if([...sel.options].some(o=>o.value===old))sel.value=old;
-    setSync("ok","☁️ 已同步");if(showMessage)showToast(`已重新讀取 ${currentClass().name} Firebase 資料`);
+
+    refreshArchiveSelect();
+    setSync("ok","☁️ 已同步");
+    if(showMessage)showToast(`已重新讀取 ${currentClass().name} Firebase 資料`);
   }catch(err){
     console.error(err);setSync("error","⚠️ 同步失敗");showToast(`讀取 Firestore 失敗：${err.code||err.message||"未知錯誤"}`);
   }
+}
+
+function refreshArchiveSelect(){
+  const sel=$("archiveSelect");
+  if(!sel)return;
+  const old=sel.value;
+  sel.innerHTML='<option value="">— 尚無封存紀錄 —</option>';
+  archivedRecords.forEach(r=>{
+    const op=document.createElement("option");op.value=r.id;
+    op.textContent=`${r.itemName||"未命名"}｜截止 ${formatDate(r.dueDate)}`;
+    sel.appendChild(op);
+  });
+  if([...sel.options].some(o=>o.value===old))sel.value=old;
 }
 
 function loadRecord(){
@@ -664,6 +703,80 @@ function loadRecord(){
     if(saved)studentState[s.seat]={...studentState[s.seat],...saved};
   });
   filter="all";setActiveFilter();$("searchInput").value="";render();showToast(`已載入 ${currentClass().name} 雲端收繳紀錄`);
+}
+
+
+async function archiveCurrentRecord(){
+  if(!currentId){showToast("請先載入或儲存一筆要封存的紀錄");return;}
+  const unpaid=unpaidList();
+  if(unpaid.length>0){
+    showToast(`尚有 ${unpaid.length} 人未繳，全部完成後才能封存`);
+    return;
+  }
+  const item=$("itemName").value.trim()||"目前紀錄";
+  if(!confirm(`確定要封存「${item}」嗎？\n\n封存後會從歷史收繳紀錄清單移除，但資料仍保留，可在「查看封存」中開啟。`))return;
+  try{
+    setSync("saving","☁️ 封存中…");
+    await setDoc(recordRef(currentId),{
+      archived:true,
+      archivedAt:serverTimestamp(),
+      updatedAt:serverTimestamp()
+    },{merge:true});
+    currentId=null;
+    await refreshHistory(false);
+    newRecord(false);
+    setSync("ok","☁️ 已同步");
+    showToast("紀錄已封存");
+  }catch(err){
+    console.error(err);setSync("error","⚠️ 封存失敗");showToast(`封存失敗：${err.code||err.message||"未知錯誤"}`);
+  }
+}
+
+function toggleArchivePanel(){
+  const panel=$("archivePanel");
+  const show=!panel.classList.contains("show");
+  panel.classList.toggle("show",show);
+  $("toggleArchiveBtn").textContent=show?"🗄️ 收起封存":"🗄️ 查看封存";
+  if(show)refreshArchiveSelect();
+}
+
+function loadArchivedRecord(){
+  const id=$("archiveSelect").value;
+  if(!id){showToast("請先選擇一筆封存紀錄");return;}
+  const rec=archivedRecords.find(r=>r.id===id);
+  if(!rec){showToast("找不到這筆封存紀錄，請重新同步");return;}
+  currentId=rec.id;
+  $("itemName").value=rec.itemName||"";
+  $("receiveDate").value=rec.receiveDate||"";
+  $("dueDate").value=rec.dueDate||"";
+  studentState=createBlankState();
+  students().forEach(s=>{
+    const saved=rec.students?.[s.seat]||rec.students?.[String(s.seat)];
+    if(saved)studentState[s.seat]={...studentState[s.seat],...saved};
+  });
+  filter="all";setActiveFilter();$("searchInput").value="";render();
+  showToast(`已載入封存紀錄：${rec.itemName||"未命名"}`);
+}
+
+async function unarchiveCurrentRecord(){
+  const id=$("archiveSelect").value || (archivedRecords.some(r=>r.id===currentId)?currentId:"");
+  if(!id){showToast("請先選擇一筆要取消封存的紀錄");return;}
+  const rec=archivedRecords.find(r=>r.id===id);
+  if(!rec){showToast("找不到這筆封存紀錄");return;}
+  if(!confirm(`確定要將「${rec.itemName||"未命名"}」移回歷史收繳紀錄嗎？`))return;
+  try{
+    setSync("saving","☁️ 取消封存中…");
+    await setDoc(recordRef(id),{
+      archived:false,
+      unarchivedAt:serverTimestamp(),
+      updatedAt:serverTimestamp()
+    },{merge:true});
+    await refreshHistory(false);
+    setSync("ok","☁️ 已同步");
+    showToast("已取消封存，紀錄已回到歷史清單");
+  }catch(err){
+    console.error(err);setSync("error","⚠️ 操作失敗");showToast(`取消封存失敗：${err.code||err.message||"未知錯誤"}`);
+  }
 }
 
 async function deleteRecord(){
@@ -743,6 +856,11 @@ $("saveRecordBtn").addEventListener("click",saveRecord);
 $("newRecordBtn").addEventListener("click",()=>newRecord(true));
 $("loadBtn").addEventListener("click",loadRecord);
 $("deleteBtn").addEventListener("click",deleteRecord);
+$("archiveBtn").addEventListener("click",archiveCurrentRecord);
+$("toggleArchiveBtn").addEventListener("click",toggleArchivePanel);
+$("loadArchiveBtn").addEventListener("click",loadArchivedRecord);
+$("unarchiveBtn").addEventListener("click",unarchiveCurrentRecord);
+$("archiveSelect").addEventListener("change",()=>{if($("archiveSelect").value)loadArchivedRecord();});
 $("copyUnpaidBtn").addEventListener("click",copyUnpaid);
 $("exportBtn").addEventListener("click",exportCSV);
 $("printBtn").addEventListener("click",()=>{updatePrintSummary();window.print();});
@@ -762,7 +880,7 @@ onAuthStateChanged(auth,async user=>{
     setSync("saving","☁️ 連線中…");$("receiveDate").value=$("receiveDate").value||todayISO();
     studentState=createBlankState();renderClassButtons();render();await refreshHistory(false);
   }else{
-    currentId=null;historyRecords=[];studentState=createBlankState();$("accountEmail").textContent="";
+    currentId=null;historyRecords=[];archivedRecords=[];studentState=createBlankState();$("accountEmail").textContent="";
     setSync("","☁️ 等待登入");$("loginScreen").classList.remove("hidden");renderClassButtons();render();
   }
 });
