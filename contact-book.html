@@ -386,8 +386,12 @@
         <div class="card p-3 p-md-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="mb-0">📜 今日航行紀錄登記</h4>
-                <!-- 尚未繳交聯絡簿按鈕（帶互動狀態） -->
-                <button type="button" class="btn btn-danger-custom btn-sm" id="notSubmittedBtn">🏴‍☠️ 尚未繳交聯絡簿 (點擊切換)</button>
+                <div class="d-flex gap-2 flex-wrap justify-content-end">
+                    <!-- 尚未繳交聯絡簿按鈕（帶互動狀態） -->
+                    <button type="button" class="btn btn-danger-custom btn-sm" id="notSubmittedBtn">🏴‍☠️ 尚未繳交聯絡簿 (點擊切換)</button>
+                    <!-- 請假／缺席按鈕 -->
+                    <button type="button" class="btn btn-outline-info btn-sm fw-bold" id="absentBtn">🔵 請假／缺席 (點擊切換)</button>
+                </div>
             </div>
             <form id="contactBookForm">
                 <div class="row g-3">
@@ -443,10 +447,10 @@
                                 </div>
                             </div>
 
-                            <!-- 3. 中文佳句抄寫 -->
+                            <!-- 3. 英文佳句抄寫 -->
                             <div class="col-md-4">
                                 <div class="check-group">
-                                    <label class="form-label fw-bold mb-2">3. 中文佳句抄寫</label>
+                                    <label class="form-label fw-bold mb-2">3. 英文佳句抄寫</label>
                                     <div class="d-flex gap-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" name="contactBookEnglishCopy" id="engYes" value="完成" checked>
@@ -644,17 +648,18 @@
                             <th>🌟 完美</th>
                             <th>完全未交</th>
                             <th>遲交</th>
+                            <th>缺席</th>
                             <th>1.日期未填</th>
                             <th>2.作業未交</th>
-                            <th>3.佳句未填</th>
-                            <th>4.摘要未畫</th>
-                            <th>5.時間未填</th>
+                            <th>3.英文未完</th>
+                            <th>4.摘要未完</th>
+                            <th>5.時間異常</th>
                             <th>6.札記未寫</th>
                             <th>7.家長未簽</th>
                         </tr>
                     </thead>
                     <tbody id="weeklyReportTableBody">
-                        <tr><td colspan="12" class="text-center text-muted text-light">統計載入中...</td></tr>
+                        <tr><td colspan="13" class="text-center text-muted text-light">統計載入中...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -778,7 +783,7 @@
             1: "王禹涵", 2: "江育緹", 3: "呂思儀", 4: "李詠祺", 
             5: "林子歆", 6: "林禹萱", 7: "張馨勻", 8: "陳昕樂", 
             9: "陳梓安", 10: "陳筠蓁", 11: "陳苙絜", 12: "楊錚諭", 
-            13: "趙安褕", 14: "魏語潔", 15: "江靚恩", 16: "王洋振", 
+            13: "趙安瑜", 14: "魏語潔", 15: "江靚恩", 16: "王洋振", 
             17: "吳昊丞", 18: "李祐誠", 19: "林宸陞", 20: "林維辰", 
             21: "林鈺棟", 22: "洪楷祥", 23: "陳兆楷", 24: "陳沂璟", 
             25: "黑肚・尤明", 26: "賴震宇", 27: "戴震龍", 28: "謝宇哲"
@@ -813,9 +818,11 @@
             renderReviewedRecords(currentLoadedContactBookRecords);
         });
 
-        // 「尚未繳交聯絡簿」按鈕切換互動狀態
+        // 「尚未繳交聯絡簿」與「請假／缺席」模式
         let isNotSubmittedMode = false;
+        let isAbsentMode = false;
         const notSubmittedBtn = document.getElementById('notSubmittedBtn');
+        const absentBtn = document.getElementById('absentBtn');
         notSubmittedBtn.addEventListener('click', function() {
             // 若目前已啟用，允許直接取消
             if (isNotSubmittedMode) {
@@ -843,9 +850,60 @@ ${currentDate} 的聯絡簿標記為「未繳交」。
 確定要啟用未繳交模式嗎？`);
             if (!confirmed) return;
 
+            // 未交與缺席不可同時啟用
+            if (isAbsentMode) {
+                isAbsentMode = false;
+                absentBtn.classList.remove('active');
+                absentBtn.classList.remove('btn-info');
+                absentBtn.classList.add('btn-outline-info');
+                absentBtn.textContent = '🔵 請假／缺席 (點擊切換)';
+            }
+
             isNotSubmittedMode = true;
             this.classList.add('active-mode');
             this.textContent = '🏴‍☠️ 【已啟用】尚未繳交聯絡簿模式 (點擊取消)';
+        });
+
+        // 「請假／缺席」按鈕切換互動狀態
+        absentBtn.addEventListener('click', function() {
+            if (isAbsentMode) {
+                isAbsentMode = false;
+                this.classList.remove('active');
+                this.classList.remove('btn-info');
+                this.classList.add('btn-outline-info');
+                this.textContent = '🔵 請假／缺席 (點擊切換)';
+                return;
+            }
+
+            const studentNoVal = document.getElementById('contactBookStudentNo').value;
+            if (!studentNoVal) {
+                alert('⚠️ 請先選擇夥伴座號與姓名，再啟用「請假／缺席」模式！');
+                document.getElementById('contactBookStudentNo').focus();
+                return;
+            }
+
+            const currentDate = document.getElementById('contactBookDate').value;
+            const studentName = contactBookStudents[studentNoVal];
+            const confirmed = confirm(`🔵 【請假／缺席確認】
+
+您即將把「${studentNoVal} 號 - ${studentName}」
+${currentDate} 的聯絡簿狀態標記為「請假／缺席」。
+
+此狀態不會算成未交或遲交。
+確定要啟用嗎？`);
+            if (!confirmed) return;
+
+            // 未交與缺席不可同時啟用
+            if (isNotSubmittedMode) {
+                isNotSubmittedMode = false;
+                notSubmittedBtn.classList.remove('active-mode');
+                notSubmittedBtn.textContent = '🏴‍☠️ 尚未繳交聯絡簿 (點擊切換)';
+            }
+
+            isAbsentMode = true;
+            this.classList.remove('btn-outline-info');
+            this.classList.add('btn-info', 'active');
+            this.textContent = '🔵 【已啟用】請假／缺席 (點擊取消)';
         });
 
         function getSelectedRadioValue(name) {
@@ -867,6 +925,12 @@ ${currentDate} 的聯絡簿標記為「未繳交」。
             isNotSubmittedMode = false;
             notSubmittedBtn.classList.remove('active-mode');
             notSubmittedBtn.textContent = '🏴‍☠️ 尚未繳交聯絡簿 (點擊切換)';
+
+            isAbsentMode = false;
+            absentBtn.classList.remove('active');
+            absentBtn.classList.remove('btn-info');
+            absentBtn.classList.add('btn-outline-info');
+            absentBtn.textContent = '🔵 請假／缺席 (點擊切換)';
         }
 
         // 監聽表單送出
@@ -894,6 +958,15 @@ ${currentDate} 的聯絡簿紀錄為「未繳交」嗎？
                 if (!finalConfirm) return;
             }
 
+            // 防呆：缺席模式送出前再次確認
+            if (isAbsentMode) {
+                const absentConfirm = confirm(`🔵 【缺席最後確認】
+
+確定要將「${studentNoNum} 號 - ${studentName}」
+${currentDate} 登記為「請假／缺席」嗎？`);
+                if (!absentConfirm) return;
+            }
+
             try {
                 const recordsRef = window.dbRef(window.contactBookDb, 'contact_book_records');
                 const snapshot = await window.dbGet(recordsRef);
@@ -919,15 +992,18 @@ ${currentDate} 的聯絡簿紀錄為「未繳交」嗎？
                 // 此欄位代表「這一天曾經被登記過未繳交」。
                 // 即使之後補交，也會永久保留，讓系統能顯示「遲交」。
                 const hadBeenUnsubmitted =
-                    isNotSubmittedMode ||
-                    (existingRecord && (
-                        existingRecord.submissionStatus === "未繳交" ||
-                        existingRecord.wasLate === true
-                    ));
+                    !isAbsentMode &&
+                    (
+                        isNotSubmittedMode ||
+                        (existingRecord && (
+                            existingRecord.submissionStatus === "未繳交" ||
+                            existingRecord.wasLate === true
+                        ))
+                    );
 
                 // 若原本是未繳交，現在重新輸入一般批閱資料，
                 // 代表學生已經補交：同一筆資料改成「已繳交 + wasLate=true」。
-                if (existingRecord && !isNotSubmittedMode && existingRecord.submissionStatus === "未繳交") {
+                if (existingRecord && !isNotSubmittedMode && !isAbsentMode && existingRecord.submissionStatus === "未繳交") {
                     const lateConfirm = confirm(`🟠 【補交確認】
 
 「${studentNoNum} 號 - ${studentName}」在 ${currentDate}
@@ -953,7 +1029,9 @@ ${currentDate} 的聯絡簿紀錄為「未繳交」嗎？
                 }
 
                 const parentSignVal = getSelectedRadioValue('contactBookParentSign');
-                const currentSubmissionStatus = isNotSubmittedMode ? "未繳交" : "已繳交";
+                const currentSubmissionStatus = isAbsentMode
+                    ? "缺席"
+                    : (isNotSubmittedMode ? "未繳交" : "已繳交");
 
                 // 連續天數只計算「之前日期」，避免更新同一天時把自己再算一次。
                 let studentPastRecords = existingRecords
@@ -969,7 +1047,7 @@ ${currentDate} 的聯絡簿紀錄為「未繳交」嗎？
                     for (let r of studentPastRecords) {
                         // 整本聯絡簿未繳交時，家長簽名沒有實際意義，
                         // 因此不拿來中斷或累加未簽連續天數。
-                        if (r.submissionStatus === '未繳交') {
+                        if (r.submissionStatus === '未繳交' || r.submissionStatus === '缺席') {
                             continue;
                         }
 
@@ -986,6 +1064,9 @@ ${currentDate} 的聯絡簿紀錄為「未繳交」嗎？
                 let previousSubStreak = 0;
                 if (currentSubmissionStatus === "未繳交") {
                     for (let r of studentPastRecords) {
+                        if (r.submissionStatus === '缺席') {
+                            continue;
+                        }
                         if (r.submissionStatus === '未繳交') {
                             previousSubStreak = r.subStreak || 1;
                             break;
@@ -1003,7 +1084,7 @@ ${currentDate} 的聯絡簿紀錄為「未繳交」嗎？
                     studentNo: studentNoNum,
                     studentName: studentName,
                     submissionStatus: currentSubmissionStatus,
-                    wasLate: hadBeenUnsubmitted,
+                    wasLate: isAbsentMode ? false : hadBeenUnsubmitted,
                     lateRecordedAt:
                         existingRecord && existingRecord.lateRecordedAt
                             ? existingRecord.lateRecordedAt
@@ -1037,14 +1118,16 @@ ${currentDate} 的聯絡簿紀錄為「未繳交」嗎？
                     );
                     await window.dbUpdate(existingRef, contactBookRecordData);
 
-                    if (!isNotSubmittedMode && hadBeenUnsubmitted) {
+                    if (isAbsentMode) {
+                        alert("請假／缺席紀錄更新成功！");
+                    } else if (!isNotSubmittedMode && hadBeenUnsubmitted) {
                         alert("補交紀錄更新成功！此生本日狀態已改為「遲交」，且保留曾未繳交紀錄。");
                     } else {
                         alert("原有紀錄更新成功！");
                     }
                 } else {
                     await window.dbPush(recordsRef, contactBookRecordData);
-                    alert("紀錄儲存成功！");
+                    alert(isAbsentMode ? "請假／缺席紀錄儲存成功！" : "紀錄儲存成功！");
                 }
 
                 loadAllData();
@@ -1143,7 +1226,9 @@ ${currentDate} 的聯絡簿紀錄為「未繳交」嗎？
 
             function getIssueSummary(item) {
                 const issues = [];
-                if (item.submissionStatus === '未繳交') {
+                if (item.submissionStatus === '缺席') {
+                    issues.push('請假／缺席');
+                } else if (item.submissionStatus === '未繳交') {
                     issues.push('聯絡簿完全未交');
                 } else if (item.wasLate === true) {
                     issues.push('聯絡簿遲交');
@@ -1217,7 +1302,7 @@ ${currentDate} 的聯絡簿紀錄為「未繳交」嗎？
             let streak = 1;
 
             for (let r of previousRecords) {
-                if (r.submissionStatus === '未繳交') {
+                if (r.submissionStatus === '未繳交' || r.submissionStatus === '缺席') {
                     continue;
                 }
 
@@ -1262,11 +1347,13 @@ ${currentDate} 的聯絡簿紀錄為「未繳交」嗎？
                 // 已審查的異常紀錄保留在 Firebase 與每週統計中，但不再顯示於每日關注清單
                 if (item.reviewed === true) return false;
 
-                let isSubmitted = (item.submissionStatus !== "未繳交");
+                let isAbsent = (item.submissionStatus === "缺席");
+                let isSubmitted = (item.submissionStatus !== "未繳交" && !isAbsent);
                 let isLate = isSubmitted && item.wasLate === true;
                 let isAllComplete = 
                     isSubmitted &&
                     !isLate &&
+                    !isAbsent &&
                     (item.dateCheck === '完成' || !item.dateCheck) &&
                     (item.examHw === '完成' || item.examHw === '完成/正常' || item.examHw === '已完成') &&
                     (item.englishCopy === '完成' || item.englishCopy === '已完成') &&
@@ -1287,9 +1374,12 @@ ${currentDate} 的聯絡簿紀錄為「未繳交」嗎？
                 let subStatusDisplay = `<span class="badge bg-success">已繳交</span>`;
                 let subStreak = item.subStreak || 1;
                 let isNotSubmitted = (item.submissionStatus === "未繳交");
-                let isLate = (!isNotSubmitted && item.wasLate === true);
+                let isAbsent = (item.submissionStatus === "缺席");
+                let isLate = (!isNotSubmitted && !isAbsent && item.wasLate === true);
 
-                if (isNotSubmitted) {
+                if (isAbsent) {
+                    subStatusDisplay = `<span class="badge bg-info text-dark">🔵 缺席／請假</span>`;
+                } else if (isNotSubmitted) {
                     if (subStreak > 1) {
                         subStatusDisplay = `<span class="badge bg-danger">❌ 未繳交 (已連續 ${subStreak} 天)</span>`;
                     } else {
@@ -1299,8 +1389,8 @@ ${currentDate} 的聯絡簿紀錄為「未繳交」嗎？
                     subStatusDisplay = `<span class="badge bg-warning text-dark">🟠 遲交</span>`;
                 }
 
-                function renderStatus(val, isUnsubmitted) {
-                    if (isUnsubmitted) {
+                function renderStatus(val, isUnavailable) {
+                    if (isUnavailable) {
                         return `<span class="fw-bold" style="color: #000000;">?</span>`;
                     }
                     const isIncomplete = !val || val.includes('未') || val.includes('異常') || val.includes('漏寫');
@@ -1313,7 +1403,7 @@ ${currentDate} 的聯絡簿紀錄為「未繳交」嗎？
                 let signDisplay = item.parentSign;
                 let streak = calculateUnsignedStreak(records, item);
                 
-                if (isNotSubmitted) {
+                if (isNotSubmitted || isAbsent) {
                     signDisplay = `<span class="fw-bold" style="color: #000000;">?</span>`;
                 } else {
                     if (item.parentSign === '未簽' || item.parentSign === '未簽名') {
@@ -1332,12 +1422,12 @@ ${currentDate} 的聯絡簿紀錄為「未繳交」嗎？
                     <td>${item.date ? item.date.slice(5).replace('-', '/') : ''}</td>
                     <td><strong>${item.studentNo} 號 ${name}</strong></td>
                     <td>${subStatusDisplay}</td>
-                    <td>${renderStatus(item.dateCheck, isNotSubmitted)}</td>
-                    <td>${renderStatus(item.examHw, isNotSubmitted)}</td>
-                    <td>${renderStatus(item.englishCopy, isNotSubmitted)}</td>
-                    <td>${renderStatus(item.articleSummary, isNotSubmitted)}</td>
-                    <td>${renderStatus(item.timeRecord, isNotSubmitted)}</td>
-                    <td>${renderStatus(item.lifeNote, isNotSubmitted)}</td>
+                    <td>${renderStatus(item.dateCheck, isNotSubmitted || isAbsent)}</td>
+                    <td>${renderStatus(item.examHw, isNotSubmitted || isAbsent)}</td>
+                    <td>${renderStatus(item.englishCopy, isNotSubmitted || isAbsent)}</td>
+                    <td>${renderStatus(item.articleSummary, isNotSubmitted || isAbsent)}</td>
+                    <td>${renderStatus(item.timeRecord, isNotSubmitted || isAbsent)}</td>
+                    <td>${renderStatus(item.lifeNote, isNotSubmitted || isAbsent)}</td>
                     <td>${signDisplay}</td>
                     <td>
                         <div class="audit-action-group">
@@ -1462,6 +1552,7 @@ ${currentDate} 的聯絡簿紀錄為「未繳交」嗎？
                     perfect: 0,
                     unsubmitted: 0,
                     late: 0,
+                    absent: 0,
                     dateNo: 0,
                     examNo: 0,
                     engNo: 0,
@@ -1472,7 +1563,8 @@ ${currentDate} 的聯絡簿紀錄為「未繳交」嗎？
                 };
 
                 sRecords.forEach(r => {
-                    let isSubmitted = (r.submissionStatus !== "未繳交");
+                    let isAbsent = (r.submissionStatus === "缺席");
+                    let isSubmitted = (r.submissionStatus !== "未繳交" && !isAbsent);
                     let isLate = isSubmitted && r.wasLate === true;
                     let isDateOk = (!r.dateCheck || r.dateCheck === "完成");
                     let isExamOk = (!r.examHw || r.examHw === "完成" || r.examHw === "完成/正常" || r.examHw === "已完成");
@@ -1486,11 +1578,17 @@ ${currentDate} 的聯絡簿紀錄為「未繳交」嗎？
                         stats.perfect++;
                     }
 
-                    if (r.submissionStatus === "未繳交") {
+                    if (r.submissionStatus === "缺席") {
+                        stats.absent++;
+                    } else if (r.submissionStatus === "未繳交") {
                         stats.unsubmitted++;
                     } else if (r.wasLate === true) {
                         stats.late++;
                     }
+
+                    // 缺席日的 1~7 檢核不列入缺漏統計
+                    if (isAbsent) return;
+
                     if (r.dateCheck && r.dateCheck.includes("未")) stats.dateNo++;
                     if (r.examHw && (r.examHw.includes("未") || r.examHw.includes("異常"))) stats.examNo++;
                     if (r.englishCopy && r.englishCopy.includes("未")) stats.engNo++;
@@ -1517,6 +1615,7 @@ ${currentDate} 的聯絡簿紀錄為「未繳交」嗎？
                     <td>${cellBadge(stats.perfect, true)}</td>
                     <td>${cellBadge(stats.unsubmitted)}</td>
                     <td>${cellBadge(stats.late, false, true)}</td>
+                    <td>${cellBadge(stats.absent, false, true)}</td>
                     <td>${cellBadge(stats.dateNo)}</td>
                     <td>${cellBadge(stats.examNo)}</td>
                     <td>${cellBadge(stats.engNo)}</td>
