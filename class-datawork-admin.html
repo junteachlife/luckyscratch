@@ -23,9 +23,12 @@
     <div class="login-brand">⚓ 班級工作回報－管理後台</div>
     <div class="login-sub">導師專屬航海指揮中心</div>
     <div id="loginMsg"></div>
-    <div class="field"><label>管理員帳號／Email</label><input id="loginUser" autocomplete="username"></div>
-    <div class="field"><label>密碼</label><input id="loginPass" type="password" autocomplete="current-password"></div>
-    <button id="loginBtn" class="btn primary" style="width:100%">⛵ 登入管理後台</button>
+    <div class="notice" style="margin-top:16px">
+      <b>🔐 管理員 Google 單一登入</b><br>
+      請使用已被設定為管理員的 Google 帳號登入。其他學生或任課教師帳號即使能完成 Google 驗證，也無法進入管理後台。
+    </div>
+    <button id="googleLoginBtn" class="btn primary" style="width:100%;font-size:16px;padding:12px 14px">🔵 使用 Google 帳號登入管理後台</button>
+    <div class="meta" style="text-align:center;margin-top:9px">同一個 Google 帳號可同時保有管理員與任課教師權限。</div>
     <div class="login-slogan">航向更好的班級！每一份努力，都讓未來更閃亮！</div>
   </div>
 </section>
@@ -55,7 +58,7 @@
 <div id="modal" class="modal hidden"><div class="modal-card"><div id="modalBody"></div></div></div>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import{getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithEmailAndPassword,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import{getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,collection,addDoc,getDocs,query,orderBy,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 import{getDatabase,ref as rtdbRef,get as rtdbGet}from"https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
@@ -98,15 +101,63 @@ function computeAccess(assignments=[],semester=currentSemester){const viewKeys=[
 async function audit(action,targetType,targetId,detail,semester=currentSemester){await addDoc(collection(db,'auditLogs'),{actorUid:auth.currentUser.uid,actorName:me.displayName||me.username,semester,action,targetType,targetId,detail,createdAt:serverTimestamp()})}
 function activePage(){return $('.nav .active')?.dataset.page||'dashboard'}
 
-$('#loginBtn').onclick=async()=>{try{await signInWithEmailAndPassword(auth,emailFor($('#loginUser').value),$('#loginPass').value)}catch(e){msg($('#loginMsg'),'登入失敗，請確認管理員帳號與密碼。','error')}};
-$('#logoutBtn').onclick=()=>signOut(auth);
+const googleProvider=new GoogleAuthProvider();
+googleProvider.setCustomParameters({prompt:'select_account'});
+let authBusy=false;
+
+async function loginAdminWithGoogle(){
+  if(authBusy)return;
+  authBusy=true;
+  const btn=$('#googleLoginBtn');
+  if(btn){btn.disabled=true;btn.textContent='⏳ 正在開啟 Google 登入…'}
+  msg($('#loginMsg'),'');
+  try{
+    await signInWithPopup(auth,googleProvider);
+  }catch(e){
+    const code=e?.code||'';
+    if(code==='auth/popup-blocked'||code==='auth/cancelled-popup-request'||code==='auth/operation-not-supported-in-this-environment'){
+      try{await signInWithRedirect(auth,googleProvider);return}catch(re){msg($('#loginMsg'),`Google 登入失敗：${esc(re?.code||re?.message||'未知錯誤')}`,'error')}
+    }else if(code==='auth/popup-closed-by-user'){
+      msg($('#loginMsg'),'已取消 Google 登入。','');
+    }else{
+      msg($('#loginMsg'),`Google 登入失敗：${esc(code||e?.message||'未知錯誤')}`,'error');
+    }
+  }finally{
+    authBusy=false;
+    if(btn){btn.disabled=false;btn.textContent='🔵 使用 Google 帳號登入管理後台'}
+  }
+}
+
+$('#googleLoginBtn').onclick=loginAdminWithGoogle;
+$('#logoutBtn').onclick=async()=>{await signOut(auth);location.reload()};
+
+try{await getRedirectResult(auth)}catch(e){msg($('#loginMsg'),`Google 重新導向登入失敗：${esc(e?.code||e?.message||'未知錯誤')}`,'error')}
 
 onAuthStateChanged(auth,async u=>{
-  if(!u){$('#loginView').classList.remove('hidden');$('#appView').classList.add('hidden');return}
-  const s=await getDoc(doc(db,'users',u.uid));
-  if(!s.exists()||s.data().active!==true||s.data().type!=='admin'){await signOut(auth);msg($('#loginMsg'),'此帳號沒有管理員權限。','error');return}
-  me={uid:u.uid,...s.data()};$('#loginView').classList.add('hidden');$('#appView').classList.remove('hidden');$('#who').textContent=`${me.displayName||me.username}｜管理員`;
-  await ensureSystemSettings();await refreshAll();
+  if(!u){
+    me=null;
+    $('#loginView').classList.remove('hidden');
+    $('#appView').classList.add('hidden');
+    return;
+  }
+  try{
+    const s=await getDoc(doc(db,'users',u.uid));
+    if(!s.exists()||s.data().active!==true||s.data().type!=='admin'){
+      const email=u.email||'這個 Google 帳號';
+      await signOut(auth);
+      msg($('#loginMsg'),`「${esc(email)}」沒有管理員權限。請使用已設定為 admin 的 Google 帳號登入。`,'error');
+      return;
+    }
+    me={uid:u.uid,...s.data(),email:u.email||s.data().email||''};
+    $('#loginView').classList.add('hidden');
+    $('#appView').classList.remove('hidden');
+    $('#who').textContent=`${me.displayName||me.username||u.displayName||'管理員'}｜管理員`;
+    await ensureSystemSettings();
+    await refreshAll();
+  }catch(e){
+    await signOut(auth);
+    msg($('#loginMsg'),`管理員權限檢查失敗：${esc(e?.code||e?.message||'未知錯誤')}`,'error');
+  }
 });
 
 $$('.nav button').forEach(b=>b.onclick=()=>{$$('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');['dashboard','roles','records','accounts','classes','audit'].forEach(p=>$(`#page-${p}`).classList.toggle('hidden',p!==b.dataset.page));renderPage(b.dataset.page)});
