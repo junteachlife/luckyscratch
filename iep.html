@@ -7,7 +7,7 @@
     <!-- 上方瀏覽器分頁顯示的 Kitty 蝴蝶結小圖案 -->
     <link rel="icon" href="https://images.emojiterra.com/google/android-11/512px/1f380.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入真正的 docx 檔案生成套件，確保手機與電腦下載 Word 絕不異常 -->
+    <!-- 引入穩定的 docx 檔案生成套件 -->
     <script src="https://cdn.jsdelivr.net/npm/docx@7.3.0/build/index.js"></script>
     <!-- Firebase SDK (v9 Modular) -->
     <script type="module">
@@ -80,9 +80,10 @@
             }
         };
 
+        // 將函式綁定到 window 確保全域呼叫正常
         window.saveObservation = async function() {
             if (!db) {
-                alert("雲端資料庫尚未初始化，請檢查設定！");
+                alert("雲端資料庫尚未初始化，請檢查網路連線或 Firebase 設定！");
                 return;
             }
 
@@ -117,10 +118,10 @@
                 }
                 
                 document.getElementById('inputContent').value = '';
-                loadCloudObservations(studentName);
+                window.loadCloudObservations(studentName);
             } catch (e) {
-                console.error("儲存錯誤: ", e);
-                alert('儲存失敗，請檢查 Firebase Firestore 規則是否允許寫入。');
+                console.error("儲存錯誤詳情: ", e);
+                alert('儲存失敗！請檢查 Firebase 規則或 Firestore 是否已建立。');
             }
         };
 
@@ -168,8 +169,8 @@
                     listContainer.appendChild(itemDiv);
                 });
             } catch (e) {
-                console.error("讀取錯誤: ", e);
-                listContainer.innerHTML = '<p class="text-sm text-rose-500">載入失敗，請確認 Firebase 規則是否允許讀取。</p>';
+                console.error("讀取錯誤詳情: ", e);
+                listContainer.innerHTML = '<p class="text-sm text-rose-500">載入失敗，請確認 Firebase 規則。</p>';
             }
         };
 
@@ -194,7 +195,7 @@
             if (confirm('確定要永久刪除這筆紀錄嗎？')) {
                 try {
                     await deleteDoc(doc(db, "observations", docId));
-                    loadCloudObservations(studentName);
+                    window.loadCloudObservations(studentName);
                 } catch (e) {
                     console.error("刪除失敗: ", e);
                     alert("刪除失敗，請檢查網路或權限。");
@@ -202,7 +203,7 @@
             }
         };
 
-        let generatedDataCache = null; // 快取產生的目標資料供 Word 使用
+        let generatedDataCache = null;
 
         window.generateIEPFromCloud = async function() {
             if (!db) {
@@ -289,15 +290,19 @@
             }
         };
 
-        // 使用真正的 docx 套件生成標準 docx 檔案，手機與電腦開啟絕不異常
         window.downloadWord = async function() {
             if (!generatedDataCache) {
                 alert('請先點擊「一鍵生成 IEP」後再下載 Word！');
                 return;
             }
 
+            if (!window.docx) {
+                alert('Word 套件尚在載入中，請稍候再試一次！');
+                return;
+            }
+
             const { studentName, semester, activeDomains } = generatedDataCache;
-            const { Document, Packer, Paragraph, TextRun, Table, TableCell, TableRow, WidthType, AlignmentType, BorderStyle } = window.docx;
+            const { Document, Packer, Paragraph, Table, TableCell, TableRow, WidthType, AlignmentType } = window.docx;
 
             let tableRows = [
                 new TableRow({
@@ -366,7 +371,7 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            alert('🎀 標準 .docx 檔案已成功下載！手機與電腦皆可完美開啟與編輯。');
+            alert('🎀 標準 .docx 檔案已成功下載！');
         };
 
         window.printPDF = function() {
