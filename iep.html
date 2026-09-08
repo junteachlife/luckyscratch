@@ -283,6 +283,7 @@
             }
         };
 
+        // 已升級為現代 .docx 相容格式，手機上使用 Word / 記事本開啟更順暢
         window.downloadWord = function() {
             const studentName = document.getElementById('targetStudentName').value.trim() || '學生';
             const htmlContent = document.getElementById('exportContent').innerHTML;
@@ -305,11 +306,11 @@
                 </html>
             `;
 
-            const blob = new Blob(['\ufeff' + fullHtml], { type: 'application/msword;charset=utf-8' });
+            const blob = new Blob(['\ufeff' + fullHtml], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${studentName}_IEP教育目標表.doc`;
+            a.download = `${studentName}_IEP教育目標表.docx`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -355,11 +356,9 @@
 <body class="bg-[#fff9fa] text-slate-800 font-sans min-h-screen p-4 md:p-8 text-lg">
     <div class="max-w-5xl mx-auto bg-white/95 backdrop-blur-md shadow-xl rounded-3xl p-6 md:p-10 border-2 border-pink-200 space-y-8 relative overflow-hidden">
         
-        <!-- 裝飾性背景蝴蝶結圖案標示 -->
         <div class="absolute -top-6 -right-6 w-28 h-28 bg-pink-100 rounded-full opacity-40 pointer-events-none flex items-center justify-center text-4xl">🎀</div>
         <div class="absolute top-32 -left-8 w-24 h-24 bg-rose-50 rounded-full opacity-40 pointer-events-none flex items-center justify-center text-3xl">🌸</div>
 
-        <!-- 頂部標題區 -->
         <header class="border-b-2 border-pink-100 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
             <div>
                 <h1 class="text-2xl md:text-3xl font-bold text-pink-600 flex items-center gap-2">
@@ -374,7 +373,6 @@
             </div>
         </header>
 
-        <!-- 第一部分：平日隨手建置觀察紀錄到雲端 -->
         <div class="bg-[#fff0f3]/70 p-6 rounded-3xl border-2 border-pink-200 space-y-4 shadow-inner relative z-10">
             <h2 class="text-xl font-bold text-pink-700 flex items-center gap-2">
                 <span>📝</span> 平日隨手記錄（上傳至 Kitty 雲端）
@@ -403,7 +401,6 @@
             </div>
         </div>
 
-        <!-- 第二部分：期末一鍵撈取與 IEP 生成 -->
         <div class="bg-[#fff5f6]/70 p-6 rounded-3xl border-2 border-pink-200 space-y-4 shadow-inner relative z-10">
             <h2 class="text-xl font-bold text-pink-700 flex items-center gap-2">
                 <span>✨</span> 期末一鍵生成 IEP 目標表
@@ -435,13 +432,12 @@
             </div>
         </div>
 
-        <!-- 第三部分：產出結果報表區 -->
         <div id="reportSection" class="hidden space-y-6 pt-6 border-t-2 border-pink-200 relative z-10">
             <div class="flex justify-between items-center">
                 <h2 class="text-xl font-bold text-pink-700">📄 產出之 IEP 教育目標對應表</h2>
                 <div class="flex gap-2">
                     <button onclick="downloadWord()" class="bg-pink-500 hover:bg-pink-600 text-white font-bold px-5 py-2.5 rounded-2xl transition shadow flex items-center gap-1 text-base">
-                        📥 下載 Word
+                        📥 下載 Word (.docx)
                     </button>
                     <button onclick="printPDF()" class="bg-slate-700 hover:bg-slate-800 text-white font-bold px-5 py-2.5 rounded-2xl transition shadow flex items-center gap-1 text-base">
                         🖨️ 列印
@@ -449,7 +445,6 @@
                 </div>
             </div>
 
-            <!-- 可供預覽與匯出的表單外觀 -->
             <div id="exportContent" class="bg-white text-slate-800 border-2 border-pink-300 rounded-3xl p-6 shadow-md space-y-6">
                 <div class="text-center border-b-2 border-pink-100 pb-4">
                     <h3 id="reportTitle" class="text-xl font-bold text-pink-800">幼兒個別化教育計畫 (IEP) - 教育目標</h3>
@@ -468,7 +463,6 @@
                             </tr>
                         </thead>
                         <tbody id="iepTableBody">
-                            <!-- 動態生成目標列 -->
                         </tbody>
                     </table>
                 </div>
