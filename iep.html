@@ -7,6 +7,8 @@
     <!-- 上方瀏覽器分頁顯示的 Kitty 蝴蝶結小圖案 -->
     <link rel="icon" href="https://images.emojiterra.com/google/android-11/512px/1f380.png">
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入真正的 docx 檔案生成套件，確保手機與電腦下載 Word 絕不異常 -->
+    <script src="https://cdn.jsdelivr.net/npm/docx@7.3.0/build/index.js"></script>
     <!-- Firebase SDK (v9 Modular) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
@@ -200,6 +202,8 @@
             }
         };
 
+        let generatedDataCache = null; // 快取產生的目標資料供 Word 使用
+
         window.generateIEPFromCloud = async function() {
             if (!db) {
                 alert("雲端資料庫尚未初始化！");
@@ -248,6 +252,8 @@
                     activeDomains = [domains[2], domains[5], domains[6]];
                 }
 
+                generatedDataCache = { studentName, semester, activeDomains };
+
                 document.getElementById('reportTitle').innerText = `幼兒個別化教育計畫 (IEP) - 教育目標表`;
                 document.getElementById('reportSubtitle').innerText = `🎀 學生：${studentName} | 學期：${semester} 🎀`;
 
@@ -283,30 +289,75 @@
             }
         };
 
-        // 已升級為現代 .docx 相容格式，手機上使用 Word / 記事本開啟更順暢
-        window.downloadWord = function() {
-            const studentName = document.getElementById('targetStudentName').value.trim() || '學生';
-            const htmlContent = document.getElementById('exportContent').innerHTML;
+        // 使用真正的 docx 套件生成標準 docx 檔案，手機與電腦開啟絕不異常
+        window.downloadWord = async function() {
+            if (!generatedDataCache) {
+                alert('請先點擊「一鍵生成 IEP」後再下載 Word！');
+                return;
+            }
 
-            const fullHtml = `
-                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
-                <head>
-                    <meta charset="utf-8">
-                    <title>IEP教育目標-${studentName}</title>
-                    <style>
-                        body { font-family: 'DFKai-SB', 'BiauKai', 'Microsoft JhengHei', sans-serif; padding: 20px; font-size: 16px; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                        th, td { border: 1px solid #333; padding: 10px; font-size: 16px; text-align: left; }
-                        th { background-color: #ffe4e6; text-align: center; }
-                    </style>
-                </head>
-                <body>
-                    ${htmlContent}
-                </body>
-                </html>
-            `;
+            const { studentName, semester, activeDomains } = generatedDataCache;
+            const { Document, Packer, Paragraph, TextRun, Table, TableCell, TableRow, WidthType, AlignmentType, BorderStyle } = window.docx;
 
-            const blob = new Blob(['\ufeff' + fullHtml], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8' });
+            let tableRows = [
+                new TableRow({
+                    children: [
+                        new TableCell({ children: [new Paragraph({ text: "需求領域", alignment: AlignmentType.CENTER, run: { bold: true } })], width: { size: 1500, type: WidthType.DXA } }),
+                        new TableCell({ children: [new Paragraph({ text: "學年目標", alignment: AlignmentType.CENTER, run: { bold: true } })], width: { size: 2800, type: WidthType.DXA } }),
+                        new TableCell({ children: [new Paragraph({ text: "學期目標", alignment: AlignmentType.CENTER, run: { bold: true } })], width: { size: 3200, type: WidthType.DXA } }),
+                        new TableCell({ children: [new Paragraph({ text: "評量方法", alignment: AlignmentType.CENTER, run: { bold: true } })], width: { size: 1000, type: WidthType.DXA } }),
+                        new TableCell({ children: [new Paragraph({ text: "通過標準", alignment: AlignmentType.CENTER, run: { bold: true } })], width: { size: 1000, type: WidthType.DXA } }),
+                    ],
+                })
+            ];
+
+            activeDomains.forEach(d => {
+                const template = goalTemplates[d.id] || {
+                    annual: `能於各項學習與作息中展現合宜的${d.name}能力與適應表現。`,
+                    semester: `在引導與支持下，能改善${d.name}方面的困難並提升穩定表現。`
+                };
+
+                tableRows.push(
+                    new TableRow({
+                        children: [
+                            new TableCell({ children: [new Paragraph({ text: d.name, alignment: AlignmentType.CENTER, run: { bold: true } })] }),
+                            new TableCell({ children: [new Paragraph({ text: template.annual })] }),
+                            new TableCell({ children: [new Paragraph({ text: `• 第一學期：${template.semester}` })] }),
+                            new TableCell({ children: [new Paragraph({ text: "I、II", alignment: AlignmentType.CENTER })] }),
+                            new TableCell({ children: [new Paragraph({ text: "4A", alignment: AlignmentType.CENTER })] }),
+                        ],
+                    })
+                );
+            });
+
+            const doc = new Document({
+                sections: [{
+                    properties: {},
+                    children: [
+                        new Paragraph({
+                            text: "幼兒個別化教育計畫 (IEP) - 教育目標表",
+                            heading: "Heading 1",
+                            alignment: AlignmentType.CENTER,
+                            run: { bold: true, size: 28 }
+                        }),
+                        new Paragraph({
+                            text: `學生：${studentName} | 學期：${semester}`,
+                            alignment: AlignmentType.CENTER,
+                            run: { size: 20, color: "666666" }
+                        }),
+                        new Paragraph({ text: "" }),
+                        new Table({
+                            rows: tableRows,
+                            width: { size: 100, type: WidthType.PERCENTAGE },
+                        }),
+                        new Paragraph({ text: "" }),
+                        new Paragraph({ text: "【評量方法代號說明】I：觀察、II：操作、III：口頭、IV：作品、V：其他", run: { size: 16, color: "666666" } }),
+                        new Paragraph({ text: "【通過標準說明】數字代表達成目標百分比（5: 80%以上, 4: 60~80%），英文代表協助程度（A: 獨立完成, B: 口語提示）。", run: { size: 16, color: "666666" } }),
+                    ],
+                }),
+            });
+
+            const blob = await Packer.toBlob(doc);
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -315,6 +366,7 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+            alert('🎀 標準 .docx 檔案已成功下載！手機與電腦皆可完美開啟與編輯。');
         };
 
         window.printPDF = function() {
