@@ -10,16 +10,14 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc, Timestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-        // ==========================================
-        // ⚙️ 請在此填入您的 Firebase 專案設定值
-        // ==========================================
+        // 已填入您的 Firebase 專案設定值
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyCsMuJEUOsFXz4JsPctx8RAUn93xLHoc-c",
+            authDomain: "iep-work.firebaseapp.com",
+            projectId: "iep-work",
+            storageBucket: "iep-work.firebasestorage.app",
+            messagingSenderId: "110784945358",
+            appId: "1:110784945358:web:926e7723eab68b687cc49f"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -258,7 +256,6 @@
 <body class="bg-gradient-to-br from-pink-50 via-rose-50 to-red-50 text-slate-800 font-sans min-h-screen p-4 md:p-8">
     <div class="max-w-5xl mx-auto bg-white/90 backdrop-blur-md shadow-2xl rounded-3xl p-6 md:p-10 border-2 border-pink-200 space-y-8 relative overflow-hidden">
         
-        <!-- 裝飾性蝴蝶結小標示 -->
         <div class="absolute -top-6 -right-6 w-24 h-24 bg-pink-200 rounded-full opacity-30 pointer-events-none"></div>
 
         <header class="border-b-2 border-pink-100 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
