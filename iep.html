@@ -302,17 +302,83 @@
             }
 
             const { studentName, semester, activeDomains } = generatedDataCache;
-            const { Document, Packer, Paragraph, Table, TableCell, TableRow, WidthType, AlignmentType } = window.docx;
+            const {
+                Document,
+                Packer,
+                Paragraph,
+                TextRun,
+                Table,
+                TableCell,
+                TableRow,
+                WidthType,
+                AlignmentType,
+                TableLayoutType,
+                VerticalAlign,
+                PageOrientation
+            } = window.docx;
 
-            let tableRows = [
+            // A4 直式：11906 x 16838 twips；四邊 720 twips（約 1.27 cm）
+            // 可用寬度 10466 twips，以下 5 欄加總固定為 10466，避免手機 Word 自動重排。
+            const PAGE_WIDTH = 11906;
+            const PAGE_HEIGHT = 16838;
+            const MARGIN = 720;
+            const TABLE_WIDTH = PAGE_WIDTH - (MARGIN * 2);
+            const COL_WIDTHS = [1500, 3000, 3400, 1100, 1466];
+            const FONT_NAME = 'Microsoft JhengHei';
+
+            function makeRun(text, options = {}) {
+                return new TextRun({
+                    text,
+                    font: FONT_NAME,
+                    size: options.size || 20,
+                    bold: options.bold || false,
+                    color: options.color || '222222'
+                });
+            }
+
+            function makeParagraph(text, options = {}) {
+                return new Paragraph({
+                    alignment: options.alignment || AlignmentType.LEFT,
+                    spacing: {
+                        before: 0,
+                        after: options.after ?? 80,
+                        line: options.line || 276
+                    },
+                    children: [makeRun(text, options)]
+                });
+            }
+
+            function makeCell(text, width, options = {}) {
+                return new TableCell({
+                    width: { size: width, type: WidthType.DXA },
+                    verticalAlign: options.verticalAlign || VerticalAlign.CENTER,
+                    margins: {
+                        top: 100,
+                        bottom: 100,
+                        left: 110,
+                        right: 110
+                    },
+                    children: [makeParagraph(text, {
+                        alignment: options.alignment || AlignmentType.LEFT,
+                        bold: options.bold || false,
+                        size: options.size || 19,
+                        after: 0,
+                        line: 260
+                    })]
+                });
+            }
+
+            const tableRows = [
                 new TableRow({
+                    cantSplit: true,
+                    tableHeader: true,
                     children: [
-                        new TableCell({ children: [new Paragraph({ text: "需求領域", alignment: AlignmentType.CENTER, run: { bold: true } })], width: { size: 1500, type: WidthType.DXA } }),
-                        new TableCell({ children: [new Paragraph({ text: "學年目標", alignment: AlignmentType.CENTER, run: { bold: true } })], width: { size: 2800, type: WidthType.DXA } }),
-                        new TableCell({ children: [new Paragraph({ text: "學期目標", alignment: AlignmentType.CENTER, run: { bold: true } })], width: { size: 3200, type: WidthType.DXA } }),
-                        new TableCell({ children: [new Paragraph({ text: "評量方法", alignment: AlignmentType.CENTER, run: { bold: true } })], width: { size: 1000, type: WidthType.DXA } }),
-                        new TableCell({ children: [new Paragraph({ text: "通過標準", alignment: AlignmentType.CENTER, run: { bold: true } })], width: { size: 1000, type: WidthType.DXA } }),
-                    ],
+                        makeCell('需求領域', COL_WIDTHS[0], { alignment: AlignmentType.CENTER, bold: true }),
+                        makeCell('學年目標', COL_WIDTHS[1], { alignment: AlignmentType.CENTER, bold: true }),
+                        makeCell('學期目標', COL_WIDTHS[2], { alignment: AlignmentType.CENTER, bold: true }),
+                        makeCell('評量方法', COL_WIDTHS[3], { alignment: AlignmentType.CENTER, bold: true }),
+                        makeCell('通過標準', COL_WIDTHS[4], { alignment: AlignmentType.CENTER, bold: true })
+                    ]
                 })
             ];
 
@@ -324,54 +390,87 @@
 
                 tableRows.push(
                     new TableRow({
+                        cantSplit: true,
                         children: [
-                            new TableCell({ children: [new Paragraph({ text: d.name, alignment: AlignmentType.CENTER, run: { bold: true } })] }),
-                            new TableCell({ children: [new Paragraph({ text: template.annual })] }),
-                            new TableCell({ children: [new Paragraph({ text: `• 第一學期：${template.semester}` })] }),
-                            new TableCell({ children: [new Paragraph({ text: "I、II", alignment: AlignmentType.CENTER })] }),
-                            new TableCell({ children: [new Paragraph({ text: "4A", alignment: AlignmentType.CENTER })] }),
-                        ],
+                            makeCell(d.name, COL_WIDTHS[0], { alignment: AlignmentType.CENTER, bold: true, verticalAlign: VerticalAlign.CENTER }),
+                            makeCell(template.annual, COL_WIDTHS[1], { verticalAlign: VerticalAlign.TOP }),
+                            makeCell(`• 第一學期：${template.semester}`, COL_WIDTHS[2], { verticalAlign: VerticalAlign.TOP }),
+                            makeCell('I、II', COL_WIDTHS[3], { alignment: AlignmentType.CENTER, verticalAlign: VerticalAlign.CENTER }),
+                            makeCell('4A', COL_WIDTHS[4], { alignment: AlignmentType.CENTER, verticalAlign: VerticalAlign.CENTER })
+                        ]
                     })
                 );
             });
 
             const doc = new Document({
                 sections: [{
-                    properties: {},
+                    properties: {
+                        page: {
+                            size: {
+                                width: PAGE_WIDTH,
+                                height: PAGE_HEIGHT,
+                                orientation: PageOrientation.PORTRAIT
+                            },
+                            margin: {
+                                top: MARGIN,
+                                right: MARGIN,
+                                bottom: MARGIN,
+                                left: MARGIN
+                            }
+                        }
+                    },
                     children: [
                         new Paragraph({
-                            text: "幼兒個別化教育計畫 (IEP) - 教育目標表",
-                            heading: "Heading 1",
                             alignment: AlignmentType.CENTER,
-                            run: { bold: true, size: 28 }
+                            spacing: { before: 0, after: 120, line: 300 },
+                            children: [makeRun('幼兒個別化教育計畫 (IEP) - 教育目標表', { bold: true, size: 28 })]
                         }),
                         new Paragraph({
-                            text: `學生：${studentName} | 學期：${semester}`,
                             alignment: AlignmentType.CENTER,
-                            run: { size: 20, color: "666666" }
+                            spacing: { before: 0, after: 180, line: 276 },
+                            children: [makeRun(`學生：${studentName}　｜　學期：${semester}`, { size: 20, color: '555555' })]
                         }),
-                        new Paragraph({ text: "" }),
                         new Table({
                             rows: tableRows,
-                            width: { size: 100, type: WidthType.PERCENTAGE },
+                            width: { size: TABLE_WIDTH, type: WidthType.DXA },
+                            layout: TableLayoutType.FIXED,
+                            columnWidths: COL_WIDTHS
                         }),
-                        new Paragraph({ text: "" }),
-                        new Paragraph({ text: "【評量方法代號說明】I：觀察、II：操作、III：口頭、IV：作品、V：其他", run: { size: 16, color: "666666" } }),
-                        new Paragraph({ text: "【通過標準說明】數字代表達成目標百分比（5: 80%以上, 4: 60~80%），英文代表協助程度（A: 獨立完成, B: 口語提示）。", run: { size: 16, color: "666666" } }),
-                    ],
-                }],
+                        new Paragraph({ text: '', spacing: { after: 80 } }),
+                        makeParagraph('【評量方法代號說明】I：觀察、II：操作、III：口頭、IV：作品、V：其他', {
+                            size: 16,
+                            color: '555555',
+                            after: 50,
+                            line: 240
+                        }),
+                        makeParagraph('【通過標準說明】數字代表達成目標百分比（5: 80%以上, 4: 60~80%），英文代表協助程度（A: 獨立完成, B: 口語提示）。', {
+                            size: 16,
+                            color: '555555',
+                            after: 0,
+                            line: 240
+                        })
+                    ]
+                }]
             });
 
-            const blob = await Packer.toBlob(doc);
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${studentName}_IEP教育目標表.docx`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            alert('🎀 標準 .docx 檔案已成功下載！');
+            try {
+                const blob = await Packer.toBlob(doc);
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${studentName}_IEP教育目標表.docx`;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                // 手機瀏覽器有時需要一點時間完成下載後才能安全釋放 URL。
+                setTimeout(() => URL.revokeObjectURL(url), 3000);
+                alert('🎀 Word 檔案已產生完成！建議以 Microsoft Word 開啟，可獲得最穩定的版面。');
+            } catch (error) {
+                console.error('Word 產生失敗:', error);
+                alert('Word 檔案產生失敗，請重新整理頁面後再試一次。');
+            }
         };
 
         window.printPDF = function() {
@@ -390,18 +489,14 @@
             document.getElementById('inputDate').value = today;
         };
     </script>
-
     <style>
         @media print {
             body * {
                 visibility: hidden;
             }
-
-            #exportContent,
-            #exportContent * {
+            #exportContent, #exportContent * {
                 visibility: visible;
             }
-
             #exportContent {
                 position: absolute;
                 left: 0;
@@ -414,260 +509,123 @@
         }
     </style>
 </head>
-
 <body class="bg-[#fff9fa] text-slate-800 font-sans min-h-screen p-4 md:p-8 text-lg">
     <div class="max-w-5xl mx-auto bg-white/95 backdrop-blur-md shadow-xl rounded-3xl p-6 md:p-10 border-2 border-pink-200 space-y-8 relative overflow-hidden">
-
+        
         <div class="absolute -top-6 -right-6 w-28 h-28 bg-pink-100 rounded-full opacity-40 pointer-events-none flex items-center justify-center text-4xl">🎀</div>
         <div class="absolute top-32 -left-8 w-24 h-24 bg-rose-50 rounded-full opacity-40 pointer-events-none flex items-center justify-center text-3xl">🌸</div>
 
         <header class="border-b-2 border-pink-100 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
             <div>
                 <h1 class="text-2xl md:text-3xl font-bold text-pink-600 flex items-center gap-2">
-                    <span>🎀</span>
-                    幼兒園 IEP 雲端紀錄與智慧生成系統
-                    <span class="text-xs bg-pink-100 text-pink-600 px-3 py-1 rounded-full border border-pink-200 font-semibold">
-                        Kitty 柔和護眼版
-                    </span>
+                    <span>🎀</span> 幼兒園 IEP 雲端紀錄與智慧生成系統 <span class="text-xs bg-pink-100 text-pink-600 px-3 py-1 rounded-full border border-pink-200 font-semibold">Kitty 柔和護眼版</span>
                 </h1>
-
-                <p class="text-base text-pink-400 mt-1">
-                    💕 溫馨記錄寶貝學生的點滴，期末一鍵生成精美 IEP 教育目標表 ✨
-                </p>
+                <p class="text-base text-pink-400 mt-1">💕 溫馨記錄寶貝學生的點滴，期末一鍵生成精美 IEP 教育目標表 ✨</p>
             </div>
-
             <div>
-                <button onclick="loadSampleToCloudInput()"
-                    class="bg-pink-100 hover:bg-pink-200 text-pink-700 text-sm font-bold px-4 py-2.5 rounded-2xl transition border border-pink-300 shadow-sm flex items-center gap-1">
+                <button onclick="loadSampleToCloudInput()" class="bg-pink-100 hover:bg-pink-200 text-pink-700 text-sm font-bold px-4 py-2.5 rounded-2xl transition border border-pink-300 shadow-sm flex items-center gap-1">
                     🍓 載入測試範例 (小華)
                 </button>
             </div>
         </header>
 
         <div class="bg-[#fff0f3]/70 p-6 rounded-3xl border-2 border-pink-200 space-y-4 shadow-inner relative z-10">
-
             <h2 class="text-xl font-bold text-pink-700 flex items-center gap-2">
                 <span>📝</span> 平日隨手記錄（上傳至 Kitty 雲端）
             </h2>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-bold text-pink-600 mb-1">
-                        學生姓名
-                    </label>
-
-                    <input
-                        type="text"
-                        id="inputStudentName"
-                        placeholder="例如：小華"
-                        class="w-full p-3 bg-white border-2 border-pink-200 rounded-2xl text-base focus:ring-2 focus:ring-pink-400 focus:outline-none">
+                    <label class="block text-sm font-bold text-pink-600 mb-1">學生姓名</label>
+                    <input type="text" id="inputStudentName" placeholder="例如：小華" class="w-full p-3 bg-white border-2 border-pink-200 rounded-2xl text-base focus:ring-2 focus:ring-pink-400 focus:outline-none">
                 </div>
-
                 <div>
-                    <label class="block text-sm font-bold text-pink-600 mb-1">
-                        觀察日期
-                    </label>
-
-                    <input
-                        type="date"
-                        id="inputDate"
-                        class="w-full p-3 bg-white border-2 border-pink-200 rounded-2xl text-base focus:ring-2 focus:ring-pink-400 focus:outline-none">
+                    <label class="block text-sm font-bold text-pink-600 mb-1">觀察日期</label>
+                    <input type="date" id="inputDate" class="w-full p-3 bg-white border-2 border-pink-200 rounded-2xl text-base focus:ring-2 focus:ring-pink-400 focus:outline-none">
                 </div>
-
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-bold text-pink-600 mb-1">
-                        觀察紀錄內容
-                    </label>
-
-                    <textarea
-                        id="inputContent"
-                        rows="3"
-                        class="w-full p-3 bg-white border-2 border-pink-200 rounded-2xl text-base focus:ring-2 focus:ring-pink-400 focus:outline-none"
-                        placeholder="記錄學生的特殊狀況、行為或對話..."></textarea>
+                    <label class="block text-sm font-bold text-pink-600 mb-1">觀察紀錄內容</label>
+                    <textarea id="inputContent" rows="3" class="w-full p-3 bg-white border-2 border-pink-200 rounded-2xl text-base focus:ring-2 focus:ring-pink-400 focus:outline-none" placeholder="記錄學生的特殊狀況、行為或對話..."></textarea>
                 </div>
             </div>
-
             <div class="flex gap-3">
-                <button onclick="saveObservation()"
-                    class="bg-pink-500 hover:bg-pink-600 text-white font-bold px-8 py-3 rounded-2xl transition shadow-lg shadow-pink-300 text-base flex items-center gap-1">
-
-                    <span>🎀</span>
-                    <span id="submitBtnText">儲存至雲端資料庫</span>
+                <button onclick="saveObservation()" class="bg-pink-500 hover:bg-pink-600 text-white font-bold px-8 py-3 rounded-2xl transition shadow-lg shadow-pink-300 text-base flex items-center gap-1">
+                    <span>🎀</span> <span id="submitBtnText">儲存至雲端資料庫</span>
                 </button>
-
-                <button
-                    id="cancelEditBtn"
-                    onclick="cancelEdit()"
-                    class="hidden bg-slate-400 hover:bg-slate-500 text-white font-bold px-6 py-3 rounded-2xl transition text-base">
+                <button id="cancelEditBtn" onclick="cancelEdit()" class="hidden bg-slate-400 hover:bg-slate-500 text-white font-bold px-6 py-3 rounded-2xl transition text-base">
                     ✖️ 取消編輯
                 </button>
             </div>
         </div>
 
         <div class="bg-[#fff5f6]/70 p-6 rounded-3xl border-2 border-pink-200 space-y-4 shadow-inner relative z-10">
-
             <h2 class="text-xl font-bold text-pink-700 flex items-center gap-2">
                 <span>✨</span> 期末一鍵生成 IEP 目標表
             </h2>
-
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-
                 <div>
-                    <label class="block text-sm font-bold text-pink-600 mb-1">
-                        查詢學生姓名
-                    </label>
-
-                    <input
-                        type="text"
-                        id="targetStudentName"
-                        placeholder="例如：小華"
-                        class="w-full p-3 bg-white border-2 border-pink-200 rounded-2xl text-base focus:ring-2 focus:ring-pink-400 focus:outline-none">
+                    <label class="block text-sm font-bold text-pink-600 mb-1">查詢學生姓名</label>
+                    <input type="text" id="targetStudentName" placeholder="例如：小華" class="w-full p-3 bg-white border-2 border-pink-200 rounded-2xl text-base focus:ring-2 focus:ring-pink-400 focus:outline-none">
                 </div>
-
                 <div>
-                    <label class="block text-sm font-bold text-pink-600 mb-1">
-                        學年度 / 學期
-                    </label>
-
-                    <input
-                        type="text"
-                        id="semester"
-                        placeholder="例如：115學年度 第1學期"
-                        class="w-full p-3 bg-white border-2 border-pink-200 rounded-2xl text-base focus:ring-2 focus:ring-pink-400 focus:outline-none">
+                    <label class="block text-sm font-bold text-pink-600 mb-1">學年度 / 學期</label>
+                    <input type="text" id="semester" placeholder="例如：115學年度 第1學期" class="w-full p-3 bg-white border-2 border-pink-200 rounded-2xl text-base focus:ring-2 focus:ring-pink-400 focus:outline-none">
                 </div>
-
                 <div class="flex gap-2">
-
-                    <button
-                        onclick="loadCloudObservations()"
-                        class="bg-rose-400 hover:bg-rose-500 text-white font-bold px-4 py-3 rounded-2xl transition text-base shadow">
+                    <button onclick="loadCloudObservations()" class="bg-rose-400 hover:bg-rose-500 text-white font-bold px-4 py-3 rounded-2xl transition text-base shadow">
                         🔍 讀取
                     </button>
-
-                    <button
-                        onclick="generateIEPFromCloud()"
-                        class="bg-pink-600 hover:bg-pink-700 text-white font-bold px-6 py-3 rounded-2xl transition shadow-lg text-base flex-1">
+                    <button onclick="generateIEPFromCloud()" class="bg-pink-600 hover:bg-pink-700 text-white font-bold px-6 py-3 rounded-2xl transition shadow-lg text-base flex-1">
                         🚀 一鍵生成 IEP
                     </button>
-
                 </div>
             </div>
 
             <div class="mt-4 pt-4 border-t border-pink-200">
-
-                <p class="text-sm font-bold text-pink-600 mb-2">
-                    🌸 該學生已累積的雲端觀察紀錄（可隨時點擊編輯或刪除）：
-                </p>
-
-                <div
-                    id="cloudLogsList"
-                    class="space-y-2 max-h-48 overflow-y-auto pr-2">
-
-                    <p class="text-sm text-pink-300 italic">
-                        尚未載入紀錄，請先輸入學生姓名並點擊「讀取」。
-                    </p>
+                <p class="text-sm font-bold text-pink-600 mb-2">🌸 該學生已累積的雲端觀察紀錄（可隨時點擊編輯或刪除）：</p>
+                <div id="cloudLogsList" class="space-y-2 max-h-48 overflow-y-auto pr-2">
+                    <p class="text-sm text-pink-300 italic">尚未載入紀錄，請先輸入學生姓名並點擊「讀取」。</p>
                 </div>
             </div>
         </div>
 
-        <div
-            id="reportSection"
-            class="hidden space-y-6 pt-6 border-t-2 border-pink-200 relative z-10">
-
+        <div id="reportSection" class="hidden space-y-6 pt-6 border-t-2 border-pink-200 relative z-10">
             <div class="flex justify-between items-center">
-
-                <h2 class="text-xl font-bold text-pink-700">
-                    📄 產出之 IEP 教育目標對應表
-                </h2>
-
+                <h2 class="text-xl font-bold text-pink-700">📄 產出之 IEP 教育目標對應表</h2>
                 <div class="flex gap-2">
-
-                    <button
-                        onclick="downloadWord()"
-                        class="bg-pink-500 hover:bg-pink-600 text-white font-bold px-5 py-2.5 rounded-2xl transition shadow flex items-center gap-1 text-base">
-
+                    <button onclick="downloadWord()" class="bg-pink-500 hover:bg-pink-600 text-white font-bold px-5 py-2.5 rounded-2xl transition shadow flex items-center gap-1 text-base">
                         📥 下載 Word (.docx)
                     </button>
-
-                    <button
-                        onclick="printPDF()"
-                        class="bg-slate-700 hover:bg-slate-800 text-white font-bold px-5 py-2.5 rounded-2xl transition shadow flex items-center gap-1 text-base">
-
+                    <button onclick="printPDF()" class="bg-slate-700 hover:bg-slate-800 text-white font-bold px-5 py-2.5 rounded-2xl transition shadow flex items-center gap-1 text-base">
                         🖨️ 列印
                     </button>
-
                 </div>
             </div>
 
-            <div
-                id="exportContent"
-                class="bg-white text-slate-800 border-2 border-pink-300 rounded-3xl p-6 shadow-md space-y-6">
-
+            <div id="exportContent" class="bg-white text-slate-800 border-2 border-pink-300 rounded-3xl p-6 shadow-md space-y-6">
                 <div class="text-center border-b-2 border-pink-100 pb-4">
-
-                    <h3
-                        id="reportTitle"
-                        class="text-xl font-bold text-pink-800">
-
-                        幼兒個別化教育計畫 (IEP) - 教育目標
-                    </h3>
-
-                    <p
-                        id="reportSubtitle"
-                        class="text-sm text-pink-500 mt-1">
-
-                        🎀 學生：未填寫 | 學期：未填寫 🎀
-                    </p>
-
+                    <h3 id="reportTitle" class="text-xl font-bold text-pink-800">幼兒個別化教育計畫 (IEP) - 教育目標</h3>
+                    <p id="reportSubtitle" class="text-sm text-pink-500 mt-1">🎀 學生：未填寫 | 學期：未填寫 🎀</p>
                 </div>
 
                 <div class="overflow-x-auto">
-
                     <table class="w-full border-collapse border border-pink-300 text-base text-left">
-
                         <thead>
                             <tr class="bg-pink-100 text-pink-900 text-center">
-
-                                <th class="border border-pink-300 p-3 w-32">
-                                    需求領域
-                                </th>
-
-                                <th class="border border-pink-300 p-3">
-                                    學年目標
-                                </th>
-
-                                <th class="border border-pink-300 p-3">
-                                    學期目標
-                                </th>
-
-                                <th class="border border-pink-300 p-3 w-24">
-                                    評量方法
-                                </th>
-
-                                <th class="border border-pink-300 p-3 w-28">
-                                    通過標準
-                                </th>
-
+                                <th class="border border-pink-300 p-3 w-32">需求領域</th>
+                                <th class="border border-pink-300 p-3">學年目標</th>
+                                <th class="border border-pink-300 p-3">學期目標</th>
+                                <th class="border border-pink-300 p-3 w-24">評量方法</th>
+                                <th class="border border-pink-300 p-3 w-28">通過標準</th>
                             </tr>
                         </thead>
-
                         <tbody id="iepTableBody">
                         </tbody>
-
                     </table>
-
                 </div>
 
                 <div class="text-sm text-pink-600 space-y-1 pt-2 border-t border-pink-100">
-
-                    <p>
-                        【評量方法代號說明】I：觀察、II：操作、III：口頭、IV：作品、V：其他
-                    </p>
-
-                    <p>
-                        【通過標準說明】數字代表達成目標百分比（5: 80%以上, 4: 60~80%, 3: 40~60%, 2: 20~40%, 1: 20%以下），英文代表協助程度（A: 獨立完成, B: 口語提示, C: 部分動作提示, D: 完全動作協助, E: 無法完成）。
-                    </p>
-
+                    <p>【評量方法代號說明】I：觀察、II：操作、III：口頭、IV：作品、V：其他</p>
+                    <p>【通過標準說明】數字代表達成目標百分比（5: 80%以上, 4: 60~80%, 3: 40~60%, 2: 20~40%, 1: 20%以下），英文代表協助程度（A: 獨立完成, B: 口語提示, C: 部分動作提示, D: 完全動作協助, E: 無法完成）。</p>
                 </div>
             </div>
         </div>
