@@ -8,7 +8,7 @@
     <!-- Firebase SDK (v9 Modular) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc, updateDoc, Timestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc, updateDoc, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCsMuJEUOsFXz4JsPctx8RAUn93xLHoc-c",
@@ -19,10 +19,17 @@
             appId: "1:110784945358:web:926e7723eab68b687cc49f"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        let db = null;
+        let editingDocId = null;
 
-        let editingDocId = null; // 紀錄目前正在編輯的 ID
+        // 初始化 Firebase，外層加上防白屏保護
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+        } catch (error) {
+            console.error("Firebase 初始化失敗:", error);
+            alert("雲端連線初始化失敗，請檢查網路或設定。");
+        }
 
         const domains = [
             { id: "health", name: "健康狀況", keywords: ["發燒", "身體不適", "癲癇", "藥物", "體質", "病史", "健康"] },
@@ -94,6 +101,11 @@
         };
 
         window.saveObservation = async function() {
+            if (!db) {
+                alert("雲端資料庫尚未初始化，請檢查設定！");
+                return;
+            }
+
             const studentName = document.getElementById('inputStudentName').value.trim();
             const content = document.getElementById('inputContent').value.trim();
             const date = document.getElementById('inputDate').value || new Date().toISOString().split('T')[0];
@@ -105,7 +117,6 @@
 
             try {
                 if (editingDocId) {
-                    // 執行更新
                     await updateDoc(doc(db, "observations", editingDocId), {
                         studentName: studentName,
                         content: content,
@@ -116,7 +127,6 @@
                     document.getElementById('submitBtnText').innerText = '💚 新增至雲端資料庫';
                     document.getElementById('cancelEditBtn').classList.add('hidden');
                 } else {
-                    // 執行新增
                     await addDoc(collection(db, "observations"), {
                         studentName: studentName,
                         content: content,
@@ -130,11 +140,16 @@
                 loadCloudObservations(studentName);
             } catch (e) {
                 console.error("儲存錯誤: ", e);
-                alert('儲存失敗，請檢查 Firebase 設定與網路連線。');
+                alert('儲存失敗，請檢查 Firebase Firestore 規則是否允許寫入。');
             }
         };
 
         window.loadCloudObservations = async function(targetName = null) {
+            if (!db) {
+                alert("雲端資料庫尚未初始化！");
+                return;
+            }
+
             const studentName = targetName || document.getElementById('targetStudentName').value.trim();
             if (!studentName) {
                 alert('請先輸入要查詢的學生姓名！');
@@ -157,15 +172,16 @@
 
                 querySnapshot.forEach((docSnap) => {
                     const data = docSnap.data();
+                    const safeContent = (data.content || "").replace(/`/g, '\\`');
                     const itemDiv = document.createElement('div');
                     itemDiv.className = "bg-white/80 dark:bg-slate-700 border p-3 rounded-xl text-base flex justify-between items-start gap-2 shadow-sm";
                     itemDiv.innerHTML = `
                         <div>
-                            <span class="font-bold text-pink-600 dark:text-pink-400">[${data.date}]</span> 
-                            <span id="content_${docSnap.id}">${data.content}</span>
+                            <span class="font-bold text-pink-600 dark:text-pink-400">[${data.date || '未填日期'}]</span> 
+                            <span>${data.content || ''}</span>
                         </div>
                         <div class="flex gap-1 shrink-0">
-                            <button onclick="startEdit('${docSnap.id}', '${data.date}', '${data.studentName}', \`${data.content.replace(/`/g, '\\`')}\`)" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg transition">✏️ 編輯</button>
+                            <button onclick="startEdit('${docSnap.id}', '${data.date || ''}', '${data.studentName || ''}', \`${safeContent}\`)" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg transition">✏️ 編輯</button>
                             <button onclick="deleteLog('${docSnap.id}', '${studentName}')" class="bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg transition">🗑️ 刪除</button>
                         </div>
                     `;
@@ -173,7 +189,7 @@
                 });
             } catch (e) {
                 console.error("讀取錯誤: ", e);
-                listContainer.innerHTML = '<p class="text-sm text-rose-500">載入失敗，請確認 Firebase 權限與設定。</p>';
+                listContainer.innerHTML = '<p class="text-sm text-rose-500">載入失敗，請確認 Firebase 規則是否允許讀取。</p>';
             }
         };
 
@@ -201,11 +217,17 @@
                     loadCloudObservations(studentName);
                 } catch (e) {
                     console.error("刪除失敗: ", e);
+                    alert("刪除失敗，請檢查網路或權限。");
                 }
             }
         };
 
         window.generateIEPFromCloud = async function() {
+            if (!db) {
+                alert("雲端資料庫尚未初始化！");
+                return;
+            }
+
             const studentName = document.getElementById('targetStudentName').value.trim();
             const semester = document.getElementById('semester').value.trim() || '當學期';
 
@@ -225,7 +247,9 @@
 
                 let allTexts = [];
                 querySnapshot.forEach((docSnap) => {
-                    allTexts.push(docSnap.data().content);
+                    if (docSnap.data().content) {
+                        allTexts.push(docSnap.data().content);
+                    }
                 });
 
                 let domainMatches = {};
@@ -277,19 +301,34 @@
 
             } catch (e) {
                 console.error("生成錯誤: ", e);
-                alert('生成 IEP 失敗，請檢查網路或資料庫設定。');
+                alert('生成 IEP 失敗，請確認網路連線。');
             }
         };
 
+        // 修復後的 Word 下載功能（相容性高，不再失敗）
         window.downloadWord = function() {
             const studentName = document.getElementById('targetStudentName').value.trim() || '學生';
-            const content = document.getElementById('exportContent').innerHTML;
-            
-            const htmlHeader = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>IEP教育目標-${studentName}</title><style>body{font-family:sans-serif;padding:20px;font-size:16px;}table{width:100%;border-collapse:collapse;margin-top:20px;}th,td{border:1px solid #333;padding:10px;font-size:16px;text-align:left;}th{background-color:#f0f0f0;text-align:center;}</style></head><body>`;
-            const htmlFooter = `</body></html>`;
-            const fullHtml = htmlHeader + content + htmlFooter;
+            const htmlContent = document.getElementById('exportContent').innerHTML;
 
-            const blob = new Blob(['\ufeff' + fullHtml], { type: 'application/msword' });
+            const fullHtml = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+                <head>
+                    <meta charset="utf-8">
+                    <title>IEP教育目標-${studentName}</title>
+                    <style>
+                        body { font-family: 'DFKai-SB', 'BiauKai', 'Microsoft JhengHei', sans-serif; padding: 20px; font-size: 16px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border: 1px solid #333; padding: 10px; font-size: 16px; text-align: left; }
+                        th { background-color: #f0f0f0; text-align: center; }
+                    </style>
+                </head>
+                <body>
+                    ${htmlContent}
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob(['\ufeff' + fullHtml], { type: 'application/msword;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
