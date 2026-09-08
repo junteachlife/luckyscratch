@@ -8,7 +8,7 @@
     <!-- Firebase SDK (v9 Modular) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc, updateDoc, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc, updateDoc, Timestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCsMuJEUOsFXz4JsPctx8RAUn93xLHoc-c",
@@ -22,7 +22,6 @@
         let db = null;
         let editingDocId = null;
 
-        // 初始化 Firebase，外層加上防白屏保護
         try {
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
@@ -77,29 +76,6 @@
             }
         };
 
-        window.setTheme = function(themeName) {
-            const body = document.getElementById('mainBody');
-            const container = document.getElementById('mainContainer');
-            
-            body.className = "font-sans min-h-screen p-4 md:p-8 transition-colors duration-300 text-lg";
-            container.className = "max-w-5xl mx-auto shadow-2xl rounded-3xl p-6 md:p-10 space-y-8 relative overflow-hidden transition-all duration-300";
-
-            if (themeName === 'pink') {
-                body.className += " bg-gradient-to-br from-pink-50 via-rose-50 to-red-50 text-slate-800";
-                container.className += " bg-white/90 border-2 border-pink-200";
-            } else if (themeName === 'green') {
-                body.className += " bg-gradient-to-br from-emerald-50 via-teal-50 to-green-50 text-slate-800";
-                container.className += " bg-white/90 border-2 border-emerald-200";
-            } else if (themeName === 'dark') {
-                body.className += " bg-slate-900 text-slate-100";
-                container.className += " bg-slate-800 border-2 border-slate-700 text-slate-100";
-            } else if (themeName === 'warm') {
-                body.className += " bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 text-amber-950";
-                container.className += " bg-amber-50/90 border-2 border-amber-200";
-            }
-            localStorage.setItem('iep_theme', themeName);
-        };
-
         window.saveObservation = async function() {
             if (!db) {
                 alert("雲端資料庫尚未初始化，請檢查設定！");
@@ -124,7 +100,7 @@
                     });
                     alert('✨ 觀察紀錄已成功更新！');
                     editingDocId = null;
-                    document.getElementById('submitBtnText').innerText = '💚 新增至雲端資料庫';
+                    document.getElementById('submitBtnText').innerText = '🌊 儲存至藍綠雲端資料庫';
                     document.getElementById('cancelEditBtn').classList.add('hidden');
                 } else {
                     await addDoc(collection(db, "observations"), {
@@ -133,7 +109,7 @@
                         date: date,
                         createdAt: Timestamp.now()
                     });
-                    alert('💖 觀察紀錄已成功存入雲端寶庫！');
+                    alert('🌊 觀察紀錄已成功存入藍綠雲端寶庫！');
                 }
                 
                 document.getElementById('inputContent').value = '';
@@ -174,10 +150,10 @@
                     const data = docSnap.data();
                     const safeContent = (data.content || "").replace(/`/g, '\\`');
                     const itemDiv = document.createElement('div');
-                    itemDiv.className = "bg-white/80 dark:bg-slate-700 border p-3 rounded-xl text-base flex justify-between items-start gap-2 shadow-sm";
+                    itemDiv.className = "bg-white border border-cyan-200 p-3 rounded-xl text-base flex justify-between items-start gap-2 shadow-sm";
                     itemDiv.innerHTML = `
                         <div>
-                            <span class="font-bold text-pink-600 dark:text-pink-400">[${data.date || '未填日期'}]</span> 
+                            <span class="font-bold text-teal-700">[${data.date || '未填日期'}]</span> 
                             <span>${data.content || ''}</span>
                         </div>
                         <div class="flex gap-1 shrink-0">
@@ -206,7 +182,7 @@
         window.cancelEdit = function() {
             editingDocId = null;
             document.getElementById('inputContent').value = '';
-            document.getElementById('submitBtnText').innerText = '💚 新增至雲端資料庫';
+            document.getElementById('submitBtnText').innerText = '🌊 儲存至藍綠雲端資料庫';
             document.getElementById('cancelEditBtn').classList.add('hidden');
         };
 
@@ -284,13 +260,13 @@
 
                     let rowHtml = `
                         <tr class="align-top">
-                            <td class="border border-slate-300 p-3 font-bold text-center bg-slate-100 dark:bg-slate-700 dark:text-white">${d.name}</td>
-                            <td class="border border-slate-300 p-3">${template.annual}</td>
-                            <td class="border border-slate-300 p-3 space-y-1">
+                            <td class="border border-cyan-300 p-3 font-bold text-center bg-cyan-50 text-teal-900">${d.name}</td>
+                            <td class="border border-cyan-300 p-3">${template.annual}</td>
+                            <td class="border border-cyan-300 p-3 space-y-1">
                                 <div>• <strong>第一學期：</strong>${template.semester}</div>
                             </td>
-                            <td class="border border-slate-300 p-3 text-center font-medium">I、II</td>
-                            <td class="border border-slate-300 p-3 text-center font-medium">4A</td>
+                            <td class="border border-cyan-300 p-3 text-center font-medium">I、II</td>
+                            <td class="border border-cyan-300 p-3 text-center font-medium">4A</td>
                         </tr>
                     `;
                     tbody.innerHTML += rowHtml;
@@ -305,7 +281,6 @@
             }
         };
 
-        // 修復後的 Word 下載功能（相容性高，不再失敗）
         window.downloadWord = function() {
             const studentName = document.getElementById('targetStudentName').value.trim() || '學生';
             const htmlContent = document.getElementById('exportContent').innerHTML;
@@ -319,7 +294,7 @@
                         body { font-family: 'DFKai-SB', 'BiauKai', 'Microsoft JhengHei', sans-serif; padding: 20px; font-size: 16px; }
                         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
                         th, td { border: 1px solid #333; padding: 10px; font-size: 16px; text-align: left; }
-                        th { background-color: #f0f0f0; text-align: center; }
+                        th { background-color: #e0f2fe; text-align: center; }
                     </style>
                 </head>
                 <body>
@@ -351,59 +326,52 @@
         };
 
         window.onload = function() {
-            const savedTheme = localStorage.getItem('iep_theme') || 'pink';
-            setTheme(savedTheme);
+            // 自動將觀察日期預設為今天
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('inputDate').value = today;
         };
     </script>
 </head>
-<body id="mainBody" class="font-sans min-h-screen p-4 md:p-8 text-lg">
-    <div id="mainContainer" class="max-w-5xl mx-auto shadow-2xl rounded-3xl p-6 md:p-10 space-y-8 relative overflow-hidden">
+<body class="bg-gradient-to-br from-cyan-50 via-teal-50 to-sky-100 text-slate-800 font-sans min-h-screen p-4 md:p-8 text-lg">
+    <div class="max-w-5xl mx-auto bg-white/95 backdrop-blur-md shadow-2xl rounded-3xl p-6 md:p-10 border-2 border-cyan-200 space-y-8 relative overflow-hidden">
         
-        <!-- 頂部標題與風格切換器 -->
-        <header class="border-b pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <!-- 頂部標題區 -->
+        <header class="border-b-2 border-cyan-100 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-                <h1 class="text-2xl md:text-3xl font-bold flex items-center gap-2">
-                    <span>📋</span> 幼兒園 IEP 雲端紀錄與智慧生成系統
+                <h1 class="text-2xl md:text-3xl font-bold text-teal-800 flex items-center gap-2">
+                    <span>🌊</span> 幼兒園 IEP 雲端紀錄與智慧生成系統 <span class="text-xs bg-cyan-100 text-teal-800 px-3 py-1 rounded-full border border-cyan-200">藍綠雙色專業版</span>
                 </h1>
-                <p class="text-base opacity-80 mt-1">隨手記錄學生狀況，支援隨時修改與編輯，期末一鍵生成教育目標表 ✨</p>
+                <p class="text-base text-teal-600 mt-1">隨手記錄學生狀況，支援修改與編輯，期末一鍵生成教育目標表 ✨</p>
             </div>
-            
-            <div class="flex flex-wrap gap-2 items-center bg-black/5 dark:bg-white/10 p-2 rounded-2xl">
-                <span class="text-sm font-bold px-1">🎨 風格：</span>
-                <button onclick="setTheme('pink')" class="bg-pink-400 hover:bg-pink-500 text-white text-sm font-bold px-3 py-1.5 rounded-xl transition shadow">🌸 甜美粉</button>
-                <button onclick="setTheme('green')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-3 py-1.5 rounded-xl transition shadow">🌿 森林綠</button>
-                <button onclick="setTheme('dark')" class="bg-slate-900 hover:bg-black text-white text-sm font-bold px-3 py-1.5 rounded-xl transition shadow">🌙 暗夜黑</button>
-                <button onclick="setTheme('warm')" class="bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold px-3 py-1.5 rounded-xl transition shadow">☕ 暖奶茶</button>
+            <div>
+                <button onclick="loadSampleToCloudInput()" class="bg-cyan-100 hover:bg-cyan-200 text-teal-800 text-sm font-bold px-4 py-2.5 rounded-2xl transition border border-cyan-300 shadow-sm">
+                    🌿 載入測試範例 (小華)
+                </button>
             </div>
         </header>
 
         <!-- 第一部分：平日隨手建置觀察紀錄到雲端 -->
-        <div class="bg-black/5 dark:bg-white/5 p-6 rounded-3xl border space-y-4 shadow-inner">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <span>📝</span> 平日隨手記錄（上傳至雲端）
-                </h2>
-                <button onclick="loadSampleToCloudInput()" class="bg-black/10 hover:bg-black/20 dark:bg-white/20 text-sm font-bold px-4 py-2 rounded-xl transition">
-                    🌿 載入測試範例 (小華)
-                </button>
-            </div>
+        <div class="bg-cyan-50/70 p-6 rounded-3xl border-2 border-cyan-200 space-y-4 shadow-inner">
+            <h2 class="text-xl font-bold text-teal-900 flex items-center gap-2">
+                <span>📝</span> 平日隨手記錄（上傳至藍綠雲端）
+            </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-bold mb-1">學生姓名</label>
-                    <input type="text" id="inputStudentName" placeholder="例如：小華" class="w-full p-3 bg-white dark:bg-slate-700 border-2 rounded-2xl text-base focus:ring-2 focus:outline-none dark:text-white">
+                    <label class="block text-sm font-bold text-teal-800 mb-1">學生姓名</label>
+                    <input type="text" id="inputStudentName" placeholder="例如：小華" class="w-full p-3 bg-white border-2 border-cyan-200 rounded-2xl text-base focus:ring-2 focus:ring-teal-400 focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-sm font-bold mb-1">觀察日期</label>
-                    <input type="date" id="inputDate" class="w-full p-3 bg-white dark:bg-slate-700 border-2 rounded-2xl text-base focus:ring-2 focus:outline-none dark:text-white">
+                    <label class="block text-sm font-bold text-teal-800 mb-1">觀察日期</label>
+                    <input type="date" id="inputDate" class="w-full p-3 bg-white border-2 border-cyan-200 rounded-2xl text-base focus:ring-2 focus:ring-teal-400 focus:outline-none">
                 </div>
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-bold mb-1">觀察紀錄內容</label>
-                    <textarea id="inputContent" rows="3" class="w-full p-3 bg-white dark:bg-slate-700 border-2 rounded-2xl text-base focus:ring-2 focus:outline-none dark:text-white" placeholder="記錄學生的特殊狀況、行為或對話..."></textarea>
+                    <label class="block text-sm font-bold text-teal-800 mb-1">觀察紀錄內容</label>
+                    <textarea id="inputContent" rows="3" class="w-full p-3 bg-white border-2 border-cyan-200 rounded-2xl text-base focus:ring-2 focus:ring-teal-400 focus:outline-none" placeholder="記錄學生的特殊狀況、行為或對話..."></textarea>
                 </div>
             </div>
             <div class="flex gap-3">
-                <button onclick="saveObservation()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-3 rounded-2xl transition shadow-lg text-base flex items-center gap-1">
-                    <span id="submitBtnText">💚 新增至雲端資料庫</span>
+                <button onclick="saveObservation()" class="bg-teal-700 hover:bg-teal-800 text-white font-bold px-8 py-3 rounded-2xl transition shadow-lg shadow-teal-700/20 text-base flex items-center gap-1">
+                    <span id="submitBtnText">🌊 儲存至藍綠雲端資料庫</span>
                 </button>
                 <button id="cancelEditBtn" onclick="cancelEdit()" class="hidden bg-slate-500 hover:bg-slate-600 text-white font-bold px-6 py-3 rounded-2xl transition text-base">
                     ✖️ 取消編輯
@@ -412,31 +380,31 @@
         </div>
 
         <!-- 第二部分：期末一鍵撈取與 IEP 生成 -->
-        <div class="bg-black/5 dark:bg-white/5 p-6 rounded-3xl border space-y-4 shadow-inner">
-            <h2 class="text-xl font-bold flex items-center gap-2">
+        <div class="bg-teal-50/70 p-6 rounded-3xl border-2 border-teal-200 space-y-4 shadow-inner">
+            <h2 class="text-xl font-bold text-teal-900 flex items-center gap-2">
                 <span>✨</span> 期末一鍵生成 IEP 目標表
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                 <div>
-                    <label class="block text-sm font-bold mb-1">查詢學生姓名</label>
-                    <input type="text" id="targetStudentName" placeholder="例如：小華" class="w-full p-3 bg-white dark:bg-slate-700 border-2 rounded-2xl text-base focus:ring-2 focus:outline-none dark:text-white">
+                    <label class="block text-sm font-bold text-teal-800 mb-1">查詢學生姓名</label>
+                    <input type="text" id="targetStudentName" placeholder="例如：小華" class="w-full p-3 bg-white border-2 border-teal-200 rounded-2xl text-base focus:ring-2 focus:ring-teal-400 focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-sm font-bold mb-1">學年度 / 學期</label>
-                    <input type="text" id="semester" placeholder="例如：115學年度 第1學期" class="w-full p-3 bg-white dark:bg-slate-700 border-2 rounded-2xl text-base focus:ring-2 focus:outline-none dark:text-white">
+                    <label class="block text-sm font-bold text-teal-800 mb-1">學年度 / 學期</label>
+                    <input type="text" id="semester" placeholder="例如：115學年度 第1學期" class="w-full p-3 bg-white border-2 border-teal-200 rounded-2xl text-base focus:ring-2 focus:ring-teal-400 focus:outline-none">
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="loadCloudObservations()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-3 rounded-2xl transition text-base shadow">
+                    <button onclick="loadCloudObservations()" class="bg-cyan-700 hover:bg-cyan-800 text-white font-bold px-4 py-3 rounded-2xl transition text-base shadow">
                         🔍 讀取
                     </button>
-                    <button onclick="generateIEPFromCloud()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-2xl transition shadow-lg text-base flex-1">
+                    <button onclick="generateIEPFromCloud()" class="bg-teal-800 hover:bg-teal-900 text-white font-bold px-6 py-3 rounded-2xl transition shadow-lg text-base flex-1">
                         🚀 一鍵生成 IEP
                     </button>
                 </div>
             </div>
 
-            <div class="mt-4 pt-4 border-t border-black/10 dark:border-white/10">
-                <p class="text-sm font-bold mb-2">🌿 該學生已累積的雲端觀察紀錄（可隨時點擊編輯或刪除）：</p>
+            <div class="mt-4 pt-4 border-t border-teal-200">
+                <p class="text-sm font-bold text-teal-800 mb-2">🌿 該學生已累積的雲端觀察紀錄（可隨時點擊編輯或刪除）：</p>
                 <div id="cloudLogsList" class="space-y-2 max-h-48 overflow-y-auto pr-2">
                     <p class="text-sm opacity-60 italic">尚未載入紀錄，請先輸入學生姓名並點擊「讀取」。</p>
                 </div>
@@ -444,11 +412,11 @@
         </div>
 
         <!-- 第三部分：產出結果報表區 -->
-        <div id="reportSection" class="hidden space-y-6 pt-6 border-t-2">
+        <div id="reportSection" class="hidden space-y-6 pt-6 border-t-2 border-cyan-200">
             <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold">📄 產出之 IEP 教育目標對應表</h2>
+                <h2 class="text-xl font-bold text-teal-900">📄 產出之 IEP 教育目標對應表</h2>
                 <div class="flex gap-2">
-                    <button onclick="downloadWord()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-2xl transition shadow flex items-center gap-1 text-base">
+                    <button onclick="downloadWord()" class="bg-teal-700 hover:bg-teal-800 text-white font-bold px-5 py-2.5 rounded-2xl transition shadow flex items-center gap-1 text-base">
                         📥 下載 Word
                     </button>
                     <button onclick="printPDF()" class="bg-slate-700 hover:bg-slate-800 text-white font-bold px-5 py-2.5 rounded-2xl transition shadow flex items-center gap-1 text-base">
@@ -458,21 +426,21 @@
             </div>
 
             <!-- 可供預覽與匯出的表單外觀 -->
-            <div id="exportContent" class="bg-white text-slate-800 border-2 border-slate-300 rounded-3xl p-6 shadow-md space-y-6">
-                <div class="text-center border-b-2 pb-4">
-                    <h3 id="reportTitle" class="text-xl font-bold text-slate-900">幼兒個別化教育計畫 (IEP) - 教育目標</h3>
-                    <p id="reportSubtitle" class="text-sm text-slate-600 mt-1">學生：未填寫 | 學期：未填寫</p>
+            <div id="exportContent" class="bg-white text-slate-800 border-2 border-cyan-300 rounded-3xl p-6 shadow-md space-y-6">
+                <div class="text-center border-b-2 border-cyan-100 pb-4">
+                    <h3 id="reportTitle" class="text-xl font-bold text-teal-900">幼兒個別化教育計畫 (IEP) - 教育目標</h3>
+                    <p id="reportSubtitle" class="text-sm text-teal-600 mt-1">學生：未填寫 | 學期：未填寫</p>
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="w-full border-collapse border border-slate-400 text-base text-left">
+                    <table class="w-full border-collapse border border-cyan-300 text-base text-left">
                         <thead>
-                            <tr class="bg-slate-100 text-slate-900 text-center">
-                                <th class="border border-slate-400 p-3 w-32">需求領域</th>
-                                <th class="border border-slate-400 p-3">學年目標</th>
-                                <th class="border border-slate-400 p-3">學期目標</th>
-                                <th class="border border-slate-400 p-3 w-24">評量方法</th>
-                                <th class="border border-slate-400 p-3 w-28">通過標準</th>
+                            <tr class="bg-cyan-100 text-teal-900 text-center">
+                                <th class="border border-cyan-300 p-3 w-32">需求領域</th>
+                                <th class="border border-cyan-300 p-3">學年目標</th>
+                                <th class="border border-cyan-300 p-3">學期目標</th>
+                                <th class="border border-cyan-300 p-3 w-24">評量方法</th>
+                                <th class="border border-cyan-300 p-3 w-28">通過標準</th>
                             </tr>
                         </thead>
                         <tbody id="iepTableBody">
@@ -481,7 +449,7 @@
                     </table>
                 </div>
 
-                <div class="text-sm text-slate-600 space-y-1 pt-2 border-t border-slate-200">
+                <div class="text-sm text-teal-700 space-y-1 pt-2 border-t border-cyan-100">
                     <p>【評量方法代號說明】I：觀察、II：操作、III：口頭、IV：作品、V：其他</p>
                     <p>【通過標準說明】數字代表達成目標百分比（5: 80%以上, 4: 60~80%, 3: 40~60%, 2: 20~40%, 1: 20%以下），英文代表協助程度（A: 獨立完成, B: 口語提示, C: 部分動作提示, D: 完全動作協助, E: 無法完成）。</p>
                 </div>
