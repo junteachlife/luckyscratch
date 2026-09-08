@@ -4,15 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hello Kitty 幼兒園 IEP 雲端紀錄系統</title>
+
     <!-- 上方瀏覽器分頁顯示的 Kitty 蝴蝶結小圖案 -->
     <link rel="icon" href="https://images.emojiterra.com/google/android-11/512px/1f380.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
+
     <!-- 引入穩定的 docx 檔案生成套件 -->
     <script src="https://cdn.jsdelivr.net/npm/docx@7.3.0/build/index.js"></script>
+
     <!-- Firebase SDK (v9 Modular) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc, updateDoc, Timestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+        import {
+            getFirestore,
+            collection,
+            addDoc,
+            getDocs,
+            query,
+            where,
+            deleteDoc,
+            doc,
+            updateDoc,
+            Timestamp
+        } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCsMuJEUOsFXz4JsPctx8RAUn93xLHoc-c",
@@ -35,14 +50,46 @@
         }
 
         const domains = [
-            { id: "health", name: "健康狀況", keywords: ["發燒", "身體不適", "癲癇", "藥物", "體質", "病史", "健康"] },
-            { id: "sensory", name: "感官功能", keywords: ["視力", "聽力", "視茫茫", "聽不見", "觸覺敏感", "感官"] },
-            { id: "motor", name: "知覺動作", keywords: ["跑", "跳", "爬", "滑步車", "騎", "敲", "搖晃", "動作", "平衡", "拿", "推動", "門框", "攀爬", "跌倒"] },
-            { id: "communication", name: "溝通", keywords: ["說", "語言", "表達", "問", "回答", "大喊", "叫", "聲音", "溝通"] },
-            { id: "selfCare", name: "生活自理", keywords: ["吃飯", "穿鞋", "如廁", "洗手", "水壺", "收拾", "飯粒", "自理"] },
-            { id: "behavior", name: "情緒行為", keywords: ["生氣", "情緒", "大叫", "不順", "勸不回", "堅持", "洗書", "哭鬧", "破壞"] },
-            { id: "social", name: "人際互動", keywords: ["同學", "互動", "推擠", "喜歡", "追著", "分享", "載同學", "人際"] },
-            { id: "cognitive", name: "認知學習", keywords: ["教具", "操作", "學習", "原本", "順序", "理解", "認知"] }
+            {
+                id: "health",
+                name: "健康狀況",
+                keywords: ["發燒", "身體不適", "癲癇", "藥物", "體質", "病史", "健康"]
+            },
+            {
+                id: "sensory",
+                name: "感官功能",
+                keywords: ["視力", "聽力", "視茫茫", "聽不見", "觸覺敏感", "感官"]
+            },
+            {
+                id: "motor",
+                name: "知覺動作",
+                keywords: ["跑", "跳", "爬", "滑步車", "騎", "敲", "搖晃", "動作", "平衡", "拿", "推動", "門框", "攀爬", "跌倒"]
+            },
+            {
+                id: "communication",
+                name: "溝通",
+                keywords: ["說", "語言", "表達", "問", "回答", "大喊", "叫", "聲音", "溝通"]
+            },
+            {
+                id: "selfCare",
+                name: "生活自理",
+                keywords: ["吃飯", "穿鞋", "如廁", "洗手", "水壺", "收拾", "飯粒", "自理"]
+            },
+            {
+                id: "behavior",
+                name: "情緒行為",
+                keywords: ["生氣", "情緒", "大叫", "不順", "勸不回", "堅持", "洗書", "哭鬧", "破壞"]
+            },
+            {
+                id: "social",
+                name: "人際互動",
+                keywords: ["同學", "互動", "推擠", "喜歡", "追著", "分享", "載同學", "人際"]
+            },
+            {
+                id: "cognitive",
+                name: "認知學習",
+                keywords: ["教具", "操作", "學習", "原本", "順序", "理解", "認知"]
+            }
         ];
 
         const goalTemplates = {
@@ -50,586 +97,1651 @@
                 annual: "能展現合宜的身體動態自主控制與空間知覺，遵循各學習情境（如教室內移動、戶外活動）的常規與安全規範。",
                 semester: "在教室內移動與戶外活動（如騎滑步車）時，能保持安全距離與適當速度，減少奔跑、攀爬門框或追撞行為。"
             },
+
             behavior: {
                 annual: "在幼兒園一日作息中，能透過適當的表達與情緒調節策略取代情緒失控行為（如大叫, 敲打, 破壞物品）。",
                 semester: "面臨情境轉換或意見不合時，經提示能減少大叫、拿物品敲打桌面或破壞教具之行為，展現穩定的自我控制。"
             },
+
             social: {
                 annual: "在團體活動及遊戲中，能學習合宜的社會互動技巧與溝通方式，與同儕建立正向且尊重的互動關係。",
                 semester: "在團體與自由活動時，能減少肢體推擠與過度糾纏，以合宜方式（如口語表達、保持距離）與同儕互動。"
             },
+
             communication: {
                 annual: "能增進口語表達與溝通理解能力，在需求或情緒浮動時，能主動以口語或適切方式向師長表達。",
                 semester: "在日常作息與互動中，能透過口語清楚表達自身需求或感受，減少以大喊或不當聲音吸引注意的情況。"
             },
+
             selfCare: {
                 annual: "能獨立完成日常生活自理及學習常規要求，展現良好的生活習慣與衛生照顧能力。",
                 semester: "在用餐、喝水與收拾等生活作息中，能遵循指導完成自理程序，保持環境整潔與物品歸位。"
             },
+
             cognitive: {
                 annual: "能專注參與學習區活動與各項課程，展現良好的操作專注力與認知理解能力。",
                 semester: "在操作教具或進行學習活動時，能遵循操作常規，專注完成任務且不出現不當堅持行為。"
             },
+
             health: {
                 annual: "能維持良好的身心健康狀態，配合幼兒園健康與作息規範。",
                 semester: "能配合日常健康與作息安排，身體不適時能主動向師長反映。"
             },
+
             sensory: {
                 annual: "能適應日常環境中的感官刺激，展現平穩的感官調節能力。",
                 semester: "在各類感官與環境刺激下，能保持情緒平穩，不出現過度敏感或尋求刺激行為。"
             }
         };
 
-        // 將函式綁定到 window 確保全域呼叫正常
-        window.saveObservation = async function() {
+
+        // ==========================
+        // 儲存觀察紀錄
+        // ==========================
+
+        window.saveObservation = async function () {
+
             if (!db) {
                 alert("雲端資料庫尚未初始化，請檢查網路連線或 Firebase 設定！");
                 return;
             }
 
-            const studentName = document.getElementById('inputStudentName').value.trim();
-            const content = document.getElementById('inputContent').value.trim();
-            const date = document.getElementById('inputDate').value || new Date().toISOString().split('T')[0];
+            const studentName =
+                document.getElementById('inputStudentName').value.trim();
+
+            const content =
+                document.getElementById('inputContent').value.trim();
+
+            const date =
+                document.getElementById('inputDate').value ||
+                new Date().toISOString().split('T')[0];
+
 
             if (!studentName || !content) {
                 alert('請填寫學生姓名與觀察紀錄內容！');
                 return;
             }
 
+
             try {
+
                 if (editingDocId) {
-                    await updateDoc(doc(db, "observations", editingDocId), {
-                        studentName: studentName,
-                        content: content,
-                        date: date
-                    });
+
+                    await updateDoc(
+                        doc(db, "observations", editingDocId),
+                        {
+                            studentName: studentName,
+                            content: content,
+                            date: date
+                        }
+                    );
+
                     alert('🎀 觀察紀錄已成功更新！');
+
                     editingDocId = null;
-                    document.getElementById('submitBtnText').innerText = '儲存至雲端資料庫';
-                    document.getElementById('cancelEditBtn').classList.add('hidden');
+
+                    document.getElementById(
+                        'submitBtnText'
+                    ).innerText =
+                        '儲存至雲端資料庫';
+
+                    document.getElementById(
+                        'cancelEditBtn'
+                    ).classList.add('hidden');
+
                 } else {
-                    await addDoc(collection(db, "observations"), {
-                        studentName: studentName,
-                        content: content,
-                        date: date,
-                        createdAt: Timestamp.now()
-                    });
-                    alert('🎀 觀察紀錄已成功存入 Kitty 雲端資料庫！');
-                }
-                
-                document.getElementById('inputContent').value = '';
-                window.loadCloudObservations(studentName);
-            } catch (e) {
-                console.error("儲存錯誤詳情: ", e);
-                alert('儲存失敗！請檢查 Firebase 規則或 Firestore 是否已建立。');
-            }
-        };
 
-        window.loadCloudObservations = async function(targetName = null) {
-            if (!db) {
-                alert("雲端資料庫尚未初始化！");
-                return;
-            }
+                    await addDoc(
+                        collection(db, "observations"),
+                        {
+                            studentName: studentName,
+                            content: content,
+                            date: date,
+                            createdAt: Timestamp.now()
+                        }
+                    );
 
-            const studentName = targetName || document.getElementById('targetStudentName').value.trim();
-            if (!studentName) {
-                alert('請先輸入要查詢的學生姓名！');
-                return;
-            }
-
-            document.getElementById('targetStudentName').value = studentName;
-            const listContainer = document.getElementById('cloudLogsList');
-            listContainer.innerHTML = '<p class="text-sm text-pink-500">🎀 正在從 Kitty 雲端載入紀錄中...</p>';
-
-            try {
-                const q = query(collection(db, "observations"), where("studentName", "==", studentName));
-                const querySnapshot = await getDocs(q);
-                
-                listContainer.innerHTML = '';
-                if (querySnapshot.empty) {
-                    listContainer.innerHTML = '<p class="text-sm text-pink-400">目前雲端無此學生的觀察紀錄。</p>';
-                    return;
+                    alert(
+                        '🎀 觀察紀錄已成功存入 Kitty 雲端資料庫！'
+                    );
                 }
 
-                querySnapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const safeContent = (data.content || "").replace(/`/g, '\\`');
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = "bg-white border border-pink-200 p-3 rounded-2xl text-base flex justify-between items-start gap-2 shadow-sm";
-                    itemDiv.innerHTML = `
-                        <div>
-                            <span class="font-bold text-pink-600">[${data.date || '未填日期'}]</span> 
-                            <span>${data.content || ''}</span>
-                        </div>
-                        <div class="flex gap-1 shrink-0">
-                            <button onclick="startEdit('${docSnap.id}', '${data.date || ''}', '${data.studentName || ''}', \`${safeContent}\`)" class="bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-bold px-2.5 py-1.5 rounded-xl transition">✏️ 編輯</button>
-                            <button onclick="deleteLog('${docSnap.id}', '${studentName}')" class="bg-rose-400 hover:bg-rose-500 text-white text-xs font-bold px-2.5 py-1.5 rounded-xl transition">🗑️ 刪除</button>
-                        </div>
-                    `;
-                    listContainer.appendChild(itemDiv);
-                });
-            } catch (e) {
-                console.error("讀取錯誤詳情: ", e);
-                listContainer.innerHTML = '<p class="text-sm text-rose-500">載入失敗，請確認 Firebase 規則。</p>';
-            }
-        };
 
-        window.startEdit = function(docId, date, studentName, content) {
-            editingDocId = docId;
-            document.getElementById('inputStudentName').value = studentName;
-            document.getElementById('inputDate').value = date;
-            document.getElementById('inputContent').value = content;
-            document.getElementById('submitBtnText').innerText = '💾 確認更新雲端紀錄';
-            document.getElementById('cancelEditBtn').classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
+                document.getElementById(
+                    'inputContent'
+                ).value = '';
 
-        window.cancelEdit = function() {
-            editingDocId = null;
-            document.getElementById('inputContent').value = '';
-            document.getElementById('submitBtnText').innerText = '儲存至雲端資料庫';
-            document.getElementById('cancelEditBtn').classList.add('hidden');
-        };
-
-        window.deleteLog = async function(docId, studentName) {
-            if (confirm('確定要永久刪除這筆紀錄嗎？')) {
-                try {
-                    await deleteDoc(doc(db, "observations", docId));
-                    window.loadCloudObservations(studentName);
-                } catch (e) {
-                    console.error("刪除失敗: ", e);
-                    alert("刪除失敗，請檢查網路或權限。");
-                }
-            }
-        };
-
-        let generatedDataCache = null;
-
-        window.generateIEPFromCloud = async function() {
-            if (!db) {
-                alert("雲端資料庫尚未初始化！");
-                return;
-            }
-
-            const studentName = document.getElementById('targetStudentName').value.trim();
-            const semester = document.getElementById('semester').value.trim() || '當學期';
-
-            if (!studentName) {
-                alert('請先輸入學生姓名！');
-                return;
-            }
-
-            try {
-                const q = query(collection(db, "observations"), where("studentName", "==", studentName));
-                const querySnapshot = await getDocs(q);
-
-                if (querySnapshot.empty) {
-                    alert('雲端找不到該學生的觀察紀錄，無法生成 IEP！');
-                    return;
-                }
-
-                let allTexts = [];
-                querySnapshot.forEach((docSnap) => {
-                    if (docSnap.data().content) {
-                        allTexts.push(docSnap.data().content);
-                    }
-                });
-
-                let domainMatches = {};
-                domains.forEach(d => domainMatches[d.id] = 0);
-
-                allTexts.forEach(text => {
-                    domains.forEach(d => {
-                        d.keywords.forEach(kw => {
-                            if (text.includes(kw)) {
-                                domainMatches[d.id]++;
-                            }
-                        });
-                    });
-                });
-
-                let activeDomains = domains.filter(d => domainMatches[d.id] > 0);
-                if (activeDomains.length === 0) {
-                    activeDomains = [domains[2], domains[5], domains[6]];
-                }
-
-                generatedDataCache = { studentName, semester, activeDomains };
-
-                document.getElementById('reportTitle').innerText = `幼兒個別化教育計畫 (IEP) - 教育目標表`;
-                document.getElementById('reportSubtitle').innerText = `🎀 學生：${studentName} | 學期：${semester} 🎀`;
-
-                const tbody = document.getElementById('iepTableBody');
-                tbody.innerHTML = '';
-
-                activeDomains.forEach(d => {
-                    const template = goalTemplates[d.id] || {
-                        annual: `能於各項學習與作息中展現合宜的${d.name}能力與適應表現。`,
-                        semester: `在引導與支持下，能改善${d.name}方面的困難並提升穩定表現。`
-                    };
-
-                    let rowHtml = `
-                        <tr class="align-top">
-                            <td class="border border-pink-300 p-3 font-bold text-center bg-pink-50 text-pink-900">${d.name}</td>
-                            <td class="border border-pink-300 p-3">${template.annual}</td>
-                            <td class="border border-pink-300 p-3 space-y-1">
-                                <div>• <strong>第一學期：</strong>${template.semester}</div>
-                            </td>
-                            <td class="border border-pink-300 p-3 text-center font-medium">I、II</td>
-                            <td class="border border-pink-300 p-3 text-center font-medium">4A</td>
-                        </tr>
-                    `;
-                    tbody.innerHTML += rowHtml;
-                });
-
-                document.getElementById('reportSection').classList.remove('hidden');
-                document.getElementById('reportSection').scrollIntoView({ behavior: 'smooth' });
-
-            } catch (e) {
-                console.error("生成錯誤: ", e);
-                alert('生成 IEP 失敗，請確認網路連線。');
-            }
-        };
-
-        window.downloadWord = async function() {
-            if (!generatedDataCache) {
-                alert('請先點擊「一鍵生成 IEP」後再下載 Word！');
-                return;
-            }
-
-            if (!window.docx) {
-                alert('Word 套件尚在載入中，請稍候再試一次！');
-                return;
-            }
-
-            const { studentName, semester, activeDomains } = generatedDataCache;
-            const {
-                Document,
-                Packer,
-                Paragraph,
-                TextRun,
-                Table,
-                TableCell,
-                TableRow,
-                WidthType,
-                AlignmentType,
-                TableLayoutType,
-                VerticalAlign,
-                PageOrientation
-            } = window.docx;
-
-            // A4 直式：11906 x 16838 twips；四邊 720 twips（約 1.27 cm）
-            // 可用寬度 10466 twips，以下 5 欄加總固定為 10466，避免手機 Word 自動重排。
-            const PAGE_WIDTH = 11906;
-            const PAGE_HEIGHT = 16838;
-            const MARGIN = 720;
-            const TABLE_WIDTH = PAGE_WIDTH - (MARGIN * 2);
-            const COL_WIDTHS = [1500, 3000, 3400, 1100, 1466];
-            const FONT_NAME = 'Microsoft JhengHei';
-
-            function makeRun(text, options = {}) {
-                return new TextRun({
-                    text,
-                    font: FONT_NAME,
-                    size: options.size || 20,
-                    bold: options.bold || false,
-                    color: options.color || '222222'
-                });
-            }
-
-            function makeParagraph(text, options = {}) {
-                return new Paragraph({
-                    alignment: options.alignment || AlignmentType.LEFT,
-                    spacing: {
-                        before: 0,
-                        after: options.after ?? 80,
-                        line: options.line || 276
-                    },
-                    children: [makeRun(text, options)]
-                });
-            }
-
-            function makeCell(text, width, options = {}) {
-                return new TableCell({
-                    width: { size: width, type: WidthType.DXA },
-                    verticalAlign: options.verticalAlign || VerticalAlign.CENTER,
-                    margins: {
-                        top: 100,
-                        bottom: 100,
-                        left: 110,
-                        right: 110
-                    },
-                    children: [makeParagraph(text, {
-                        alignment: options.alignment || AlignmentType.LEFT,
-                        bold: options.bold || false,
-                        size: options.size || 19,
-                        after: 0,
-                        line: 260
-                    })]
-                });
-            }
-
-            const tableRows = [
-                new TableRow({
-                    cantSplit: true,
-                    tableHeader: true,
-                    children: [
-                        makeCell('需求領域', COL_WIDTHS[0], { alignment: AlignmentType.CENTER, bold: true }),
-                        makeCell('學年目標', COL_WIDTHS[1], { alignment: AlignmentType.CENTER, bold: true }),
-                        makeCell('學期目標', COL_WIDTHS[2], { alignment: AlignmentType.CENTER, bold: true }),
-                        makeCell('評量方法', COL_WIDTHS[3], { alignment: AlignmentType.CENTER, bold: true }),
-                        makeCell('通過標準', COL_WIDTHS[4], { alignment: AlignmentType.CENTER, bold: true })
-                    ]
-                })
-            ];
-
-            activeDomains.forEach(d => {
-                const template = goalTemplates[d.id] || {
-                    annual: `能於各項學習與作息中展現合宜的${d.name}能力與適應表現。`,
-                    semester: `在引導與支持下，能改善${d.name}方面的困難並提升穩定表現。`
-                };
-
-                tableRows.push(
-                    new TableRow({
-                        cantSplit: true,
-                        children: [
-                            makeCell(d.name, COL_WIDTHS[0], { alignment: AlignmentType.CENTER, bold: true, verticalAlign: VerticalAlign.CENTER }),
-                            makeCell(template.annual, COL_WIDTHS[1], { verticalAlign: VerticalAlign.TOP }),
-                            makeCell(`• 第一學期：${template.semester}`, COL_WIDTHS[2], { verticalAlign: VerticalAlign.TOP }),
-                            makeCell('I、II', COL_WIDTHS[3], { alignment: AlignmentType.CENTER, verticalAlign: VerticalAlign.CENTER }),
-                            makeCell('4A', COL_WIDTHS[4], { alignment: AlignmentType.CENTER, verticalAlign: VerticalAlign.CENTER })
-                        ]
-                    })
+                window.loadCloudObservations(
+                    studentName
                 );
-            });
 
-            const doc = new Document({
-                sections: [{
-                    properties: {
-                        page: {
-                            size: {
-                                width: PAGE_WIDTH,
-                                height: PAGE_HEIGHT,
-                                orientation: PageOrientation.PORTRAIT
-                            },
-                            margin: {
-                                top: MARGIN,
-                                right: MARGIN,
-                                bottom: MARGIN,
-                                left: MARGIN
+            } catch (e) {
+
+                console.error(
+                    "儲存錯誤詳情: ",
+                    e
+                );
+
+                alert(
+                    '儲存失敗！請檢查 Firebase 規則或 Firestore 是否已建立。'
+                );
+            }
+        };
+
+
+        // ==========================
+        // 讀取紀錄
+        // ==========================
+
+        window.loadCloudObservations =
+            async function (targetName = null) {
+
+                if (!db) {
+                    alert(
+                        "雲端資料庫尚未初始化！"
+                    );
+                    return;
+                }
+
+
+                const studentName =
+                    targetName ||
+                    document
+                        .getElementById(
+                            'targetStudentName'
+                        )
+                        .value
+                        .trim();
+
+
+                if (!studentName) {
+
+                    alert(
+                        '請先輸入要查詢的學生姓名！'
+                    );
+
+                    return;
+                }
+
+
+                document.getElementById(
+                    'targetStudentName'
+                ).value =
+                    studentName;
+
+
+                const listContainer =
+                    document.getElementById(
+                        'cloudLogsList'
+                    );
+
+
+                listContainer.innerHTML =
+                    '<p class="text-sm text-pink-500">🎀 正在從 Kitty 雲端載入紀錄中...</p>';
+
+
+                try {
+
+                    const q =
+                        query(
+                            collection(
+                                db,
+                                "observations"
+                            ),
+                            where(
+                                "studentName",
+                                "==",
+                                studentName
+                            )
+                        );
+
+
+                    const querySnapshot =
+                        await getDocs(q);
+
+
+                    listContainer.innerHTML =
+                        '';
+
+
+                    if (
+                        querySnapshot.empty
+                    ) {
+
+                        listContainer.innerHTML =
+                            '<p class="text-sm text-pink-400">目前雲端無此學生的觀察紀錄。</p>';
+
+                        return;
+                    }
+
+
+                    querySnapshot.forEach(
+                        (docSnap) => {
+
+                            const data =
+                                docSnap.data();
+
+
+                            const safeContent =
+                                (
+                                    data.content ||
+                                    ""
+                                )
+                                    .replace(
+                                        /`/g,
+                                        '\\`'
+                                    );
+
+
+                            const itemDiv =
+                                document.createElement(
+                                    'div'
+                                );
+
+
+                            itemDiv.className =
+                                "bg-white border border-pink-200 p-3 rounded-2xl text-base flex justify-between items-start gap-2 shadow-sm";
+
+
+                            itemDiv.innerHTML = `
+                                <div>
+
+                                    <span class="font-bold text-pink-600">
+                                        [${data.date || '未填日期'}]
+                                    </span>
+
+                                    <span>
+                                        ${data.content || ''}
+                                    </span>
+
+                                </div>
+
+                                <div class="flex gap-1 shrink-0">
+
+                                    <button
+                                        onclick="startEdit('${docSnap.id}', '${data.date || ''}', '${data.studentName || ''}', \`${safeContent}\`)"
+                                        class="bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-bold px-2.5 py-1.5 rounded-xl transition">
+
+                                        ✏️ 編輯
+
+                                    </button>
+
+                                    <button
+                                        onclick="deleteLog('${docSnap.id}', '${studentName}')"
+                                        class="bg-rose-400 hover:bg-rose-500 text-white text-xs font-bold px-2.5 py-1.5 rounded-xl transition">
+
+                                        🗑️ 刪除
+
+                                    </button>
+
+                                </div>
+                            `;
+
+
+                            listContainer.appendChild(
+                                itemDiv
+                            );
+                        }
+                    );
+
+                } catch (e) {
+
+                    console.error(
+                        "讀取錯誤詳情: ",
+                        e
+                    );
+
+
+                    listContainer.innerHTML =
+                        '<p class="text-sm text-rose-500">載入失敗，請確認 Firebase 規則。</p>';
+                }
+            };
+
+
+        // ==========================
+        // 編輯
+        // ==========================
+
+        window.startEdit =
+            function (
+                docId,
+                date,
+                studentName,
+                content
+            ) {
+
+                editingDocId =
+                    docId;
+
+
+                document.getElementById(
+                    'inputStudentName'
+                ).value =
+                    studentName;
+
+
+                document.getElementById(
+                    'inputDate'
+                ).value =
+                    date;
+
+
+                document.getElementById(
+                    'inputContent'
+                ).value =
+                    content;
+
+
+                document.getElementById(
+                    'submitBtnText'
+                ).innerText =
+                    '💾 確認更新雲端紀錄';
+
+
+                document.getElementById(
+                    'cancelEditBtn'
+                ).classList.remove(
+                    'hidden'
+                );
+
+
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            };
+
+
+        // ==========================
+        // 取消編輯
+        // ==========================
+
+        window.cancelEdit =
+            function () {
+
+                editingDocId =
+                    null;
+
+
+                document.getElementById(
+                    'inputContent'
+                ).value =
+                    '';
+
+
+                document.getElementById(
+                    'submitBtnText'
+                ).innerText =
+                    '儲存至雲端資料庫';
+
+
+                document.getElementById(
+                    'cancelEditBtn'
+                ).classList.add(
+                    'hidden'
+                );
+            };
+
+
+        // ==========================
+        // 刪除紀錄
+        // ==========================
+
+        window.deleteLog =
+            async function (
+                docId,
+                studentName
+            ) {
+
+                if (
+                    confirm(
+                        '確定要永久刪除這筆紀錄嗎？'
+                    )
+                ) {
+
+                    try {
+
+                        await deleteDoc(
+                            doc(
+                                db,
+                                "observations",
+                                docId
+                            )
+                        );
+
+
+                        window.loadCloudObservations(
+                            studentName
+                        );
+
+                    } catch (e) {
+
+                        console.error(
+                            "刪除失敗: ",
+                            e
+                        );
+
+
+                        alert(
+                            "刪除失敗，請檢查網路或權限。"
+                        );
+                    }
+                }
+            };
+
+
+        let generatedDataCache =
+            null;
+
+
+        // ==========================
+        // 生成 IEP
+        // ==========================
+
+        window.generateIEPFromCloud =
+            async function () {
+
+                if (!db) {
+
+                    alert(
+                        "雲端資料庫尚未初始化！"
+                    );
+
+                    return;
+                }
+
+
+                const studentName =
+                    document.getElementById(
+                        'targetStudentName'
+                    ).value.trim();
+
+
+                const semester =
+                    document.getElementById(
+                        'semester'
+                    ).value.trim() ||
+                    '當學期';
+
+
+                if (!studentName) {
+
+                    alert(
+                        '請先輸入學生姓名！'
+                    );
+
+                    return;
+                }
+
+
+                try {
+
+                    const q =
+                        query(
+                            collection(
+                                db,
+                                "observations"
+                            ),
+                            where(
+                                "studentName",
+                                "==",
+                                studentName
+                            )
+                        );
+
+
+                    const querySnapshot =
+                        await getDocs(q);
+
+
+                    if (
+                        querySnapshot.empty
+                    ) {
+
+                        alert(
+                            '雲端找不到該學生的觀察紀錄，無法生成 IEP！'
+                        );
+
+                        return;
+                    }
+
+
+                    let allTexts =
+                        [];
+
+
+                    querySnapshot.forEach(
+                        (docSnap) => {
+
+                            if (
+                                docSnap.data()
+                                    .content
+                            ) {
+
+                                allTexts.push(
+                                    docSnap.data()
+                                        .content
+                                );
                             }
                         }
-                    },
-                    children: [
-                        new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            spacing: { before: 0, after: 120, line: 300 },
-                            children: [makeRun('幼兒個別化教育計畫 (IEP) - 教育目標表', { bold: true, size: 28 })]
-                        }),
-                        new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            spacing: { before: 0, after: 180, line: 276 },
-                            children: [makeRun(`學生：${studentName}　｜　學期：${semester}`, { size: 20, color: '555555' })]
-                        }),
-                        new Table({
-                            rows: tableRows,
-                            width: { size: TABLE_WIDTH, type: WidthType.DXA },
-                            layout: TableLayoutType.FIXED,
-                            columnWidths: COL_WIDTHS
-                        }),
-                        new Paragraph({ text: '', spacing: { after: 80 } }),
-                        makeParagraph('【評量方法代號說明】I：觀察、II：操作、III：口頭、IV：作品、V：其他', {
-                            size: 16,
-                            color: '555555',
-                            after: 50,
-                            line: 240
-                        }),
-                        makeParagraph('【通過標準說明】數字代表達成目標百分比（5: 80%以上, 4: 60~80%），英文代表協助程度（A: 獨立完成, B: 口語提示）。', {
-                            size: 16,
-                            color: '555555',
-                            after: 0,
-                            line: 240
-                        })
-                    ]
-                }]
-            });
+                    );
 
-            try {
-                const blob = await Packer.toBlob(doc);
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${studentName}_IEP教育目標表.docx`;
-                a.style.display = 'none';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
 
-                // 手機瀏覽器有時需要一點時間完成下載後才能安全釋放 URL。
-                setTimeout(() => URL.revokeObjectURL(url), 3000);
-                alert('🎀 Word 檔案已產生完成！建議以 Microsoft Word 開啟，可獲得最穩定的版面。');
-            } catch (error) {
-                console.error('Word 產生失敗:', error);
-                alert('Word 檔案產生失敗，請重新整理頁面後再試一次。');
-            }
-        };
+                    let domainMatches =
+                        {};
 
-        window.printPDF = function() {
-            window.print();
-        };
 
-        window.loadSampleToCloudInput = function() {
-            document.getElementById('inputStudentName').value = "小華";
-            document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('inputContent').value = "上課期間會跑去操作學習區教具，勸不回且堅持操作，不順他意就大叫。";
-            document.getElementById('targetStudentName').value = "小華";
-        };
+                    domains.forEach(
+                        d =>
+                            domainMatches[d.id] =
+                                0
+                    );
 
-        window.onload = function() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('inputDate').value = today;
-        };
+
+                    allTexts.forEach(
+                        text => {
+
+                            domains.forEach(
+                                d => {
+
+                                    d.keywords.forEach(
+                                        kw => {
+
+                                            if (
+                                                text.includes(
+                                                    kw
+                                                )
+                                            ) {
+
+                                                domainMatches[
+                                                    d.id
+                                                ]++;
+                                            }
+                                        }
+                                    );
+                                }
+                            );
+                        }
+                    );
+
+
+                    let activeDomains =
+                        domains.filter(
+                            d =>
+                                domainMatches[
+                                    d.id
+                                ] > 0
+                        );
+
+
+                    if (
+                        activeDomains.length ===
+                        0
+                    ) {
+
+                        activeDomains = [
+                            domains[2],
+                            domains[5],
+                            domains[6]
+                        ];
+                    }
+
+
+                    generatedDataCache = {
+                        studentName,
+                        semester,
+                        activeDomains
+                    };
+
+
+                    document.getElementById(
+                        'reportTitle'
+                    ).innerText =
+                        '幼兒個別化教育計畫 (IEP) - 教育目標表';
+
+
+                    document.getElementById(
+                        'reportSubtitle'
+                    ).innerText =
+                        `🎀 學生：${studentName} | 學期：${semester} 🎀`;
+
+
+                    const tbody =
+                        document.getElementById(
+                            'iepTableBody'
+                        );
+
+
+                    tbody.innerHTML =
+                        '';
+
+
+                    activeDomains.forEach(
+                        d => {
+
+                            const template =
+                                goalTemplates[
+                                    d.id
+                                ] || {
+
+                                    annual:
+                                        `能於各項學習與作息中展現合宜的${d.name}能力與適應表現。`,
+
+                                    semester:
+                                        `在引導與支持下，能改善${d.name}方面的困難並提升穩定表現。`
+                                };
+
+
+                            const rowHtml = `
+                                <tr class="align-top">
+
+                                    <td class="border border-pink-300 p-3 font-bold text-center bg-pink-50 text-pink-900">
+                                        ${d.name}
+                                    </td>
+
+                                    <td class="border border-pink-300 p-3">
+                                        ${template.annual}
+                                    </td>
+
+                                    <td class="border border-pink-300 p-3 space-y-1">
+
+                                        <div>
+
+                                            • <strong>
+                                                第一學期：
+                                            </strong>
+
+                                            ${template.semester}
+
+                                        </div>
+
+                                    </td>
+
+                                    <td class="border border-pink-300 p-3 text-center font-medium">
+                                        I、II
+                                    </td>
+
+                                    <td class="border border-pink-300 p-3 text-center font-medium">
+                                        4A
+                                    </td>
+
+                                </tr>
+                            `;
+
+
+                            tbody.innerHTML +=
+                                rowHtml;
+                        }
+                    );
+
+
+                    document.getElementById(
+                        'reportSection'
+                    ).classList.remove(
+                        'hidden'
+                    );
+
+
+                    document.getElementById(
+                        'reportSection'
+                    ).scrollIntoView({
+                        behavior:
+                            'smooth'
+                    });
+
+
+                } catch (e) {
+
+                    console.error(
+                        "生成錯誤: ",
+                        e
+                    );
+
+
+                    alert(
+                        '生成 IEP 失敗，請確認網路連線。'
+                    );
+                }
+            };
+
+
+        // ====================================================
+        // Word 下載
+        // 此版本使用 docx 7.3.0 相容性較高的基本設定
+        // ====================================================
+
+        window.downloadWord =
+            async function () {
+
+                if (
+                    !generatedDataCache
+                ) {
+
+                    alert(
+                        '請先點擊「一鍵生成 IEP」後再下載 Word！'
+                    );
+
+                    return;
+                }
+
+
+                if (
+                    !window.docx
+                ) {
+
+                    alert(
+                        'Word 套件尚在載入中，請稍候再試一次！'
+                    );
+
+                    return;
+                }
+
+
+                const {
+                    studentName,
+                    semester,
+                    activeDomains
+                } =
+                    generatedDataCache;
+
+
+                const {
+                    Document,
+                    Packer,
+                    Paragraph,
+                    Table,
+                    TableCell,
+                    TableRow,
+                    WidthType,
+                    AlignmentType
+                } =
+                    window.docx;
+
+
+                // 五欄總寬 9000 DXA
+                // 不使用百分比寬度，
+                // 降低手機重新計算表格寬度的機率。
+
+                const COL_WIDTHS = [
+                    1250,
+                    2500,
+                    2900,
+                    1100,
+                    1250
+                ];
+
+
+                function makeCell(
+                    text,
+                    width,
+                    center = false,
+                    bold = false
+                ) {
+
+                    return new TableCell({
+
+                        width: {
+                            size: width,
+                            type: WidthType.DXA
+                        },
+
+                        children: [
+
+                            new Paragraph({
+
+                                text: text,
+
+                                alignment:
+                                    center
+                                        ? AlignmentType.CENTER
+                                        : AlignmentType.LEFT,
+
+                                run: {
+                                    bold: bold,
+                                    size: 18
+                                }
+                            })
+                        ]
+                    });
+                }
+
+
+                let tableRows = [
+
+                    new TableRow({
+
+                        children: [
+
+                            makeCell(
+                                '需求領域',
+                                COL_WIDTHS[0],
+                                true,
+                                true
+                            ),
+
+                            makeCell(
+                                '學年目標',
+                                COL_WIDTHS[1],
+                                true,
+                                true
+                            ),
+
+                            makeCell(
+                                '學期目標',
+                                COL_WIDTHS[2],
+                                true,
+                                true
+                            ),
+
+                            makeCell(
+                                '評量方法',
+                                COL_WIDTHS[3],
+                                true,
+                                true
+                            ),
+
+                            makeCell(
+                                '通過標準',
+                                COL_WIDTHS[4],
+                                true,
+                                true
+                            )
+                        ]
+                    })
+                ];
+
+
+                activeDomains.forEach(
+                    d => {
+
+                        const template =
+                            goalTemplates[
+                                d.id
+                            ] || {
+
+                                annual:
+                                    `能於各項學習與作息中展現合宜的${d.name}能力與適應表現。`,
+
+                                semester:
+                                    `在引導與支持下，能改善${d.name}方面的困難並提升穩定表現。`
+                            };
+
+
+                        tableRows.push(
+
+                            new TableRow({
+
+                                children: [
+
+                                    makeCell(
+                                        d.name,
+                                        COL_WIDTHS[0],
+                                        true,
+                                        true
+                                    ),
+
+                                    makeCell(
+                                        template.annual,
+                                        COL_WIDTHS[1]
+                                    ),
+
+                                    makeCell(
+                                        `• 第一學期：${template.semester}`,
+                                        COL_WIDTHS[2]
+                                    ),
+
+                                    makeCell(
+                                        'I、II',
+                                        COL_WIDTHS[3],
+                                        true
+                                    ),
+
+                                    makeCell(
+                                        '4A',
+                                        COL_WIDTHS[4],
+                                        true
+                                    )
+                                ]
+                            })
+                        );
+                    }
+                );
+
+
+                const wordDocument =
+                    new Document({
+
+                        sections: [
+
+                            {
+
+                                properties: {},
+
+                                children: [
+
+                                    new Paragraph({
+
+                                        text:
+                                            '幼兒個別化教育計畫 (IEP) - 教育目標表',
+
+                                        heading:
+                                            'Heading 1',
+
+                                        alignment:
+                                            AlignmentType.CENTER,
+
+                                        run: {
+                                            bold: true,
+                                            size: 28
+                                        }
+                                    }),
+
+
+                                    new Paragraph({
+
+                                        text:
+                                            `學生：${studentName} | 學期：${semester}`,
+
+                                        alignment:
+                                            AlignmentType.CENTER,
+
+                                        run: {
+                                            size: 20,
+                                            color:
+                                                '666666'
+                                        }
+                                    }),
+
+
+                                    new Paragraph({
+                                        text: ''
+                                    }),
+
+
+                                    new Table({
+
+                                        rows:
+                                            tableRows,
+
+                                        width: {
+                                            size: 9000,
+                                            type:
+                                                WidthType.DXA
+                                        }
+                                    }),
+
+
+                                    new Paragraph({
+                                        text: ''
+                                    }),
+
+
+                                    new Paragraph({
+
+                                        text:
+                                            '【評量方法代號說明】I：觀察、II：操作、III：口頭、IV：作品、V：其他',
+
+                                        run: {
+                                            size: 16,
+                                            color:
+                                                '666666'
+                                        }
+                                    }),
+
+
+                                    new Paragraph({
+
+                                        text:
+                                            '【通過標準說明】數字代表達成目標百分比（5: 80%以上, 4: 60~80%, 3: 40~60%, 2: 20~40%, 1: 20%以下），英文代表協助程度（A: 獨立完成, B: 口語提示, C: 部分動作提示, D: 完全動作協助, E: 無法完成）。',
+
+                                        run: {
+                                            size: 16,
+                                            color:
+                                                '666666'
+                                        }
+                                    })
+                                ]
+                            }
+                        ]
+                    });
+
+
+                try {
+
+                    const blob =
+                        await Packer.toBlob(
+                            wordDocument
+                        );
+
+
+                    const url =
+                        URL.createObjectURL(
+                            blob
+                        );
+
+
+                    const a =
+                        document.createElement(
+                            'a'
+                        );
+
+
+                    a.href =
+                        url;
+
+
+                    a.download =
+                        `${studentName}_IEP教育目標表.docx`;
+
+
+                    document.body.appendChild(
+                        a
+                    );
+
+
+                    a.click();
+
+
+                    document.body.removeChild(
+                        a
+                    );
+
+
+                    // 不立刻 revoke。
+                    // 手機瀏覽器有時下載還沒有完成，
+                    // 太快 revoke 可能造成檔案損毀。
+
+                    setTimeout(
+                        () => {
+                            URL.revokeObjectURL(
+                                url
+                            );
+                        },
+                        5000
+                    );
+
+
+                    alert(
+                        '🎀 Word 檔案已成功下載！'
+                    );
+
+
+                } catch (error) {
+
+                    console.error(
+                        'Word 產生失敗:',
+                        error
+                    );
+
+
+                    alert(
+                        'Word 檔案產生失敗，請重新整理頁面後再試一次。'
+                    );
+                }
+            };
+
+
+        // ==========================
+        // 列印
+        // ==========================
+
+        window.printPDF =
+            function () {
+
+                window.print();
+            };
+
+
+        // ==========================
+        // 測試資料
+        // ==========================
+
+        window.loadSampleToCloudInput =
+            function () {
+
+                document.getElementById(
+                    'inputStudentName'
+                ).value =
+                    "小華";
+
+
+                document.getElementById(
+                    'inputDate'
+                ).value =
+                    new Date()
+                        .toISOString()
+                        .split('T')[0];
+
+
+                document.getElementById(
+                    'inputContent'
+                ).value =
+                    "上課期間會跑去操作學習區教具，勸不回且堅持操作，不順他意就大叫。";
+
+
+                document.getElementById(
+                    'targetStudentName'
+                ).value =
+                    "小華";
+            };
+
+
+        // ==========================
+        // 預設日期
+        // ==========================
+
+        window.onload =
+            function () {
+
+                const today =
+                    new Date()
+                        .toISOString()
+                        .split('T')[0];
+
+
+                document.getElementById(
+                    'inputDate'
+                ).value =
+                    today;
+            };
+
     </script>
+
+
     <style>
+
         @media print {
+
             body * {
                 visibility: hidden;
             }
-            #exportContent, #exportContent * {
+
+
+            #exportContent,
+            #exportContent * {
+
                 visibility: visible;
             }
+
+
             #exportContent {
+
                 position: absolute;
+
                 left: 0;
+
                 top: 0;
+
                 width: 100%;
+
                 border: none !important;
+
                 box-shadow: none !important;
+
                 padding: 0 !important;
             }
         }
+
     </style>
+
 </head>
+
+
 <body class="bg-[#fff9fa] text-slate-800 font-sans min-h-screen p-4 md:p-8 text-lg">
-    <div class="max-w-5xl mx-auto bg-white/95 backdrop-blur-md shadow-xl rounded-3xl p-6 md:p-10 border-2 border-pink-200 space-y-8 relative overflow-hidden">
-        
-        <div class="absolute -top-6 -right-6 w-28 h-28 bg-pink-100 rounded-full opacity-40 pointer-events-none flex items-center justify-center text-4xl">🎀</div>
-        <div class="absolute top-32 -left-8 w-24 h-24 bg-rose-50 rounded-full opacity-40 pointer-events-none flex items-center justify-center text-3xl">🌸</div>
 
-        <header class="border-b-2 border-pink-100 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
-            <div>
-                <h1 class="text-2xl md:text-3xl font-bold text-pink-600 flex items-center gap-2">
-                    <span>🎀</span> 幼兒園 IEP 雲端紀錄與智慧生成系統 <span class="text-xs bg-pink-100 text-pink-600 px-3 py-1 rounded-full border border-pink-200 font-semibold">Kitty 柔和護眼版</span>
-                </h1>
-                <p class="text-base text-pink-400 mt-1">💕 溫馨記錄寶貝學生的點滴，期末一鍵生成精美 IEP 教育目標表 ✨</p>
-            </div>
-            <div>
-                <button onclick="loadSampleToCloudInput()" class="bg-pink-100 hover:bg-pink-200 text-pink-700 text-sm font-bold px-4 py-2.5 rounded-2xl transition border border-pink-300 shadow-sm flex items-center gap-1">
-                    🍓 載入測試範例 (小華)
-                </button>
-            </div>
-        </header>
 
-        <div class="bg-[#fff0f3]/70 p-6 rounded-3xl border-2 border-pink-200 space-y-4 shadow-inner relative z-10">
-            <h2 class="text-xl font-bold text-pink-700 flex items-center gap-2">
-                <span>📝</span> 平日隨手記錄（上傳至 Kitty 雲端）
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-bold text-pink-600 mb-1">學生姓名</label>
-                    <input type="text" id="inputStudentName" placeholder="例如：小華" class="w-full p-3 bg-white border-2 border-pink-200 rounded-2xl text-base focus:ring-2 focus:ring-pink-400 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-pink-600 mb-1">觀察日期</label>
-                    <input type="date" id="inputDate" class="w-full p-3 bg-white border-2 border-pink-200 rounded-2xl text-base focus:ring-2 focus:ring-pink-400 focus:outline-none">
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-bold text-pink-600 mb-1">觀察紀錄內容</label>
-                    <textarea id="inputContent" rows="3" class="w-full p-3 bg-white border-2 border-pink-200 rounded-2xl text-base focus:ring-2 focus:ring-pink-400 focus:outline-none" placeholder="記錄學生的特殊狀況、行為或對話..."></textarea>
-                </div>
-            </div>
-            <div class="flex gap-3">
-                <button onclick="saveObservation()" class="bg-pink-500 hover:bg-pink-600 text-white font-bold px-8 py-3 rounded-2xl transition shadow-lg shadow-pink-300 text-base flex items-center gap-1">
-                    <span>🎀</span> <span id="submitBtnText">儲存至雲端資料庫</span>
-                </button>
-                <button id="cancelEditBtn" onclick="cancelEdit()" class="hidden bg-slate-400 hover:bg-slate-500 text-white font-bold px-6 py-3 rounded-2xl transition text-base">
-                    ✖️ 取消編輯
-                </button>
-            </div>
+<div class="max-w-5xl mx-auto bg-white/95 backdrop-blur-md shadow-xl rounded-3xl p-6 md:p-10 border-2 border-pink-200 space-y-8 relative overflow-hidden">
+
+
+    <div class="absolute -top-6 -right-6 w-28 h-28 bg-pink-100 rounded-full opacity-40 pointer-events-none flex items-center justify-center text-4xl">
+
+        🎀
+
+    </div>
+
+
+    <div class="absolute top-32 -left-8 w-24 h-24 bg-rose-50 rounded-full opacity-40 pointer-events-none flex items-center justify-center text-3xl">
+
+        🌸
+
+    </div>
+
+
+    <!-- ========================== -->
+    <!-- 標題 -->
+    <!-- ========================== -->
+
+    <header class="border-b-2 border-pink-100 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
+
+
+        <div>
+
+            <h1 class="text-2xl md:text-3xl font-bold text-pink-600 flex items-center gap-2">
+
+                <span>
+                    🎀
+                </span>
+
+                幼兒園 IEP 雲端紀錄與智慧生成系統
+
+                <span class="text-xs bg-pink-100 text-pink-600 px-3 py-1 rounded-full border border-pink-200 font-semibold">
+
+                    Kitty 柔和護眼版
+
+                </span>
+
+            </h1>
+
+
+            <p class="text-base text-pink-400 mt-1">
+
+                💕 溫馨記錄寶貝學生的點滴，期末一鍵生成精美 IEP 教育目標表 ✨
+
+            </p>
+
         </div>
 
-        <div class="bg-[#fff5f6]/70 p-6 rounded-3xl border-2 border-pink-200 space-y-4 shadow-inner relative z-10">
-            <h2 class="text-xl font-bold text-pink-700 flex items-center gap-2">
-                <span>✨</span> 期末一鍵生成 IEP 目標表
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                <div>
-                    <label class="block text-sm font-bold text-pink-600 mb-1">查詢學生姓名</label>
-                    <input type="text" id="targetStudentName" placeholder="例如：小華" class="w-full p-3 bg-white border-2 border-pink-200 rounded-2xl text-base focus:ring-2 focus:ring-pink-400 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-pink-600 mb-1">學年度 / 學期</label>
-                    <input type="text" id="semester" placeholder="例如：115學年度 第1學期" class="w-full p-3 bg-white border-2 border-pink-200 rounded-2xl text-base focus:ring-2 focus:ring-pink-400 focus:outline-none">
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="loadCloudObservations()" class="bg-rose-400 hover:bg-rose-500 text-white font-bold px-4 py-3 rounded-2xl transition text-base shadow">
-                        🔍 讀取
-                    </button>
-                    <button onclick="generateIEPFromCloud()" class="bg-pink-600 hover:bg-pink-700 text-white font-bold px-6 py-3 rounded-2xl transition shadow-lg text-base flex-1">
-                        🚀 一鍵生成 IEP
-                    </button>
-                </div>
-            </div>
 
-            <div class="mt-4 pt-4 border-t border-pink-200">
-                <p class="text-sm font-bold text-pink-600 mb-2">🌸 該學生已累積的雲端觀察紀錄（可隨時點擊編輯或刪除）：</p>
-                <div id="cloudLogsList" class="space-y-2 max-h-48 overflow-y-auto pr-2">
-                    <p class="text-sm text-pink-300 italic">尚未載入紀錄，請先輸入學生姓名並點擊「讀取」。</p>
-                </div>
-            </div>
+        <div>
+
+            <button
+                onclick="loadSampleToCloudInput()"
+                class="bg-pink-100 hover:bg-pink-200 text-pink-700 text-sm font-bold px-4 py-2.5 rounded-2xl transition border border-pink-300 shadow-sm flex items-center gap-1">
+
+                🍓 載入測試範例 (小華)
+
+            </button>
+
         </div>
 
-        <div id="reportSection" class="hidden space-y-6 pt-6 border-t-2 border-pink-200 relative z-10">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold text-pink-700">📄 產出之 IEP 教育目標對應表</h2>
-                <div class="flex gap-2">
-                    <button onclick="downloadWord()" class="bg-pink-500 hover:bg-pink-600 text-white font-bold px-5 py-2.5 rounded-2xl transition shadow flex items-center gap-1 text-base">
-                        📥 下載 Word (.docx)
-                    </button>
-                    <button onclick="printPDF()" class="bg-slate-700 hover:bg-slate-800 text-white font-bold px-5 py-2.5 rounded-2xl transition shadow flex items-center gap-1 text-base">
-                        🖨️ 列印
-                    </button>
-                </div>
+    </header>
+
+
+    <!-- ========================== -->
+    <!-- 平日觀察 -->
+    <!-- ========================== -->
+
+    <div class="bg-[#fff0f3]/70 p-6 rounded-3xl border-2 border-pink-200 space-y-4 shadow-inner relative z-10">
+
+
+        <h2 class="text-xl font-bold text-pink-700 flex items-center gap-2">
+
+            <span>
+                📝
+            </span>
+
+            平日隨手記錄（上傳至 Kitty 雲端）
+
+        </h2>
+
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+
+            <div>
+
+                <label class="block text-sm font-bold text-pink-600 mb-1">
+
+                    學生姓名
+
+                </label>
+
+
+                <input
+                    type="text"
+                    id="inputStudentName"
+                    placeholder="例如：小華"
+                    class="w-full p-3 bg-white border-2 border-pink-200 rounded-2xl text-base focus:ring-2 focus:ring-pink-400 focus:outline-none">
+
             </div>
 
-            <div id="exportContent" class="bg-white text-slate-800 border-2 border-pink-300 rounded-3xl p-6 shadow-md space-y-6">
-                <div class="text-center border-b-2 border-pink-100 pb-4">
-                    <h3 id="reportTitle" class="text-xl font-bold text-pink-800">幼兒個別化教育計畫 (IEP) - 教育目標</h3>
-                    <p id="reportSubtitle" class="text-sm text-pink-500 mt-1">🎀 學生：未填寫 | 學期：未填寫 🎀</p>
-                </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full border-collapse border border-pink-300 text-base text-left">
-                        <thead>
-                            <tr class="bg-pink-100 text-pink-900 text-center">
-                                <th class="border border-pink-300 p-3 w-32">需求領域</th>
-                                <th class="border border-pink-300 p-3">學年目標</th>
-                                <th class="border border-pink-300 p-3">學期目標</th>
-                                <th class="border border-pink-300 p-3 w-24">評量方法</th>
-                                <th class="border border-pink-300 p-3 w-28">通過標準</th>
-                            </tr>
-                        </thead>
-                        <tbody id="iepTableBody">
-                        </tbody>
-                    </table>
-                </div>
+            <div>
 
-                <div class="text-sm text-pink-600 space-y-1 pt-2 border-t border-pink-100">
-                    <p>【評量方法代號說明】I：觀察、II：操作、III：口頭、IV：作品、V：其他</p>
-                    <p>【通過標準說明】數字代表達成目標百分比（5: 80%以上, 4: 60~80%, 3: 40~60%, 2: 20~40%, 1: 20%以下），英文代表協助程度（A: 獨立完成, B: 口語提示, C: 部分動作提示, D: 完全動作協助, E: 無法完成）。</p>
-                </div>
+                <label class="block text-sm font-bold text-pink-600 mb-1">
+
+                    觀察日期
+
+                </label>
+
+
+                <input
+                    type="date"
+                    id="inputDate"
+                    class="w-full p-3 bg-white border-2 border-pink-200 rounded-2xl text-base focus:ring-2 focus:ring-pink-400 focus:outline-none">
+
             </div>
+
+
+            <div class="md:col-span-2">
+
+                <label class="block text-sm font-bold text-pink-600 mb-1">
+
+                    觀察紀錄內容
+
+                </label>
+
+
+                <textarea
+                    id="inputContent"
+                    rows="3"
+                    class="w-full p-3 bg-white border-2 border-pink-200 rounded-2xl text-base focus:ring-2 focus:ring-pink-400 focus:outline-none"
+                    placeholder="記錄學生的特殊狀況、行為或對話..."></textarea>
+
+            </div>
+
+        </div>
+
+
+        <div class="flex gap-3">
+
+
+            <button
+                onclick="saveObservation()"
+                class="bg-pink-500 hover:bg-pink-600 text-white font-bold px-8 py-3 rounded-2xl transition shadow-lg shadow-pink-300 text-base flex items-center gap-1">
+
+                <span>
+                    🎀
+                </span>
+
+                <span id="submitBtnText">
+
+                    儲存至雲端資料庫
+
+                </span>
+
+            </button>
+
+
+            <button
+                id="cancelEditBtn"
+                onclick="cancelEdit()"
+                class="hidden bg-slate-400 hover:bg-slate-500 text-white font-bold px-6 py-3 rounded-2xl transition text-base">
+
+                ✖️ 取消編輯
+
+            </button>
+
         </div>
 
     </div>
+
+
+    <!-- ========================== -->
+    <!-- 產生 IEP -->
+    <!-- ========================== -->
+
+    <div class="bg-[#fff5f6]/70 p-6 rounded-3xl border-2 border-pink-200 space-y-4 shadow-inner relative z-10">
+
+
+        <h2 class="text-xl font-bold text-pink-700 flex items-center gap-2">
+
+            <span>
+                ✨
+            </span>
+
+            期末一鍵生成 IEP 目標表
+
+        </h2>
+
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+
+
+            <div>
+
+                <label class="block text-sm font-bold text-pink-600 mb-1">
+
+                    查詢學生姓名
+
+                </label>
+
+
+                <input
+                    type="text"
+                    id="targetStudentName"
+                    placeholder="例如：小華"
+                    class="w-full p-3 bg-white border-2 border-pink-200 rounded-2xl text-base focus:ring-2 focus:ring-pink-400 focus:outline-none">
+
+            </div>
+
+
+            <div>
+
+                <label class="block text-sm font-bold text-pink-600 mb-1">
+
+                    學年度 / 學期
+
+                </label>
+
+
+                <input
+                    type="text"
+                    id="semester"
+                    placeholder="例如：115學年度 第1學期"
+                    class="w-full p-3 bg-white border-2 border-pink-200 rounded-2xl text-base focus:ring-2 focus:ring-pink-400 focus:outline-none">
+
+            </div>
+
+
+            <div class="flex gap-2">
+
+
+                <button
+                    onclick="loadCloudObservations()"
+                    class="bg-rose-400 hover:bg-rose-500 text-white font-bold px-4 py-3 rounded-2xl transition text-base shadow">
+
+                    🔍 讀取
+
+                </button>
+
+
+                <button
+                    onclick="generateIEPFromCloud()"
+                    class="bg-pink-600 hover:bg-pink-700 text-white font-bold px-6 py-3 rounded-2xl transition shadow-lg text-base flex-1">
+
+                    🚀 一鍵生成 IEP
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="mt-4 pt-4 border-t border-pink-200">
+
+
+            <p class="text-sm font-bold text-pink-600 mb-2">
+
+                🌸 該學生已累積的雲端觀察紀錄（可隨時點擊編輯或刪除）：
+
+            </p>
+
+
+            <div
+                id="cloudLogsList"
+                class="space-y-2 max-h-48 overflow-y-auto pr-2">
+
+
+                <p class="text-sm text-pink-300 italic">
+
+                    尚未載入紀錄，請先輸入學生姓名並點擊「讀取」。
+
+                </p>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================== -->
+    <!-- IEP 報表 -->
+    <!-- ========================== -->
+
+    <div
+        id="reportSection"
+        class="hidden space-y-6 pt-6 border-t-2 border-pink-200 relative z-10">
+
+
+        <div class="flex justify-between items-center">
+
+
+            <h2 class="text-xl font-bold text-pink-700">
+
+                📄 產出之 IEP 教育目標對應表
+
+            </h2>
+
+
+            <div class="flex gap-2">
+
+
+                <button
+                    onclick="downloadWord()"
+                    class="bg-pink-500 hover:bg-pink-600 text-white font-bold px-5 py-2.5 rounded-2xl transition shadow flex items-center gap-1 text-base">
+
+                    📥 下載 Word (.docx)
+
+                </button>
+
+
+                <button
+                    onclick="printPDF()"
+                    class="bg-slate-700 hover:bg-slate-800 text-white font-bold px-5 py-2.5 rounded-2xl transition shadow flex items-center gap-1 text-base">
+
+                    🖨️ 列印
+
+                </button>
+
+
+            </div>
+
+        </div>
+
+
+        <div
+            id="exportContent"
+            class="bg-white text-slate-800 border-2 border-pink-300 rounded-3xl p-6 shadow-md space-y-6">
+
+
+            <div class="text-center border-b-2 border-pink-100 pb-4">
+
+
+                <h3
+                    id="reportTitle"
+                    class="text-xl font-bold text-pink-800">
+
+                    幼兒個別化教育計畫 (IEP) - 教育目標
+
+                </h3>
+
+
+                <p
+                    id="reportSubtitle"
+                    class="text-sm text-pink-500 mt-1">
+
+                    🎀 學生：未填寫 | 學期：未填寫 🎀
+
+                </p>
+
+
+            </div>
+
+
+            <div class="overflow-x-auto">
+
+
+                <table class="w-full border-collapse border border-pink-300 text-base text-left">
+
+
+                    <thead>
+
+
+                        <tr class="bg-pink-100 text-pink-900 text-center">
+
+
+                            <th class="border border-pink-300 p-3 w-32">
+
+                                需求領域
+
+                            </th>
+
+
+                            <th class="border border-pink-300 p-3">
+
+                                學年目標
+
+                            </th>
+
+
+                            <th class="border border-pink-300 p-3">
+
+                                學期目標
+
+                            </th>
+
+
+                            <th class="border border-pink-300 p-3 w-24">
+
+                                評量方法
+
+                            </th>
+
+
+                            <th class="border border-pink-300 p-3 w-28">
+
+                                通過標準
+
+                            </th>
+
+
+                        </tr>
+
+
+                    </thead>
+
+
+                    <tbody id="iepTableBody">
+                    </tbody>
+
+
+                </table>
+
+
+            </div>
+
+
+            <div class="text-sm text-pink-600 space-y-1 pt-2 border-t border-pink-100">
+
+
+                <p>
+
+                    【評量方法代號說明】I：觀察、II：操作、III：口頭、IV：作品、V：其他
+
+                </p>
+
+
+                <p>
+
+                    【通過標準說明】數字代表達成目標百分比（5: 80%以上, 4: 60~80%, 3: 40~60%, 2: 20~40%, 1: 20%以下），英文代表協助程度（A: 獨立完成, B: 口語提示, C: 部分動作提示, D: 完全動作協助, E: 無法完成）。
+
+                </p>
+
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+</div>
+
 </body>
+
 </html>
