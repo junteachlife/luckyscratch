@@ -189,7 +189,7 @@ summary{color:#6b4b2b!important}
       <input id="schoolAccount" autocomplete="username" inputmode="email" placeholder="只輸入 @ 前面的帳號" style="border-radius:10px 0 0 10px;min-width:0">
       <div id="schoolDomain" style="display:flex;align-items:center;padding:0 12px;border:1px solid #cfd4dc;border-left:0;border-radius:0 10px 10px 0;background:#f8fafc;font-weight:800;white-space:nowrap;color:#475467">@smail.ilc.edu.tw</div>
     </div>
-    <div id="accountHint" class="sub">學生帳號只要輸入 @smail.ilc.edu.tw 前面的部分即可。</div>
+    <div id="accountHint" class="sub">學生可輸入帳號前綴，或直接輸入完整的 @smail.ilc.edu.tw 學校 Email。</div>
   </div>
 
   <button id="googleLoginBtn" class="btn primary" style="width:100%;margin-top:8px" disabled>
@@ -283,22 +283,29 @@ function selectedSchoolDomain(){
   return SCHOOL_DOMAINS[$('#loginRole')?.value]||SCHOOL_DOMAINS.student;
 }
 function normalizeSchoolAccount(raw,domain){
-  let value=String(raw||'').trim().toLowerCase();
+  let value=String(raw||'').trim().toLowerCase().replace(/\s+/g,'');
   if(!value)return '';
+
+  // 可直接輸入完整學校 Email，也可以只輸入 @ 前面的帳號。
   if(value.includes('@')){
-    const [local,typedDomain]=value.split('@');
-    if(typedDomain!==domain)return '';
-    value=local;
+    const parts=value.split('@');
+    if(parts.length!==2)return '';
+    const local=parts[0].trim();
+    const typedDomain=parts[1].trim();
+    if(!local||typedDomain!==domain)return '';
+    return `${local}@${domain}`;
   }
-  return value?`${value}@${domain}`:'';
+
+  // 只輸入帳號前綴時，自動補上目前身分對應的學校網域。
+  return `${value}@${domain}`;
 }
 function updateLoginIdentityUI(){
   const role=$('#loginRole')?.value||'student';
   const domain=selectedSchoolDomain();
   $('#schoolDomain').textContent=`@${domain}`;
   $('#accountHint').textContent=role==='student'
-    ?'學生帳號只要輸入 @smail.ilc.edu.tw 前面的部分即可。'
-    :'老師／管理員帳號只要輸入 @tmail.ilc.edu.tw 前面的部分即可。';
+    ?'學生可輸入帳號前綴，或直接輸入完整的 @smail.ilc.edu.tw 學校 Email。'
+    :'老師／管理員可輸入帳號前綴，或直接輸入完整的 @tmail.ilc.edu.tw 學校 Email。';
 }
 
 $('#loginRole').addEventListener('change',()=>{
@@ -317,7 +324,7 @@ $('#googleLoginBtn').onclick=async()=>{
   const domain=selectedSchoolDomain();
   const fullEmail=normalizeSchoolAccount($('#schoolAccount').value,domain);
   if(!fullEmail){
-    msg($('#loginMsg'),`請輸入正確的${role==='student'?'學生':'老師'}學校帳號，只需要輸入 @${domain} 前面的部分。`,'error');
+    msg($('#loginMsg'),`請輸入正確的${role==='student'?'學生':'老師'}學校帳號；可輸入帳號前綴，或完整的 @${domain} Email。`,'error');
     $('#schoolAccount').focus();
     return;
   }
@@ -686,7 +693,7 @@ async function exportTeacherWeekExcel(){
     XLSX.writeFile(wb,`${safeFileName(currentAssignment.classId)}-${safeFileName(currentAssignment.scopeName)}-週成績-${d.start}-${d.end}.xlsx`)
   }catch(e){alert('Excel 下載失敗：'+e.message)}
 }
-function printTeacherWeekSummary(){const d=teacherWeekData();if(!d.tests.length)return alert('這個日期範圍沒有成績可列印。');openPrint(`${currentAssignment.classId}班｜${currentAssignment.scopeName}｜週成績`,`期間：${d.start} ～ ${d.end}`,['座號','姓名',...d.tests.map(t=>t.name)],d.rows.map(r=>[r.seat,esc(r.name),...r.values]),true)}
+function printTeacherWeekSummary(){const d=teacherWeekData();if(!d.tests.length)return alert('這個日期範圍沒有成績可列印。');openPrint(`${currentAssignment.classId}班｜${currentAssignment.scopeName}｜週成績`,`期間：${d.start} ～ ${d.end}`,['座號','姓名',...d.tests.map(t=>t.name)],d.rows.map(r=>[r.seat,esc(r.name),...r.values]),true,true)}
 
 /* ========================= 任課老師自選資料彙整 ========================= */
 function aggregateSelectionState(){
@@ -772,9 +779,9 @@ function openPrint(title,meta,headers,rows,landscape=false,fitOnePage=false){
 
   const manyCols=headers.length>=8;
   const manyRows=rows.length>=28;
-  const printMargin=fitOnePage?'4mm':'10mm';
-  const bodyFont=fitOnePage?(manyCols?'7.2px':manyRows?'7.8px':'8.5px'):'11px';
-  const cellPad=fitOnePage?(manyRows?'1.1px 2px':'1.6px 2.5px'):'4px 6px';
+  const printMargin=fitOnePage?'3mm':'10mm';
+  const bodyFont=fitOnePage?(manyCols?'7px':manyRows?'7.5px':'8.2px'):'11px';
+  const cellPad=fitOnePage?(manyRows?'0.8px 2px':'1.3px 2.5px'):'4px 6px';
   const titleSize=fitOnePage?'13px':'1.5em';
   const infoSize=fitOnePage?'8px':'inherit';
 
@@ -785,7 +792,7 @@ function openPrint(title,meta,headers,rows,landscape=false,fitOnePage=false){
   body{font-family:"Microsoft JhengHei",sans-serif;color:#111;font-size:${bodyFont};line-height:${fitOnePage?'1.05':'1.25'}}
   h2{font-size:${titleSize};margin:0 0 ${fitOnePage?'2px':'5px'};line-height:1.1}
   .info{font-size:${infoSize};margin-bottom:${fitOnePage?'3px':'8px'};line-height:1.1}
-  table{width:100%;border-collapse:collapse;table-layout:${fitOnePage?'fixed':'auto'};page-break-inside:avoid}
+  table{width:100%;border-collapse:collapse;table-layout:${fitOnePage?'fixed':'auto'};page-break-inside:${fitOnePage?'auto':'avoid'};break-inside:${fitOnePage?'auto':'avoid'}}
   thead{display:table-header-group}
   tr{page-break-inside:avoid;break-inside:avoid}
   th,td{border:1px solid #888;padding:${cellPad};text-align:center;vertical-align:middle;white-space:${fitOnePage?'nowrap':'normal'};overflow:hidden;text-overflow:ellipsis}
