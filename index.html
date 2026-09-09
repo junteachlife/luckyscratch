@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-  <title>教師航海基地｜教學工具總入口</title>
+  <title>教師航海基地｜海賊地圖模式</title>
 
   <!-- 網頁小圖示：航 -->
   <link
@@ -18,7 +18,7 @@
     </svg>'
   />
 
-  <meta name="theme-color" content="#10182f" />
+  <meta name="theme-color" content="#0b1730" />
 
   <style>
     * {
@@ -29,8 +29,18 @@
 
     :root {
       --gold: #f6c453;
-      --white: #fffdf3;
-      --text-dark: #2d2018;
+      --gold-light: #ffe18b;
+      --paper: #e7cd91;
+      --paper-light: #f4e0ae;
+      --paper-dark: #b58c4f;
+      --ink: #3b2818;
+      --red: #c83b45;
+      --blue: #14325f;
+      --deep-blue: #081426;
+      --sea: #0f3154;
+      --wood: #70401f;
+      --wood-dark: #3a2115;
+      --white: #fffaf0;
     }
 
     html {
@@ -51,10 +61,9 @@
         sans-serif;
 
       background:
-        radial-gradient(circle at 15% 15%, rgba(54, 128, 255, 0.24), transparent 30%),
-        radial-gradient(circle at 85% 20%, rgba(250, 190, 60, 0.12), transparent 28%),
-        radial-gradient(circle at 50% 100%, rgba(0, 153, 204, 0.22), transparent 40%),
-        linear-gradient(180deg, #08101f 0%, #102448 54%, #07101d 100%);
+        radial-gradient(circle at 18% 12%, rgba(60,110,200,.22), transparent 28%),
+        radial-gradient(circle at 82% 20%, rgba(246,196,83,.14), transparent 24%),
+        linear-gradient(180deg, #07111f, #0d2543 56%, #081523);
     }
 
     body::before {
@@ -62,16 +71,17 @@
       position: fixed;
       inset: 0;
       pointer-events: none;
-      opacity: 0.12;
-      background-image:
+      z-index: 100;
+      opacity: .12;
+
+      background:
         repeating-linear-gradient(
           0deg,
-          rgba(255,255,255,0.04) 0px,
-          rgba(255,255,255,0.04) 1px,
+          rgba(255,255,255,.035) 0,
+          rgba(255,255,255,.035) 1px,
           transparent 1px,
           transparent 5px
         );
-      z-index: 99;
     }
 
     a {
@@ -79,148 +89,136 @@
       text-decoration: none;
     }
 
-    button,
-    a {
-      -webkit-tap-highlight-color: transparent;
+    button {
+      font: inherit;
     }
 
-    /* 背景裝飾 */
-    .ocean-glow {
+    /* =========================
+       背景
+    ========================= */
+
+    .sea-glow {
       position: fixed;
       left: 0;
       right: 0;
-      bottom: -70px;
-      height: 260px;
+      bottom: -80px;
+      height: 320px;
       pointer-events: none;
       z-index: -1;
+
       background:
         radial-gradient(
           ellipse at center,
-          rgba(59, 190, 232, 0.38),
-          transparent 67%
+          rgba(43,180,230,.32),
+          transparent 68%
         );
-      filter: blur(12px);
+
+      filter: blur(18px);
     }
 
-    .floating-symbol {
+    .floating-bg {
       position: fixed;
       pointer-events: none;
-      opacity: 0.09;
-      user-select: none;
       z-index: -1;
-      filter: drop-shadow(0 8px 15px rgba(0,0,0,0.45));
-      animation: floatSymbol 8s ease-in-out infinite;
+      opacity: .07;
+      user-select: none;
+      animation: drift 9s ease-in-out infinite;
     }
 
-    .symbol-1 {
-      top: 13%;
+    .bg1 {
+      top: 8%;
       left: 4%;
-      font-size: clamp(65px, 9vw, 130px);
+      font-size: 120px;
     }
 
-    .symbol-2 {
-      top: 28%;
+    .bg2 {
+      top: 22%;
       right: 3%;
-      font-size: clamp(70px, 10vw, 150px);
-      animation-delay: -2.5s;
+      font-size: 140px;
+      animation-delay: -2s;
     }
 
-    .symbol-3 {
-      bottom: 7%;
-      left: 7%;
-      font-size: clamp(60px, 9vw, 120px);
+    .bg3 {
+      bottom: 9%;
+      left: 6%;
+      font-size: 110px;
       animation-delay: -4s;
     }
 
-    .symbol-4 {
-      bottom: 18%;
+    .bg4 {
+      bottom: 15%;
       right: 7%;
-      font-size: clamp(55px, 8vw, 110px);
+      font-size: 105px;
       animation-delay: -6s;
     }
 
-    @keyframes floatSymbol {
+    @keyframes drift {
       0%, 100% {
-        transform: translateY(0) rotate(-4deg);
+        transform: translateY(0) rotate(-3deg);
       }
 
       50% {
-        transform: translateY(-16px) rotate(4deg);
+        transform: translateY(-14px) rotate(4deg);
       }
     }
 
-    /* 頁首 */
+    /* =========================
+       頁首
+    ========================= */
+
     .hero {
-      position: relative;
-      padding: 42px 18px 26px;
+      padding: 34px 18px 22px;
       text-align: center;
     }
 
-    .top-badge {
+    .badge {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 9px;
-      margin-bottom: 18px;
-      padding: 8px 17px;
-      border: 2px solid rgba(246,196,83,0.78);
+      gap: 8px;
+
+      margin-bottom: 16px;
+      padding: 8px 16px;
+
+      border: 2px solid rgba(246,196,83,.72);
       border-radius: 999px;
+
       color: var(--gold);
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 900;
       letter-spacing: 2px;
-      background: rgba(7,12,27,0.7);
+
+      background: rgba(6,14,28,.72);
+
       box-shadow:
-        0 6px 25px rgba(0,0,0,0.25),
-        inset 0 0 14px rgba(246,196,83,0.08);
-      backdrop-filter: blur(10px);
+        0 7px 22px rgba(0,0,0,.28),
+        inset 0 0 12px rgba(246,196,83,.08);
     }
 
-    .logo-wrap {
-      width: 112px;
-      height: 112px;
-      margin: 0 auto 16px;
+    .hero-logo {
+      width: 108px;
+      height: 108px;
+      margin: 0 auto 15px;
+
       display: grid;
       place-items: center;
-      position: relative;
+
       border-radius: 50%;
+      border: 6px solid #f4d368;
+
       background:
-        radial-gradient(
-          circle at 35% 30%,
-          #ffe38c,
-          #eba52b 56%,
-          #7c3d16 100%
-        );
-      border: 6px solid #f9d66c;
+        radial-gradient(circle at 35% 30%, #ffe89b, #e8a12b 58%, #804217 100%);
+
       box-shadow:
-        0 0 0 5px #7a431c,
-        0 16px 30px rgba(0,0,0,0.38),
-        0 0 38px rgba(246,196,83,0.25);
+        0 0 0 5px #6d3b1b,
+        0 15px 30px rgba(0,0,0,.4),
+        0 0 28px rgba(246,196,83,.22);
+
       animation: logoFloat 4s ease-in-out infinite;
     }
 
-    .logo-wrap::before,
-    .logo-wrap::after {
-      content: "";
-      position: absolute;
-      width: 48px;
-      height: 8px;
-      border-radius: 999px;
-      background: #f3dfac;
-      z-index: -1;
-    }
-
-    .logo-wrap::before {
-      transform: rotate(36deg);
-    }
-
-    .logo-wrap::after {
-      transform: rotate(-36deg);
-    }
-
-    .logo-icon {
-      font-size: 58px;
-      filter: drop-shadow(0 4px 3px rgba(0,0,0,0.24));
+    .hero-logo span {
+      font-size: 56px;
     }
 
     @keyframes logoFloat {
@@ -229,365 +227,640 @@
       }
 
       50% {
-        transform: translateY(-8px) rotate(2deg);
+        transform: translateY(-7px) rotate(2deg);
       }
     }
 
-    .title {
-      font-size: clamp(32px, 6vw, 62px);
-      font-weight: 1000;
+    .hero h1 {
+      font-size: clamp(34px, 6vw, 60px);
       line-height: 1.08;
-      letter-spacing: 3px;
+      font-weight: 1000;
+      letter-spacing: 2px;
+
       text-shadow:
-        0 4px 0 #771826,
-        0 8px 16px rgba(0,0,0,0.48);
+        0 4px 0 #721b24,
+        0 8px 18px rgba(0,0,0,.48);
     }
 
-    .title .gold {
+    .hero h1 .gold {
       color: var(--gold);
     }
 
-    .title .red {
-      color: #e14d50;
+    .hero h1 .red {
+      color: #e24a52;
     }
 
-    .subtitle {
-      max-width: 760px;
-      margin: 14px auto 0;
+    .hero p {
+      max-width: 780px;
+      margin: 13px auto 0;
       color: #dce7ff;
-      font-size: clamp(14px, 2.6vw, 18px);
-      line-height: 1.8;
+      font-size: clamp(14px, 2.5vw, 18px);
+      line-height: 1.75;
       font-weight: 700;
     }
 
-    /* 公告 */
-    .notice-wrap {
-      width: min(900px, calc(100% - 30px));
-      margin: 4px auto 30px;
-    }
+    /* =========================
+       公告
+    ========================= */
 
     .notice {
-      position: relative;
-      overflow: hidden;
-      padding: 17px 20px;
-      color: var(--text-dark);
+      width: min(900px, calc(100% - 30px));
+      margin: 4px auto 26px;
+      padding: 15px 18px;
+
+      color: #332417;
       text-align: center;
       font-weight: 900;
       line-height: 1.65;
-      border: 3px solid #7b4a25;
-      border-radius: 8px;
+
+      border: 3px solid #76451f;
+      border-radius: 10px;
+
       background:
-        radial-gradient(circle at 20% 30%, rgba(122,73,36,0.09), transparent 22%),
-        radial-gradient(circle at 80% 65%, rgba(122,73,36,0.1), transparent 25%),
-        linear-gradient(135deg, #f6e3af, #e8c37e);
+        radial-gradient(circle at 18% 28%, rgba(110,61,27,.09), transparent 20%),
+        radial-gradient(circle at 82% 65%, rgba(110,61,27,.11), transparent 22%),
+        linear-gradient(135deg, #f3dfaa, #dbb66d);
+
       box-shadow:
-        0 10px 0 #4a2818,
-        0 18px 35px rgba(0,0,0,0.31);
+        0 8px 0 #422417,
+        0 17px 32px rgba(0,0,0,.31);
     }
 
-    /* 主內容 */
-    main {
-      width: min(1180px, calc(100% - 28px));
-      margin: 0 auto;
-      padding-bottom: 68px;
+    /* =========================
+       地圖外框
+    ========================= */
+
+    .map-wrap {
+      width: min(1220px, calc(100% - 24px));
+      margin: 0 auto 50px;
     }
 
-    .section-title {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      margin: 10px 0 24px;
-      color: var(--gold);
-      font-size: clamp(21px, 4vw, 30px);
-      font-weight: 1000;
-      letter-spacing: 2px;
-      text-shadow: 0 3px 8px rgba(0,0,0,0.45);
-    }
-
-    .section-title::before,
-    .section-title::after {
-      content: "";
-      width: min(120px, 16vw);
-      height: 3px;
-      border-radius: 999px;
-      background:
-        linear-gradient(
-          90deg,
-          transparent,
-          var(--gold),
-          transparent
-        );
-    }
-
-    .tool-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 22px;
-    }
-
-    /* 卡片 */
-    .tool-card {
-      --accent: #df3e46;
-
+    .map-frame {
       position: relative;
-      isolation: isolate;
-      overflow: hidden;
-      min-height: 244px;
-      padding: 22px 19px 19px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
+      padding: 22px;
 
-      border: 3px solid rgba(246,196,83,0.82);
+      border: 7px solid #6b3a1b;
+      border-radius: 26px;
+
+      background:
+        linear-gradient(145deg, #8a542b, #4b2918);
+
+      box-shadow:
+        0 14px 0 #2e1a11,
+        0 26px 48px rgba(0,0,0,.46),
+        inset 0 0 16px rgba(255,255,255,.08);
+    }
+
+    .map {
+      position: relative;
+      min-height: 920px;
+      overflow: hidden;
+
+      border: 4px solid #a6783d;
       border-radius: 18px;
 
       background:
-        linear-gradient(
-          160deg,
-          rgba(34,49,89,0.96),
-          rgba(10,17,35,0.96)
-        );
+        radial-gradient(circle at 22% 17%, rgba(120,86,42,.12), transparent 19%),
+        radial-gradient(circle at 75% 33%, rgba(120,86,42,.10), transparent 20%),
+        radial-gradient(circle at 40% 80%, rgba(120,86,42,.12), transparent 20%),
+        linear-gradient(135deg, #efd9a1, #d8b873 55%, #c99d5b);
 
       box-shadow:
-        0 9px 0 rgba(67,34,18,0.98),
-        0 15px 28px rgba(0,0,0,0.38),
-        inset 0 0 25px rgba(255,255,255,0.035);
-
-      transition:
-        transform 0.24s ease,
-        box-shadow 0.24s ease,
-        border-color 0.24s ease;
+        inset 0 0 55px rgba(73,43,18,.28);
     }
 
-    .tool-card::before {
-      content: "";
-      position: absolute;
-      z-index: -1;
-      inset: -80px auto auto -80px;
-      width: 190px;
-      height: 190px;
-      border-radius: 50%;
-      background: var(--accent);
-      opacity: 0.15;
-    }
-
-    .tool-card::after {
+    .map::before {
       content: "";
       position: absolute;
       inset: 0;
-      z-index: -1;
+      pointer-events: none;
+      opacity: .35;
+
       background:
-        linear-gradient(
-          120deg,
-          transparent 25%,
-          rgba(255,255,255,0.12) 42%,
-          transparent 58%
+        repeating-radial-gradient(
+          circle at 20% 30%,
+          transparent 0 20px,
+          rgba(93,55,24,.05) 21px 22px
         );
-      transform: translateX(-120%);
-      transition: transform 0.65s ease;
     }
 
-    .tool-card:hover {
-      transform: translateY(-8px) rotate(-0.4deg);
-      border-color: #fff1a4;
-      box-shadow:
-        0 10px 0 rgba(67,34,18,0.98),
-        0 24px 42px rgba(0,0,0,0.48),
-        0 0 24px rgba(246,196,83,0.2);
-    }
+    /* =========================
+       航線
+    ========================= */
 
-    .tool-card:hover::after {
-      transform: translateX(120%);
-    }
-
-    .card-top {
+    .route-svg {
+      position: absolute;
+      inset: 0;
       width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
     }
 
-    .card-tag {
-      padding: 5px 10px;
-      border-radius: 999px;
-      color: var(--gold);
-      font-size: 11px;
-      font-weight: 1000;
-      letter-spacing: 1px;
-      background: rgba(246,196,83,0.1);
-      border: 1px solid rgba(246,196,83,0.35);
+    .route {
+      fill: none;
+      stroke: rgba(91,57,26,.65);
+      stroke-width: 5;
+      stroke-dasharray: 14 14;
+      stroke-linecap: round;
     }
 
-    .card-dot {
-      width: 11px;
-      height: 11px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow:
-        0 0 0 5px rgba(255,255,255,0.07),
-        0 0 18px var(--accent);
+    .route-glow {
+      fill: none;
+      stroke: rgba(255,239,163,.33);
+      stroke-width: 10;
+      stroke-linecap: round;
     }
 
-    .tool-icon {
-      width: 82px;
-      height: 82px;
+    /* =========================
+       羅盤
+    ========================= */
+
+    .compass {
+      position: absolute;
+      left: 50%;
+      top: 47%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+
+      width: 130px;
+      height: 130px;
+
       display: grid;
       place-items: center;
-      margin: 8px auto 11px;
-      border-radius: 22px;
-      font-size: 43px;
+
+      border-radius: 50%;
+      border: 6px solid #8b5a2a;
 
       background:
-        linear-gradient(
-          145deg,
-          rgba(255,255,255,0.12),
-          #111a30
-        );
-
-      border: 2px solid rgba(255,255,255,0.14);
+        radial-gradient(circle, #f2d891 0 36%, #d4ab61 37% 57%, #7a4c26 58% 64%, #e8c46f 65%);
 
       box-shadow:
-        inset 0 4px 12px rgba(255,255,255,0.08),
-        0 10px 18px rgba(0,0,0,0.3);
+        0 10px 24px rgba(69,43,22,.32),
+        inset 0 0 16px rgba(87,50,20,.25);
 
-      transition: transform 0.25s ease;
+      color: #54351f;
+      font-size: 50px;
+
+      animation: compassPulse 4s ease-in-out infinite;
     }
 
-    .tool-card:hover .tool-icon {
-      transform: scale(1.08) rotate(3deg);
+    @keyframes compassPulse {
+      0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      50% {
+        transform: translate(-50%, -50%) scale(1.04);
+      }
     }
 
-    .tool-name {
-      margin-bottom: 7px;
+    /* =========================
+       島嶼
+    ========================= */
+
+    .island {
+      position: absolute;
+      z-index: 3;
+
+      width: 245px;
+      min-height: 170px;
+
+      padding: 20px 18px;
+
+      border: 4px solid #77451f;
+      border-radius: 44% 56% 50% 50% / 48% 42% 58% 52%;
+
+      cursor: pointer;
       text-align: center;
-      font-size: 20px;
-      font-weight: 1000;
-    }
-
-    .tool-desc {
-      min-height: 42px;
-      color: #b9c7e4;
-      text-align: center;
-      font-size: 13px;
-      line-height: 1.65;
-      font-weight: 600;
-    }
-
-    .open-btn {
-      width: 100%;
-      margin-top: 16px;
-      padding: 11px 14px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-
-      border: 2px solid rgba(246,196,83,0.65);
-      border-radius: 12px;
-
-      color: #201607;
-      font-size: 14px;
-      font-weight: 1000;
+      color: #302014;
 
       background:
-        linear-gradient(
-          180deg,
-          #ffe17a,
-          #e7a42a
-        );
+        radial-gradient(circle at 42% 30%, #f2df9a 0 24%, transparent 25%),
+        radial-gradient(circle at 70% 60%, rgba(61,130,70,.28), transparent 28%),
+        linear-gradient(150deg, #e4cb83 0%, #c99450 68%, #a66837 100%);
 
       box-shadow:
-        inset 0 2px 0 rgba(255,255,255,0.42),
-        0 4px 0 #8f571b;
+        0 12px 0 #6a3c22,
+        0 22px 32px rgba(67,40,20,.33),
+        inset 0 0 18px rgba(255,255,255,.18);
+
+      transition:
+        transform .25s ease,
+        box-shadow .25s ease;
     }
 
-    /* 各功能色彩 */
-    .card-class { --accent: #e0454f; }
-    .card-subclass { --accent: #2f9ee8; }
-    .card-studentwork { --accent: #4fc3f7; }
-    .card-workadmin { --accent: #ff7043; }
-    .card-math { --accent: #845ee6; }
-    .card-scratch { --accent: #f39a2d; }
-    .card-seat { --accent: #28b48a; }
-    .card-contact { --accent: #e262ae; }
-    .card-exam { --accent: #f0c02e; }
-    .card-birthday { --accent: #ff6f91; }
-    .card-running { --accent: #27c9c0; }
-    .card-dojo { --accent: #32c46a; }
+    .island:hover {
+      transform: translateY(-10px) scale(1.04) rotate(-1deg);
 
-    /* ClassDojo 特別卡 */
-    .tool-card.featured {
-      grid-column: span 3;
-      min-height: unset;
+      box-shadow:
+        0 13px 0 #6a3c22,
+        0 28px 38px rgba(67,40,20,.42),
+        0 0 30px rgba(246,196,83,.33),
+        inset 0 0 18px rgba(255,255,255,.2);
+    }
+
+    .island-icon {
+      width: 68px;
+      height: 68px;
+      margin: 0 auto 8px;
 
       display: grid;
-      grid-template-columns: auto 1fr auto;
-      gap: 20px;
-      align-items: center;
-      padding: 21px 24px;
+      place-items: center;
+
+      border-radius: 50%;
+      border: 3px solid #885323;
+
+      font-size: 36px;
+
+      background:
+        linear-gradient(145deg, #ffe79b, #d99d47);
+
+      box-shadow:
+        0 5px 0 #76451f,
+        inset 0 2px 7px rgba(255,255,255,.35);
     }
 
-    .tool-card.featured .tool-icon {
-      margin: 0;
-      width: 76px;
-      height: 76px;
+    .island-title {
+      font-size: 22px;
+      font-weight: 1000;
+      margin-bottom: 5px;
+      color: #4b2d18;
     }
 
-    .tool-card.featured .featured-info {
-      text-align: left;
+    .island-desc {
+      font-size: 12px;
+      line-height: 1.55;
+      font-weight: 700;
+      color: #6c4c2f;
     }
 
-    .tool-card.featured .tool-name,
-    .tool-card.featured .tool-desc {
-      text-align: left;
-      min-height: unset;
+    .island-count {
+      display: inline-block;
+      margin-top: 9px;
+      padding: 4px 10px;
+      border-radius: 999px;
+
+      font-size: 11px;
+      font-weight: 1000;
+
+      color: #5c371b;
+
+      background: rgba(255,248,218,.46);
+      border: 1px solid rgba(101,62,31,.27);
     }
 
-    .tool-card.featured .open-btn {
-      width: auto;
-      min-width: 150px;
-      margin: 0;
-      padding-inline: 18px;
+    /* 島嶼位置 */
+    .island-class {
+      top: 9%;
+      left: 7%;
     }
 
-    .divider {
-      margin: 46px auto 28px;
-      display: flex;
+    .island-learning {
+      top: 12%;
+      right: 7%;
+    }
+
+    .island-activity {
+      top: 48%;
+      left: 6%;
+    }
+
+    .island-life {
+      top: 58%;
+      right: 7%;
+    }
+
+    .island-external {
+      left: 50%;
+      bottom: 5%;
+      transform: translateX(-50%);
+    }
+
+    .island-external:hover {
+      transform: translateX(-50%) translateY(-10px) scale(1.04);
+    }
+
+    /* =========================
+       海浪 / 小船裝飾
+    ========================= */
+
+    .decor {
+      position: absolute;
+      z-index: 2;
+      pointer-events: none;
+      user-select: none;
+      opacity: .75;
+    }
+
+    .ship {
+      left: 45%;
+      top: 20%;
+      font-size: 56px;
+      animation: shipMove 6s ease-in-out infinite;
+    }
+
+    .waves1 {
+      left: 35%;
+      top: 34%;
+      font-size: 46px;
+      opacity: .45;
+    }
+
+    .waves2 {
+      right: 26%;
+      bottom: 18%;
+      font-size: 52px;
+      opacity: .42;
+    }
+
+    .treasure {
+      left: 31%;
+      bottom: 13%;
+      font-size: 52px;
+    }
+
+    .cloud {
+      right: 21%;
+      top: 8%;
+      font-size: 55px;
+      opacity: .34;
+    }
+
+    @keyframes shipMove {
+      0%, 100% {
+        transform: translateY(0) rotate(-2deg);
+      }
+
+      50% {
+        transform: translateY(-10px) rotate(3deg);
+      }
+    }
+
+    /* =========================
+       工具面板
+    ========================= */
+
+    .panel-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+
+      display: none;
       align-items: center;
       justify-content: center;
-      gap: 16px;
-      opacity: 0.76;
+
+      padding: 18px;
+
+      background: rgba(3,8,17,.72);
+      backdrop-filter: blur(5px);
     }
 
-    .divider-line {
-      width: min(220px, 28vw);
-      height: 2px;
+    .panel-backdrop.show {
+      display: flex;
+    }
+
+    .tool-panel {
+      width: min(760px, 100%);
+      max-height: 86vh;
+      overflow: auto;
+
+      border: 5px solid #76451f;
+      border-radius: 20px;
+
       background:
-        linear-gradient(
-          90deg,
-          transparent,
-          rgba(246,196,83,0.7),
-          transparent
-        );
+        linear-gradient(145deg, #f1dca5, #d5b36d);
+
+      box-shadow:
+        0 14px 0 #3f2417,
+        0 30px 60px rgba(0,0,0,.55);
+
+      color: #352417;
+
+      animation: panelIn .25s ease;
     }
 
-    .divider-icon {
+    @keyframes panelIn {
+      from {
+        opacity: 0;
+        transform: scale(.94) translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .panel-header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+
+      padding: 18px 20px;
+
+      border-bottom: 2px solid rgba(99,60,30,.25);
+
+      background:
+        linear-gradient(180deg, #f4e2af, #e2c47f);
+    }
+
+    .panel-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .panel-big-icon {
+      width: 50px;
+      height: 50px;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 50%;
+      border: 3px solid #855022;
+
+      background: #f4d888;
+
       font-size: 28px;
     }
 
+    .panel-title {
+      font-size: 22px;
+      font-weight: 1000;
+      color: #4b2e19;
+    }
+
+    .panel-subtitle {
+      margin-top: 2px;
+      font-size: 12px;
+      color: #765437;
+      font-weight: 700;
+    }
+
+    .close-btn {
+      width: 40px;
+      height: 40px;
+
+      border: none;
+      border-radius: 12px;
+
+      cursor: pointer;
+
+      background: #8f3d37;
+      color: white;
+
+      font-size: 19px;
+      font-weight: 1000;
+
+      box-shadow:
+        0 4px 0 #53241f;
+    }
+
+    .tool-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 14px;
+
+      padding: 18px;
+    }
+
+    .tool-link {
+      --accent: #3c8ad8;
+
+      position: relative;
+      overflow: hidden;
+
+      min-height: 125px;
+      padding: 15px;
+
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+
+      border: 3px solid #8a5a2b;
+      border-radius: 16px;
+
+      background:
+        linear-gradient(145deg, #fff0c3, #d8b467);
+
+      box-shadow:
+        0 6px 0 #75451f,
+        0 12px 20px rgba(83,50,24,.2);
+
+      transition: transform .2s ease;
+    }
+
+    .tool-link:hover {
+      transform: translateY(-4px);
+    }
+
+    .tool-link::before {
+      content: "";
+      position: absolute;
+
+      width: 110px;
+      height: 110px;
+
+      top: -48px;
+      left: -42px;
+
+      border-radius: 50%;
+
+      background: var(--accent);
+      opacity: .13;
+    }
+
+    .tool-icon {
+      width: 58px;
+      height: 58px;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 14px;
+
+      font-size: 29px;
+
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.75), rgba(255,231,164,.9));
+
+      border: 2px solid rgba(107,65,30,.34);
+    }
+
+    .tool-info {
+      min-width: 0;
+    }
+
+    .tool-name {
+      margin-bottom: 5px;
+      font-size: 16px;
+      font-weight: 1000;
+      color: #3f2818;
+    }
+
+    .tool-desc {
+      font-size: 12px;
+      line-height: 1.5;
+      font-weight: 700;
+      color: #795737;
+    }
+
+    .tool-open {
+      width: 36px;
+      height: 36px;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 10px;
+
+      color: #2e1c0d;
+      font-weight: 1000;
+
+      background:
+        linear-gradient(180deg, #ffe687, #e4a53a);
+
+      border: 1px solid rgba(104,66,28,.3);
+
+      box-shadow:
+        0 4px 0 #8a581d;
+    }
+
+    .t-class { --accent: #df4750; }
+    .t-subclass { --accent: #3a9ce4; }
+    .t-studentwork { --accent: #51c8f6; }
+    .t-admin { --accent: #ff764e; }
+    .t-exam { --accent: #f1c333; }
+    .t-math { --accent: #8660e7; }
+    .t-scratch { --accent: #f49c2c; }
+    .t-seat { --accent: #2ab590; }
+    .t-contact { --accent: #e264af; }
+    .t-birthday { --accent: #ff7195; }
+    .t-running { --accent: #2bc9c1; }
+    .t-dojo { --accent: #35bf68; }
+
+    /* =========================
+       頁尾
+    ========================= */
+
     footer {
-      padding: 4px 20px 34px;
+      padding: 0 18px 32px;
       text-align: center;
-      color: #8ea1c6;
+      color: #90a4c8;
     }
 
     .footer-title {
-      margin-bottom: 7px;
+      margin-bottom: 6px;
       color: var(--gold);
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 900;
       letter-spacing: 2px;
     }
@@ -597,597 +870,752 @@
       line-height: 1.7;
     }
 
-    .back-top {
-      position: fixed;
-      right: 18px;
-      bottom: 18px;
-      z-index: 20;
-
-      width: 48px;
-      height: 48px;
-
-      display: grid;
-      place-items: center;
-
-      border: 2px solid var(--gold);
-      border-radius: 50%;
-
-      color: var(--gold);
-      font-size: 20px;
-      cursor: pointer;
-
-      background: rgba(10,16,32,0.88);
-
-      box-shadow:
-        0 7px 20px rgba(0,0,0,0.35);
-
-      opacity: 0;
-      transform: translateY(15px);
-      pointer-events: none;
-      transition: 0.25s ease;
-    }
-
-    .back-top.show {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
-    }
+    /* =========================
+       平板
+    ========================= */
 
     @media (max-width: 900px) {
-      .tool-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+      .map {
+        min-height: 1020px;
       }
 
-      .tool-card.featured {
-        grid-column: span 2;
+      .island {
+        width: 220px;
+      }
+
+      .compass {
+        width: 115px;
+        height: 115px;
       }
     }
 
-    @media (max-width: 620px) {
+    /* =========================
+       手機：改成垂直航線
+    ========================= */
+
+    @media (max-width: 700px) {
+
       .hero {
-        padding-top: 28px;
+        padding-top: 26px;
       }
 
-      .logo-wrap {
+      .hero-logo {
         width: 92px;
         height: 92px;
       }
 
-      .logo-icon {
-        font-size: 48px;
+      .hero-logo span {
+        font-size: 47px;
       }
 
-      .title {
-        letter-spacing: 1px;
+      .map-frame {
+        padding: 12px;
+        border-width: 5px;
+        border-radius: 20px;
       }
 
-      main {
-        width: min(100% - 22px, 1180px);
-      }
+      .map {
+        min-height: auto;
+        padding: 26px 14px 34px;
 
-      .tool-grid {
-        grid-template-columns: 1fr;
-        gap: 18px;
-      }
-
-      .tool-card {
-        min-height: 222px;
-      }
-
-      .tool-card.featured {
-        grid-column: span 1;
         display: flex;
-        text-align: center;
+        flex-direction: column;
+        align-items: center;
+        gap: 28px;
       }
 
-      .tool-card.featured .tool-icon {
-        margin: 7px auto 10px;
+      .route-svg {
+        display: none;
       }
 
-      .tool-card.featured .featured-info,
-      .tool-card.featured .tool-name,
-      .tool-card.featured .tool-desc {
-        text-align: center;
+      .compass {
+        position: static;
+        transform: none;
+
+        width: 96px;
+        height: 96px;
+
+        margin: 4px auto;
+
+        font-size: 39px;
       }
 
-      .tool-card.featured .open-btn {
+      .island,
+      .island-class,
+      .island-learning,
+      .island-activity,
+      .island-life,
+      .island-external {
+        position: relative;
+        top: auto;
+        right: auto;
+        bottom: auto;
+        left: auto;
+
+        width: min(100%, 330px);
+        min-height: 155px;
+
+        transform: none;
+      }
+
+      .island:hover,
+      .island-external:hover {
+        transform: translateY(-6px) scale(1.02);
+      }
+
+      .island::after {
+        content: "⋮";
+        position: absolute;
+
+        left: 50%;
+        bottom: -34px;
+
+        transform: translateX(-50%);
+
+        color: rgba(95,59,27,.55);
+
+        font-size: 34px;
+        font-weight: 900;
+      }
+
+      .island:last-of-type::after {
+        display: none;
+      }
+
+      .decor {
+        display: none;
+      }
+
+      .tool-list {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .panel-header {
+        align-items: flex-start;
+      }
+
+      .panel-big-icon {
+        width: 44px;
+        height: 44px;
+        font-size: 24px;
+      }
+
+      .panel-title {
+        font-size: 19px;
+      }
+
+      .tool-link {
+        grid-template-columns: auto 1fr;
+      }
+
+      .tool-open {
+        grid-column: 1 / -1;
         width: 100%;
-        margin-top: 15px;
-      }
-
-      .section-title::before,
-      .section-title::after {
-        width: 42px;
+        height: 33px;
       }
     }
-
-    @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(25px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .tool-card {
-      opacity: 0;
-      animation: fadeUp 0.65s ease forwards;
-    }
-
-    .tool-card:nth-child(1) { animation-delay: 0.05s; }
-    .tool-card:nth-child(2) { animation-delay: 0.10s; }
-    .tool-card:nth-child(3) { animation-delay: 0.15s; }
-    .tool-card:nth-child(4) { animation-delay: 0.20s; }
-    .tool-card:nth-child(5) { animation-delay: 0.25s; }
-    .tool-card:nth-child(6) { animation-delay: 0.30s; }
-    .tool-card:nth-child(7) { animation-delay: 0.35s; }
-    .tool-card:nth-child(8) { animation-delay: 0.40s; }
-    .tool-card:nth-child(9) { animation-delay: 0.45s; }
-    .tool-card:nth-child(10) { animation-delay: 0.50s; }
-    .tool-card:nth-child(11) { animation-delay: 0.55s; }
-    .tool-card:nth-child(12) { animation-delay: 0.60s; }
 
     @media (prefers-reduced-motion: reduce) {
       *,
       *::before,
       *::after {
-        animation-duration: 0.01ms !important;
+        animation-duration: .01ms !important;
         animation-iteration-count: 1 !important;
         scroll-behavior: auto !important;
       }
     }
+
   </style>
 </head>
 
 <body>
 
-  <div class="ocean-glow"></div>
-  <div class="floating-symbol symbol-1">⚓</div>
-  <div class="floating-symbol symbol-2">🧭</div>
-  <div class="floating-symbol symbol-3">🪙</div>
-  <div class="floating-symbol symbol-4">🗺️</div>
+  <div class="sea-glow"></div>
 
+  <div class="floating-bg bg1">⚓</div>
+  <div class="floating-bg bg2">🧭</div>
+  <div class="floating-bg bg3">🪙</div>
+  <div class="floating-bg bg4">🗺️</div>
+
+  <!-- 頁首 -->
   <header class="hero">
 
-    <div class="top-badge">
+    <div class="badge">
       ⚓ TEACHER GRAND LINE ⚓
     </div>
 
-    <div class="logo-wrap">
-      <div class="logo-icon">🏴‍☠️</div>
+    <div class="hero-logo">
+      <span>🏴‍☠️</span>
     </div>
 
-    <h1 class="title">
+    <h1>
       <span class="gold">教師</span>
-      <span class="red">航海基地</span>
+      <span class="red">航海地圖</span>
     </h1>
 
-    <p class="subtitle">
-      教學、班級管理、學生作業、成績與日常工具的專屬總入口
+    <p>
+      以航海地圖探索不同教學島嶼，
+      點選島嶼即可展開該區工具。
       <br>
-      揚帆出航，選擇今天要前往的教學島嶼！
+      所有系統都會以新分頁開啟。
     </p>
 
   </header>
 
-  <section class="notice-wrap">
-    <div class="notice">
-      🏴‍☠️
-      <strong>航海公告：</strong>
-      點選下方功能卡，即會以新分頁開啟各個教學系統。
-      教師航海基地首頁會持續保留。
-    </div>
-  </section>
+  <div class="notice">
+    🗺️ <strong>航海提示：</strong>
+    點選地圖上的島嶼，即可查看該區所有工具。
+    找到目的地後，再點選工具直接啟航。
+  </div>
 
-  <main>
 
-    <h2 class="section-title">
-      ⚔️ 教師工具航線
-    </h2>
+  <!-- 地圖 -->
+  <main class="map-wrap">
 
-    <section class="tool-grid">
+    <div class="map-frame">
 
-      <!-- 導師班資料繳交 -->
-      <a
-        class="tool-card card-class"
-        href="https://junteachlife.github.io/luckyscratch/class-tracker.html"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <div class="card-top">
-          <span class="card-tag">CLASS</span>
-          <span class="card-dot"></span>
+      <div class="map">
+
+        <!-- 航線 -->
+        <svg
+          class="route-svg"
+          viewBox="0 0 1000 900"
+          preserveAspectRatio="none"
+        >
+
+          <path
+            class="route-glow"
+            d="
+              M 180 180
+              C 340 230, 390 330, 500 420
+              C 610 510, 740 560, 820 650
+              C 720 760, 610 790, 500 830
+            "
+          />
+
+          <path
+            class="route"
+            d="
+              M 180 180
+              C 340 230, 390 330, 500 420
+              C 610 510, 740 560, 820 650
+              C 720 760, 610 790, 500 830
+            "
+          />
+
+          <path
+            class="route-glow"
+            d="
+              M 820 190
+              C 720 270, 610 320, 500 420
+              C 390 510, 260 540, 170 590
+            "
+          />
+
+          <path
+            class="route"
+            d="
+              M 820 190
+              C 720 270, 610 320, 500 420
+              C 390 510, 260 540, 170 590
+            "
+          />
+
+        </svg>
+
+        <!-- 中央羅盤 -->
+        <div class="compass">
+          🧭
         </div>
 
-        <div class="tool-icon">📋</div>
+        <!-- 裝飾 -->
+        <div class="decor ship">⛵</div>
+        <div class="decor waves1">🌊</div>
+        <div class="decor waves2">🌊</div>
+        <div class="decor treasure">🧰</div>
+        <div class="decor cloud">☁️</div>
 
-        <div>
-          <h3 class="tool-name">導師班資料繳交系統</h3>
-          <p class="tool-desc">
-            管理導師班學生的資料、作業與各項繳交紀錄。
-          </p>
-        </div>
 
-        <div class="open-btn">
-          前往系統
-          <span>↗</span>
-        </div>
-      </a>
+        <!-- 班級管理島 -->
+        <button
+          class="island island-class"
+          onclick="openPanel('class')"
+        >
 
-      <!-- 任課班資料繳交 -->
-      <a
-        class="tool-card card-subclass"
-        href="https://junteachlife.github.io/luckyscratch/subclass-tracker.html"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <div class="card-top">
-          <span class="card-tag">SUBCLASS</span>
-          <span class="card-dot"></span>
-        </div>
+          <div class="island-icon">
+            🏝️
+          </div>
 
-        <div class="tool-icon">📚</div>
+          <div class="island-title">
+            班級管理島
+          </div>
 
-        <div>
-          <h3 class="tool-name">任課班資料繳交系統</h3>
-          <p class="tool-desc">
-            快速查看與管理各任課班級的學生繳交狀況。
-          </p>
-        </div>
+          <div class="island-desc">
+            收繳、學生平台與管理後台集中在這裡
+          </div>
 
-        <div class="open-btn">
-          前往系統
-          <span>↗</span>
-        </div>
-      </a>
+          <div class="island-count">
+            4 個工具
+          </div>
 
-      <!-- 學生作業成績繳交平台 -->
-      <a
-        class="tool-card card-studentwork"
-        href="https://junteachlife.github.io/luckyscratch/class-work.html"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <div class="card-top">
-          <span class="card-tag">STUDENT</span>
-          <span class="card-dot"></span>
-        </div>
+        </button>
 
-        <div class="tool-icon">👨‍🎓</div>
 
-        <div>
-          <h3 class="tool-name">學生作業成績繳交平台</h3>
-          <p class="tool-desc">
-            學生登入後查看授權任務、作業與成績登記內容。
-          </p>
-        </div>
+        <!-- 學習島 -->
+        <button
+          class="island island-learning"
+          onclick="openPanel('learning')"
+        >
 
-        <div class="open-btn">
-          開啟學生平台
-          <span>↗</span>
-        </div>
-      </a>
+          <div class="island-icon">
+            📚
+          </div>
 
-      <!-- 作業成績彙整後台 -->
-      <a
-        class="tool-card card-workadmin"
-        href="https://junteachlife.github.io/luckyscratch/class-datawork-admin.html"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <div class="card-top">
-          <span class="card-tag">ADMIN</span>
-          <span class="card-dot"></span>
-        </div>
+          <div class="island-title">
+            學習成績島
+          </div>
 
-        <div class="tool-icon">🧾</div>
+          <div class="island-desc">
+            數學練習、段考成績與學生學習入口
+          </div>
 
-        <div>
-          <h3 class="tool-name">作業成績彙整後台</h3>
-          <p class="tool-desc">
-            管理學生帳號、職務權限、作業繳交、成績與操作紀錄。
-          </p>
-        </div>
+          <div class="island-count">
+            2 個工具
+          </div>
 
-        <div class="open-btn">
-          進入管理後台
-          <span>↗</span>
-        </div>
-      </a>
+        </button>
 
-      <!-- 數學 -->
-      <a
-        class="tool-card card-math"
-        href="https://junteachlife.github.io/mathteach/"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <div class="card-top">
-          <span class="card-tag">MATH</span>
-          <span class="card-dot"></span>
-        </div>
 
-        <div class="tool-icon">🎮</div>
+        <!-- 活動島 -->
+        <button
+          class="island island-activity"
+          onclick="openPanel('activity')"
+        >
 
-        <div>
-          <h3 class="tool-name">數學練習網站</h3>
-          <p class="tool-desc">
-            進入數學遊戲與線上練習，展開數學冒險挑戰。
-          </p>
-        </div>
+          <div class="island-icon">
+            🎪
+          </div>
 
-        <div class="open-btn">
-          開始挑戰
-          <span>↗</span>
-        </div>
-      </a>
+          <div class="island-title">
+            教學活動島
+          </div>
 
-      <!-- 刮刮樂 -->
-      <a
-        class="tool-card card-scratch"
-        href="https://junteachlife.github.io/luckyscratch/mixscratch.html"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <div class="card-top">
-          <span class="card-tag">LUCKY</span>
-          <span class="card-dot"></span>
-        </div>
+          <div class="island-desc">
+            課堂互動、刮刮樂與座位安排
+          </div>
 
-        <div class="tool-icon">🎟️</div>
+          <div class="island-count">
+            2 個工具
+          </div>
 
-        <div>
-          <h3 class="tool-name">刮刮樂網站</h3>
-          <p class="tool-desc">
-            課堂抽獎、幸運挑戰與趣味活動的專屬刮刮樂。
-          </p>
-        </div>
+        </button>
 
-        <div class="open-btn">
-          開始刮獎
-          <span>↗</span>
-        </div>
-      </a>
 
-      <!-- 座位 -->
-      <a
-        class="tool-card card-seat"
-        href="https://junteachlife.github.io/luckyscratch/seat.html"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <div class="card-top">
-          <span class="card-tag">SEAT</span>
-          <span class="card-dot"></span>
-        </div>
+        <!-- 生活島 -->
+        <button
+          class="island island-life"
+          onclick="openPanel('life')"
+        >
 
-        <div class="tool-icon">💺</div>
+          <div class="island-icon">
+            🌴
+          </div>
 
-        <div>
-          <h3 class="tool-name">座位系統</h3>
-          <p class="tool-desc">
-            班級座位安排與學生位置管理工具。
-          </p>
-        </div>
+          <div class="island-title">
+            學生生活島
+          </div>
 
-        <div class="open-btn">
-          開啟座位表
-          <span>↗</span>
-        </div>
-      </a>
+          <div class="island-desc">
+            聯絡簿、生日提醒與跑步紀錄
+          </div>
 
-      <!-- 聯絡簿 -->
-      <a
-        class="tool-card card-contact"
-        href="https://junteachlife.github.io/luckyscratch/contact-book.html"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <div class="card-top">
-          <span class="card-tag">CONTACT</span>
-          <span class="card-dot"></span>
-        </div>
+          <div class="island-count">
+            3 個工具
+          </div>
 
-        <div class="tool-icon">📒</div>
+        </button>
 
-        <div>
-          <h3 class="tool-name">聯絡簿登記系統</h3>
-          <p class="tool-desc">
-            整理每日聯絡事項、作業與班級重要提醒。
-          </p>
-        </div>
 
-        <div class="open-btn">
-          開啟聯絡簿
-          <span>↗</span>
-        </div>
-      </a>
+        <!-- 外部港口 -->
+        <button
+          class="island island-external"
+          onclick="openPanel('external')"
+        >
 
-      <!-- 段考成績 -->
-      <a
-        class="tool-card card-exam"
-        href="https://junteachlife.github.io/luckyscratch/examscore.html"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <div class="card-top">
-          <span class="card-tag">SCORE</span>
-          <span class="card-dot"></span>
-        </div>
+          <div class="island-icon">
+            ⚓
+          </div>
 
-        <div class="tool-icon">📊</div>
+          <div class="island-title">
+            外部工具港口
+          </div>
 
-        <div>
-          <h3 class="tool-name">學生段考成績查詢系統</h3>
-          <p class="tool-desc">
-            查詢學生段考成績、總分、平均、排名與學習表現。
-          </p>
-        </div>
+          <div class="island-desc">
+            前往其他常用教學與班級經營平台
+          </div>
 
-        <div class="open-btn">
-          查詢成績
-          <span>↗</span>
-        </div>
-      </a>
+          <div class="island-count">
+            1 個工具
+          </div>
 
-      <!-- 生日 -->
-      <a
-        class="tool-card card-birthday"
-        href="https://junteachlife.github.io/luckyscratch/birthday.html"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <div class="card-top">
-          <span class="card-tag">BIRTHDAY</span>
-          <span class="card-dot"></span>
-        </div>
+        </button>
 
-        <div class="tool-icon">🎂</div>
+      </div>
 
-        <div>
-          <h3 class="tool-name">生日提醒系統</h3>
-          <p class="tool-desc">
-            查看今日、本月與即將到來的壽星，快速製作生日祝福。
-          </p>
-        </div>
-
-        <div class="open-btn">
-          查看壽星
-          <span>↗</span>
-        </div>
-      </a>
-
-      <!-- 跑步 -->
-      <a
-        class="tool-card card-running"
-        href="https://junteachlife.github.io/luckyscratch/running.html"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <div class="card-top">
-          <span class="card-tag">RUNNING</span>
-          <span class="card-dot"></span>
-        </div>
-
-        <div class="tool-icon">🏃</div>
-
-        <div>
-          <h3 class="tool-name">跑步系統</h3>
-          <p class="tool-desc">
-            登記學生跑步圈數、查看歷史紀錄與每日運動成果。
-          </p>
-        </div>
-
-        <div class="open-btn">
-          開始登記
-          <span>↗</span>
-        </div>
-      </a>
-
-      <!-- ClassDojo -->
-      <a
-        class="tool-card featured card-dojo"
-        href="https://www.classdojo.com/"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <div class="tool-icon">🏫</div>
-
-        <div class="featured-info">
-          <h3 class="tool-name">ClassDojo</h3>
-          <p class="tool-desc">
-            前往 ClassDojo，進行班級經營、學生互動與親師聯繫。
-          </p>
-        </div>
-
-        <div class="open-btn">
-          前往 ClassDojo
-          <span>↗</span>
-        </div>
-      </a>
-
-    </section>
-
-    <div class="divider">
-      <div class="divider-line"></div>
-      <div class="divider-icon">🧭</div>
-      <div class="divider-line"></div>
     </div>
 
   </main>
 
+
+  <!-- 彈出面板 -->
+  <div
+    class="panel-backdrop"
+    id="panelBackdrop"
+    onclick="closePanelByBackdrop(event)"
+  >
+
+    <div class="tool-panel">
+
+      <div class="panel-header">
+
+        <div class="panel-title-wrap">
+
+          <div
+            class="panel-big-icon"
+            id="panelIcon"
+          >
+            🏝️
+          </div>
+
+          <div>
+
+            <div
+              class="panel-title"
+              id="panelTitle"
+            >
+              班級管理島
+            </div>
+
+            <div
+              class="panel-subtitle"
+              id="panelSubtitle"
+            >
+              選擇要前往的系統
+            </div>
+
+          </div>
+
+        </div>
+
+        <button
+          class="close-btn"
+          onclick="closePanel()"
+          aria-label="關閉"
+        >
+          ✕
+        </button>
+
+      </div>
+
+      <div
+        class="tool-list"
+        id="toolList"
+      >
+      </div>
+
+    </div>
+
+  </div>
+
+
   <footer>
+
     <div class="footer-title">
       ⚓ TEACHER GRAND LINE
     </div>
 
     <div class="footer-text">
-      教師專屬教學工具導航站
+      教師專屬航海工具地圖
       <br>
       Keep Sailing · Keep Teaching
     </div>
+
   </footer>
 
-  <button
-    class="back-top"
-    id="backTop"
-    aria-label="返回頂端"
-    title="返回頂端"
-  >
-    ↑
-  </button>
 
   <script>
-    const backTop = document.getElementById("backTop");
 
-    window.addEventListener("scroll", () => {
-      if (window.scrollY > 400) {
-        backTop.classList.add("show");
-      } else {
-        backTop.classList.remove("show");
+    const sections = {
+
+      class: {
+        title: "班級管理島",
+        subtitle: "收繳、學生平台與管理後台",
+        icon: "🏝️",
+
+        tools: [
+
+          {
+            name: "導師班資料繳交系統",
+            desc: "管理導師班學生資料與各項繳交紀錄。",
+            icon: "📋",
+            className: "t-class",
+            url: "https://junteachlife.github.io/luckyscratch/class-tracker.html"
+          },
+
+          {
+            name: "任課班資料繳交系統",
+            desc: "查看與管理各任課班級學生繳交狀況。",
+            icon: "📚",
+            className: "t-subclass",
+            url: "https://junteachlife.github.io/luckyscratch/subclass-tracker.html"
+          },
+
+          {
+            name: "學生作業成績繳交平台",
+            desc: "學生登入後使用作業與成績登記功能。",
+            icon: "👨‍🎓",
+            className: "t-studentwork",
+            url: "https://junteachlife.github.io/luckyscratch/class-work.html"
+          },
+
+          {
+            name: "作業成績彙整後台",
+            desc: "管理帳號、權限、作業、成績與操作紀錄。",
+            icon: "🧾",
+            className: "t-admin",
+            url: "https://junteachlife.github.io/luckyscratch/class-datawork-admin.html"
+          }
+
+        ]
+      },
+
+
+      learning: {
+        title: "學習成績島",
+        subtitle: "數學學習與段考成績查詢",
+        icon: "📚",
+
+        tools: [
+
+          {
+            name: "學生段考成績查詢系統",
+            desc: "查詢段考成績、平均、排名與學習表現。",
+            icon: "📊",
+            className: "t-exam",
+            url: "https://junteachlife.github.io/luckyscratch/examscore.html"
+          },
+
+          {
+            name: "數學練習網站",
+            desc: "數學遊戲、線上練習與各類題型挑戰。",
+            icon: "🎮",
+            className: "t-math",
+            url: "https://junteachlife.github.io/mathteach/"
+          }
+
+        ]
+      },
+
+
+      activity: {
+        title: "教學活動島",
+        subtitle: "課堂互動與班級活動工具",
+        icon: "🎪",
+
+        tools: [
+
+          {
+            name: "刮刮樂網站",
+            desc: "課堂抽獎、幸運挑戰與獎勵活動。",
+            icon: "🎟️",
+            className: "t-scratch",
+            url: "https://junteachlife.github.io/luckyscratch/mixscratch.html"
+          },
+
+          {
+            name: "座位系統",
+            desc: "班級座位安排、學生位置與座位調整。",
+            icon: "💺",
+            className: "t-seat",
+            url: "https://junteachlife.github.io/luckyscratch/seat.html"
+          }
+
+        ]
+      },
+
+
+      life: {
+        title: "學生生活島",
+        subtitle: "班級日常與學生生活管理",
+        icon: "🌴",
+
+        tools: [
+
+          {
+            name: "聯絡簿登記系統",
+            desc: "整理每日聯絡事項、作業與班級提醒。",
+            icon: "📒",
+            className: "t-contact",
+            url: "https://junteachlife.github.io/luckyscratch/contact-book.html"
+          },
+
+          {
+            name: "生日提醒系統",
+            desc: "查看今日、近期與每月壽星並製作祝福。",
+            icon: "🎂",
+            className: "t-birthday",
+            url: "https://junteachlife.github.io/luckyscratch/birthday.html"
+          },
+
+          {
+            name: "跑步系統",
+            desc: "登記學生跑步圈數與查看累積成果。",
+            icon: "🏃",
+            className: "t-running",
+            url: "https://junteachlife.github.io/luckyscratch/running.html"
+          }
+
+        ]
+      },
+
+
+      external: {
+        title: "外部工具港口",
+        subtitle: "連接其他常用平台",
+        icon: "⚓",
+
+        tools: [
+
+          {
+            name: "ClassDojo",
+            desc: "班級經營、學生互動與親師聯繫平台。",
+            icon: "🏫",
+            className: "t-dojo",
+            url: "https://www.classdojo.com/"
+          }
+
+        ]
       }
-    });
 
-    backTop.addEventListener("click", () => {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-      });
-    });
+    };
 
-    document
-      .querySelectorAll(".tool-card")
-      .forEach(card => {
 
-        card.addEventListener(
-          "touchstart",
-          () => {
-            card.style.transform = "scale(.985)";
-          },
-          { passive: true }
-        );
+    function openPanel(sectionKey) {
 
-        card.addEventListener(
-          "touchend",
-          () => {
-            card.style.transform = "";
-          },
-          { passive: true }
-        );
+      const section = sections[sectionKey];
 
-        card.addEventListener(
-          "touchcancel",
-          () => {
-            card.style.transform = "";
-          },
-          { passive: true }
-        );
+      if (!section) return;
 
-      });
+      document.getElementById("panelTitle").textContent =
+        section.title;
+
+      document.getElementById("panelSubtitle").textContent =
+        section.subtitle;
+
+      document.getElementById("panelIcon").textContent =
+        section.icon;
+
+
+      const toolList =
+        document.getElementById("toolList");
+
+
+      toolList.innerHTML =
+        section.tools
+          .map(tool => {
+
+            return `
+              <a
+                class="tool-link ${tool.className}"
+                href="${tool.url}"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+
+                <div class="tool-icon">
+                  ${tool.icon}
+                </div>
+
+                <div class="tool-info">
+
+                  <div class="tool-name">
+                    ${tool.name}
+                  </div>
+
+                  <div class="tool-desc">
+                    ${tool.desc}
+                  </div>
+
+                </div>
+
+                <div class="tool-open">
+                  ↗
+                </div>
+
+              </a>
+            `;
+
+          })
+          .join("");
+
+
+      document
+        .getElementById("panelBackdrop")
+        .classList
+        .add("show");
+
+
+      document.body.style.overflow =
+        "hidden";
+
+    }
+
+
+    function closePanel() {
+
+      document
+        .getElementById("panelBackdrop")
+        .classList
+        .remove("show");
+
+
+      document.body.style.overflow =
+        "";
+
+    }
+
+
+    function closePanelByBackdrop(event) {
+
+      if (
+        event.target.id ===
+        "panelBackdrop"
+      ) {
+
+        closePanel();
+
+      }
+
+    }
+
+
+    document.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.key === "Escape"
+        ) {
+
+          closePanel();
+
+        }
+
+      }
+    );
+
   </script>
 
 </body>
