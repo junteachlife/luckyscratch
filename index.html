@@ -2,11 +2,14 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
 
-  <title>教師航海基地｜海賊地圖模式</title>
+  <title>教師航海基地｜羊皮紙航海圖</title>
 
-  <!-- 網頁小圖示：航 -->
+  <!-- favicon：航 -->
   <link
     rel="icon"
     href='data:image/svg+xml,
@@ -18,7 +21,7 @@
     </svg>'
   />
 
-  <meta name="theme-color" content="#0b1730" />
+  <meta name="theme-color" content="#10223f" />
 
   <style>
     * {
@@ -29,18 +32,21 @@
 
     :root {
       --gold: #f6c453;
-      --gold-light: #ffe18b;
-      --paper: #e7cd91;
-      --paper-light: #f4e0ae;
-      --paper-dark: #b58c4f;
-      --ink: #3b2818;
-      --red: #c83b45;
-      --blue: #14325f;
-      --deep-blue: #081426;
-      --sea: #0f3154;
-      --wood: #70401f;
-      --wood-dark: #3a2115;
-      --white: #fffaf0;
+      --gold-light: #ffe08a;
+      --paper-1: #f3e0ad;
+      --paper-2: #e0bf78;
+      --paper-3: #cfa15b;
+      --ink: #4a2e19;
+      --ink-light: #765236;
+      --wood: #7a4722;
+      --wood-dark: #432619;
+      --sea-deep: #081321;
+      --sea-mid: #10315b;
+      --sea-light: #1f4b7f;
+      --white: #fffdf6;
+      --red-route: #b52d33;
+      --red-route-light: rgba(181, 45, 51, 0.22);
+      --shadow: rgba(0, 0, 0, 0.35);
     }
 
     html {
@@ -61,9 +67,10 @@
         sans-serif;
 
       background:
-        radial-gradient(circle at 18% 12%, rgba(60,110,200,.22), transparent 28%),
-        radial-gradient(circle at 82% 20%, rgba(246,196,83,.14), transparent 24%),
-        linear-gradient(180deg, #07111f, #0d2543 56%, #081523);
+        radial-gradient(circle at 15% 12%, rgba(75,121,201,.26), transparent 28%),
+        radial-gradient(circle at 82% 18%, rgba(246,196,83,.16), transparent 24%),
+        radial-gradient(circle at 50% 100%, rgba(48,156,212,.18), transparent 35%),
+        linear-gradient(180deg, #07111f, #0e2441 55%, #081321);
     }
 
     body::before {
@@ -71,14 +78,14 @@
       position: fixed;
       inset: 0;
       pointer-events: none;
-      z-index: 100;
-      opacity: .12;
+      z-index: 99;
+      opacity: .1;
 
       background:
         repeating-linear-gradient(
           0deg,
-          rgba(255,255,255,.035) 0,
-          rgba(255,255,255,.035) 1px,
+          rgba(255,255,255,.04) 0px,
+          rgba(255,255,255,.04) 1px,
           transparent 1px,
           transparent 5px
         );
@@ -93,15 +100,15 @@
       font: inherit;
     }
 
-    /* =========================
+    /* =====================================
        背景
-    ========================= */
+    ====================================== */
 
     .sea-glow {
       position: fixed;
       left: 0;
       right: 0;
-      bottom: -80px;
+      bottom: -90px;
       height: 320px;
       pointer-events: none;
       z-index: -1;
@@ -109,69 +116,80 @@
       background:
         radial-gradient(
           ellipse at center,
-          rgba(43,180,230,.32),
+          rgba(64,189,241,.32),
           transparent 68%
         );
 
-      filter: blur(18px);
+      filter: blur(16px);
     }
 
-    .floating-bg {
+    .float-symbol {
       position: fixed;
       pointer-events: none;
-      z-index: -1;
-      opacity: .07;
       user-select: none;
-      animation: drift 9s ease-in-out infinite;
+      z-index: -1;
+      opacity: .08;
+
+      filter:
+        drop-shadow(
+          0 8px 15px rgba(0,0,0,.38)
+        );
+
+      animation:
+        floaty 8s ease-in-out infinite;
     }
 
-    .bg1 {
-      top: 8%;
+    .symbol-1 {
+      top: 10%;
       left: 4%;
       font-size: 120px;
     }
 
-    .bg2 {
-      top: 22%;
+    .symbol-2 {
+      top: 23%;
       right: 3%;
       font-size: 140px;
       animation-delay: -2s;
     }
 
-    .bg3 {
-      bottom: 9%;
+    .symbol-3 {
+      bottom: 8%;
       left: 6%;
-      font-size: 110px;
+      font-size: 105px;
       animation-delay: -4s;
     }
 
-    .bg4 {
-      bottom: 15%;
-      right: 7%;
-      font-size: 105px;
+    .symbol-4 {
+      bottom: 14%;
+      right: 6%;
+      font-size: 110px;
       animation-delay: -6s;
     }
 
-    @keyframes drift {
+    @keyframes floaty {
       0%, 100% {
-        transform: translateY(0) rotate(-3deg);
+        transform:
+          translateY(0)
+          rotate(-3deg);
       }
 
       50% {
-        transform: translateY(-14px) rotate(4deg);
+        transform:
+          translateY(-14px)
+          rotate(4deg);
       }
     }
 
-    /* =========================
+    /* =====================================
        頁首
-    ========================= */
+    ====================================== */
 
     .hero {
       padding: 34px 18px 22px;
       text-align: center;
     }
 
-    .badge {
+    .hero-badge {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -180,41 +198,61 @@
       margin-bottom: 16px;
       padding: 8px 16px;
 
-      border: 2px solid rgba(246,196,83,.72);
+      border:
+        2px solid rgba(246,196,83,.75);
+
       border-radius: 999px;
 
       color: var(--gold);
+
       font-size: 13px;
       font-weight: 900;
       letter-spacing: 2px;
 
-      background: rgba(6,14,28,.72);
+      background:
+        rgba(7,14,28,.72);
 
       box-shadow:
-        0 7px 22px rgba(0,0,0,.28),
+        0 7px 24px rgba(0,0,0,.25),
         inset 0 0 12px rgba(246,196,83,.08);
+
+      backdrop-filter:
+        blur(6px);
     }
 
     .hero-logo {
-      width: 108px;
-      height: 108px;
-      margin: 0 auto 15px;
+      width: 110px;
+      height: 110px;
+
+      margin:
+        0 auto 14px;
 
       display: grid;
       place-items: center;
 
       border-radius: 50%;
-      border: 6px solid #f4d368;
+
+      border:
+        6px solid #f6d369;
 
       background:
-        radial-gradient(circle at 35% 30%, #ffe89b, #e8a12b 58%, #804217 100%);
+        radial-gradient(
+          circle at 34% 28%,
+          #ffea9d,
+          #eba22b 58%,
+          #7d4118 100%
+        );
 
       box-shadow:
-        0 0 0 5px #6d3b1b,
-        0 15px 30px rgba(0,0,0,.4),
-        0 0 28px rgba(246,196,83,.22);
+        0 0 0 5px #6b3818,
+        0 16px 30px rgba(0,0,0,.38),
+        0 0 30px rgba(246,196,83,.2);
 
-      animation: logoFloat 4s ease-in-out infinite;
+      animation:
+        logoFloat
+        4s
+        ease-in-out
+        infinite;
     }
 
     .hero-logo span {
@@ -223,797 +261,1964 @@
 
     @keyframes logoFloat {
       0%, 100% {
-        transform: translateY(0) rotate(-2deg);
+        transform:
+          translateY(0)
+          rotate(-2deg);
       }
 
       50% {
-        transform: translateY(-7px) rotate(2deg);
+        transform:
+          translateY(-7px)
+          rotate(2deg);
       }
     }
 
     .hero h1 {
-      font-size: clamp(34px, 6vw, 60px);
-      line-height: 1.08;
-      font-weight: 1000;
-      letter-spacing: 2px;
+      font-size:
+        clamp(34px, 6vw, 60px);
+
+      line-height:
+        1.08;
+
+      font-weight:
+        1000;
+
+      letter-spacing:
+        2px;
 
       text-shadow:
-        0 4px 0 #721b24,
+        0 4px 0 #751b24,
         0 8px 18px rgba(0,0,0,.48);
     }
 
     .hero h1 .gold {
-      color: var(--gold);
+      color:
+        var(--gold);
     }
 
     .hero h1 .red {
-      color: #e24a52;
+      color:
+        #e34d54;
     }
 
     .hero p {
-      max-width: 780px;
-      margin: 13px auto 0;
-      color: #dce7ff;
-      font-size: clamp(14px, 2.5vw, 18px);
-      line-height: 1.75;
-      font-weight: 700;
+      max-width:
+        820px;
+
+      margin:
+        13px auto 0;
+
+      color:
+        #dbe7ff;
+
+      font-size:
+        clamp(14px, 2.4vw, 18px);
+
+      line-height:
+        1.8;
+
+      font-weight:
+        700;
     }
 
-    /* =========================
+    /* =====================================
        公告
-    ========================= */
+    ====================================== */
 
     .notice {
-      width: min(900px, calc(100% - 30px));
-      margin: 4px auto 26px;
-      padding: 15px 18px;
-
-      color: #332417;
-      text-align: center;
-      font-weight: 900;
-      line-height: 1.65;
-
-      border: 3px solid #76451f;
-      border-radius: 10px;
-
-      background:
-        radial-gradient(circle at 18% 28%, rgba(110,61,27,.09), transparent 20%),
-        radial-gradient(circle at 82% 65%, rgba(110,61,27,.11), transparent 22%),
-        linear-gradient(135deg, #f3dfaa, #dbb66d);
-
-      box-shadow:
-        0 8px 0 #422417,
-        0 17px 32px rgba(0,0,0,.31);
-    }
-
-    /* =========================
-       地圖外框
-    ========================= */
-
-    .map-wrap {
-      width: min(1220px, calc(100% - 24px));
-      margin: 0 auto 50px;
-    }
-
-    .map-frame {
-      position: relative;
-      padding: 22px;
-
-      border: 7px solid #6b3a1b;
-      border-radius: 26px;
-
-      background:
-        linear-gradient(145deg, #8a542b, #4b2918);
-
-      box-shadow:
-        0 14px 0 #2e1a11,
-        0 26px 48px rgba(0,0,0,.46),
-        inset 0 0 16px rgba(255,255,255,.08);
-    }
-
-    .map {
-      position: relative;
-      min-height: 920px;
-      overflow: hidden;
-
-      border: 4px solid #a6783d;
-      border-radius: 18px;
-
-      background:
-        radial-gradient(circle at 22% 17%, rgba(120,86,42,.12), transparent 19%),
-        radial-gradient(circle at 75% 33%, rgba(120,86,42,.10), transparent 20%),
-        radial-gradient(circle at 40% 80%, rgba(120,86,42,.12), transparent 20%),
-        linear-gradient(135deg, #efd9a1, #d8b873 55%, #c99d5b);
-
-      box-shadow:
-        inset 0 0 55px rgba(73,43,18,.28);
-    }
-
-    .map::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      opacity: .35;
-
-      background:
-        repeating-radial-gradient(
-          circle at 20% 30%,
-          transparent 0 20px,
-          rgba(93,55,24,.05) 21px 22px
+      width:
+        min(
+          940px,
+          calc(100% - 30px)
         );
-    }
 
-    /* =========================
-       航線
-    ========================= */
+      margin:
+        4px auto 26px;
 
-    .route-svg {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 1;
-    }
+      padding:
+        15px 18px;
 
-    .route {
-      fill: none;
-      stroke: rgba(91,57,26,.65);
-      stroke-width: 5;
-      stroke-dasharray: 14 14;
-      stroke-linecap: round;
-    }
+      text-align:
+        center;
 
-    .route-glow {
-      fill: none;
-      stroke: rgba(255,239,163,.33);
-      stroke-width: 10;
-      stroke-linecap: round;
-    }
+      line-height:
+        1.65;
 
-    /* =========================
-       羅盤
-    ========================= */
+      font-weight:
+        900;
 
-    .compass {
-      position: absolute;
-      left: 50%;
-      top: 47%;
-      transform: translate(-50%, -50%);
-      z-index: 2;
+      color:
+        #392619;
 
-      width: 130px;
-      height: 130px;
+      border:
+        3px solid #76451f;
 
-      display: grid;
-      place-items: center;
-
-      border-radius: 50%;
-      border: 6px solid #8b5a2a;
+      border-radius:
+        10px;
 
       background:
-        radial-gradient(circle, #f2d891 0 36%, #d4ab61 37% 57%, #7a4c26 58% 64%, #e8c46f 65%);
+        radial-gradient(
+          circle at 20% 30%,
+          rgba(112,64,31,.08),
+          transparent 22%
+        ),
+        radial-gradient(
+          circle at 80% 65%,
+          rgba(112,64,31,.10),
+          transparent 24%
+        ),
+        linear-gradient(
+          135deg,
+          #f2dfa9,
+          #ddb96f
+        );
 
       box-shadow:
-        0 10px 24px rgba(69,43,22,.32),
-        inset 0 0 16px rgba(87,50,20,.25);
-
-      color: #54351f;
-      font-size: 50px;
-
-      animation: compassPulse 4s ease-in-out infinite;
+        0 8px 0 #432518,
+        0 18px 35px rgba(0,0,0,.3);
     }
 
-    @keyframes compassPulse {
-      0%, 100% {
-        transform: translate(-50%, -50%) scale(1);
-      }
+    /* =====================================
+       快捷航線
+    ====================================== */
 
-      50% {
-        transform: translate(-50%, -50%) scale(1.04);
-      }
+    .shortcut-wrap {
+      width:
+        min(
+          1100px,
+          calc(100% - 28px)
+        );
+
+      margin:
+        0 auto 34px;
     }
 
-    /* =========================
-       島嶼
-    ========================= */
+    .shortcut-board {
+      padding:
+        18px;
 
-    .island {
-      position: absolute;
-      z-index: 3;
+      border:
+        4px solid #75431f;
 
-      width: 245px;
-      min-height: 170px;
-
-      padding: 20px 18px;
-
-      border: 4px solid #77451f;
-      border-radius: 44% 56% 50% 50% / 48% 42% 58% 52%;
-
-      cursor: pointer;
-      text-align: center;
-      color: #302014;
+      border-radius:
+        18px;
 
       background:
-        radial-gradient(circle at 42% 30%, #f2df9a 0 24%, transparent 25%),
-        radial-gradient(circle at 70% 60%, rgba(61,130,70,.28), transparent 28%),
-        linear-gradient(150deg, #e4cb83 0%, #c99450 68%, #a66837 100%);
+        linear-gradient(
+          145deg,
+          #f5e2ad,
+          #d8b36c
+        );
 
       box-shadow:
-        0 12px 0 #6a3c22,
-        0 22px 32px rgba(67,40,20,.33),
-        inset 0 0 18px rgba(255,255,255,.18);
+        0 8px 0 #432518,
+        0 17px 32px rgba(0,0,0,.3);
 
-      transition:
-        transform .25s ease,
-        box-shadow .25s ease;
+      color:
+        #3d2818;
     }
 
-    .island:hover {
-      transform: translateY(-10px) scale(1.04) rotate(-1deg);
-
-      box-shadow:
-        0 13px 0 #6a3c22,
-        0 28px 38px rgba(67,40,20,.42),
-        0 0 30px rgba(246,196,83,.33),
-        inset 0 0 18px rgba(255,255,255,.2);
-    }
-
-    .island-icon {
-      width: 68px;
-      height: 68px;
-      margin: 0 auto 8px;
-
-      display: grid;
-      place-items: center;
-
-      border-radius: 50%;
-      border: 3px solid #885323;
-
-      font-size: 36px;
-
-      background:
-        linear-gradient(145deg, #ffe79b, #d99d47);
-
-      box-shadow:
-        0 5px 0 #76451f,
-        inset 0 2px 7px rgba(255,255,255,.35);
-    }
-
-    .island-title {
-      font-size: 22px;
-      font-weight: 1000;
-      margin-bottom: 5px;
-      color: #4b2d18;
-    }
-
-    .island-desc {
-      font-size: 12px;
-      line-height: 1.55;
-      font-weight: 700;
-      color: #6c4c2f;
-    }
-
-    .island-count {
-      display: inline-block;
-      margin-top: 9px;
-      padding: 4px 10px;
-      border-radius: 999px;
-
-      font-size: 11px;
-      font-weight: 1000;
-
-      color: #5c371b;
-
-      background: rgba(255,248,218,.46);
-      border: 1px solid rgba(101,62,31,.27);
-    }
-
-    /* 島嶼位置 */
-    .island-class {
-      top: 9%;
-      left: 7%;
-    }
-
-    .island-learning {
-      top: 12%;
-      right: 7%;
-    }
-
-    .island-activity {
-      top: 48%;
-      left: 6%;
-    }
-
-    .island-life {
-      top: 58%;
-      right: 7%;
-    }
-
-    .island-external {
-      left: 50%;
-      bottom: 5%;
-      transform: translateX(-50%);
-    }
-
-    .island-external:hover {
-      transform: translateX(-50%) translateY(-10px) scale(1.04);
-    }
-
-    /* =========================
-       海浪 / 小船裝飾
-    ========================= */
-
-    .decor {
-      position: absolute;
-      z-index: 2;
-      pointer-events: none;
-      user-select: none;
-      opacity: .75;
-    }
-
-    .ship {
-      left: 45%;
-      top: 20%;
-      font-size: 56px;
-      animation: shipMove 6s ease-in-out infinite;
-    }
-
-    .waves1 {
-      left: 35%;
-      top: 34%;
-      font-size: 46px;
-      opacity: .45;
-    }
-
-    .waves2 {
-      right: 26%;
-      bottom: 18%;
-      font-size: 52px;
-      opacity: .42;
-    }
-
-    .treasure {
-      left: 31%;
-      bottom: 13%;
-      font-size: 52px;
-    }
-
-    .cloud {
-      right: 21%;
-      top: 8%;
-      font-size: 55px;
-      opacity: .34;
-    }
-
-    @keyframes shipMove {
-      0%, 100% {
-        transform: translateY(0) rotate(-2deg);
-      }
-
-      50% {
-        transform: translateY(-10px) rotate(3deg);
-      }
-    }
-
-    /* =========================
-       工具面板
-    ========================= */
-
-    .panel-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 200;
-
-      display: none;
-      align-items: center;
-      justify-content: center;
-
-      padding: 18px;
-
-      background: rgba(3,8,17,.72);
-      backdrop-filter: blur(5px);
-    }
-
-    .panel-backdrop.show {
+    .shortcut-header {
       display: flex;
-    }
-
-    .tool-panel {
-      width: min(760px, 100%);
-      max-height: 86vh;
-      overflow: auto;
-
-      border: 5px solid #76451f;
-      border-radius: 20px;
-
-      background:
-        linear-gradient(145deg, #f1dca5, #d5b36d);
-
-      box-shadow:
-        0 14px 0 #3f2417,
-        0 30px 60px rgba(0,0,0,.55);
-
-      color: #352417;
-
-      animation: panelIn .25s ease;
-    }
-
-    @keyframes panelIn {
-      from {
-        opacity: 0;
-        transform: scale(.94) translateY(10px);
-      }
-
-      to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-      }
-    }
-
-    .panel-header {
-      position: sticky;
-      top: 0;
-      z-index: 2;
-
-      display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 14px;
+      align-items: center;
+      gap: 15px;
 
-      padding: 18px 20px;
-
-      border-bottom: 2px solid rgba(99,60,30,.25);
-
-      background:
-        linear-gradient(180deg, #f4e2af, #e2c47f);
+      margin-bottom:
+        14px;
     }
 
-    .panel-title-wrap {
+    .shortcut-title {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 9px;
+
+      font-size:
+        20px;
+
+      font-weight:
+        1000;
+
+      color:
+        #50301a;
     }
 
-    .panel-big-icon {
-      width: 50px;
-      height: 50px;
+    .shortcut-subtitle {
+      margin-top:
+        3px;
 
-      display: grid;
-      place-items: center;
+      font-size:
+        11px;
 
-      border-radius: 50%;
-      border: 3px solid #855022;
+      color:
+        #7b5738;
 
-      background: #f4d888;
-
-      font-size: 28px;
+      font-weight:
+        700;
     }
 
-    .panel-title {
-      font-size: 22px;
-      font-weight: 1000;
-      color: #4b2e19;
-    }
+    .shortcut-setting-btn {
+      flex: 0 0 auto;
 
-    .panel-subtitle {
-      margin-top: 2px;
-      font-size: 12px;
-      color: #765437;
-      font-weight: 700;
-    }
+      padding:
+        9px 13px;
 
-    .close-btn {
-      width: 40px;
-      height: 40px;
+      border:
+        2px solid #75431f;
 
-      border: none;
-      border-radius: 12px;
-
-      cursor: pointer;
-
-      background: #8f3d37;
-      color: white;
-
-      font-size: 19px;
-      font-weight: 1000;
-
-      box-shadow:
-        0 4px 0 #53241f;
-    }
-
-    .tool-list {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap: 14px;
-
-      padding: 18px;
-    }
-
-    .tool-link {
-      --accent: #3c8ad8;
-
-      position: relative;
-      overflow: hidden;
-
-      min-height: 125px;
-      padding: 15px;
-
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      gap: 12px;
-      align-items: center;
-
-      border: 3px solid #8a5a2b;
-      border-radius: 16px;
+      border-radius:
+        11px;
 
       background:
-        linear-gradient(145deg, #fff0c3, #d8b467);
+        linear-gradient(
+          180deg,
+          #ffe689,
+          #e4a43b
+        );
 
-      box-shadow:
-        0 6px 0 #75451f,
-        0 12px 20px rgba(83,50,24,.2);
+      color:
+        #3d2818;
 
-      transition: transform .2s ease;
-    }
+      font-size:
+        12px;
 
-    .tool-link:hover {
-      transform: translateY(-4px);
-    }
+      font-weight:
+        1000;
 
-    .tool-link::before {
-      content: "";
-      position: absolute;
-
-      width: 110px;
-      height: 110px;
-
-      top: -48px;
-      left: -42px;
-
-      border-radius: 50%;
-
-      background: var(--accent);
-      opacity: .13;
-    }
-
-    .tool-icon {
-      width: 58px;
-      height: 58px;
-
-      display: grid;
-      place-items: center;
-
-      border-radius: 14px;
-
-      font-size: 29px;
-
-      background:
-        linear-gradient(145deg, rgba(255,255,255,.75), rgba(255,231,164,.9));
-
-      border: 2px solid rgba(107,65,30,.34);
-    }
-
-    .tool-info {
-      min-width: 0;
-    }
-
-    .tool-name {
-      margin-bottom: 5px;
-      font-size: 16px;
-      font-weight: 1000;
-      color: #3f2818;
-    }
-
-    .tool-desc {
-      font-size: 12px;
-      line-height: 1.5;
-      font-weight: 700;
-      color: #795737;
-    }
-
-    .tool-open {
-      width: 36px;
-      height: 36px;
-
-      display: grid;
-      place-items: center;
-
-      border-radius: 10px;
-
-      color: #2e1c0d;
-      font-weight: 1000;
-
-      background:
-        linear-gradient(180deg, #ffe687, #e4a53a);
-
-      border: 1px solid rgba(104,66,28,.3);
+      cursor:
+        pointer;
 
       box-shadow:
         0 4px 0 #8a581d;
     }
 
-    .t-class { --accent: #df4750; }
-    .t-subclass { --accent: #3a9ce4; }
-    .t-studentwork { --accent: #51c8f6; }
-    .t-admin { --accent: #ff764e; }
-    .t-exam { --accent: #f1c333; }
-    .t-math { --accent: #8660e7; }
-    .t-scratch { --accent: #f49c2c; }
-    .t-seat { --accent: #2ab590; }
-    .t-contact { --accent: #e264af; }
-    .t-birthday { --accent: #ff7195; }
-    .t-running { --accent: #2bc9c1; }
-    .t-dojo { --accent: #35bf68; }
+    .shortcut-grid {
+      display: grid;
 
-    /* =========================
+      grid-template-columns:
+        repeat(6, minmax(0, 1fr));
+
+      gap:
+        11px;
+    }
+
+    .shortcut-item {
+      min-height:
+        88px;
+
+      display: flex;
+
+      flex-direction:
+        column;
+
+      align-items:
+        center;
+
+      justify-content:
+        center;
+
+      gap:
+        6px;
+
+      padding:
+        10px;
+
+      text-align:
+        center;
+
+      border:
+        2px solid rgba(109,67,30,.24);
+
+      border-radius:
+        14px;
+
+      background:
+        rgba(255,248,224,.55);
+
+      box-shadow:
+        0 4px 0 rgba(117,70,31,.55);
+
+      transition:
+        transform .18s ease,
+        background .18s ease;
+    }
+
+    .shortcut-item:hover {
+      transform:
+        translateY(-4px);
+
+      background:
+        rgba(255,249,230,.8);
+    }
+
+    .shortcut-item-icon {
+      font-size:
+        28px;
+    }
+
+    .shortcut-item-name {
+      font-size:
+        11px;
+
+      line-height:
+        1.35;
+
+      font-weight:
+        1000;
+
+      color:
+        #432a18;
+    }
+
+    .shortcut-empty {
+      grid-column:
+        1 / -1;
+
+      text-align:
+        center;
+
+      padding:
+        15px;
+
+      color:
+        #79573a;
+
+      font-size:
+        12px;
+
+      font-weight:
+        700;
+    }
+
+    /* =====================================
+       地圖
+    ====================================== */
+
+    .map-wrap {
+      width:
+        min(
+          1280px,
+          calc(100% - 24px)
+        );
+
+      margin:
+        0 auto 54px;
+    }
+
+    .map-frame {
+      position:
+        relative;
+
+      padding:
+        22px;
+
+      border:
+        7px solid #6d3d1d;
+
+      border-radius:
+        26px;
+
+      background:
+        linear-gradient(
+          145deg,
+          #8a542b,
+          #4a2918
+        );
+
+      box-shadow:
+        0 14px 0 #2d1910,
+        0 28px 52px rgba(0,0,0,.44),
+        inset 0 0 18px rgba(255,255,255,.08);
+    }
+
+    .map {
+      position:
+        relative;
+
+      min-height:
+        980px;
+
+      overflow:
+        hidden;
+
+      border:
+        4px solid #a7783e;
+
+      border-radius:
+        18px;
+
+      background:
+        radial-gradient(
+          circle at 18% 18%,
+          rgba(105,71,38,.14),
+          transparent 22%
+        ),
+        radial-gradient(
+          circle at 76% 32%,
+          rgba(105,71,38,.1),
+          transparent 20%
+        ),
+        radial-gradient(
+          circle at 44% 82%,
+          rgba(105,71,38,.13),
+          transparent 20%
+        ),
+        linear-gradient(
+          135deg,
+          var(--paper-1),
+          var(--paper-2) 58%,
+          var(--paper-3)
+        );
+
+      box-shadow:
+        inset 0 0 55px rgba(74,46,25,.28);
+    }
+
+    .map::before {
+      content:
+        "";
+
+      position:
+        absolute;
+
+      inset:
+        0;
+
+      pointer-events:
+        none;
+
+      opacity:
+        .16;
+
+      background:
+        repeating-radial-gradient(
+          circle at 20% 30%,
+          transparent 0 18px,
+          rgba(74,46,25,.08) 19px 20px
+        );
+    }
+
+    .map-title {
+      position:
+        absolute;
+
+      top:
+        18px;
+
+      left:
+        50%;
+
+      transform:
+        translateX(-50%);
+
+      z-index:
+        4;
+
+      padding:
+        8px 16px;
+
+      border:
+        2px solid rgba(104,64,29,.26);
+
+      border-radius:
+        999px;
+
+      background:
+        rgba(255,247,221,.42);
+
+      color:
+        #5a371c;
+
+      font-size:
+        14px;
+
+      font-weight:
+        1000;
+
+      letter-spacing:
+        2px;
+
+      box-shadow:
+        0 4px 10px rgba(77,45,22,.12);
+    }
+
+    /* =====================================
+       航線
+    ====================================== */
+
+    .route-svg {
+      position:
+        absolute;
+
+      inset:
+        0;
+
+      width:
+        100%;
+
+      height:
+        100%;
+
+      z-index:
+        1;
+
+      pointer-events:
+        none;
+    }
+
+    .route-shadow {
+      fill:
+        none;
+
+      stroke:
+        var(--red-route-light);
+
+      stroke-width:
+        12;
+
+      stroke-linecap:
+        round;
+    }
+
+    .route-main {
+      fill:
+        none;
+
+      stroke:
+        var(--red-route);
+
+      stroke-width:
+        4;
+
+      stroke-linecap:
+        round;
+
+      stroke-dasharray:
+        12 12;
+    }
+
+    /* =====================================
+       羅盤
+    ====================================== */
+
+    .compass {
+      position:
+        absolute;
+
+      left:
+        50%;
+
+      top:
+        47%;
+
+      transform:
+        translate(-50%, -50%);
+
+      z-index:
+        2;
+
+      width:
+        140px;
+
+      height:
+        140px;
+
+      display:
+        grid;
+
+      place-items:
+        center;
+
+      border-radius:
+        50%;
+
+      border:
+        6px solid #8a5728;
+
+      background:
+        radial-gradient(
+          circle,
+          #f5dc95 0 35%,
+          #d8b26c 36% 56%,
+          #7d4c25 57% 63%,
+          #ecc975 64%
+        );
+
+      box-shadow:
+        0 12px 24px rgba(77,45,22,.28),
+        inset 0 0 18px rgba(77,45,22,.2);
+
+      font-size:
+        54px;
+
+      color:
+        #5a381f;
+
+      animation:
+        compassBeat 4s ease-in-out infinite;
+    }
+
+    @keyframes compassBeat {
+      0%, 100% {
+        transform:
+          translate(-50%, -50%)
+          scale(1);
+      }
+
+      50% {
+        transform:
+          translate(-50%, -50%)
+          scale(1.04);
+      }
+    }
+
+    /* =====================================
+       地圖裝飾
+    ====================================== */
+
+    .decor {
+      position:
+        absolute;
+
+      z-index:
+        2;
+
+      pointer-events:
+        none;
+
+      user-select:
+        none;
+
+      opacity:
+        .78;
+    }
+
+    .decor-ship {
+      left:
+        45%;
+
+      top:
+        18%;
+
+      font-size:
+        58px;
+
+      animation:
+        boat 6s ease-in-out infinite;
+    }
+
+    .decor-wave1 {
+      left:
+        32%;
+
+      top:
+        32%;
+
+      font-size:
+        46px;
+
+      opacity:
+        .42;
+    }
+
+    .decor-wave2 {
+      right:
+        24%;
+
+      bottom:
+        18%;
+
+      font-size:
+        52px;
+
+      opacity:
+        .4;
+    }
+
+    .decor-box {
+      left:
+        30%;
+
+      bottom:
+        12%;
+
+      font-size:
+        48px;
+    }
+
+    .decor-cloud {
+      right:
+        20%;
+
+      top:
+        10%;
+
+      font-size:
+        54px;
+
+      opacity:
+        .34;
+    }
+
+    @keyframes boat {
+      0%, 100% {
+        transform:
+          translateY(0)
+          rotate(-2deg);
+      }
+
+      50% {
+        transform:
+          translateY(-10px)
+          rotate(3deg);
+      }
+    }
+
+    /* =====================================
+       島嶼
+    ====================================== */
+
+    .island-cluster {
+      position:
+        absolute;
+
+      z-index:
+        3;
+
+      width:
+        250px;
+    }
+
+    .cluster-class {
+      top:
+        10%;
+
+      left:
+        7%;
+    }
+
+    .cluster-learning {
+      top:
+        12%;
+
+      right:
+        7%;
+    }
+
+    .cluster-activity {
+      top:
+        49%;
+
+      left:
+        6%;
+    }
+
+    .cluster-life {
+      top:
+        58%;
+
+      right:
+        7%;
+    }
+
+    .cluster-external {
+      bottom:
+        7%;
+
+      left:
+        50%;
+
+      transform:
+        translateX(-50%);
+
+      width:
+        240px;
+    }
+
+    .island-btn {
+      width:
+        100%;
+
+      min-height:
+        176px;
+
+      border:
+        4px solid #76451f;
+
+      border-radius:
+        44% 56% 50% 50% / 48% 42% 58% 52%;
+
+      padding:
+        20px 18px 16px;
+
+      cursor:
+        pointer;
+
+      color:
+        #352316;
+
+      text-align:
+        center;
+
+      background:
+        radial-gradient(
+          circle at 42% 30%,
+          #f4e19d 0 22%,
+          transparent 23%
+        ),
+        radial-gradient(
+          circle at 70% 64%,
+          rgba(74,147,74,.28),
+          transparent 28%
+        ),
+        linear-gradient(
+          150deg,
+          #e4cb83 0%,
+          #cb9955 70%,
+          #a86b39 100%
+        );
+
+      box-shadow:
+        0 12px 0 #6b3c22,
+        0 22px 34px rgba(67,40,20,.3),
+        inset 0 0 18px rgba(255,255,255,.2);
+
+      transition:
+        transform .22s ease,
+        box-shadow .22s ease,
+        filter .22s ease;
+    }
+
+    .island-btn:hover,
+    .island-cluster.active .island-btn {
+      transform:
+        translateY(-8px)
+        scale(1.03)
+        rotate(-1deg);
+
+      box-shadow:
+        0 13px 0 #6b3c22,
+        0 28px 40px rgba(67,40,20,.4),
+        0 0 26px rgba(246,196,83,.3),
+        inset 0 0 18px rgba(255,255,255,.22);
+
+      filter:
+        saturate(1.05);
+    }
+
+    .island-icon {
+      width:
+        72px;
+
+      height:
+        72px;
+
+      margin:
+        0 auto 8px;
+
+      display:
+        grid;
+
+      place-items:
+        center;
+
+      border-radius:
+        50%;
+
+      border:
+        3px solid #885322;
+
+      background:
+        linear-gradient(
+          145deg,
+          #ffe99f,
+          #d99f4d
+        );
+
+      box-shadow:
+        0 5px 0 #75451f,
+        inset 0 2px 8px rgba(255,255,255,.35);
+
+      font-size:
+        38px;
+    }
+
+    .island-title {
+      font-size:
+        22px;
+
+      font-weight:
+        1000;
+
+      color:
+        #4d301b;
+
+      margin-bottom:
+        5px;
+    }
+
+    .island-desc {
+      font-size:
+        12px;
+
+      line-height:
+        1.55;
+
+      font-weight:
+        700;
+
+      color:
+        #6e4c2f;
+    }
+
+    .island-count {
+      display:
+        inline-block;
+
+      margin-top:
+        8px;
+
+      padding:
+        4px 10px;
+
+      border-radius:
+        999px;
+
+      background:
+        rgba(255,248,223,.48);
+
+      border:
+        1px solid rgba(98,60,29,.24);
+
+      color:
+        #5f391d;
+
+      font-size:
+        11px;
+
+      font-weight:
+        1000;
+    }
+
+    .tap-tip {
+      margin-top:
+        7px;
+
+      font-size:
+        11px;
+
+      font-weight:
+        900;
+
+      color:
+        #9d2f34;
+    }
+
+    /* =====================================
+       島嶼工具浮出
+    ====================================== */
+
+    .flyout {
+      position:
+        absolute;
+
+      z-index:
+        5;
+
+      width:
+        310px;
+
+      opacity:
+        0;
+
+      pointer-events:
+        none;
+
+      transform:
+        translateY(8px)
+        scale(.98);
+
+      transition:
+        opacity .18s ease,
+        transform .18s ease;
+    }
+
+    .island-cluster.active .flyout,
+    .island-cluster:hover .flyout {
+      opacity:
+        1;
+
+      pointer-events:
+        auto;
+
+      transform:
+        translateY(0)
+        scale(1);
+    }
+
+    .flyout-right {
+      left:
+        calc(100% + 18px);
+
+      top:
+        4px;
+    }
+
+    .flyout-left {
+      right:
+        calc(100% + 18px);
+
+      top:
+        4px;
+    }
+
+    .flyout-top {
+      left:
+        50%;
+
+      bottom:
+        calc(100% + 16px);
+
+      transform:
+        translateX(-50%)
+        translateY(8px)
+        scale(.98);
+    }
+
+    .island-cluster.active .flyout-top,
+    .island-cluster:hover .flyout-top {
+      transform:
+        translateX(-50%)
+        translateY(0)
+        scale(1);
+    }
+
+    .tool-panel {
+      position:
+        relative;
+
+      overflow:
+        hidden;
+
+      border:
+        4px solid #79491f;
+
+      border-radius:
+        18px;
+
+      background:
+        linear-gradient(
+          145deg,
+          #fff1c5,
+          #d9b66b
+        );
+
+      box-shadow:
+        0 8px 0 #6d401d,
+        0 18px 32px rgba(72,42,20,.3);
+
+      color:
+        #3a2617;
+    }
+
+    .tool-panel-header {
+      padding:
+        12px 14px 10px;
+
+      border-bottom:
+        2px dashed rgba(114,70,31,.28);
+
+      background:
+        rgba(255,248,225,.38);
+    }
+
+    .tool-panel-title {
+      font-size:
+        16px;
+
+      font-weight:
+        1000;
+
+      color:
+        #52331b;
+
+      margin-bottom:
+        2px;
+    }
+
+    .tool-panel-subtitle {
+      font-size:
+        11px;
+
+      font-weight:
+        700;
+
+      color:
+        #7a5637;
+    }
+
+    .tool-links {
+      padding:
+        12px;
+
+      display:
+        grid;
+
+      gap:
+        10px;
+    }
+
+    .tool-link {
+      position:
+        relative;
+
+      min-height:
+        72px;
+
+      display:
+        grid;
+
+      grid-template-columns:
+        auto 1fr auto;
+
+      gap:
+        10px;
+
+      align-items:
+        center;
+
+      padding:
+        10px 12px;
+
+      border:
+        2px solid rgba(120,73,32,.25);
+
+      border-radius:
+        14px;
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255,255,255,.72),
+          rgba(255,240,196,.92)
+        );
+
+      box-shadow:
+        0 4px 0 #8a5820,
+        0 8px 14px rgba(96,58,29,.12);
+
+      transition:
+        transform .18s ease;
+    }
+
+    .tool-link:hover {
+      transform:
+        translateY(-3px);
+    }
+
+    .tool-link-icon {
+      width:
+        44px;
+
+      height:
+        44px;
+
+      display:
+        grid;
+
+      place-items:
+        center;
+
+      border-radius:
+        12px;
+
+      font-size:
+        23px;
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255,255,255,.95),
+          #ffe5a0
+        );
+
+      border:
+        2px solid rgba(120,73,32,.16);
+    }
+
+    .tool-link-body {
+      min-width:
+        0;
+    }
+
+    .tool-link-title {
+      margin-bottom:
+        3px;
+
+      font-size:
+        14px;
+
+      font-weight:
+        1000;
+
+      color:
+        #432918;
+    }
+
+    .tool-link-desc {
+      font-size:
+        11px;
+
+      line-height:
+        1.45;
+
+      font-weight:
+        700;
+
+      color:
+        #775438;
+    }
+
+    .tool-actions {
+      display:
+        grid;
+
+      gap:
+        5px;
+    }
+
+    .tool-link-arrow,
+    .favorite-btn {
+      width:
+        34px;
+
+      height:
+        34px;
+
+      display:
+        grid;
+
+      place-items:
+        center;
+
+      border-radius:
+        10px;
+
+      cursor:
+        pointer;
+
+      font-size:
+        15px;
+
+      font-weight:
+        1000;
+    }
+
+    .tool-link-arrow {
+      color:
+        #2f1c0c;
+
+      background:
+        linear-gradient(
+          180deg,
+          #ffe88b,
+          #e7aa36
+        );
+
+      box-shadow:
+        0 4px 0 #8c581c;
+    }
+
+    .favorite-btn {
+      border:
+        1px solid rgba(105,65,28,.26);
+
+      color:
+        #76502a;
+
+      background:
+        #fff1c5;
+    }
+
+    .favorite-btn.active {
+      background:
+        #ffd95e;
+
+      color:
+        #7c4f00;
+    }
+
+    /* =====================================
+       快捷設定視窗
+    ====================================== */
+
+    .modal-backdrop {
+      position:
+        fixed;
+
+      inset:
+        0;
+
+      z-index:
+        200;
+
+      display:
+        none;
+
+      align-items:
+        center;
+
+      justify-content:
+        center;
+
+      padding:
+        18px;
+
+      background:
+        rgba(2,7,15,.72);
+
+      backdrop-filter:
+        blur(5px);
+    }
+
+    .modal-backdrop.show {
+      display:
+        flex;
+    }
+
+    .setting-modal {
+      width:
+        min(680px, 100%);
+
+      max-height:
+        88vh;
+
+      overflow:
+        auto;
+
+      border:
+        5px solid #70401d;
+
+      border-radius:
+        20px;
+
+      background:
+        linear-gradient(
+          145deg,
+          #f4e0a9,
+          #d7b169
+        );
+
+      color:
+        #3b2818;
+
+      box-shadow:
+        0 12px 0 #402317,
+        0 28px 60px rgba(0,0,0,.5);
+    }
+
+    .setting-header {
+      position:
+        sticky;
+
+      top:
+        0;
+
+      z-index:
+        2;
+
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      justify-content:
+        space-between;
+
+      gap:
+        12px;
+
+      padding:
+        17px 18px;
+
+      border-bottom:
+        2px solid rgba(106,63,28,.22);
+
+      background:
+        linear-gradient(
+          180deg,
+          #f4e3b0,
+          #dec079
+        );
+    }
+
+    .setting-title {
+      font-size:
+        20px;
+
+      font-weight:
+        1000;
+    }
+
+    .setting-info {
+      margin-top:
+        3px;
+
+      font-size:
+        11px;
+
+      font-weight:
+        700;
+
+      color:
+        #765237;
+    }
+
+    .close-setting {
+      width:
+        39px;
+
+      height:
+        39px;
+
+      border:
+        none;
+
+      border-radius:
+        10px;
+
+      cursor:
+        pointer;
+
+      background:
+        #963e38;
+
+      color:
+        white;
+
+      font-weight:
+        1000;
+
+      box-shadow:
+        0 4px 0 #5c2420;
+    }
+
+    .setting-list {
+      display:
+        grid;
+
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+      gap:
+        10px;
+
+      padding:
+        16px;
+    }
+
+    .setting-item {
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      gap:
+        10px;
+
+      padding:
+        11px 12px;
+
+      border:
+        2px solid rgba(109,66,29,.2);
+
+      border-radius:
+        13px;
+
+      background:
+        rgba(255,248,225,.56);
+
+      cursor:
+        pointer;
+    }
+
+    .setting-item input {
+      width:
+        18px;
+
+      height:
+        18px;
+    }
+
+    .setting-item-icon {
+      font-size:
+        24px;
+    }
+
+    .setting-item-name {
+      font-size:
+        12px;
+
+      font-weight:
+        900;
+
+      line-height:
+        1.4;
+    }
+
+    .setting-footer {
+      position:
+        sticky;
+
+      bottom:
+        0;
+
+      display:
+        flex;
+
+      justify-content:
+        space-between;
+
+      align-items:
+        center;
+
+      gap:
+        12px;
+
+      padding:
+        14px 16px;
+
+      border-top:
+        2px solid rgba(103,63,28,.2);
+
+      background:
+        #ead092;
+    }
+
+    .selected-count {
+      font-size:
+        12px;
+
+      font-weight:
+        900;
+
+      color:
+        #624023;
+    }
+
+    .save-setting {
+      padding:
+        10px 18px;
+
+      border:
+        2px solid #75431f;
+
+      border-radius:
+        11px;
+
+      cursor:
+        pointer;
+
+      color:
+        #3b2818;
+
+      font-weight:
+        1000;
+
+      background:
+        linear-gradient(
+          180deg,
+          #ffe78a,
+          #e4a43b
+        );
+
+      box-shadow:
+        0 4px 0 #87541c;
+    }
+
+    /* =====================================
        頁尾
-    ========================= */
+    ====================================== */
 
-    footer {
-      padding: 0 18px 32px;
-      text-align: center;
-      color: #90a4c8;
+    .footer {
+      padding:
+        0 18px 34px;
+
+      text-align:
+        center;
+
+      color:
+        #90a4c8;
     }
 
     .footer-title {
-      margin-bottom: 6px;
-      color: var(--gold);
-      font-size: 14px;
-      font-weight: 900;
-      letter-spacing: 2px;
+      margin-bottom:
+        6px;
+
+      color:
+        var(--gold);
+
+      font-size:
+        14px;
+
+      font-weight:
+        900;
+
+      letter-spacing:
+        2px;
     }
 
     .footer-text {
-      font-size: 12px;
-      line-height: 1.7;
+      font-size:
+        12px;
+
+      line-height:
+        1.7;
     }
 
-    /* =========================
-       平板
-    ========================= */
+    .back-top {
+      position:
+        fixed;
 
-    @media (max-width: 900px) {
-      .map {
-        min-height: 1020px;
+      right:
+        18px;
+
+      bottom:
+        18px;
+
+      z-index:
+        30;
+
+      width:
+        48px;
+
+      height:
+        48px;
+
+      display:
+        grid;
+
+      place-items:
+        center;
+
+      border:
+        2px solid var(--gold);
+
+      border-radius:
+        50%;
+
+      background:
+        rgba(8,15,30,.88);
+
+      color:
+        var(--gold);
+
+      font-size:
+        20px;
+
+      cursor:
+        pointer;
+
+      box-shadow:
+        0 8px 20px rgba(0,0,0,.35);
+
+      opacity:
+        0;
+
+      transform:
+        translateY(15px);
+
+      pointer-events:
+        none;
+
+      transition:
+        .22s ease;
+    }
+
+    .back-top.show {
+      opacity:
+        1;
+
+      transform:
+        translateY(0);
+
+      pointer-events:
+        auto;
+    }
+
+    /* =====================================
+       平板
+    ====================================== */
+
+    @media (max-width: 1050px) {
+
+      .shortcut-grid {
+        grid-template-columns:
+          repeat(3, minmax(0, 1fr));
       }
 
-      .island {
-        width: 220px;
+      .cluster-class {
+        left:
+          4%;
+      }
+
+      .cluster-learning {
+        right:
+          4%;
+      }
+
+      .cluster-activity {
+        left:
+          4%;
+      }
+
+      .cluster-life {
+        right:
+          4%;
+      }
+
+      .flyout {
+        width:
+          280px;
       }
 
       .compass {
-        width: 115px;
-        height: 115px;
+        width:
+          120px;
+
+        height:
+          120px;
+
+        font-size:
+          47px;
       }
     }
 
-    /* =========================
-       手機：改成垂直航線
-    ========================= */
+    /* =====================================
+       手機 / 小平板
+    ====================================== */
 
-    @media (max-width: 700px) {
+    @media (max-width: 820px) {
+
+      .map {
+        min-height:
+          auto;
+
+        padding:
+          70px 16px 26px;
+
+        display:
+          flex;
+
+        flex-direction:
+          column;
+
+        align-items:
+          center;
+
+        gap:
+          30px;
+      }
+
+      .route-svg,
+      .compass,
+      .decor {
+        display:
+          none;
+      }
+
+      .island-cluster,
+      .cluster-class,
+      .cluster-learning,
+      .cluster-activity,
+      .cluster-life,
+      .cluster-external {
+        position:
+          relative;
+
+        top:
+          auto;
+
+        left:
+          auto;
+
+        right:
+          auto;
+
+        bottom:
+          auto;
+
+        transform:
+          none;
+
+        width:
+          min(100%, 360px);
+      }
+
+      .flyout,
+      .flyout-right,
+      .flyout-left,
+      .flyout-top {
+        position:
+          relative;
+
+        left:
+          auto;
+
+        right:
+          auto;
+
+        top:
+          auto;
+
+        bottom:
+          auto;
+
+        width:
+          100%;
+
+        margin-top:
+          14px;
+
+        opacity:
+          0;
+
+        max-height:
+          0;
+
+        overflow:
+          hidden;
+
+        transform:
+          none;
+
+        pointer-events:
+          none;
+      }
+
+      .island-cluster.active .flyout {
+        opacity:
+          1;
+
+        max-height:
+          1200px;
+
+        pointer-events:
+          auto;
+      }
+
+      .island-cluster:hover .flyout {
+        opacity:
+          0;
+
+        max-height:
+          0;
+
+        pointer-events:
+          none;
+      }
+
+      .island-cluster.active:hover .flyout {
+        opacity:
+          1;
+
+        max-height:
+          1200px;
+
+        pointer-events:
+          auto;
+      }
+
+      .setting-list {
+        grid-template-columns:
+          1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
 
       .hero {
-        padding-top: 26px;
+        padding-top:
+          26px;
       }
 
       .hero-logo {
-        width: 92px;
-        height: 92px;
+        width:
+          94px;
+
+        height:
+          94px;
       }
 
       .hero-logo span {
-        font-size: 47px;
+        font-size:
+          48px;
+      }
+
+      .shortcut-header {
+        align-items:
+          flex-start;
+
+        flex-direction:
+          column;
+      }
+
+      .shortcut-setting-btn {
+        width:
+          100%;
+      }
+
+      .shortcut-grid {
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
       }
 
       .map-frame {
-        padding: 12px;
-        border-width: 5px;
-        border-radius: 20px;
-      }
+        padding:
+          12px;
 
-      .map {
-        min-height: auto;
-        padding: 26px 14px 34px;
+        border-width:
+          5px;
 
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 28px;
-      }
-
-      .route-svg {
-        display: none;
-      }
-
-      .compass {
-        position: static;
-        transform: none;
-
-        width: 96px;
-        height: 96px;
-
-        margin: 4px auto;
-
-        font-size: 39px;
-      }
-
-      .island,
-      .island-class,
-      .island-learning,
-      .island-activity,
-      .island-life,
-      .island-external {
-        position: relative;
-        top: auto;
-        right: auto;
-        bottom: auto;
-        left: auto;
-
-        width: min(100%, 330px);
-        min-height: 155px;
-
-        transform: none;
-      }
-
-      .island:hover,
-      .island-external:hover {
-        transform: translateY(-6px) scale(1.02);
-      }
-
-      .island::after {
-        content: "⋮";
-        position: absolute;
-
-        left: 50%;
-        bottom: -34px;
-
-        transform: translateX(-50%);
-
-        color: rgba(95,59,27,.55);
-
-        font-size: 34px;
-        font-weight: 900;
-      }
-
-      .island:last-of-type::after {
-        display: none;
-      }
-
-      .decor {
-        display: none;
-      }
-
-      .tool-list {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 430px) {
-      .panel-header {
-        align-items: flex-start;
-      }
-
-      .panel-big-icon {
-        width: 44px;
-        height: 44px;
-        font-size: 24px;
-      }
-
-      .panel-title {
-        font-size: 19px;
+        border-radius:
+          20px;
       }
 
       .tool-link {
-        grid-template-columns: auto 1fr;
+        grid-template-columns:
+          auto 1fr;
       }
 
-      .tool-open {
-        grid-column: 1 / -1;
-        width: 100%;
-        height: 33px;
+      .tool-actions {
+        grid-column:
+          1 / -1;
+
+        grid-template-columns:
+          1fr 1fr;
+      }
+
+      .tool-link-arrow,
+      .favorite-btn {
+        width:
+          100%;
+
+        height:
+          32px;
+      }
+
+      .setting-footer {
+        align-items:
+          stretch;
+
+        flex-direction:
+          column;
+      }
+
+      .save-setting {
+        width:
+          100%;
       }
     }
 
@@ -1021,12 +2226,16 @@
       *,
       *::before,
       *::after {
-        animation-duration: .01ms !important;
-        animation-iteration-count: 1 !important;
-        scroll-behavior: auto !important;
+        animation-duration:
+          .01ms !important;
+
+        animation-iteration-count:
+          1 !important;
+
+        scroll-behavior:
+          auto !important;
       }
     }
-
   </style>
 </head>
 
@@ -1034,15 +2243,18 @@
 
   <div class="sea-glow"></div>
 
-  <div class="floating-bg bg1">⚓</div>
-  <div class="floating-bg bg2">🧭</div>
-  <div class="floating-bg bg3">🪙</div>
-  <div class="floating-bg bg4">🗺️</div>
+  <div class="float-symbol symbol-1">⚓</div>
+  <div class="float-symbol symbol-2">🧭</div>
+  <div class="float-symbol symbol-3">🪙</div>
+  <div class="float-symbol symbol-4">🗺️</div>
 
-  <!-- 頁首 -->
+  <!-- =====================================
+       頁首
+  ====================================== -->
+
   <header class="hero">
 
-    <div class="badge">
+    <div class="hero-badge">
       ⚓ TEACHER GRAND LINE ⚓
     </div>
 
@@ -1056,211 +2268,513 @@
     </h1>
 
     <p>
-      以航海地圖探索不同教學島嶼，
-      點選島嶼即可展開該區工具。
+      羊皮紙航海圖 × 教師工具總入口
       <br>
-      所有系統都會以新分頁開啟。
+      常用工具可以加入「我的快捷航線」，其他功能則從島嶼探索。
     </p>
 
   </header>
 
+
+  <!-- =====================================
+       公告
+  ====================================== -->
+
   <div class="notice">
-    🗺️ <strong>航海提示：</strong>
-    點選地圖上的島嶼，即可查看該區所有工具。
-    找到目的地後，再點選工具直接啟航。
+    ⭐ <strong>快捷航線：</strong>
+    最多可設定 6 個最常用工具。
+    點「設定快捷入口」即可自行選擇；
+    地圖工具旁的 ⭐ 也能直接加入或移除。
   </div>
 
 
-  <!-- 地圖 -->
+  <!-- =====================================
+       快捷入口
+  ====================================== -->
+
+  <section class="shortcut-wrap">
+
+    <div class="shortcut-board">
+
+      <div class="shortcut-header">
+
+        <div>
+          <div class="shortcut-title">
+            ⭐ 我的快捷航線
+          </div>
+
+          <div class="shortcut-subtitle">
+            把每天最常使用的系統放在這裡
+          </div>
+        </div>
+
+        <button
+          class="shortcut-setting-btn"
+          id="shortcutSettingBtn"
+          type="button"
+        >
+          ⚙️ 設定快捷入口
+        </button>
+
+      </div>
+
+      <div
+        class="shortcut-grid"
+        id="shortcutGrid"
+      >
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================
+       航海地圖
+  ====================================== -->
+
   <main class="map-wrap">
 
     <div class="map-frame">
 
       <div class="map">
 
-        <!-- 航線 -->
+        <div class="map-title">
+          TREASURE ROUTE MAP ・ 教師工具航海圖
+        </div>
+
+
+        <!-- 紅色虛線航線 -->
         <svg
           class="route-svg"
-          viewBox="0 0 1000 900"
+          viewBox="0 0 1200 980"
           preserveAspectRatio="none"
         >
 
           <path
-            class="route-glow"
-            d="
-              M 180 180
-              C 340 230, 390 330, 500 420
-              C 610 510, 740 560, 820 650
-              C 720 760, 610 790, 500 830
-            "
+            class="route-shadow"
+            d="M180 180 C350 220,430 330,600 450 C740 545,835 620,910 680 C860 770,720 820,600 860"
           />
 
           <path
-            class="route"
-            d="
-              M 180 180
-              C 340 230, 390 330, 500 420
-              C 610 510, 740 560, 820 650
-              C 720 760, 610 790, 500 830
-            "
+            class="route-main"
+            d="M180 180 C350 220,430 330,600 450 C740 545,835 620,910 680 C860 770,720 820,600 860"
           />
 
           <path
-            class="route-glow"
-            d="
-              M 820 190
-              C 720 270, 610 320, 500 420
-              C 390 510, 260 540, 170 590
-            "
+            class="route-shadow"
+            d="M930 190 C840 250,720 305,600 450 C500 565,330 575,195 610"
           />
 
           <path
-            class="route"
-            d="
-              M 820 190
-              C 720 270, 610 320, 500 420
-              C 390 510, 260 540, 170 590
-            "
+            class="route-main"
+            d="M930 190 C840 250,720 305,600 450 C500 565,330 575,195 610"
           />
 
         </svg>
 
-        <!-- 中央羅盤 -->
+
         <div class="compass">
           🧭
         </div>
 
-        <!-- 裝飾 -->
-        <div class="decor ship">⛵</div>
-        <div class="decor waves1">🌊</div>
-        <div class="decor waves2">🌊</div>
-        <div class="decor treasure">🧰</div>
-        <div class="decor cloud">☁️</div>
+        <div class="decor decor-ship">
+          ⛵
+        </div>
+
+        <div class="decor decor-wave1">
+          🌊
+        </div>
+
+        <div class="decor decor-wave2">
+          🌊
+        </div>
+
+        <div class="decor decor-box">
+          🧰
+        </div>
+
+        <div class="decor decor-cloud">
+          ☁️
+        </div>
 
 
-        <!-- 班級管理島 -->
-        <button
-          class="island island-class"
-          onclick="openPanel('class')"
-        >
+        <!-- =====================================
+             班級管理島
+        ====================================== -->
 
-          <div class="island-icon">
-            🏝️
+        <div class="island-cluster cluster-class">
+
+          <button
+            class="island-btn"
+            type="button"
+          >
+
+            <div class="island-icon">
+              🏝️
+            </div>
+
+            <div class="island-title">
+              班級管理島
+            </div>
+
+            <div class="island-desc">
+              收繳、學生平台與管理後台
+            </div>
+
+            <div class="island-count">
+              4 個工具
+            </div>
+
+            <div class="tap-tip">
+              點選島嶼展開工具
+            </div>
+
+          </button>
+
+
+          <div class="flyout flyout-right">
+
+            <div class="tool-panel">
+
+              <div class="tool-panel-header">
+
+                <div class="tool-panel-title">
+                  班級管理島
+                </div>
+
+                <div class="tool-panel-subtitle">
+                  點工具直接啟航；⭐ 可加入快捷
+                </div>
+
+              </div>
+
+
+              <div class="tool-links">
+
+                <div
+                  class="tool-link"
+                  data-tool-id="classTracker"
+                >
+                </div>
+
+                <div
+                  class="tool-link"
+                  data-tool-id="subclassTracker"
+                >
+                </div>
+
+                <div
+                  class="tool-link"
+                  data-tool-id="classWork"
+                >
+                </div>
+
+                <div
+                  class="tool-link"
+                  data-tool-id="classAdmin"
+                >
+                </div>
+
+              </div>
+
+            </div>
+
           </div>
 
-          <div class="island-title">
-            班級管理島
+        </div>
+
+
+        <!-- =====================================
+             學習成績島
+        ====================================== -->
+
+        <div class="island-cluster cluster-learning">
+
+          <button
+            class="island-btn"
+            type="button"
+          >
+
+            <div class="island-icon">
+              📚
+            </div>
+
+            <div class="island-title">
+              學習成績島
+            </div>
+
+            <div class="island-desc">
+              段考成績與數學學習
+            </div>
+
+            <div class="island-count">
+              2 個工具
+            </div>
+
+            <div class="tap-tip">
+              點選島嶼展開工具
+            </div>
+
+          </button>
+
+
+          <div class="flyout flyout-left">
+
+            <div class="tool-panel">
+
+              <div class="tool-panel-header">
+
+                <div class="tool-panel-title">
+                  學習成績島
+                </div>
+
+                <div class="tool-panel-subtitle">
+                  點工具直接啟航；⭐ 可加入快捷
+                </div>
+
+              </div>
+
+              <div class="tool-links">
+
+                <div
+                  class="tool-link"
+                  data-tool-id="examScore"
+                >
+                </div>
+
+                <div
+                  class="tool-link"
+                  data-tool-id="math"
+                >
+                </div>
+
+              </div>
+
+            </div>
+
           </div>
 
-          <div class="island-desc">
-            收繳、學生平台與管理後台集中在這裡
+        </div>
+
+
+        <!-- =====================================
+             教學活動島
+        ====================================== -->
+
+        <div class="island-cluster cluster-activity">
+
+          <button
+            class="island-btn"
+            type="button"
+          >
+
+            <div class="island-icon">
+              🎪
+            </div>
+
+            <div class="island-title">
+              教學活動島
+            </div>
+
+            <div class="island-desc">
+              課堂互動、刮刮樂與座位
+            </div>
+
+            <div class="island-count">
+              2 個工具
+            </div>
+
+            <div class="tap-tip">
+              點選島嶼展開工具
+            </div>
+
+          </button>
+
+
+          <div class="flyout flyout-right">
+
+            <div class="tool-panel">
+
+              <div class="tool-panel-header">
+
+                <div class="tool-panel-title">
+                  教學活動島
+                </div>
+
+                <div class="tool-panel-subtitle">
+                  點工具直接啟航；⭐ 可加入快捷
+                </div>
+
+              </div>
+
+              <div class="tool-links">
+
+                <div
+                  class="tool-link"
+                  data-tool-id="scratch"
+                >
+                </div>
+
+                <div
+                  class="tool-link"
+                  data-tool-id="seat"
+                >
+                </div>
+
+              </div>
+
+            </div>
+
           </div>
 
-          <div class="island-count">
-            4 個工具
+        </div>
+
+
+        <!-- =====================================
+             學生生活島
+        ====================================== -->
+
+        <div class="island-cluster cluster-life">
+
+          <button
+            class="island-btn"
+            type="button"
+          >
+
+            <div class="island-icon">
+              🌴
+            </div>
+
+            <div class="island-title">
+              學生生活島
+            </div>
+
+            <div class="island-desc">
+              聯絡簿、生日與跑步紀錄
+            </div>
+
+            <div class="island-count">
+              3 個工具
+            </div>
+
+            <div class="tap-tip">
+              點選島嶼展開工具
+            </div>
+
+          </button>
+
+
+          <div class="flyout flyout-left">
+
+            <div class="tool-panel">
+
+              <div class="tool-panel-header">
+
+                <div class="tool-panel-title">
+                  學生生活島
+                </div>
+
+                <div class="tool-panel-subtitle">
+                  點工具直接啟航；⭐ 可加入快捷
+                </div>
+
+              </div>
+
+              <div class="tool-links">
+
+                <div
+                  class="tool-link"
+                  data-tool-id="contact"
+                >
+                </div>
+
+                <div
+                  class="tool-link"
+                  data-tool-id="birthday"
+                >
+                </div>
+
+                <div
+                  class="tool-link"
+                  data-tool-id="running"
+                >
+                </div>
+
+              </div>
+
+            </div>
+
           </div>
 
-        </button>
+        </div>
 
 
-        <!-- 學習島 -->
-        <button
-          class="island island-learning"
-          onclick="openPanel('learning')"
-        >
+        <!-- =====================================
+             外部港口
+        ====================================== -->
 
-          <div class="island-icon">
-            📚
+        <div class="island-cluster cluster-external">
+
+          <button
+            class="island-btn"
+            type="button"
+          >
+
+            <div class="island-icon">
+              ⚓
+            </div>
+
+            <div class="island-title">
+              外部工具港口
+            </div>
+
+            <div class="island-desc">
+              其他常用班級經營平台
+            </div>
+
+            <div class="island-count">
+              1 個工具
+            </div>
+
+            <div class="tap-tip">
+              點選港口展開工具
+            </div>
+
+          </button>
+
+
+          <div class="flyout flyout-top">
+
+            <div class="tool-panel">
+
+              <div class="tool-panel-header">
+
+                <div class="tool-panel-title">
+                  外部工具港口
+                </div>
+
+                <div class="tool-panel-subtitle">
+                  點工具直接啟航；⭐ 可加入快捷
+                </div>
+
+              </div>
+
+              <div class="tool-links">
+
+                <div
+                  class="tool-link"
+                  data-tool-id="dojo"
+                >
+                </div>
+
+              </div>
+
+            </div>
+
           </div>
 
-          <div class="island-title">
-            學習成績島
-          </div>
-
-          <div class="island-desc">
-            數學練習、段考成績與學生學習入口
-          </div>
-
-          <div class="island-count">
-            2 個工具
-          </div>
-
-        </button>
-
-
-        <!-- 活動島 -->
-        <button
-          class="island island-activity"
-          onclick="openPanel('activity')"
-        >
-
-          <div class="island-icon">
-            🎪
-          </div>
-
-          <div class="island-title">
-            教學活動島
-          </div>
-
-          <div class="island-desc">
-            課堂互動、刮刮樂與座位安排
-          </div>
-
-          <div class="island-count">
-            2 個工具
-          </div>
-
-        </button>
-
-
-        <!-- 生活島 -->
-        <button
-          class="island island-life"
-          onclick="openPanel('life')"
-        >
-
-          <div class="island-icon">
-            🌴
-          </div>
-
-          <div class="island-title">
-            學生生活島
-          </div>
-
-          <div class="island-desc">
-            聯絡簿、生日提醒與跑步紀錄
-          </div>
-
-          <div class="island-count">
-            3 個工具
-          </div>
-
-        </button>
-
-
-        <!-- 外部港口 -->
-        <button
-          class="island island-external"
-          onclick="openPanel('external')"
-        >
-
-          <div class="island-icon">
-            ⚓
-          </div>
-
-          <div class="island-title">
-            外部工具港口
-          </div>
-
-          <div class="island-desc">
-            前往其他常用教學與班級經營平台
-          </div>
-
-          <div class="island-count">
-            1 個工具
-          </div>
-
-        </button>
+        </div>
 
       </div>
 
@@ -1269,60 +2783,66 @@
   </main>
 
 
-  <!-- 彈出面板 -->
+  <!-- =====================================
+       快捷設定視窗
+  ====================================== -->
+
   <div
-    class="panel-backdrop"
-    id="panelBackdrop"
-    onclick="closePanelByBackdrop(event)"
+    class="modal-backdrop"
+    id="shortcutModal"
   >
 
-    <div class="tool-panel">
+    <div class="setting-modal">
 
-      <div class="panel-header">
+      <div class="setting-header">
 
-        <div class="panel-title-wrap">
+        <div>
 
-          <div
-            class="panel-big-icon"
-            id="panelIcon"
-          >
-            🏝️
+          <div class="setting-title">
+            ⭐ 設定我的快捷航線
           </div>
 
-          <div>
-
-            <div
-              class="panel-title"
-              id="panelTitle"
-            >
-              班級管理島
-            </div>
-
-            <div
-              class="panel-subtitle"
-              id="panelSubtitle"
-            >
-              選擇要前往的系統
-            </div>
-
+          <div class="setting-info">
+            最多可選 6 個工具
           </div>
 
         </div>
 
         <button
-          class="close-btn"
-          onclick="closePanel()"
-          aria-label="關閉"
+          class="close-setting"
+          id="closeSettingBtn"
+          type="button"
         >
           ✕
         </button>
 
       </div>
 
+
       <div
-        class="tool-list"
-        id="toolList"
+        class="setting-list"
+        id="settingList"
       >
+      </div>
+
+
+      <div class="setting-footer">
+
+        <div
+          class="selected-count"
+          id="selectedCount"
+        >
+          已選 0 / 6
+        </div>
+
+        <button
+          class="save-setting"
+          id="saveSettingBtn"
+          type="button"
+        >
+          💾 儲存快捷航線
+        </button>
+
       </div>
 
     </div>
@@ -1330,14 +2850,14 @@
   </div>
 
 
-  <footer>
+  <footer class="footer">
 
     <div class="footer-title">
       ⚓ TEACHER GRAND LINE
     </div>
 
     <div class="footer-text">
-      教師專屬航海工具地圖
+      教師專屬航海工具總入口
       <br>
       Keep Sailing · Keep Teaching
     </div>
@@ -1345,213 +2865,248 @@
   </footer>
 
 
+  <button
+    class="back-top"
+    id="backTop"
+    type="button"
+  >
+    ↑
+  </button>
+
+
   <script>
 
-    const sections = {
+    /* =====================================
+       所有系統資料
+    ====================================== */
 
-      class: {
-        title: "班級管理島",
-        subtitle: "收繳、學生平台與管理後台",
-        icon: "🏝️",
+    const TOOLS = {
 
-        tools: [
-
-          {
-            name: "導師班資料繳交系統",
-            desc: "管理導師班學生資料與各項繳交紀錄。",
-            icon: "📋",
-            className: "t-class",
-            url: "https://junteachlife.github.io/luckyscratch/class-tracker.html"
-          },
-
-          {
-            name: "任課班資料繳交系統",
-            desc: "查看與管理各任課班級學生繳交狀況。",
-            icon: "📚",
-            className: "t-subclass",
-            url: "https://junteachlife.github.io/luckyscratch/subclass-tracker.html"
-          },
-
-          {
-            name: "學生作業成績繳交平台",
-            desc: "學生登入後使用作業與成績登記功能。",
-            icon: "👨‍🎓",
-            className: "t-studentwork",
-            url: "https://junteachlife.github.io/luckyscratch/class-work.html"
-          },
-
-          {
-            name: "作業成績彙整後台",
-            desc: "管理帳號、權限、作業、成績與操作紀錄。",
-            icon: "🧾",
-            className: "t-admin",
-            url: "https://junteachlife.github.io/luckyscratch/class-datawork-admin.html"
-          }
-
-        ]
+      classTracker: {
+        name: "導師班資料繳交系統",
+        shortName: "導師班繳交",
+        desc: "管理導師班學生資料與各項繳交紀錄。",
+        icon: "📋",
+        url: "https://junteachlife.github.io/luckyscratch/class-tracker.html"
       },
 
-
-      learning: {
-        title: "學習成績島",
-        subtitle: "數學學習與段考成績查詢",
+      subclassTracker: {
+        name: "任課班資料繳交系統",
+        shortName: "任課班繳交",
+        desc: "查看與管理各任課班級學生繳交狀況。",
         icon: "📚",
-
-        tools: [
-
-          {
-            name: "學生段考成績查詢系統",
-            desc: "查詢段考成績、平均、排名與學習表現。",
-            icon: "📊",
-            className: "t-exam",
-            url: "https://junteachlife.github.io/luckyscratch/examscore.html"
-          },
-
-          {
-            name: "數學練習網站",
-            desc: "數學遊戲、線上練習與各類題型挑戰。",
-            icon: "🎮",
-            className: "t-math",
-            url: "https://junteachlife.github.io/mathteach/"
-          }
-
-        ]
+        url: "https://junteachlife.github.io/luckyscratch/subclass-tracker.html"
       },
 
-
-      activity: {
-        title: "教學活動島",
-        subtitle: "課堂互動與班級活動工具",
-        icon: "🎪",
-
-        tools: [
-
-          {
-            name: "刮刮樂網站",
-            desc: "課堂抽獎、幸運挑戰與獎勵活動。",
-            icon: "🎟️",
-            className: "t-scratch",
-            url: "https://junteachlife.github.io/luckyscratch/mixscratch.html"
-          },
-
-          {
-            name: "座位系統",
-            desc: "班級座位安排、學生位置與座位調整。",
-            icon: "💺",
-            className: "t-seat",
-            url: "https://junteachlife.github.io/luckyscratch/seat.html"
-          }
-
-        ]
+      classWork: {
+        name: "學生作業成績繳交平台",
+        shortName: "學生作業平台",
+        desc: "學生登入後使用作業與成績登記功能。",
+        icon: "👨‍🎓",
+        url: "https://junteachlife.github.io/luckyscratch/class-work.html"
       },
 
-
-      life: {
-        title: "學生生活島",
-        subtitle: "班級日常與學生生活管理",
-        icon: "🌴",
-
-        tools: [
-
-          {
-            name: "聯絡簿登記系統",
-            desc: "整理每日聯絡事項、作業與班級提醒。",
-            icon: "📒",
-            className: "t-contact",
-            url: "https://junteachlife.github.io/luckyscratch/contact-book.html"
-          },
-
-          {
-            name: "生日提醒系統",
-            desc: "查看今日、近期與每月壽星並製作祝福。",
-            icon: "🎂",
-            className: "t-birthday",
-            url: "https://junteachlife.github.io/luckyscratch/birthday.html"
-          },
-
-          {
-            name: "跑步系統",
-            desc: "登記學生跑步圈數與查看累積成果。",
-            icon: "🏃",
-            className: "t-running",
-            url: "https://junteachlife.github.io/luckyscratch/running.html"
-          }
-
-        ]
+      classAdmin: {
+        name: "作業成績彙整後台",
+        shortName: "作業成績後台",
+        desc: "管理帳號、權限、作業、成績與操作紀錄。",
+        icon: "🧾",
+        url: "https://junteachlife.github.io/luckyscratch/class-datawork-admin.html"
       },
 
+      examScore: {
+        name: "學生段考成績查詢系統",
+        shortName: "段考成績",
+        desc: "查詢段考成績、平均、排名與學習表現。",
+        icon: "📊",
+        url: "https://junteachlife.github.io/luckyscratch/examscore.html"
+      },
 
-      external: {
-        title: "外部工具港口",
-        subtitle: "連接其他常用平台",
-        icon: "⚓",
+      math: {
+        name: "數學練習網站",
+        shortName: "數學練習",
+        desc: "數學遊戲、線上練習與各類題型挑戰。",
+        icon: "🎮",
+        url: "https://junteachlife.github.io/mathteach/"
+      },
 
-        tools: [
+      scratch: {
+        name: "刮刮樂網站",
+        shortName: "刮刮樂",
+        desc: "課堂抽獎、幸運挑戰與獎勵活動。",
+        icon: "🎟️",
+        url: "https://junteachlife.github.io/luckyscratch/mixscratch.html"
+      },
 
-          {
-            name: "ClassDojo",
-            desc: "班級經營、學生互動與親師聯繫平台。",
-            icon: "🏫",
-            className: "t-dojo",
-            url: "https://www.classdojo.com/"
-          }
+      seat: {
+        name: "座位系統",
+        shortName: "座位系統",
+        desc: "班級座位安排、學生位置與座位調整。",
+        icon: "💺",
+        url: "https://junteachlife.github.io/luckyscratch/seat.html"
+      },
 
-        ]
+      contact: {
+        name: "聯絡簿登記系統",
+        shortName: "聯絡簿",
+        desc: "整理每日聯絡事項、作業與班級提醒。",
+        icon: "📒",
+        url: "https://junteachlife.github.io/luckyscratch/contact-book.html"
+      },
+
+      birthday: {
+        name: "生日提醒系統",
+        shortName: "生日提醒",
+        desc: "查看今日、近期與每月壽星並製作祝福。",
+        icon: "🎂",
+        url: "https://junteachlife.github.io/luckyscratch/birthday.html"
+      },
+
+      running: {
+        name: "跑步系統",
+        shortName: "跑步系統",
+        desc: "登記學生跑步圈數與查看累積成果。",
+        icon: "🏃",
+        url: "https://junteachlife.github.io/luckyscratch/running.html"
+      },
+
+      dojo: {
+        name: "ClassDojo",
+        shortName: "ClassDojo",
+        desc: "班級經營、學生互動與親師聯繫平台。",
+        icon: "🏫",
+        url: "https://www.classdojo.com/"
       }
 
     };
 
 
-    function openPanel(sectionKey) {
+    /* =====================================
+       預設快捷入口
+    ====================================== */
 
-      const section = sections[sectionKey];
+    const DEFAULT_SHORTCUTS = [
+      "classTracker",
+      "classAdmin",
+      "contact",
+      "birthday"
+    ];
 
-      if (!section) return;
+    const STORAGE_KEY =
+      "teacherMapShortcutsV1";
 
-      document.getElementById("panelTitle").textContent =
-        section.title;
-
-      document.getElementById("panelSubtitle").textContent =
-        section.subtitle;
-
-      document.getElementById("panelIcon").textContent =
-        section.icon;
-
-
-      const toolList =
-        document.getElementById("toolList");
+    const MAX_SHORTCUTS =
+      6;
 
 
-      toolList.innerHTML =
-        section.tools
-          .map(tool => {
+    /* =====================================
+       讀取快捷
+    ====================================== */
+
+    function loadShortcuts() {
+
+      try {
+
+        const saved =
+          JSON.parse(
+            localStorage.getItem(
+              STORAGE_KEY
+            )
+          );
+
+        if (
+          Array.isArray(saved)
+        ) {
+
+          return saved.filter(
+            id => TOOLS[id]
+          );
+
+        }
+
+      } catch (error) {
+
+        console.warn(
+          "快捷入口讀取失敗",
+          error
+        );
+
+      }
+
+      return [
+        ...DEFAULT_SHORTCUTS
+      ];
+
+    }
+
+
+    let shortcutIds =
+      loadShortcuts();
+
+
+    /* =====================================
+       儲存快捷
+    ====================================== */
+
+    function saveShortcuts() {
+
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(
+          shortcutIds
+        )
+      );
+
+    }
+
+
+    /* =====================================
+       顯示快捷入口
+    ====================================== */
+
+    function renderShortcuts() {
+
+      const grid =
+        document.getElementById(
+          "shortcutGrid"
+        );
+
+      if (
+        shortcutIds.length === 0
+      ) {
+
+        grid.innerHTML = `
+          <div class="shortcut-empty">
+            尚未設定快捷入口。點右上方「設定快捷入口」開始加入常用工具。
+          </div>
+        `;
+
+        return;
+
+      }
+
+
+      grid.innerHTML =
+        shortcutIds
+          .map(id => {
+
+            const tool =
+              TOOLS[id];
 
             return `
               <a
-                class="tool-link ${tool.className}"
+                class="shortcut-item"
                 href="${tool.url}"
                 target="_blank"
                 rel="noopener noreferrer"
               >
 
-                <div class="tool-icon">
+                <div class="shortcut-item-icon">
                   ${tool.icon}
                 </div>
 
-                <div class="tool-info">
-
-                  <div class="tool-name">
-                    ${tool.name}
-                  </div>
-
-                  <div class="tool-desc">
-                    ${tool.desc}
-                  </div>
-
-                </div>
-
-                <div class="tool-open">
-                  ↗
+                <div class="shortcut-item-name">
+                  ${tool.shortName}
                 </div>
 
               </a>
@@ -1560,12 +3115,179 @@
           })
           .join("");
 
+    }
+
+
+    /* =====================================
+       地圖工具卡
+    ====================================== */
+
+    function renderToolCards() {
 
       document
-        .getElementById("panelBackdrop")
-        .classList
-        .add("show");
+        .querySelectorAll(
+          "[data-tool-id]"
+        )
+        .forEach(card => {
 
+          const id =
+            card.dataset.toolId;
+
+          const tool =
+            TOOLS[id];
+
+          if (!tool) return;
+
+          card.innerHTML = `
+
+            <div class="tool-link-icon">
+              ${tool.icon}
+            </div>
+
+            <div class="tool-link-body">
+
+              <div class="tool-link-title">
+                ${tool.name}
+              </div>
+
+              <div class="tool-link-desc">
+                ${tool.desc}
+              </div>
+
+            </div>
+
+            <div class="tool-actions">
+
+              <a
+                class="tool-link-arrow"
+                href="${tool.url}"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="開啟系統"
+              >
+                ↗
+              </a>
+
+              <button
+                class="favorite-btn ${
+                  shortcutIds.includes(id)
+                    ? "active"
+                    : ""
+                }"
+                type="button"
+                data-favorite="${id}"
+                title="加入或移除快捷"
+              >
+                ⭐
+              </button>
+
+            </div>
+
+          `;
+
+        });
+
+
+      document
+        .querySelectorAll(
+          "[data-favorite]"
+        )
+        .forEach(button => {
+
+          button.addEventListener(
+            "click",
+            event => {
+
+              event.preventDefault();
+              event.stopPropagation();
+
+              toggleFavorite(
+                button.dataset.favorite
+              );
+
+            }
+          );
+
+        });
+
+    }
+
+
+    /* =====================================
+       加入 / 移除快捷
+    ====================================== */
+
+    function toggleFavorite(id) {
+
+      const index =
+        shortcutIds.indexOf(id);
+
+      if (index >= 0) {
+
+        shortcutIds.splice(
+          index,
+          1
+        );
+
+      } else {
+
+        if (
+          shortcutIds.length >=
+          MAX_SHORTCUTS
+        ) {
+
+          alert(
+            "快捷入口最多只能設定 6 個。請先移除一個再新增。"
+          );
+
+          return;
+
+        }
+
+        shortcutIds.push(id);
+
+      }
+
+      saveShortcuts();
+      renderShortcuts();
+      renderToolCards();
+      renderSettingList();
+
+    }
+
+
+    /* =====================================
+       快捷設定視窗
+    ====================================== */
+
+    const shortcutModal =
+      document.getElementById(
+        "shortcutModal"
+      );
+
+    const shortcutSettingBtn =
+      document.getElementById(
+        "shortcutSettingBtn"
+      );
+
+    const closeSettingBtn =
+      document.getElementById(
+        "closeSettingBtn"
+      );
+
+    const saveSettingBtn =
+      document.getElementById(
+        "saveSettingBtn"
+      );
+
+
+    function openShortcutSetting() {
+
+      renderSettingList();
+
+      shortcutModal.classList.add(
+        "show"
+      );
 
       document.body.style.overflow =
         "hidden";
@@ -1573,13 +3295,11 @@
     }
 
 
-    function closePanel() {
+    function closeShortcutSetting() {
 
-      document
-        .getElementById("panelBackdrop")
-        .classList
-        .remove("show");
-
+      shortcutModal.classList.remove(
+        "show"
+      );
 
       document.body.style.overflow =
         "";
@@ -1587,18 +3307,273 @@
     }
 
 
-    function closePanelByBackdrop(event) {
+    shortcutSettingBtn.addEventListener(
+      "click",
+      openShortcutSetting
+    );
+
+
+    closeSettingBtn.addEventListener(
+      "click",
+      closeShortcutSetting
+    );
+
+
+    shortcutModal.addEventListener(
+      "click",
+      event => {
+
+        if (
+          event.target ===
+          shortcutModal
+        ) {
+
+          closeShortcutSetting();
+
+        }
+
+      }
+    );
+
+
+    /* =====================================
+       設定清單
+    ====================================== */
+
+    function renderSettingList() {
+
+      const list =
+        document.getElementById(
+          "settingList"
+        );
+
+      list.innerHTML =
+        Object.entries(TOOLS)
+          .map(([id, tool]) => {
+
+            const checked =
+              shortcutIds.includes(id)
+                ? "checked"
+                : "";
+
+            return `
+              <label class="setting-item">
+
+                <input
+                  type="checkbox"
+                  value="${id}"
+                  ${checked}
+                >
+
+                <div class="setting-item-icon">
+                  ${tool.icon}
+                </div>
+
+                <div class="setting-item-name">
+                  ${tool.name}
+                </div>
+
+              </label>
+            `;
+
+          })
+          .join("");
+
+
+      list
+        .querySelectorAll(
+          "input[type='checkbox']"
+        )
+        .forEach(input => {
+
+          input.addEventListener(
+            "change",
+            updateSelectedCount
+          );
+
+        });
+
+
+      updateSelectedCount();
+
+    }
+
+
+    /* =====================================
+       計算目前選取數
+    ====================================== */
+
+    function updateSelectedCount() {
+
+      const checked =
+        document.querySelectorAll(
+          "#settingList input:checked"
+        );
+
+      const count =
+        checked.length;
+
+      document.getElementById(
+        "selectedCount"
+      ).textContent =
+        `已選 ${count} / ${MAX_SHORTCUTS}`;
+
 
       if (
-        event.target.id ===
-        "panelBackdrop"
+        count > MAX_SHORTCUTS
       ) {
 
-        closePanel();
+        document.getElementById(
+          "selectedCount"
+        ).style.color =
+          "#a3232b";
+
+      } else {
+
+        document.getElementById(
+          "selectedCount"
+        ).style.color =
+          "";
 
       }
 
     }
+
+
+    /* =====================================
+       儲存設定
+    ====================================== */
+
+    saveSettingBtn.addEventListener(
+      "click",
+      () => {
+
+        const selected =
+          Array.from(
+            document.querySelectorAll(
+              "#settingList input:checked"
+            )
+          )
+          .map(
+            input =>
+              input.value
+          );
+
+
+        if (
+          selected.length >
+          MAX_SHORTCUTS
+        ) {
+
+          alert(
+            "最多只能選擇 6 個快捷入口。"
+          );
+
+          return;
+
+        }
+
+
+        shortcutIds =
+          selected;
+
+
+        saveShortcuts();
+        renderShortcuts();
+        renderToolCards();
+        closeShortcutSetting();
+
+      }
+    );
+
+
+    /* =====================================
+       島嶼展開
+    ====================================== */
+
+    const islandClusters =
+      document.querySelectorAll(
+        ".island-cluster"
+      );
+
+
+    function closeAllIslands() {
+
+      islandClusters.forEach(
+        cluster =>
+          cluster.classList.remove(
+            "active"
+          )
+      );
+
+    }
+
+
+    islandClusters.forEach(
+      cluster => {
+
+        const button =
+          cluster.querySelector(
+            ".island-btn"
+          );
+
+
+        button.addEventListener(
+          "click",
+          event => {
+
+            event.stopPropagation();
+
+            const active =
+              cluster.classList.contains(
+                "active"
+              );
+
+
+            closeAllIslands();
+
+
+            if (!active) {
+
+              cluster.classList.add(
+                "active"
+              );
+
+            }
+
+          }
+        );
+
+
+        cluster.addEventListener(
+          "click",
+          event => {
+
+            event.stopPropagation();
+
+          }
+        );
+
+      }
+    );
+
+
+    document.addEventListener(
+      "click",
+      event => {
+
+        if (
+          !event.target.closest(
+            ".island-cluster"
+          )
+        ) {
+
+          closeAllIslands();
+
+        }
+
+      }
+    );
 
 
     document.addEventListener(
@@ -1606,15 +3581,73 @@
       event => {
 
         if (
-          event.key === "Escape"
+          event.key ===
+          "Escape"
         ) {
 
-          closePanel();
+          closeAllIslands();
+          closeShortcutSetting();
 
         }
 
       }
     );
+
+
+    /* =====================================
+       返回頂端
+    ====================================== */
+
+    const backTop =
+      document.getElementById(
+        "backTop"
+      );
+
+
+    window.addEventListener(
+      "scroll",
+      () => {
+
+        if (
+          window.scrollY > 350
+        ) {
+
+          backTop.classList.add(
+            "show"
+          );
+
+        } else {
+
+          backTop.classList.remove(
+            "show"
+          );
+
+        }
+
+      }
+    );
+
+
+    backTop.addEventListener(
+      "click",
+      () => {
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth"
+        });
+
+      }
+    );
+
+
+    /* =====================================
+       初始化
+    ====================================== */
+
+    renderShortcuts();
+    renderToolCards();
+    renderSettingList();
 
   </script>
 
