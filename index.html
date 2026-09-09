@@ -28,10 +28,7 @@
     }
 
     :root {
-      --bg-dark: #0a1020;
-      --bg-blue: #101c3a;
       --gold: #f6c453;
-      --red: #bd2937;
       --white: #fffdf3;
       --text-dark: #2d2018;
     }
@@ -66,16 +63,14 @@
       inset: 0;
       pointer-events: none;
       opacity: 0.12;
-
       background-image:
         repeating-linear-gradient(
           0deg,
-          rgba(255, 255, 255, 0.04) 0px,
-          rgba(255, 255, 255, 0.04) 1px,
+          rgba(255,255,255,0.04) 0px,
+          rgba(255,255,255,0.04) 1px,
           transparent 1px,
           transparent 5px
         );
-
       z-index: 99;
     }
 
@@ -89,10 +84,7 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* =========================
-       背景裝飾
-    ========================= */
-
+    /* 背景裝飾 */
     .ocean-glow {
       position: fixed;
       left: 0;
@@ -101,14 +93,12 @@
       height: 260px;
       pointer-events: none;
       z-index: -1;
-
       background:
         radial-gradient(
           ellipse at center,
           rgba(59, 190, 232, 0.38),
           transparent 67%
         );
-
       filter: blur(12px);
     }
 
@@ -118,9 +108,7 @@
       opacity: 0.09;
       user-select: none;
       z-index: -1;
-
-      filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.45));
-
+      filter: drop-shadow(0 8px 15px rgba(0,0,0,0.45));
       animation: floatSymbol 8s ease-in-out infinite;
     }
 
@@ -152,8 +140,7 @@
     }
 
     @keyframes floatSymbol {
-      0%,
-      100% {
+      0%, 100% {
         transform: translateY(0) rotate(-4deg);
       }
 
@@ -162,10 +149,7 @@
       }
     }
 
-    /* =========================
-       頁首
-    ========================= */
-
+    /* 頁首 */
     .hero {
       position: relative;
       padding: 42px 18px 26px;
@@ -177,24 +161,18 @@
       align-items: center;
       justify-content: center;
       gap: 9px;
-
       margin-bottom: 18px;
       padding: 8px 17px;
-
-      border: 2px solid rgba(246, 196, 83, 0.78);
+      border: 2px solid rgba(246,196,83,0.78);
       border-radius: 999px;
-
       color: var(--gold);
       font-size: 14px;
       font-weight: 900;
       letter-spacing: 2px;
-
-      background: rgba(7, 12, 27, 0.7);
-
+      background: rgba(7,12,27,0.7);
       box-shadow:
-        0 6px 25px rgba(0, 0, 0, 0.25),
-        inset 0 0 14px rgba(246, 196, 83, 0.08);
-
+        0 6px 25px rgba(0,0,0,0.25),
+        inset 0 0 14px rgba(246,196,83,0.08);
       backdrop-filter: blur(10px);
     }
 
@@ -202,13 +180,10 @@
       width: 112px;
       height: 112px;
       margin: 0 auto 16px;
-
       display: grid;
       place-items: center;
-
       position: relative;
       border-radius: 50%;
-
       background:
         radial-gradient(
           circle at 35% 30%,
@@ -216,14 +191,11 @@
           #eba52b 56%,
           #7c3d16 100%
         );
-
       border: 6px solid #f9d66c;
-
       box-shadow:
         0 0 0 5px #7a431c,
-        0 16px 30px rgba(0, 0, 0, 0.38),
-        0 0 38px rgba(246, 196, 83, 0.25);
-
+        0 16px 30px rgba(0,0,0,0.38),
+        0 0 38px rgba(246,196,83,0.25);
       animation: logoFloat 4s ease-in-out infinite;
     }
 
@@ -231,10 +203,8 @@
     .logo-wrap::after {
       content: "";
       position: absolute;
-
       width: 48px;
       height: 8px;
-
       border-radius: 999px;
       background: #f3dfac;
       z-index: -1;
@@ -250,16 +220,11 @@
 
     .logo-icon {
       font-size: 58px;
-
-      filter:
-        drop-shadow(
-          0 4px 3px rgba(0, 0, 0, 0.24)
-        );
+      filter: drop-shadow(0 4px 3px rgba(0,0,0,0.24));
     }
 
     @keyframes logoFloat {
-      0%,
-      100% {
+      0%, 100% {
         transform: translateY(0) rotate(-2deg);
       }
 
@@ -273,10 +238,9 @@
       font-weight: 1000;
       line-height: 1.08;
       letter-spacing: 3px;
-
       text-shadow:
         0 4px 0 #771826,
-        0 8px 16px rgba(0, 0, 0, 0.48);
+        0 8px 16px rgba(0,0,0,0.48);
     }
 
     .title .gold {
@@ -288,20 +252,15 @@
     }
 
     .subtitle {
-      max-width: 700px;
+      max-width: 760px;
       margin: 14px auto 0;
-
       color: #dce7ff;
-
       font-size: clamp(14px, 2.6vw, 18px);
       line-height: 1.8;
       font-weight: 700;
     }
 
-    /* =========================
-       公告
-    ========================= */
-
+    /* 公告 */
     .notice-wrap {
       width: min(900px, calc(100% - 30px));
       margin: 4px auto 30px;
@@ -311,30 +270,22 @@
       position: relative;
       overflow: hidden;
       padding: 17px 20px;
-
       color: var(--text-dark);
       text-align: center;
-
       font-weight: 900;
       line-height: 1.65;
-
       border: 3px solid #7b4a25;
       border-radius: 8px;
-
       background:
-        radial-gradient(circle at 20% 30%, rgba(122, 73, 36, 0.09), transparent 22%),
-        radial-gradient(circle at 80% 65%, rgba(122, 73, 36, 0.1), transparent 25%),
+        radial-gradient(circle at 20% 30%, rgba(122,73,36,0.09), transparent 22%),
+        radial-gradient(circle at 80% 65%, rgba(122,73,36,0.1), transparent 25%),
         linear-gradient(135deg, #f6e3af, #e8c37e);
-
       box-shadow:
         0 10px 0 #4a2818,
-        0 18px 35px rgba(0, 0, 0, 0.31);
+        0 18px 35px rgba(0,0,0,0.31);
     }
 
-    /* =========================
-       主內容
-    ========================= */
-
+    /* 主內容 */
     main {
       width: min(1180px, calc(100% - 28px));
       margin: 0 auto;
@@ -342,34 +293,24 @@
     }
 
     .section-title {
-      position: relative;
-
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 12px;
-
       margin: 10px 0 24px;
-
       color: var(--gold);
-
       font-size: clamp(21px, 4vw, 30px);
       font-weight: 1000;
       letter-spacing: 2px;
-
-      text-shadow:
-        0 3px 8px rgba(0, 0, 0, 0.45);
+      text-shadow: 0 3px 8px rgba(0,0,0,0.45);
     }
 
     .section-title::before,
     .section-title::after {
       content: "";
-
       width: min(120px, 16vw);
       height: 3px;
-
       border-radius: 999px;
-
       background:
         linear-gradient(
           90deg,
@@ -381,46 +322,38 @@
 
     .tool-grid {
       display: grid;
-
-      grid-template-columns:
-        repeat(3, minmax(0, 1fr));
-
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 22px;
     }
 
-    /* =========================
-       卡片
-    ========================= */
-
+    /* 卡片 */
     .tool-card {
       --accent: #df3e46;
 
       position: relative;
       isolation: isolate;
       overflow: hidden;
-
       min-height: 244px;
       padding: 22px 19px 19px;
-
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
 
-      border: 3px solid rgba(246, 196, 83, 0.82);
+      border: 3px solid rgba(246,196,83,0.82);
       border-radius: 18px;
 
       background:
         linear-gradient(
           160deg,
-          rgba(34, 49, 89, 0.96),
-          rgba(10, 17, 35, 0.96)
+          rgba(34,49,89,0.96),
+          rgba(10,17,35,0.96)
         );
 
       box-shadow:
-        0 9px 0 rgba(67, 34, 18, 0.98),
-        0 15px 28px rgba(0, 0, 0, 0.38),
-        inset 0 0 25px rgba(255, 255, 255, 0.035);
+        0 9px 0 rgba(67,34,18,0.98),
+        0 15px 28px rgba(0,0,0,0.38),
+        inset 0 0 25px rgba(255,255,255,0.035);
 
       transition:
         transform 0.24s ease,
@@ -430,49 +363,39 @@
 
     .tool-card::before {
       content: "";
-
       position: absolute;
       z-index: -1;
-
       inset: -80px auto auto -80px;
-
       width: 190px;
       height: 190px;
-
       border-radius: 50%;
-
       background: var(--accent);
       opacity: 0.15;
     }
 
     .tool-card::after {
       content: "";
-
       position: absolute;
       inset: 0;
       z-index: -1;
-
       background:
         linear-gradient(
           120deg,
           transparent 25%,
-          rgba(255, 255, 255, 0.12) 42%,
+          rgba(255,255,255,0.12) 42%,
           transparent 58%
         );
-
       transform: translateX(-120%);
       transition: transform 0.65s ease;
     }
 
     .tool-card:hover {
       transform: translateY(-8px) rotate(-0.4deg);
-
       border-color: #fff1a4;
-
       box-shadow:
-        0 10px 0 rgba(67, 34, 18, 0.98),
-        0 24px 42px rgba(0, 0, 0, 0.48),
-        0 0 24px rgba(246, 196, 83, 0.2);
+        0 10px 0 rgba(67,34,18,0.98),
+        0 24px 42px rgba(0,0,0,0.48),
+        0 0 24px rgba(246,196,83,0.2);
     }
 
     .tool-card:hover::after {
@@ -481,7 +404,6 @@
 
     .card-top {
       width: 100%;
-
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -489,61 +411,46 @@
 
     .card-tag {
       padding: 5px 10px;
-
       border-radius: 999px;
-
       color: var(--gold);
-
       font-size: 11px;
       font-weight: 1000;
       letter-spacing: 1px;
-
-      background:
-        rgba(246, 196, 83, 0.1);
-
-      border:
-        1px solid rgba(246, 196, 83, 0.35);
+      background: rgba(246,196,83,0.1);
+      border: 1px solid rgba(246,196,83,0.35);
     }
 
     .card-dot {
       width: 11px;
       height: 11px;
-
       border-radius: 50%;
-
       background: var(--accent);
-
       box-shadow:
-        0 0 0 5px rgba(255, 255, 255, 0.07),
+        0 0 0 5px rgba(255,255,255,0.07),
         0 0 18px var(--accent);
     }
 
     .tool-icon {
       width: 82px;
       height: 82px;
-
       display: grid;
       place-items: center;
-
       margin: 8px auto 11px;
-
       border-radius: 22px;
-
       font-size: 43px;
 
       background:
         linear-gradient(
           145deg,
-          rgba(255, 255, 255, 0.12),
+          rgba(255,255,255,0.12),
           #111a30
         );
 
-      border:
-        2px solid rgba(255, 255, 255, 0.14);
+      border: 2px solid rgba(255,255,255,0.14);
 
       box-shadow:
-        inset 0 4px 12px rgba(255, 255, 255, 0.08),
-        0 10px 18px rgba(0, 0, 0, 0.3);
+        inset 0 4px 12px rgba(255,255,255,0.08),
+        0 10px 18px rgba(0,0,0,0.3);
 
       transition: transform 0.25s ease;
     }
@@ -554,19 +461,15 @@
 
     .tool-name {
       margin-bottom: 7px;
-
       text-align: center;
-
       font-size: 20px;
       font-weight: 1000;
     }
 
     .tool-desc {
       min-height: 42px;
-
       color: #b9c7e4;
       text-align: center;
-
       font-size: 13px;
       line-height: 1.65;
       font-weight: 600;
@@ -575,7 +478,6 @@
     .open-btn {
       width: 100%;
       margin-top: 16px;
-
       padding: 11px 14px;
 
       display: flex;
@@ -583,13 +485,10 @@
       justify-content: center;
       gap: 8px;
 
-      border:
-        2px solid rgba(246, 196, 83, 0.65);
-
+      border: 2px solid rgba(246,196,83,0.65);
       border-radius: 12px;
 
       color: #201607;
-
       font-size: 14px;
       font-weight: 1000;
 
@@ -601,78 +500,38 @@
         );
 
       box-shadow:
-        inset 0 2px 0 rgba(255, 255, 255, 0.42),
+        inset 0 2px 0 rgba(255,255,255,0.42),
         0 4px 0 #8f571b;
     }
 
-    /* =========================
-       各功能色彩
-    ========================= */
+    /* 各功能色彩 */
+    .card-class { --accent: #e0454f; }
+    .card-subclass { --accent: #2f9ee8; }
+    .card-studentwork { --accent: #4fc3f7; }
+    .card-workadmin { --accent: #ff7043; }
+    .card-math { --accent: #845ee6; }
+    .card-scratch { --accent: #f39a2d; }
+    .card-seat { --accent: #28b48a; }
+    .card-contact { --accent: #e262ae; }
+    .card-exam { --accent: #f0c02e; }
+    .card-birthday { --accent: #ff6f91; }
+    .card-running { --accent: #27c9c0; }
+    .card-dojo { --accent: #32c46a; }
 
-    .card-class {
-      --accent: #e0454f;
-    }
-
-    .card-subclass {
-      --accent: #2f9ee8;
-    }
-
-    .card-math {
-      --accent: #845ee6;
-    }
-
-    .card-scratch {
-      --accent: #f39a2d;
-    }
-
-    .card-seat {
-      --accent: #28b48a;
-    }
-
-    .card-contact {
-      --accent: #e262ae;
-    }
-
-    .card-exam {
-      --accent: #f0c02e;
-    }
-
-    .card-birthday {
-      --accent: #ff6f91;
-    }
-
-    .card-running {
-      --accent: #27c9c0;
-    }
-
-    .card-dojo {
-      --accent: #32c46a;
-    }
-
-    /* =========================
-       ClassDojo
-    ========================= */
-
+    /* ClassDojo 特別卡 */
     .tool-card.featured {
       grid-column: span 3;
-
       min-height: unset;
 
       display: grid;
-
-      grid-template-columns:
-        auto 1fr auto;
-
+      grid-template-columns: auto 1fr auto;
       gap: 20px;
-
       align-items: center;
-
       padding: 21px 24px;
     }
 
     .tool-card.featured .tool-icon {
       margin: 0;
-
       width: 76px;
       height: 76px;
     }
@@ -694,31 +553,23 @@
       padding-inline: 18px;
     }
 
-    /* =========================
-       分隔
-    ========================= */
-
     .divider {
       margin: 46px auto 28px;
-
       display: flex;
       align-items: center;
       justify-content: center;
-
       gap: 16px;
-
       opacity: 0.76;
     }
 
     .divider-line {
       width: min(220px, 28vw);
       height: 2px;
-
       background:
         linear-gradient(
           90deg,
           transparent,
-          rgba(246, 196, 83, 0.7),
+          rgba(246,196,83,0.7),
           transparent
         );
     }
@@ -727,23 +578,15 @@
       font-size: 28px;
     }
 
-    /* =========================
-       頁尾
-    ========================= */
-
     footer {
       padding: 4px 20px 34px;
-
       text-align: center;
-
       color: #8ea1c6;
     }
 
     .footer-title {
       margin-bottom: 7px;
-
       color: var(--gold);
-
       font-size: 15px;
       font-weight: 900;
       letter-spacing: 2px;
@@ -753,10 +596,6 @@
       font-size: 12px;
       line-height: 1.7;
     }
-
-    /* =========================
-       返回頂端
-    ========================= */
 
     .back-top {
       position: fixed;
@@ -775,41 +614,28 @@
 
       color: var(--gold);
       font-size: 20px;
-
       cursor: pointer;
 
-      background:
-        rgba(10, 16, 32, 0.88);
+      background: rgba(10,16,32,0.88);
 
       box-shadow:
-        0 7px 20px rgba(0, 0, 0, 0.35);
+        0 7px 20px rgba(0,0,0,0.35);
 
       opacity: 0;
-
       transform: translateY(15px);
-
       pointer-events: none;
-
       transition: 0.25s ease;
     }
 
     .back-top.show {
       opacity: 1;
-
       transform: translateY(0);
-
       pointer-events: auto;
     }
 
-    /* =========================
-       平板
-    ========================= */
-
     @media (max-width: 900px) {
-
       .tool-grid {
-        grid-template-columns:
-          repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .tool-card.featured {
@@ -817,12 +643,7 @@
       }
     }
 
-    /* =========================
-       手機
-    ========================= */
-
     @media (max-width: 620px) {
-
       .hero {
         padding-top: 28px;
       }
@@ -855,9 +676,7 @@
 
       .tool-card.featured {
         grid-column: span 1;
-
         display: flex;
-
         text-align: center;
       }
 
@@ -882,12 +701,7 @@
       }
     }
 
-    /* =========================
-       進場動畫
-    ========================= */
-
     @keyframes fadeUp {
-
       from {
         opacity: 0;
         transform: translateY(25px);
@@ -901,53 +715,23 @@
 
     .tool-card {
       opacity: 0;
-
-      animation:
-        fadeUp 0.65s ease forwards;
+      animation: fadeUp 0.65s ease forwards;
     }
 
-    .tool-card:nth-child(1) {
-      animation-delay: 0.05s;
-    }
-
-    .tool-card:nth-child(2) {
-      animation-delay: 0.10s;
-    }
-
-    .tool-card:nth-child(3) {
-      animation-delay: 0.15s;
-    }
-
-    .tool-card:nth-child(4) {
-      animation-delay: 0.20s;
-    }
-
-    .tool-card:nth-child(5) {
-      animation-delay: 0.25s;
-    }
-
-    .tool-card:nth-child(6) {
-      animation-delay: 0.30s;
-    }
-
-    .tool-card:nth-child(7) {
-      animation-delay: 0.35s;
-    }
-
-    .tool-card:nth-child(8) {
-      animation-delay: 0.40s;
-    }
-
-    .tool-card:nth-child(9) {
-      animation-delay: 0.45s;
-    }
-
-    .tool-card:nth-child(10) {
-      animation-delay: 0.50s;
-    }
+    .tool-card:nth-child(1) { animation-delay: 0.05s; }
+    .tool-card:nth-child(2) { animation-delay: 0.10s; }
+    .tool-card:nth-child(3) { animation-delay: 0.15s; }
+    .tool-card:nth-child(4) { animation-delay: 0.20s; }
+    .tool-card:nth-child(5) { animation-delay: 0.25s; }
+    .tool-card:nth-child(6) { animation-delay: 0.30s; }
+    .tool-card:nth-child(7) { animation-delay: 0.35s; }
+    .tool-card:nth-child(8) { animation-delay: 0.40s; }
+    .tool-card:nth-child(9) { animation-delay: 0.45s; }
+    .tool-card:nth-child(10) { animation-delay: 0.50s; }
+    .tool-card:nth-child(11) { animation-delay: 0.55s; }
+    .tool-card:nth-child(12) { animation-delay: 0.60s; }
 
     @media (prefers-reduced-motion: reduce) {
-
       *,
       *::before,
       *::after {
@@ -956,35 +740,16 @@
         scroll-behavior: auto !important;
       }
     }
-
   </style>
 </head>
 
 <body>
 
-  <!-- 背景 -->
   <div class="ocean-glow"></div>
-
-  <div class="floating-symbol symbol-1">
-    ⚓
-  </div>
-
-  <div class="floating-symbol symbol-2">
-    🧭
-  </div>
-
-  <div class="floating-symbol symbol-3">
-    🪙
-  </div>
-
-  <div class="floating-symbol symbol-4">
-    🗺️
-  </div>
-
-
-  <!-- =========================
-       頁首
-  ========================= -->
+  <div class="floating-symbol symbol-1">⚓</div>
+  <div class="floating-symbol symbol-2">🧭</div>
+  <div class="floating-symbol symbol-3">🪙</div>
+  <div class="floating-symbol symbol-4">🗺️</div>
 
   <header class="hero">
 
@@ -993,57 +758,30 @@
     </div>
 
     <div class="logo-wrap">
-      <div class="logo-icon">
-        🏴‍☠️
-      </div>
+      <div class="logo-icon">🏴‍☠️</div>
     </div>
 
     <h1 class="title">
-
-      <span class="gold">
-        教師
-      </span>
-
-      <span class="red">
-        航海基地
-      </span>
-
+      <span class="gold">教師</span>
+      <span class="red">航海基地</span>
     </h1>
 
     <p class="subtitle">
-      教學、班級管理、學生成績與日常工具的專屬總入口
+      教學、班級管理、學生作業、成績與日常工具的專屬總入口
       <br>
       揚帆出航，選擇今天要前往的教學島嶼！
     </p>
 
   </header>
 
-
-  <!-- =========================
-       公告
-  ========================= -->
-
   <section class="notice-wrap">
-
     <div class="notice">
-
       🏴‍☠️
-
-      <strong>
-        航海公告：
-      </strong>
-
+      <strong>航海公告：</strong>
       點選下方功能卡，即會以新分頁開啟各個教學系統。
       教師航海基地首頁會持續保留。
-
     </div>
-
   </section>
-
-
-  <!-- =========================
-       主內容
-  ========================= -->
 
   <main>
 
@@ -1053,32 +791,22 @@
 
     <section class="tool-grid">
 
-
-      <!-- 導師班 -->
+      <!-- 導師班資料繳交 -->
       <a
         class="tool-card card-class"
         href="https://junteachlife.github.io/luckyscratch/class-tracker.html"
         target="_blank"
         rel="noopener noreferrer"
       >
-
         <div class="card-top">
-          <span class="card-tag">
-            CLASS
-          </span>
-
+          <span class="card-tag">CLASS</span>
           <span class="card-dot"></span>
         </div>
 
-        <div class="tool-icon">
-          📋
-        </div>
+        <div class="tool-icon">📋</div>
 
         <div>
-          <h3 class="tool-name">
-            導師班資料繳交系統
-          </h3>
-
+          <h3 class="tool-name">導師班資料繳交系統</h3>
           <p class="tool-desc">
             管理導師班學生的資料、作業與各項繳交紀錄。
           </p>
@@ -1088,35 +816,24 @@
           前往系統
           <span>↗</span>
         </div>
-
       </a>
 
-
-      <!-- 任課班 -->
+      <!-- 任課班資料繳交 -->
       <a
         class="tool-card card-subclass"
         href="https://junteachlife.github.io/luckyscratch/subclass-tracker.html"
         target="_blank"
         rel="noopener noreferrer"
       >
-
         <div class="card-top">
-          <span class="card-tag">
-            SUBCLASS
-          </span>
-
+          <span class="card-tag">SUBCLASS</span>
           <span class="card-dot"></span>
         </div>
 
-        <div class="tool-icon">
-          📚
-        </div>
+        <div class="tool-icon">📚</div>
 
         <div>
-          <h3 class="tool-name">
-            任課班資料繳交系統
-          </h3>
-
+          <h3 class="tool-name">任課班資料繳交系統</h3>
           <p class="tool-desc">
             快速查看與管理各任課班級的學生繳交狀況。
           </p>
@@ -1126,9 +843,61 @@
           前往系統
           <span>↗</span>
         </div>
-
       </a>
 
+      <!-- 學生作業成績繳交平台 -->
+      <a
+        class="tool-card card-studentwork"
+        href="https://junteachlife.github.io/luckyscratch/class-work.html"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <div class="card-top">
+          <span class="card-tag">STUDENT</span>
+          <span class="card-dot"></span>
+        </div>
+
+        <div class="tool-icon">👨‍🎓</div>
+
+        <div>
+          <h3 class="tool-name">學生作業成績繳交平台</h3>
+          <p class="tool-desc">
+            學生登入後查看授權任務、作業與成績登記內容。
+          </p>
+        </div>
+
+        <div class="open-btn">
+          開啟學生平台
+          <span>↗</span>
+        </div>
+      </a>
+
+      <!-- 作業成績彙整後台 -->
+      <a
+        class="tool-card card-workadmin"
+        href="https://junteachlife.github.io/luckyscratch/class-datawork-admin.html"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <div class="card-top">
+          <span class="card-tag">ADMIN</span>
+          <span class="card-dot"></span>
+        </div>
+
+        <div class="tool-icon">🧾</div>
+
+        <div>
+          <h3 class="tool-name">作業成績彙整後台</h3>
+          <p class="tool-desc">
+            管理學生帳號、職務權限、作業繳交、成績與操作紀錄。
+          </p>
+        </div>
+
+        <div class="open-btn">
+          進入管理後台
+          <span>↗</span>
+        </div>
+      </a>
 
       <!-- 數學 -->
       <a
@@ -1137,24 +906,15 @@
         target="_blank"
         rel="noopener noreferrer"
       >
-
         <div class="card-top">
-          <span class="card-tag">
-            MATH
-          </span>
-
+          <span class="card-tag">MATH</span>
           <span class="card-dot"></span>
         </div>
 
-        <div class="tool-icon">
-          🎮
-        </div>
+        <div class="tool-icon">🎮</div>
 
         <div>
-          <h3 class="tool-name">
-            數學練習網站
-          </h3>
-
+          <h3 class="tool-name">數學練習網站</h3>
           <p class="tool-desc">
             進入數學遊戲與線上練習，展開數學冒險挑戰。
           </p>
@@ -1164,9 +924,7 @@
           開始挑戰
           <span>↗</span>
         </div>
-
       </a>
-
 
       <!-- 刮刮樂 -->
       <a
@@ -1175,24 +933,15 @@
         target="_blank"
         rel="noopener noreferrer"
       >
-
         <div class="card-top">
-          <span class="card-tag">
-            LUCKY
-          </span>
-
+          <span class="card-tag">LUCKY</span>
           <span class="card-dot"></span>
         </div>
 
-        <div class="tool-icon">
-          🎟️
-        </div>
+        <div class="tool-icon">🎟️</div>
 
         <div>
-          <h3 class="tool-name">
-            刮刮樂網站
-          </h3>
-
+          <h3 class="tool-name">刮刮樂網站</h3>
           <p class="tool-desc">
             課堂抽獎、幸運挑戰與趣味活動的專屬刮刮樂。
           </p>
@@ -1202,9 +951,7 @@
           開始刮獎
           <span>↗</span>
         </div>
-
       </a>
-
 
       <!-- 座位 -->
       <a
@@ -1213,24 +960,15 @@
         target="_blank"
         rel="noopener noreferrer"
       >
-
         <div class="card-top">
-          <span class="card-tag">
-            SEAT
-          </span>
-
+          <span class="card-tag">SEAT</span>
           <span class="card-dot"></span>
         </div>
 
-        <div class="tool-icon">
-          💺
-        </div>
+        <div class="tool-icon">💺</div>
 
         <div>
-          <h3 class="tool-name">
-            座位系統
-          </h3>
-
+          <h3 class="tool-name">座位系統</h3>
           <p class="tool-desc">
             班級座位安排與學生位置管理工具。
           </p>
@@ -1240,9 +978,7 @@
           開啟座位表
           <span>↗</span>
         </div>
-
       </a>
-
 
       <!-- 聯絡簿 -->
       <a
@@ -1251,24 +987,15 @@
         target="_blank"
         rel="noopener noreferrer"
       >
-
         <div class="card-top">
-          <span class="card-tag">
-            CONTACT
-          </span>
-
+          <span class="card-tag">CONTACT</span>
           <span class="card-dot"></span>
         </div>
 
-        <div class="tool-icon">
-          📒
-        </div>
+        <div class="tool-icon">📒</div>
 
         <div>
-          <h3 class="tool-name">
-            聯絡簿登記系統
-          </h3>
-
+          <h3 class="tool-name">聯絡簿登記系統</h3>
           <p class="tool-desc">
             整理每日聯絡事項、作業與班級重要提醒。
           </p>
@@ -1278,38 +1005,24 @@
           開啟聯絡簿
           <span>↗</span>
         </div>
-
       </a>
 
-
-      <!-- =========================
-           新增：段考成績
-      ========================= -->
-
+      <!-- 段考成績 -->
       <a
         class="tool-card card-exam"
         href="https://junteachlife.github.io/luckyscratch/examscore.html"
         target="_blank"
         rel="noopener noreferrer"
       >
-
         <div class="card-top">
-          <span class="card-tag">
-            SCORE
-          </span>
-
+          <span class="card-tag">SCORE</span>
           <span class="card-dot"></span>
         </div>
 
-        <div class="tool-icon">
-          📊
-        </div>
+        <div class="tool-icon">📊</div>
 
         <div>
-          <h3 class="tool-name">
-            學生段考成績查詢系統
-          </h3>
-
+          <h3 class="tool-name">學生段考成績查詢系統</h3>
           <p class="tool-desc">
             查詢學生段考成績、總分、平均、排名與學習表現。
           </p>
@@ -1319,38 +1032,24 @@
           查詢成績
           <span>↗</span>
         </div>
-
       </a>
 
-
-      <!-- =========================
-           新增：生日提醒
-      ========================= -->
-
+      <!-- 生日 -->
       <a
         class="tool-card card-birthday"
         href="https://junteachlife.github.io/luckyscratch/birthday.html"
         target="_blank"
         rel="noopener noreferrer"
       >
-
         <div class="card-top">
-          <span class="card-tag">
-            BIRTHDAY
-          </span>
-
+          <span class="card-tag">BIRTHDAY</span>
           <span class="card-dot"></span>
         </div>
 
-        <div class="tool-icon">
-          🎂
-        </div>
+        <div class="tool-icon">🎂</div>
 
         <div>
-          <h3 class="tool-name">
-            生日提醒系統
-          </h3>
-
+          <h3 class="tool-name">生日提醒系統</h3>
           <p class="tool-desc">
             查看今日、本月與即將到來的壽星，快速製作生日祝福。
           </p>
@@ -1360,38 +1059,24 @@
           查看壽星
           <span>↗</span>
         </div>
-
       </a>
 
-
-      <!-- =========================
-           新增：跑步系統
-      ========================= -->
-
+      <!-- 跑步 -->
       <a
         class="tool-card card-running"
         href="https://junteachlife.github.io/luckyscratch/running.html"
         target="_blank"
         rel="noopener noreferrer"
       >
-
         <div class="card-top">
-          <span class="card-tag">
-            RUNNING
-          </span>
-
+          <span class="card-tag">RUNNING</span>
           <span class="card-dot"></span>
         </div>
 
-        <div class="tool-icon">
-          🏃
-        </div>
+        <div class="tool-icon">🏃</div>
 
         <div>
-          <h3 class="tool-name">
-            跑步系統
-          </h3>
-
+          <h3 class="tool-name">跑步系統</h3>
           <p class="tool-desc">
             登記學生跑步圈數、查看歷史紀錄與每日運動成果。
           </p>
@@ -1401,9 +1086,7 @@
           開始登記
           <span>↗</span>
         </div>
-
       </a>
-
 
       <!-- ClassDojo -->
       <a
@@ -1412,54 +1095,32 @@
         target="_blank"
         rel="noopener noreferrer"
       >
-
-        <div class="tool-icon">
-          🏫
-        </div>
+        <div class="tool-icon">🏫</div>
 
         <div class="featured-info">
-
-          <h3 class="tool-name">
-            ClassDojo
-          </h3>
-
+          <h3 class="tool-name">ClassDojo</h3>
           <p class="tool-desc">
             前往 ClassDojo，進行班級經營、學生互動與親師聯繫。
           </p>
-
         </div>
 
         <div class="open-btn">
           前往 ClassDojo
           <span>↗</span>
         </div>
-
       </a>
 
     </section>
 
-
     <div class="divider">
-
       <div class="divider-line"></div>
-
-      <div class="divider-icon">
-        🧭
-      </div>
-
+      <div class="divider-icon">🧭</div>
       <div class="divider-line"></div>
-
     </div>
 
   </main>
 
-
-  <!-- =========================
-       頁尾
-  ========================= -->
-
   <footer>
-
     <div class="footer-title">
       ⚓ TEACHER GRAND LINE
     </div>
@@ -1469,11 +1130,8 @@
       <br>
       Keep Sailing · Keep Teaching
     </div>
-
   </footer>
 
-
-  <!-- 返回頂端 -->
   <button
     class="back-top"
     id="backTop"
@@ -1483,39 +1141,24 @@
     ↑
   </button>
 
-
   <script>
-
-    /* 返回頂端 */
-    const backTop =
-      document.getElementById("backTop");
+    const backTop = document.getElementById("backTop");
 
     window.addEventListener("scroll", () => {
-
       if (window.scrollY > 400) {
-
         backTop.classList.add("show");
-
       } else {
-
         backTop.classList.remove("show");
-
       }
-
     });
 
-
     backTop.addEventListener("click", () => {
-
       window.scrollTo({
         top: 0,
         behavior: "smooth"
       });
-
     });
 
-
-    /* 手機點擊回饋 */
     document
       .querySelectorAll(".tool-card")
       .forEach(card => {
@@ -1523,12 +1166,9 @@
         card.addEventListener(
           "touchstart",
           () => {
-            card.style.transform =
-              "scale(.985)";
+            card.style.transform = "scale(.985)";
           },
-          {
-            passive: true
-          }
+          { passive: true }
         );
 
         card.addEventListener(
@@ -1536,9 +1176,7 @@
           () => {
             card.style.transform = "";
           },
-          {
-            passive: true
-          }
+          { passive: true }
         );
 
         card.addEventListener(
@@ -1546,13 +1184,10 @@
           () => {
             card.style.transform = "";
           },
-          {
-            passive: true
-          }
+          { passive: true }
         );
 
       });
-
   </script>
 
 </body>
