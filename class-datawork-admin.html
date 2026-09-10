@@ -49,6 +49,14 @@
 .sticky-actions{position:sticky;top:0;z-index:3;background:#fff7df;padding:8px 0}
 @media(max-width:850px){.mode-grid{grid-template-columns:1fr}.mode-banner{align-items:flex-start;flex-direction:column}}
 
+
+.score-stats{display:grid;grid-template-columns:repeat(6,minmax(90px,1fr));gap:8px;margin:12px 0}
+.score-stat{background:#fffaf0;border:1px solid #dbc391;border-radius:10px;padding:9px;text-align:center}
+.score-stat b{display:block;font-size:20px;line-height:1.1}.score-stat span{font-size:11px;color:#6f604d}
+.assistant-status{margin-top:8px;padding:8px 10px;border-radius:10px;background:#f7fbff;border:1px solid #c9dff2;font-size:12px}
+.assistant-linked{font-weight:900;color:#117a45}.assistant-unlinked{font-weight:900;color:#b06b00}.assistant-none{font-weight:900;color:#777}
+@media(max-width:850px){.score-stats{grid-template-columns:repeat(3,1fr)}}
+
 </style>
 </head>
 <body>
@@ -581,12 +589,81 @@ function bindRecordButtons(){
 }
 async function legacy_confirmRecord(type,id){const col=type==='collection'?'collectionItems':'assessments',arr=type==='collection'?collections:assessments,x=arr.find(y=>y.id===id),confirming=x.reviewStatus!=='confirmed';await updateDoc(doc(db,col,id),{reviewStatus:confirming?'confirmed':'pending',locked:confirming,confirmedBy:confirming?auth.currentUser.uid:null,confirmedAt:confirming?serverTimestamp():null,updatedAt:serverTimestamp()});await audit(confirming?'confirm':'unconfirm',type,id,`${confirming?'確認並鎖定':'取消確認'}：${x.itemName||x.name}`,x.semester||currentSemester);await refreshAll()}
 async function legacy_deleteRecord(type,id){const col=type==='collection'?'collectionItems':'assessments',arr=type==='collection'?collections:assessments,x=arr.find(y=>y.id===id);if(!confirm(`確定刪除「${x.itemName||x.name}」？`))return;await deleteDoc(doc(db,col,id));await audit('delete',type,id,`管理員刪除：${x.itemName||x.name}`,x.semester||currentSemester);await refreshAll()}
-async function editRecord(type,id){const arr=type==='collection'?collections:assessments,x=arr.find(y=>y.id===id),cl=classes.find(c=>c.id===x.classId),students=cl?.students||[];let body=`<div class="item-head"><div><div class="section-title">${esc(x.itemName||x.name)}</div><div class="meta">${esc(x.semester||'')}｜${x.classId}｜${esc(x.scopeName)}｜${esc(x.date||'')}</div></div><button class="btn gray close-modal">關閉</button></div>`;
-  if(type==='collection'){const opts=[['submitted','已繳'],['missing','未繳'],['late','補交'],['exempt','免繳']];body+=`<div class="student-grid">${students.map(s=>{const sid=s.id||String(s.seat),v=(x.records||{})[sid]||'submitted';return `<div class="student"><b>${s.seat}. ${esc(s.name)}</b><select class="m-col" data-id="${sid}">${opts.map(([a,l])=>`<option value="${a}" ${a===v?'selected':''}>${l}</option>`).join('')}</select></div>`}).join('')}</div><div class="toolbar"><button class="btn primary save-modal">儲存修改</button></div>`}
-  else{const opts=[['normal','正常'],['absent','缺考'],['makeup','補考'],['exempt','免試'],['not_entered','未登記']];body+=`<div class="student-grid">${students.map(s=>{const sid=s.id||String(s.seat),r=(x.scores||{})[sid]||{};return `<div class="student"><b>${s.seat}. ${esc(s.name)}</b><input class="m-score" data-id="${sid}" type="number" value="${r.score??''}" min="0" max="${x.maxScore}"><select class="m-status" data-id="${sid}">${opts.map(([a,l])=>`<option value="${a}" ${a===(r.status||'not_entered')?'selected':''}>${l}</option>`).join('')}</select></div>`}).join('')}</div><div class="toolbar"><button class="btn primary save-modal">儲存修改</button></div>`}
-  showModal(body);$('.save-modal').onclick=async()=>{if(type==='collection'){const records={};$$('.m-col').forEach(s=>records[s.dataset.id]=s.value);await updateDoc(doc(db,'collectionItems',id),{records,updatedAt:serverTimestamp()})}else{const scores={};$$('.m-score').forEach(inp=>{const sid=inp.dataset.id,sel=document.querySelector(`.m-status[data-id="${CSS.escape(sid)}"]`);scores[sid]={score:inp.value===''?null:Number(inp.value),status:sel.value}});await updateDoc(doc(db,'assessments',id),{scores,updatedAt:serverTimestamp()})}await audit('admin_update',type,id,`管理員修改：${x.itemName||x.name}`,x.semester||currentSemester);hideModal();await refreshAll()}
-}
+async function editRecord(type,id){
+  const arr=type==='collection'?collections:assessments;
+  const x=arr.find(y=>y.id===id);
+  if(!x)return alert('找不到這筆資料。');
 
+  const cl=classes.find(c=>String(c.id)===String(x.classId));
+  const students=(cl?.students||[]).filter(s=>s.active!==false).sort((a,b)=>Number(a.seat)-Number(b.seat));
+
+  let body=`<div class="item-head"><div><div class="section-title">${esc(x.itemName||x.name)}</div><div class="meta">${esc(x.semester||'')}｜${x.classId}｜${esc(x.scopeName)}｜${esc(x.date||'')}</div></div><button class="btn gray close-modal">關閉</button></div>`;
+
+  if(type==='collection'){
+    const opts=[['submitted','已繳'],['missing','未繳'],['late','補交'],['exempt','免繳']];
+    body+=`<div class="student-grid">${students.map(s=>{
+      const sid=s.id||s.studentId||String(s.seat),v=(x.records||{})[sid]||'submitted';
+      return `<div class="student"><b>${s.seat}. ${esc(s.name)}</b><select class="m-col" data-id="${esc(sid)}">${opts.map(([a,l])=>`<option value="${a}" ${a===v?'selected':''}>${l}</option>`).join('')}</select></div>`;
+    }).join('')}</div><div class="toolbar"><button class="btn primary save-modal">儲存修改</button></div>`;
+  }else{
+    const opts=[['normal','正常'],['absent','缺考'],['makeup','補考'],['exempt','免試'],['not_entered','未登記']];
+    const initialStats=scoreStatsFromAssessment(x,students);
+
+    body+=`
+      <div class="notice">
+        滿分：<b>${esc(x.maxScore??'')}</b>｜及格分數：<b>${esc(x.passScore??60)}</b>
+      </div>
+      <div id="scoreStatsHost">${scoreStatsHtml(initialStats)}</div>
+      <div class="student-grid">${students.map(s=>{
+        const sid=s.id||s.studentId||String(s.seat),r=(x.scores||{})[sid]||{};
+        return `<div class="student">
+          <b>${s.seat}. ${esc(s.name)}</b>
+          <input class="m-score" data-id="${esc(sid)}" type="number" value="${r.score??''}" min="0" max="${x.maxScore}">
+          <select class="m-status" data-id="${esc(sid)}">${opts.map(([a,l])=>`<option value="${a}" ${a===(r.status||'not_entered')?'selected':''}>${l}</option>`).join('')}</select>
+        </div>`;
+      }).join('')}</div>
+      <div class="toolbar"><button class="btn primary save-modal">儲存修改</button></div>`;
+  }
+
+  showModal(body);
+
+  if(type==='assessment'){
+    const recalcStats=()=>{
+      const tempScores={};
+      $$('.m-score').forEach(inp=>{
+        const sid=inp.dataset.id;
+        const sel=document.querySelector(`.m-status[data-id="${CSS.escape(sid)}"]`);
+        tempScores[sid]={
+          score:inp.value===''?null:Number(inp.value),
+          status:sel?.value||'not_entered'
+        };
+      });
+      $('#scoreStatsHost').innerHTML=scoreStatsHtml(scoreStatsFromAssessment({...x,scores:tempScores},students));
+    };
+
+    $$('.m-score').forEach(inp=>inp.oninput=recalcStats);
+    $$('.m-status').forEach(sel=>sel.onchange=recalcStats);
+  }
+
+  $('.save-modal').onclick=async()=>{
+    if(type==='collection'){
+      const records={};
+      $$('.m-col').forEach(s=>records[s.dataset.id]=s.value);
+      await updateDoc(doc(db,'collectionItems',id),{records,updatedAt:serverTimestamp()});
+    }else{
+      const scores={};
+      $$('.m-score').forEach(inp=>{
+        const sid=inp.dataset.id;
+        const sel=document.querySelector(`.m-status[data-id="${CSS.escape(sid)}"]`);
+        scores[sid]={score:inp.value===''?null:Number(inp.value),status:sel.value};
+      });
+      await updateDoc(doc(db,'assessments',id),{scores,updatedAt:serverTimestamp()});
+    }
+    await audit('admin_update',type,id,`管理員修改：${x.itemName||x.name}`,x.semester||currentSemester);
+    hideModal();
+    await refreshAll();
+  };
+}
 
 // ===== 管理員：全科資料勾選匯出 =====
 function selectedRecordLabel(x){
@@ -1493,6 +1570,80 @@ async function releaseSubjectClass(id){
   await refreshAll();renderSubjectClasses();
 }
 function subjectRosterFor(id){return subjectRosters.find(x=>x.id===id)||null}
+
+function subjectAssistantInfo(sm){
+  const c=classes.find(x=>String(x.id)===String(sm.classId));
+  const roles=c?.roleAssignments?.[sm.semester]||{};
+  const key=`assistant|subject|${sm.subject}`;
+  const who=roles[key]||null;
+  if(!who)return {student:null,registry:null,linked:false,label:'尚未指派小老師'};
+
+  const roster=subjectRosterFor(sm.id);
+  const student=(roster?.students||[]).find(s=>
+    (who.studentId && (s.studentId===who.studentId || s.id===who.studentId)) ||
+    Number(s.seat)===Number(who.seat)
+  ) || {studentId:who.studentId||'',seat:who.seat,name:who.name,email:''};
+
+  const registry=registries.find(r=>
+    (student.studentId && r.studentId===student.studentId) ||
+    (student.email && r.id===registryId(student.email)) ||
+    (String(r.classId)===String(sm.classId) && Number(r.seat)===Number(student.seat))
+  ) || null;
+
+  const linked=!!(registry?.linkedUid || registry?.linked===true);
+  return {
+    student,
+    registry,
+    linked,
+    label:`${student.seat??''} ${student.name||who.name||''}`.trim()
+  };
+}
+
+function scoreStatsFromAssessment(x,students){
+  const values=[];
+  let passed=0,failed=0,notEntered=0;
+  const passScore=Number.isFinite(Number(x.passScore))?Number(x.passScore):60;
+
+  for(const s of students){
+    const sid=s.id||s.studentId||String(s.seat);
+    const r=(x.scores||{})[sid]||{};
+    const status=r.status||'not_entered';
+    const score=(r.score===null||r.score===undefined||r.score==='')?null:Number(r.score);
+
+    if(score!==null && Number.isFinite(score) && !['absent','exempt','not_entered'].includes(status)){
+      values.push(score);
+      if(score>=passScore)passed++;else failed++;
+    }else{
+      notEntered++;
+    }
+  }
+
+  const avg=values.length?values.reduce((a,b)=>a+b,0)/values.length:null;
+  return {
+    total:students.length,
+    entered:values.length,
+    passed,
+    failed,
+    notEntered,
+    avg,
+    max:values.length?Math.max(...values):null,
+    min:values.length?Math.min(...values):null,
+    passScore
+  };
+}
+
+function scoreStatsHtml(stats){
+  const fmt=v=>v===null||v===undefined?'—':(Number.isInteger(v)?String(v):Number(v).toFixed(1));
+  return `<div class="score-stats" id="scoreStatsBox">
+    <div class="score-stat"><b>${stats.entered}</b><span>已登記</span></div>
+    <div class="score-stat"><b>${stats.passed}</b><span>及格（≥${fmt(stats.passScore)}）</span></div>
+    <div class="score-stat"><b>${stats.failed}</b><span>不及格</span></div>
+    <div class="score-stat"><b>${fmt(stats.avg)}</b><span>平均</span></div>
+    <div class="score-stat"><b>${fmt(stats.max)}</b><span>最高</span></div>
+    <div class="score-stat"><b>${fmt(stats.min)}</b><span>最低</span></div>
+  </div><div class="meta">未登記／缺考／免試：${stats.notEntered} 人；平均、最高、最低只計算有實際數字且可列入成績的學生。</div>`;
+}
+
 function renderSubjectClasses(){
   if(!(isTeacherMode()||isGlobalAdmin())){
     $('#page-subjectClasses').innerHTML='<div class="notice">請先切換到「任課老師」模式。</div>';return;
@@ -1513,7 +1664,17 @@ function renderSubjectClasses(){
     <div class="grid" style="margin-top:14px">
       ${own.sort((a,b)=>String(a.classId).localeCompare(String(b.classId))||String(a.subject).localeCompare(String(b.subject),'zh-Hant')).map(sm=>{
         const r=subjectRosterFor(sm.id),n=(r?.students||[]).length;
+        const ai=subjectAssistantInfo(sm);
+        const assistantHtml=!ai.student
+          ?`<div class="assistant-status"><span class="assistant-none">⭐ 小老師：尚未指派</span></div>`
+          :`<div class="assistant-status">⭐ 小老師：<b>${esc(ai.label)}</b>｜
+              ${ai.linked
+                ?'<span class="assistant-linked">✅ Google 已連動</span>'
+                :'<span class="assistant-unlinked">⚠️ Google 尚未連動</span>'}
+              ${ai.registry?.email?`<div class="meta">${esc(ai.registry.email)}</div>`:''}
+            </div>`;
         return `<div class="card subject-card"><div class="item-head"><div><div class="section-title">${esc(sm.classId)}｜${esc(sm.subject)}</div><div class="meta">${esc(sm.semester)}｜管理者：${esc(sm.managerName||'')}</div></div><span class="mini-badge">${n} 人</span></div>
+          ${assistantHtml}
           <div class="toolbar"><button class="btn good small manage-subject-roster" data-id="${esc(sm.id)}">👥 任課名單／Email</button><button class="btn purple small set-subject-assistant" data-id="${esc(sm.id)}">⭐ 指定本科小老師</button><button class="btn gray small release-subject" data-id="${esc(sm.id)}">解除任課班</button></div></div>`;
       }).join('')||'<div class="card"><div class="sub">尚未建立任課班。</div></div>'}
     </div>`;
@@ -1532,84 +1693,52 @@ function renderSubjectClasses(){
   $$('.set-subject-assistant').forEach(b=>b.onclick=()=>setSubjectAssistant(b.dataset.id));
   $$('.release-subject').forEach(b=>b.onclick=()=>releaseSubjectClass(b.dataset.id));
 }
-function rosterText(students=[]){
-  return students.slice().sort((a,b)=>Number(a.seat)-Number(b.seat)).map(s=>`${s.seat},${s.name},${s.email||''}`).join('\n');
-}
-function parseRosterWithEmail(text){
-  return text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).map(line=>{
-    const p=line.split(/[\t,，]/).map(x=>x.trim());
-    return {seat:Number(p[0]),name:normalizeStudentName(p[1]||''),email:registryId(p[2]||'')}
-  }).filter(x=>Number.isInteger(x.seat)&&x.seat>0&&x.name);
-}
-function newStudentId(){return `stu_${crypto.randomUUID().replaceAll('-','')}`}
-async function findDirectoryByEmail(email){
-  if(!email)return null;
-  let local=studentDirectory.find(s=>registryId(s.email)===registryId(email));if(local)return local;
-  const hits=await safeDocs(query(collection(db,'studentDirectory'),where('email','==',registryId(email))));
-  return hits[0]||null;
-}
-async function upsertDirectoryStudent(row,classId,semester,creatorName){
-  let sd=await findDirectoryByEmail(row.email);
-  let sid=sd?.id||newStudentId();
-  const sy=schoolYearFromSemester(semester),grade=gradeFromClassId(classId);
-  const base={displayName:row.name,email:row.email||sd?.email||'',currentClassId:String(classId),currentSeat:Number(row.seat),grade,status:'enrolled',active:true,updatedAt:serverTimestamp()};
-  if(!sd)Object.assign(base,{createdByUid:me.uid,createdByName:creatorName,createdAt:serverTimestamp()});
-  await setDoc(doc(db,'studentDirectory',sid),base,{merge:true});
-  const enrollmentId=`${sy}__${sid}`;
-  await setDoc(doc(db,'studentEnrollments',enrollmentId),{studentId:sid,schoolYear:sy,semester,classId:String(classId),grade,seat:Number(row.seat),displayName:row.name,email:row.email||'',status:'active',updatedAt:serverTimestamp(),createdByUid:me.uid},{merge:true});
-  if(row.email){
-    const old=registries.find(r=>r.id===row.email);
-    await saveRegistry({...(old||{}),email:row.email,displayName:row.name,type:'student',classId:String(classId),seat:Number(row.seat),studentId:sid,active:true,assignments:old?.assignments||presetAssignmentsForStudent(String(classId),Number(row.seat)),linked:!!old?.linkedUid,linkedUid:old?.linkedUid||null});
-  }
-  return {studentId:sid,seat:Number(row.seat),name:row.name,email:row.email||'',active:true,id:sid};
-}
-async function syncSharedClassRoster(classId,newRows){
-  const c=await safeDoc(doc(db,'classes',String(classId)));
-  const existing=Array.isArray(c?.students)?c.students:[];
-  const map=new Map(existing.map(s=>[s.studentId||s.id||`seat:${s.seat}`,s]));
-  for(const s of newRows){
-    // 先清掉同一 studentId，並避免同座號重複造成前端名單重影
-    for(const [k,v] of [...map])if(k!==s.studentId&&Number(v.seat)===Number(s.seat)&&v.active!==false)map.delete(k);
-    map.set(s.studentId,{...(map.get(s.studentId)||{}),id:s.studentId,studentId:s.studentId,seat:s.seat,name:s.name,email:s.email||'',active:true});
-  }
-  const students=[...map.values()].sort((a,b)=>Number(a.seat)-Number(b.seat));
-  await setDoc(doc(db,'classes',String(classId)),{classId:String(classId),students,updatedAt:serverTimestamp()},{merge:true});
-}
-function openSubjectRosterEditor(id){
-  const sm=subjectManagers.find(x=>x.id===id),r=subjectRosterFor(id);if(!sm)return;
-  const existing=r?.students||getRosterForClass(sm.classId).map(s=>({seat:s.seat,name:s.name,email:s.email||registryByStudent(sm.classId,s.seat)?.email||''}));
-  showModal(`<div class="item-head"><div><div class="section-title">👥 ${esc(sm.classId)}｜${esc(sm.subject)} 任課名單</div><div class="meta">格式：座號,姓名,學生Google Email；Email 建議填寫，系統會用 Email 比對全校學生主檔。</div></div><button class="btn gray close-modal">關閉</button></div>
-    <div class="notice">如果這個班已由其他科老師建立過共用名單，可直接載入班級目前名單再修改。儲存後會同步全校學生主檔與目前班級共用名單。</div>
-    <textarea id="subjectRosterPaste" class="roster-paste">${esc(rosterText(existing))}</textarea>
-    <div class="toolbar"><button id="loadSharedRosterBtn" class="btn gray">📥 載入目前共用班名單</button><button id="saveSubjectRosterBtn" class="btn primary">💾 儲存任課名單</button></div>`);
-  $('#loadSharedRosterBtn').onclick=()=>{
-    const shared=getRosterForClass(sm.classId).map(s=>({seat:s.seat,name:s.name,email:s.email||registryByStudent(sm.classId,s.seat)?.email||''}));
-    $('#subjectRosterPaste').value=rosterText(shared);
-  };
-  $('#saveSubjectRosterBtn').onclick=()=>saveSubjectRoster(id);
-}
-async function saveSubjectRoster(id){
-  const sm=subjectManagers.find(x=>x.id===id);if(!sm)return;
-  if(!(isGlobalAdmin()||sm.managerUid===me.uid))return alert('你沒有這個任課班的名單權限。');
-  const rows=parseRosterWithEmail($('#subjectRosterPaste').value);
-  if(!rows.length)return alert('請至少輸入一位學生。');
-  const seats=new Set();for(const r of rows){if(seats.has(r.seat))return alert(`座號 ${r.seat} 重複，請先修正。`);seats.add(r.seat)}
-  if(!confirm(`確定儲存 ${sm.classId}｜${sm.subject} 任課名單，共 ${rows.length} 人？\n\nEmail 已存在的學生會沿用全校 studentId，不會重新建立同一人。`))return;
-  const saved=[];
-  for(const row of rows)saved.push(await upsertDirectoryStudent(row,sm.classId,sm.semester,me.displayName||me.username||'老師'));
-  await setDoc(doc(db,'subjectClassRosters',id),{semester:sm.semester,classId:sm.classId,subject:sm.subject,managerUid:sm.managerUid,studentIds:saved.map(x=>x.studentId),students:saved,updatedAt:serverTimestamp()},{merge:true});
-  await syncSharedClassRoster(sm.classId,saved);
-  await audit('save_subject_roster','subjectClassRosters',id,`更新 ${sm.classId}｜${sm.subject} 任課名單，共 ${saved.length} 人`,sm.semester);
-  hideModal();await refreshAll();renderSubjectClasses();alert('✅ 任課名單、學生主檔與共用班級名單已同步。');
-}
 async function setSubjectAssistant(id){
   const sm=subjectManagers.find(x=>x.id===id),r=subjectRosterFor(id);if(!sm)return;
   const students=(r?.students||[]).filter(s=>s.active!==false).sort((a,b)=>Number(a.seat)-Number(b.seat));
   if(!students.length)return alert('請先建立任課名單。');
-  const c=await safeDoc(doc(db,'classes',String(sm.classId))),preset=c?.roleAssignments?.[sm.semester]||{},key=`assistant|subject|${sm.subject}`,current=preset[key]?.studentId||'';
+
+  const c=await safeDoc(doc(db,'classes',String(sm.classId)));
+  const preset=c?.roleAssignments?.[sm.semester]||{};
+  const key=`assistant|subject|${sm.subject}`;
+  const current=preset[key]?.studentId||'';
+
+  const studentRegistry=(s)=>registries.find(reg=>
+    (s.studentId && reg.studentId===s.studentId) ||
+    (s.email && reg.id===registryId(s.email)) ||
+    (String(reg.classId)===String(sm.classId) && Number(reg.seat)===Number(s.seat))
+  )||null;
+
   showModal(`<div class="section-title">⭐ 指定 ${esc(sm.classId)}｜${esc(sm.subject)} 小老師</div>
-    <div class="field"><label>學生</label><select id="subjectAssistantStudent"><option value="">— 未指派 —</option>${students.map(s=>`<option value="${esc(s.studentId)}" ${s.studentId===current?'selected':''}>${String(s.seat).padStart(2,'0')} ${esc(s.name)}</option>`).join('')}</select></div>
+    <div class="notice">下拉選單會直接顯示學生是否已完成 Google 帳號連動。尚未連動也可以先指派，但學生要完成連動後才能用自己的 Google 帳號正常取得小老師權限。</div>
+    <div class="field"><label>學生</label><select id="subjectAssistantStudent">
+      <option value="">— 未指派 —</option>
+      ${students.map(s=>{
+        const reg=studentRegistry(s);
+        const linked=!!(reg?.linkedUid||reg?.linked===true);
+        return `<option value="${esc(s.studentId)}" ${s.studentId===current?'selected':''}>${String(s.seat).padStart(2,'0')} ${esc(s.name)}｜${linked?'✅ 已連動':'⚠️ 尚未連動'}</option>`;
+      }).join('')}
+    </select></div>
+    <div id="subjectAssistantLinkStatus" class="assistant-status"></div>
     <div class="toolbar"><button id="saveSubjectAssistantBtn" class="btn primary">儲存</button><button class="btn gray close-modal">取消</button></div>`);
+
+  const refreshLinkStatus=()=>{
+    const sid=$('#subjectAssistantStudent').value;
+    const s=students.find(x=>x.studentId===sid);
+    if(!s){
+      $('#subjectAssistantLinkStatus').innerHTML='<span class="assistant-none">尚未指派小老師</span>';
+      return;
+    }
+    const reg=studentRegistry(s);
+    const linked=!!(reg?.linkedUid||reg?.linked===true);
+    $('#subjectAssistantLinkStatus').innerHTML=
+      `<b>${String(s.seat).padStart(2,'0')} ${esc(s.name)}</b>｜
+       ${linked?'<span class="assistant-linked">✅ Google 已連動</span>':'<span class="assistant-unlinked">⚠️ Google 尚未連動</span>'}
+       ${reg?.email?`<div class="meta">Email：${esc(reg.email)}</div>`:''}`;
+  };
+  $('#subjectAssistantStudent').onchange=refreshLinkStatus;
+  refreshLinkStatus();
+
   $('#saveSubjectAssistantBtn').onclick=async()=>{
     const sid=$('#subjectAssistantStudent').value,student=students.find(s=>s.studentId===sid);
     const cls=await safeDoc(doc(db,'classes',String(sm.classId)))||{id:String(sm.classId),roleAssignments:{}};
@@ -1617,6 +1746,7 @@ async function setSubjectAssistant(id){
     if(student)roles[key]={studentId:student.studentId,seat:student.seat,name:student.name};else delete roles[key];
     roleAssignments[sm.semester]=roles;
     await setDoc(doc(db,'classes',String(sm.classId)),{roleAssignments,updatedAt:serverTimestamp()},{merge:true});
+
     // 同步學生 identityRegistry assignment
     for(const s of students.filter(x=>x.email)){
       const reg=registries.find(x=>x.id===registryId(s.email));if(!reg)continue;
@@ -1625,10 +1755,9 @@ async function setSubjectAssistant(id){
       reg.assignments=as;await saveRegistry(reg);
     }
     await audit('set_subject_assistant','roles',id,`${sm.classId}｜${sm.subject} 小老師：${student?`${student.seat} ${student.name}`:'取消指派'}`,sm.semester);
-    hideModal();await refreshAll();alert('✅ 本科小老師已更新。');
+    hideModal();await refreshAll();renderSubjectClasses();alert('✅ 本科小老師已更新。');
   }
 }
-
 // 作業／成績：依「本次工作模式」篩選
 function renderRecords(){
   const sem=recordSemester||currentSemester;
