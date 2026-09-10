@@ -1459,20 +1459,133 @@ async function migrateLegacyStudentsToDirectory(){
 }
 function directoryStatusLabel(s){return s.status==='graduated'?'🎓 已畢業':s.status==='transferred'?'↗ 已轉出':s.active===false?'停用':'在校'}
 function renderDirectory(){
-  if(!isGlobalAdmin()){ $('#page-directory').innerHTML='<div class="notice error">只有最高管理員模式可以開啟全校學生主檔。</div>';return}
-  const rows=studentDirectory.slice().sort((a,b)=>String(a.currentClassId||'').localeCompare(String(b.currentClassId||''))||Number(a.currentSeat||999)-Number(b.currentSeat||999));
+  if(!isGlobalAdmin()){
+    $('#page-directory').innerHTML='<div class="notice error">只有最高管理員模式可以開啟全校學生主檔。</div>';
+    return;
+  }
+
+  const allRows=studentDirectory.slice().sort((a,b)=>
+    String(a.currentClassId||'').localeCompare(String(b.currentClassId||'')) ||
+    Number(a.currentSeat||999)-Number(b.currentSeat||999)
+  );
+
+  const activeClassIds=[...new Set([
+    ...configuredClassIds(),
+    ...allRows.map(s=>String(s.currentClassId||'')).filter(Boolean)
+  ])].sort();
+
+  let selectedClass = window.__directorySelectedClass;
+  if(!selectedClass || !activeClassIds.includes(String(selectedClass))){
+    selectedClass = activeClassIds.includes('804') ? '804' : (activeClassIds[0] || '');
+  }
+  window.__directorySelectedClass = selectedClass;
+
+  const rows = allRows.filter(s=>String(s.currentClassId||'')===String(selectedClass));
+  const activeCount = rows.filter(s=>s.status!=='graduated' && s.status!=='transferred' && s.active!==false).length;
+
   $('#page-directory').innerHTML=`<div class="page-title">全校學生主檔</div>
-    <div class="card"><div class="notice"><b>學生本人與班級資料分離。</b> studentId 長期不變；班級、座號、年級寫入學籍歷程。第一次啟用大改版時，先執行一次「同步既有名單」。</div>
-      <div class="toolbar"><button id="migrateStudentIdsBtn" class="btn primary">🔄 同步既有班級到學生主檔</button><input id="directorySearch" placeholder="搜尋姓名、Email、班級"><select id="directoryStatus"><option value="all">全部狀態</option><option value="enrolled">在校</option><option value="graduated">已畢業</option><option value="transferred">已轉出</option></select></div>
-      <div class="table-wrap"><table><thead><tr><th>班級</th><th>座號</th><th>姓名</th><th>Email</th><th>狀態</th><th>studentId</th><th>資料處理</th></tr></thead><tbody id="directoryBody">${rows.map(s=>`<tr class="directory-entry ${s.active===false?'directory-row-inactive':''}" data-q="${esc(`${s.currentClassId||''} ${s.currentSeat||''} ${s.displayName||''} ${s.email||''}`.toLowerCase())}" data-status="${esc(s.status||'enrolled')}"><td>${esc(s.currentClassId||'—')}</td><td>${esc(s.currentSeat??'—')}</td><td><b>${esc(s.displayName||'')}</b></td><td>${esc(s.email||'—')}</td><td>${directoryStatusLabel(s)}</td><td><span class="meta">${esc(s.id)}</span></td><td><button class="btn gray small view-student-history" data-id="${esc(s.id)}">歷程</button> <button class="btn warn small merge-student" data-id="${esc(s.id)}">合併重複</button> <button class="btn danger small delete-mistake" data-id="${esc(s.id)}">刪除誤建</button></td></tr>`).join('')||'<tr><td colspan="7">尚未建立學生主檔。</td></tr>'}</tbody></table></div>
+    <div class="card">
+      <div class="notice">
+        <b>一次顯示一個班級。</b>
+        學生資料仍然共用同一份 studentDirectory，只是畫面改成依班級切換，避免全校名單過長。
+      </div>
+
+      <div class="toolbar">
+        <button id="prevDirectoryClass" class="btn gray">◀ 上一班</button>
+        <label>班級
+          <select id="directoryClass">
+            ${activeClassIds.map(id=>`<option value="${esc(id)}" ${id===String(selectedClass)?'selected':''}>${esc(id)}</option>`).join('')}
+          </select>
+        </label>
+        <button id="nextDirectoryClass" class="btn gray">下一班 ▶</button>
+
+        <input id="directorySearch" placeholder="搜尋姓名、Email、座號">
+        <select id="directoryStatus">
+          <option value="all">全部狀態</option>
+          <option value="enrolled">在校</option>
+          <option value="graduated">已畢業</option>
+          <option value="transferred">已轉出</option>
+        </select>
+
+        <button id="migrateStudentIdsBtn" class="btn primary">🔄 同步既有班級到學生主檔</button>
+      </div>
+
+      <div class="notice success" style="margin-top:10px">
+        <b>${esc(selectedClass||'未選班級')} 班</b>
+        ｜目前顯示 ${rows.length} 人
+        ｜在校 ${activeCount} 人
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>班級</th>
+              <th>座號</th>
+              <th>姓名</th>
+              <th>Email</th>
+              <th>狀態</th>
+              <th>studentId</th>
+              <th>資料處理</th>
+            </tr>
+          </thead>
+          <tbody id="directoryBody">
+            ${rows.map(s=>`<tr class="directory-entry ${s.active===false?'directory-row-inactive':''}"
+              data-q="${esc(`${s.currentSeat||''} ${s.displayName||''} ${s.email||''}`.toLowerCase())}"
+              data-status="${esc(s.status||'enrolled')}">
+              <td>${esc(s.currentClassId||'—')}</td>
+              <td>${esc(s.currentSeat??'—')}</td>
+              <td><b>${esc(s.displayName||'')}</b></td>
+              <td>${esc(s.email||'—')}</td>
+              <td>${directoryStatusLabel(s)}</td>
+              <td><span class="meta">${esc(s.id)}</span></td>
+              <td>
+                <button class="btn gray small view-student-history" data-id="${esc(s.id)}">歷程</button>
+                <button class="btn warn small merge-student" data-id="${esc(s.id)}">合併重複</button>
+                <button class="btn danger small delete-mistake" data-id="${esc(s.id)}">刪除誤建</button>
+              </td>
+            </tr>`).join('') || '<tr><td colspan="7">這個班目前沒有學生主檔。</td></tr>'}
+          </tbody>
+        </table>
+      </div>
     </div>`;
+
   $('#migrateStudentIdsBtn').onclick=migrateLegacyStudentsToDirectory;
-  const apply=()=>{const q=$('#directorySearch').value.trim().toLowerCase(),st=$('#directoryStatus').value;$$('.directory-entry').forEach(tr=>tr.style.display=(!q||tr.dataset.q.includes(q))&&(st==='all'||tr.dataset.status===st)?'':'none')};
-  $('#directorySearch').oninput=apply;$('#directoryStatus').onchange=apply;
+
+  const apply=()=>{
+    const q=$('#directorySearch').value.trim().toLowerCase();
+    const st=$('#directoryStatus').value;
+    $$('.directory-entry').forEach(tr=>{
+      const matchQ=!q||tr.dataset.q.includes(q);
+      const matchSt=st==='all'||tr.dataset.status===st;
+      tr.style.display=matchQ&&matchSt?'':'none';
+    });
+  };
+
+  $('#directorySearch').oninput=apply;
+  $('#directoryStatus').onchange=apply;
+
+  $('#directoryClass').onchange=e=>{
+    window.__directorySelectedClass=e.target.value;
+    renderDirectory();
+  };
+
+  const moveClass=(dir)=>{
+    const idx=activeClassIds.indexOf(String(window.__directorySelectedClass));
+    if(idx<0)return;
+    const next=idx+dir;
+    if(next<0||next>=activeClassIds.length)return;
+    window.__directorySelectedClass=activeClassIds[next];
+    renderDirectory();
+  };
+  $('#prevDirectoryClass').onclick=()=>moveClass(-1);
+  $('#nextDirectoryClass').onclick=()=>moveClass(1);
+
   $$('.view-student-history').forEach(b=>b.onclick=()=>openStudentHistory(b.dataset.id));
   $$('.merge-student').forEach(b=>b.onclick=()=>mergeStudentPrompt(b.dataset.id));
   $$('.delete-mistake').forEach(b=>b.onclick=()=>deleteMistakenStudent(b.dataset.id));
 }
+
 function openStudentHistory(studentId){
   const s=studentDirectory.find(x=>x.id===studentId),ens=studentEnrollments.filter(e=>e.studentId===studentId).sort((a,b)=>String(a.schoolYear).localeCompare(String(b.schoolYear)));
   showModal(`<div class="item-head"><div><div class="section-title">🕰️ ${esc(s?.displayName||studentId)} 學籍歷程</div><div class="meta">${esc(s?.email||'')}</div></div><button class="btn gray close-modal">關閉</button></div>
