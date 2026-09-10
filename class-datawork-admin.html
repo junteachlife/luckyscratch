@@ -211,7 +211,15 @@ onAuthStateChanged(auth,async u=>{
     initializeWorkMode();
     configureAdminUI();
     await refreshAll();
-    setTimeout(()=>showWorkModePicker(true),120);
+    setTimeout(()=>{
+      if(hasGlobalPrivilege()){
+        showWorkModePicker(true);
+      }else{
+        workMode='homeroom';
+        modeChosenThisLogin=true;
+        configureAdminUI();
+      }
+    },120);
   }catch(e){
     await signOut(auth);
     msg($('#loginMsg'),`管理員權限檢查失敗：${esc(e?.code||e?.message||'未知錯誤')}`,'error');
@@ -1020,7 +1028,12 @@ async function setWorkMode(mode){
 }
 function showWorkModePicker(force=false){
   if(!me)return;
-  if(!force&&modeChosenThisLogin)return;
+
+  // 只有帳號本身具備最高管理員資格，才允許在後台切換三種工作身分。
+  // 注意：判斷的是「帳號資格 hasGlobalPrivilege()」，
+  // 不是目前是否正在 global 工作模式。
+  if(!hasGlobalPrivilege())return;
+
   const modes=availableModes();
   showModal(`<div class="section-title">🎭 選擇這次要使用的後台身分</div>
     <div class="notice">同一個 Google 帳號的權限不會被刪除；這裡只是限制<b>本次後台工作範圍</b>。平常建議使用導師或任課老師模式，需要全校設定時才切換最高管理員。</div>
@@ -1028,7 +1041,10 @@ function showWorkModePicker(force=false){
     ${force?'':'<div class="toolbar"><button class="btn gray close-modal">取消</button></div>'}`);
   $$('.choose-mode').forEach(b=>b.onclick=()=>setWorkMode(b.dataset.mode));
 }
-$('#switchModeBtn').onclick=()=>showWorkModePicker(false);
+$('#switchModeBtn').onclick=()=>{
+  if(!hasGlobalPrivilege())return;
+  showWorkModePicker(false);
+};
 
 function activeModeLabel(){
   if(workMode==='global')return '最高管理員';
@@ -1055,10 +1071,14 @@ function configureAdminUI(){
   if(!me)return;
   const global=isGlobalAdmin(),teacher=isTeacherMode(),home=isHomeroomMode();
   const show=(id,on)=>$(id)?.classList.toggle('hidden',!on);
+  // 「切換身分」只看帳號本身是否為最高管理員，
+  // 即使目前切到導師／任課老師模式，按鈕仍然保留，才能隨時切回最高管理員。
+  show('#switchModeBtn',hasGlobalPrivilege());
+
   show('#adminPermissionsNav',global);
   show('#directoryNav',global);
   show('#upgradeNav',global);
-  show('#subjectClassesNav',teacher||global);
+  show('#subjectClassesNav',(teacher||global) && hasGlobalPrivilege());
   show('#historyNav',true);
   show('.nav button[data-page="roles"]',home||global);
   show('.nav button[data-page="accounts"]',home||global);
@@ -1075,8 +1095,8 @@ function renderModeBanner(){
     :workMode==='teacher'
       ?'目前是任課老師模式：只顯示你自己的任課班 × 科目，不會因為你同時是最高管理員而放大日常操作範圍。'
       :`目前是 ${homeroomClassId()} 導師模式：只管理導師班，不顯示全校管理功能。`;
-  host.innerHTML=`<div class="mode-banner ${cls}"><div><span class="mode-pill">🎭 ${esc(activeModeLabel())}</span><div class="meta" style="margin-top:5px">${esc(text)}</div></div><button class="btn purple small" id="modeBannerSwitch">切換身分</button></div>`;
-  $('#modeBannerSwitch').onclick=()=>showWorkModePicker(false);
+  host.innerHTML=`<div class="mode-banner ${cls}"><div><span class="mode-pill">🎭 ${esc(activeModeLabel())}</span><div class="meta" style="margin-top:5px">${esc(text)}</div></div>${hasGlobalPrivilege()?'<button class="btn purple small" id="modeBannerSwitch">切換身分</button>':''}</div>`;
+  if($('#modeBannerSwitch')) $('#modeBannerSwitch').onclick=()=>showWorkModePicker(false);
 }
 function schoolYearFromSemester(sem=currentSemester){return String(sem||'').split('-')[0]||''}
 function gradeFromClassId(classId){const n=Number(String(classId||'').charAt(0));return [7,8,9].includes(n)?n:null}
