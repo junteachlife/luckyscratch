@@ -10,6 +10,7 @@
 
   <title>教師航海基地｜羊皮紙航海圖</title>
 
+  <!-- 網頁小圖示：航 -->
   <link
     rel="icon"
     href='data:image/svg+xml,
@@ -27,6 +28,7 @@
   <meta name="theme-color" content="#10223f" />
 
   <style>
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -75,10 +77,27 @@
         sans-serif;
 
       background:
-        radial-gradient(circle at 15% 12%, rgba(75,121,201,.26), transparent 28%),
-        radial-gradient(circle at 82% 18%, rgba(246,196,83,.16), transparent 24%),
-        radial-gradient(circle at 50% 100%, rgba(48,156,212,.18), transparent 35%),
-        linear-gradient(180deg, #07111f, #0e2441 55%, #081321);
+        radial-gradient(
+          circle at 15% 12%,
+          rgba(75,121,201,.26),
+          transparent 28%
+        ),
+        radial-gradient(
+          circle at 82% 18%,
+          rgba(246,196,83,.16),
+          transparent 24%
+        ),
+        radial-gradient(
+          circle at 50% 100%,
+          rgba(48,156,212,.18),
+          transparent 35%
+        ),
+        linear-gradient(
+          180deg,
+          #07111f,
+          #0e2441 55%,
+          #081321
+        );
     }
 
     body::before {
@@ -170,13 +189,21 @@
 
     @keyframes floaty {
       0%, 100% {
-        transform: translateY(0) rotate(-3deg);
+        transform:
+          translateY(0)
+          rotate(-3deg);
       }
 
       50% {
-        transform: translateY(-14px) rotate(4deg);
+        transform:
+          translateY(-14px)
+          rotate(4deg);
       }
     }
+
+    /* =========================================================
+       頁首
+    ========================================================= */
 
     .hero {
       padding: 34px 18px 22px;
@@ -243,11 +270,15 @@
 
     @keyframes logoFloat {
       0%, 100% {
-        transform: translateY(0) rotate(-2deg);
+        transform:
+          translateY(0)
+          rotate(-2deg);
       }
 
       50% {
-        transform: translateY(-7px) rotate(2deg);
+        transform:
+          translateY(-7px)
+          rotate(2deg);
       }
     }
 
@@ -302,7 +333,11 @@
       color: #3d2818;
 
       background:
-        linear-gradient(145deg, #f5e2ad, #d8b36c);
+        linear-gradient(
+          145deg,
+          #f5e2ad,
+          #d8b36c
+        );
 
       box-shadow:
         0 8px 0 #432518,
@@ -343,7 +378,11 @@
       border-radius: 11px;
 
       background:
-        linear-gradient(180deg, #ffe689, #e4a43b);
+        linear-gradient(
+          180deg,
+          #ffe689,
+          #e4a43b
+        );
 
       color: #3d2818;
       font-size: 12px;
@@ -357,7 +396,13 @@
 
     .shortcut-grid {
       display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
+
+      grid-template-columns:
+        repeat(
+          6,
+          minmax(0, 1fr)
+        );
+
       gap: 11px;
     }
 
@@ -374,10 +419,13 @@
 
       text-align: center;
 
-      border: 2px solid rgba(109,67,30,.24);
+      border:
+        2px solid rgba(109,67,30,.24);
+
       border-radius: 14px;
 
-      background: rgba(255,248,224,.55);
+      background:
+        rgba(255,248,224,.55);
 
       box-shadow:
         0 4px 0 rgba(117,70,31,.55);
@@ -389,7 +437,9 @@
 
     .shortcut-item:hover {
       transform: translateY(-4px);
-      background: rgba(255,249,230,.8);
+
+      background:
+        rgba(255,249,230,.8);
     }
 
     .shortcut-item-icon {
@@ -405,11 +455,13 @@
 
     .shortcut-empty {
       grid-column: 1 / -1;
+
       padding: 15px;
 
       text-align: center;
 
       color: #79573a;
+
       font-size: 12px;
       font-weight: 700;
     }
@@ -425,13 +477,18 @@
 
     .map-frame {
       position: relative;
+
       padding: 22px;
 
       border: 7px solid #6d3d1d;
       border-radius: 26px;
 
       background:
-        linear-gradient(145deg, #8a542b, #4a2918);
+        linear-gradient(
+          145deg,
+          #8a542b,
+          #4a2918
+        );
 
       box-shadow:
         0 14px 0 #2d1910,
@@ -442,6 +499,7 @@
     .map {
       position: relative;
       isolation: isolate;
+
       min-height: 980px;
       overflow: hidden;
 
@@ -480,7 +538,9 @@
       position: absolute;
       inset: 0;
       z-index: 0;
+
       pointer-events: none;
+
       opacity: .16;
 
       background:
@@ -493,56 +553,87 @@
 
     .map-title {
       position: absolute;
+
       top: 18px;
       left: 50%;
-      transform: translateX(-50%);
+
+      transform:
+        translateX(-50%);
+
       z-index: 30;
 
       padding: 8px 16px;
 
-      border: 2px solid rgba(104,64,29,.26);
+      border:
+        2px solid rgba(104,64,29,.26);
+
       border-radius: 999px;
 
       color: #5a371c;
+
       font-size: 14px;
       font-weight: 1000;
       letter-spacing: 2px;
 
-      background: rgba(255,247,221,.42);
+      background:
+        rgba(255,247,221,.42);
 
       box-shadow:
         0 4px 10px rgba(77,45,22,.12);
     }
 
+    /* =========================================================
+       航線
+    ========================================================= */
+
     .route-svg {
       position: absolute;
       inset: 0;
+
       width: 100%;
       height: 100%;
+
       z-index: 2;
+
       pointer-events: none;
     }
 
     .route-shadow {
       fill: none;
-      stroke: var(--red-route-light);
+
+      stroke:
+        var(--red-route-light);
+
       stroke-width: 12;
       stroke-linecap: round;
     }
 
     .route-main {
       fill: none;
-      stroke: var(--red-route);
+
+      stroke:
+        var(--red-route);
+
       stroke-width: 4;
       stroke-linecap: round;
-      stroke-dasharray: 12 12;
+
+      stroke-dasharray:
+        12 12;
     }
+
+    /* =========================================================
+       羅盤
+    ========================================================= */
 
     .compass {
       position: absolute;
+
       left: 50%;
       top: 47%;
-      transform: translate(-50%, -50%);
+
+      transform:
+        translate(-50%, -50%);
+
       z-index: 4;
 
       width: 140px;
@@ -552,7 +643,9 @@
       place-items: center;
 
       border-radius: 50%;
-      border: 6px solid #8a5728;
+
+      border:
+        6px solid #8a5728;
 
       background:
         radial-gradient(
@@ -587,11 +680,18 @@
       }
     }
 
+    /* =========================================================
+       地圖裝飾
+    ========================================================= */
+
     .decor {
       position: absolute;
+
       z-index: 3;
+
       pointer-events: none;
       user-select: none;
+
       opacity: .78;
     }
 
@@ -599,7 +699,9 @@
       left: 45%;
       top: 18%;
       font-size: 58px;
-      animation: boat 6s ease-in-out infinite;
+
+      animation:
+        boat 6s ease-in-out infinite;
     }
 
     .decor-wave1 {
@@ -631,11 +733,15 @@
 
     @keyframes boat {
       0%, 100% {
-        transform: translateY(0) rotate(-2deg);
+        transform:
+          translateY(0)
+          rotate(-2deg);
       }
 
       50% {
-        transform: translateY(-10px) rotate(3deg);
+        transform:
+          translateY(-10px)
+          rotate(3deg);
       }
     }
 
@@ -645,15 +751,14 @@
 
     .island-cluster {
       position: absolute;
+
       z-index: 10;
+
       width: 250px;
+
       isolation: isolate;
     }
 
-    /*
-      只有 active 才提升到最上層。
-      hover 不再開工具，只保留島嶼視覺效果。
-    */
     .island-cluster.active {
       z-index: 100;
     }
@@ -681,7 +786,10 @@
     .cluster-external {
       bottom: 7%;
       left: 50%;
-      transform: translateX(-50%);
+
+      transform:
+        translateX(-50%);
+
       width: 240px;
     }
 
@@ -692,13 +800,16 @@
       width: 100%;
       min-height: 176px;
 
-      border: 4px solid #76451f;
+      border:
+        4px solid #76451f;
+
       border-radius:
         44% 56% 50% 50%
         /
         48% 42% 58% 52%;
 
-      padding: 20px 18px 16px;
+      padding:
+        20px 18px 16px;
 
       cursor: pointer;
 
@@ -734,10 +845,6 @@
         filter .22s ease;
     }
 
-    /*
-      hover 只保留視覺效果
-      不再控制 flyout
-    */
     .island-btn:hover,
     .island-cluster.active .island-btn {
       transform:
@@ -751,22 +858,31 @@
         0 0 26px rgba(246,196,83,.3),
         inset 0 0 18px rgba(255,255,255,.22);
 
-      filter: saturate(1.05);
+      filter:
+        saturate(1.05);
     }
 
     .island-icon {
       width: 72px;
       height: 72px;
-      margin: 0 auto 8px;
+
+      margin:
+        0 auto 8px;
 
       display: grid;
       place-items: center;
 
       border-radius: 50%;
-      border: 3px solid #885322;
+
+      border:
+        3px solid #885322;
 
       background:
-        linear-gradient(145deg, #ffe99f, #d99f4d);
+        linear-gradient(
+          145deg,
+          #ffe99f,
+          #d99f4d
+        );
 
       box-shadow:
         0 5px 0 #75451f,
@@ -777,53 +893,67 @@
 
     .island-title {
       margin-bottom: 5px;
+
       font-size: 22px;
       font-weight: 1000;
+
       color: #4d301b;
     }
 
     .island-desc {
       font-size: 12px;
       line-height: 1.55;
+
       font-weight: 700;
+
       color: #6e4c2f;
     }
 
     .island-count {
       display: inline-block;
+
       margin-top: 8px;
-      padding: 4px 10px;
+
+      padding:
+        4px 10px;
 
       border-radius: 999px;
-      border: 1px solid rgba(98,60,29,.24);
 
-      background: rgba(255,248,223,.48);
+      border:
+        1px solid rgba(98,60,29,.24);
+
+      background:
+        rgba(255,248,223,.48);
 
       color: #5f391d;
+
       font-size: 11px;
       font-weight: 1000;
     }
 
     .tap-tip {
       margin-top: 7px;
+
       font-size: 11px;
       font-weight: 900;
+
       color: #9d2f34;
     }
 
     /* =========================================================
        工具浮出面板
-       ★ 關鍵修正：只有 active 才顯示
     ========================================================= */
 
     .flyout {
       position: absolute;
+
       z-index: 110;
 
       width: 310px;
 
       opacity: 0;
       visibility: hidden;
+
       pointer-events: none;
 
       transform:
@@ -836,13 +966,10 @@
         visibility .18s ease;
     }
 
-    /*
-      ★ 只剩這一個規則
-      不再有 :hover .flyout
-    */
     .island-cluster.active .flyout {
       opacity: 1;
       visibility: visible;
+
       pointer-events: auto;
 
       transform:
@@ -851,18 +978,24 @@
     }
 
     .flyout-right {
-      left: calc(100% + 18px);
+      left:
+        calc(100% + 18px);
+
       top: 4px;
     }
 
     .flyout-left {
-      right: calc(100% + 18px);
+      right:
+        calc(100% + 18px);
+
       top: 4px;
     }
 
     .flyout-top {
       left: 50%;
-      bottom: calc(100% + 16px);
+
+      bottom:
+        calc(100% + 16px);
 
       transform:
         translateX(-50%)
@@ -870,9 +1003,6 @@
         scale(.98);
     }
 
-    /*
-      ★ top 面板同樣只接受 active
-    */
     .island-cluster.active .flyout-top {
       transform:
         translateX(-50%)
@@ -880,18 +1010,30 @@
         scale(1);
     }
 
+    /* =========================================================
+       工具面板
+    ========================================================= */
+
     .tool-panel {
       position: relative;
+
       z-index: 1;
+
       overflow: hidden;
 
-      border: 4px solid #79491f;
+      border:
+        4px solid #79491f;
+
       border-radius: 18px;
 
       color: #3a2617;
 
       background:
-        linear-gradient(145deg, #fff1c5, #d9b66b);
+        linear-gradient(
+          145deg,
+          #fff1c5,
+          #d9b66b
+        );
 
       box-shadow:
         0 9px 0 #6d401d,
@@ -901,7 +1043,8 @@
     }
 
     .tool-panel-header {
-      padding: 12px 14px 10px;
+      padding:
+        12px 14px 10px;
 
       border-bottom:
         2px dashed rgba(114,70,31,.28);
@@ -912,35 +1055,53 @@
 
     .tool-panel-title {
       margin-bottom: 2px;
+
       font-size: 16px;
       font-weight: 1000;
+
       color: #52331b;
     }
 
     .tool-panel-subtitle {
       font-size: 11px;
       font-weight: 700;
+
       color: #7a5637;
     }
 
     .tool-links {
       padding: 12px;
+
       display: grid;
+
       gap: 10px;
     }
 
+    /* =========================================================
+       ★ 工具卡片
+       整張卡片可點擊
+    ========================================================= */
+
     .tool-link {
       position: relative;
+
       min-height: 72px;
 
       display: grid;
-      grid-template-columns: auto 1fr auto;
+
+      grid-template-columns:
+        auto 1fr auto;
+
       gap: 10px;
+
       align-items: center;
 
-      padding: 10px 12px;
+      padding:
+        10px 12px;
 
-      border: 2px solid rgba(120,73,32,.25);
+      border:
+        2px solid rgba(120,73,32,.25);
+
       border-radius: 14px;
 
       background:
@@ -954,17 +1115,41 @@
         0 4px 0 #8a5820,
         0 8px 14px rgba(96,58,29,.12);
 
+      cursor: pointer;
+
       transition:
         transform .18s ease,
-        box-shadow .18s ease;
+        box-shadow .18s ease,
+        border-color .18s ease,
+        background .18s ease;
     }
 
     .tool-link:hover {
-      transform: translateY(-3px);
+      transform:
+        translateY(-3px);
+
+      border-color:
+        rgba(181,45,51,.38);
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255,255,255,.94),
+          rgba(255,235,176,.98)
+        );
 
       box-shadow:
         0 5px 0 #8a5820,
-        0 12px 18px rgba(96,58,29,.18);
+        0 12px 18px rgba(96,58,29,.18),
+        0 0 14px rgba(181,45,51,.08);
+    }
+
+    .tool-link:focus-visible {
+      outline:
+        3px solid #b52d33;
+
+      outline-offset:
+        3px;
     }
 
     .tool-link-icon {
@@ -987,16 +1172,22 @@
 
       border:
         2px solid rgba(120,73,32,.16);
+
+      pointer-events: none;
     }
 
     .tool-link-body {
       min-width: 0;
+
+      pointer-events: none;
     }
 
     .tool-link-title {
       margin-bottom: 3px;
+
       font-size: 14px;
       font-weight: 1000;
+
       color: #432918;
     }
 
@@ -1004,14 +1195,26 @@
       font-size: 11px;
       line-height: 1.45;
       font-weight: 700;
+
       color: #775438;
     }
+
+    /* =========================================================
+       右側操作
+    ========================================================= */
 
     .tool-actions {
       display: grid;
       gap: 5px;
+
+      position: relative;
+      z-index: 3;
     }
 
+    /*
+      箭頭現在只是一個視覺提示，
+      因為整張卡片本身都能點擊。
+    */
     .tool-link-arrow,
     .favorite-btn {
       width: 34px;
@@ -1022,7 +1225,6 @@
 
       border-radius: 10px;
 
-      cursor: pointer;
       font-size: 15px;
       font-weight: 1000;
     }
@@ -1031,21 +1233,51 @@
       color: #2f1c0c;
 
       background:
-        linear-gradient(180deg, #ffe88b, #e7aa36);
+        linear-gradient(
+          180deg,
+          #ffe88b,
+          #e7aa36
+        );
 
       box-shadow:
         0 4px 0 #8c581c;
+
+      pointer-events: none;
     }
 
+    /*
+      ★ 星星是唯一不觸發卡片連結的區域
+    */
     .favorite-btn {
-      border: 1px solid rgba(105,65,28,.26);
+      border:
+        1px solid rgba(105,65,28,.26);
+
       color: #76502a;
-      background: #fff1c5;
+
+      background:
+        #fff1c5;
+
+      cursor: pointer;
+
+      position: relative;
+
+      z-index: 10;
+
+      transition:
+        transform .15s ease,
+        background .15s ease;
+    }
+
+    .favorite-btn:hover {
+      transform:
+        scale(1.08);
     }
 
     .favorite-btn.active {
       color: #7c4f00;
-      background: #ffd95e;
+
+      background:
+        #ffd95e;
     }
 
     /* =========================================================
@@ -1054,10 +1286,13 @@
 
     .modal-backdrop {
       position: fixed;
+
       inset: 0;
+
       z-index: 5000;
 
       display: none;
+
       align-items: center;
       justify-content: center;
 
@@ -1075,17 +1310,26 @@
     }
 
     .setting-modal {
-      width: min(680px, 100%);
+      width:
+        min(680px, 100%);
+
       max-height: 88vh;
+
       overflow: auto;
 
-      border: 5px solid #70401d;
+      border:
+        5px solid #70401d;
+
       border-radius: 20px;
 
       color: #3b2818;
 
       background:
-        linear-gradient(145deg, #f4e0a9, #d7b169);
+        linear-gradient(
+          145deg,
+          #f4e0a9,
+          #d7b169
+        );
 
       box-shadow:
         0 12px 0 #402317,
@@ -1094,21 +1338,30 @@
 
     .setting-header {
       position: sticky;
+
       top: 0;
+
       z-index: 2;
 
       display: flex;
+
       align-items: center;
       justify-content: space-between;
+
       gap: 12px;
 
-      padding: 17px 18px;
+      padding:
+        17px 18px;
 
       border-bottom:
         2px solid rgba(106,63,28,.22);
 
       background:
-        linear-gradient(180deg, #f4e3b0, #dec079);
+        linear-gradient(
+          180deg,
+          #f4e3b0,
+          #dec079
+        );
     }
 
     .setting-title {
@@ -1118,8 +1371,10 @@
 
     .setting-info {
       margin-top: 3px;
+
       font-size: 11px;
       font-weight: 700;
+
       color: #765237;
     }
 
@@ -1132,7 +1387,9 @@
 
       cursor: pointer;
 
-      background: #963e38;
+      background:
+        #963e38;
+
       color: white;
 
       font-weight: 1000;
@@ -1143,19 +1400,30 @@
 
     .setting-list {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+
+      grid-template-columns:
+        repeat(
+          2,
+          minmax(0, 1fr)
+        );
+
       gap: 10px;
+
       padding: 16px;
     }
 
     .setting-item {
       display: flex;
       align-items: center;
+
       gap: 10px;
 
-      padding: 11px 12px;
+      padding:
+        11px 12px;
 
-      border: 2px solid rgba(109,66,29,.2);
+      border:
+        2px solid rgba(109,66,29,.2);
+
       border-radius: 13px;
 
       background:
@@ -1181,14 +1449,18 @@
 
     .setting-footer {
       position: sticky;
+
       bottom: 0;
 
       display: flex;
+
       justify-content: space-between;
       align-items: center;
+
       gap: 12px;
 
-      padding: 14px 16px;
+      padding:
+        14px 16px;
 
       border-top:
         2px solid rgba(103,63,28,.2);
@@ -1200,36 +1472,54 @@
     .selected-count {
       font-size: 12px;
       font-weight: 900;
+
       color: #624023;
     }
 
     .save-setting {
-      padding: 10px 18px;
+      padding:
+        10px 18px;
 
-      border: 2px solid #75431f;
+      border:
+        2px solid #75431f;
+
       border-radius: 11px;
 
       cursor: pointer;
 
       color: #3b2818;
+
       font-weight: 1000;
 
       background:
-        linear-gradient(180deg, #ffe78a, #e4a43b);
+        linear-gradient(
+          180deg,
+          #ffe78a,
+          #e4a43b
+        );
 
       box-shadow:
         0 4px 0 #87541c;
     }
 
+    /* =========================================================
+       頁尾
+    ========================================================= */
+
     .footer {
-      padding: 0 18px 34px;
+      padding:
+        0 18px 34px;
+
       text-align: center;
+
       color: #90a4c8;
     }
 
     .footer-title {
       margin-bottom: 6px;
+
       color: var(--gold);
+
       font-size: 14px;
       font-weight: 900;
       letter-spacing: 2px;
@@ -1242,8 +1532,10 @@
 
     .back-top {
       position: fixed;
+
       right: 18px;
       bottom: 18px;
+
       z-index: 3000;
 
       width: 48px;
@@ -1252,13 +1544,16 @@
       display: grid;
       place-items: center;
 
-      border: 2px solid var(--gold);
+      border:
+        2px solid var(--gold);
+
       border-radius: 50%;
 
       background:
         rgba(8,15,30,.88);
 
       color: var(--gold);
+
       font-size: 20px;
 
       cursor: pointer;
@@ -1267,22 +1562,37 @@
         0 8px 20px rgba(0,0,0,.35);
 
       opacity: 0;
-      transform: translateY(15px);
+
+      transform:
+        translateY(15px);
+
       pointer-events: none;
 
-      transition: .22s ease;
+      transition:
+        .22s ease;
     }
 
     .back-top.show {
       opacity: 1;
-      transform: translateY(0);
+
+      transform:
+        translateY(0);
+
       pointer-events: auto;
     }
 
+    /* =========================================================
+       平板
+    ========================================================= */
+
     @media (max-width: 1050px) {
+
       .shortcut-grid {
         grid-template-columns:
-          repeat(3, minmax(0, 1fr));
+          repeat(
+            3,
+            minmax(0, 1fr)
+          );
       }
 
       .cluster-class {
@@ -1308,11 +1618,17 @@
       .compass {
         width: 120px;
         height: 120px;
+
         font-size: 47px;
       }
     }
 
+    /* =========================================================
+       手機 / 小平板
+    ========================================================= */
+
     @media (max-width: 820px) {
+
       .map {
         min-height: auto;
 
@@ -1320,7 +1636,9 @@
           70px 16px 26px;
 
         display: flex;
+
         flex-direction: column;
+
         align-items: center;
 
         gap: 30px;
@@ -1340,6 +1658,7 @@
       .cluster-activity,
       .cluster-life,
       .cluster-external {
+
         position: relative;
 
         top: auto;
@@ -1349,7 +1668,8 @@
 
         transform: none;
 
-        width: min(100%, 360px);
+        width:
+          min(100%, 360px);
 
         z-index: auto;
       }
@@ -1362,6 +1682,7 @@
       .flyout-right,
       .flyout-left,
       .flyout-top {
+
         position: relative;
 
         left: auto;
@@ -1377,6 +1698,7 @@
         visibility: hidden;
 
         max-height: 0;
+
         overflow: hidden;
 
         transform: none;
@@ -1390,17 +1712,22 @@
 
       .island-cluster.active .flyout {
         opacity: 1;
+
         visibility: visible;
+
         max-height: 1400px;
+
         pointer-events: auto;
       }
 
       .setting-list {
-        grid-template-columns: 1fr;
+        grid-template-columns:
+          1fr;
       }
     }
 
     @media (max-width: 560px) {
+
       .hero {
         padding-top: 26px;
       }
@@ -1416,6 +1743,7 @@
 
       .shortcut-header {
         flex-direction: column;
+
         align-items: flex-start;
       }
 
@@ -1425,33 +1753,46 @@
 
       .shortcut-grid {
         grid-template-columns:
-          repeat(2, minmax(0, 1fr));
+          repeat(
+            2,
+            minmax(0, 1fr)
+          );
       }
 
       .map-frame {
         padding: 12px;
+
         border-width: 5px;
+
         border-radius: 20px;
       }
 
+      /*
+        手機仍然讓整張卡片可點
+      */
       .tool-link {
         grid-template-columns:
-          auto 1fr;
+          auto 1fr auto;
       }
 
       .tool-actions {
-        grid-column: 1 / -1;
-        grid-template-columns: 1fr 1fr;
+        grid-column: auto;
+
+        display: grid;
+        grid-template-columns: 1fr;
+
+        gap: 5px;
       }
 
       .tool-link-arrow,
       .favorite-btn {
-        width: 100%;
-        height: 32px;
+        width: 34px;
+        height: 34px;
       }
 
       .setting-footer {
         align-items: stretch;
+
         flex-direction: column;
       }
 
@@ -1461,14 +1802,22 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
+
       *,
       *::before,
       *::after {
-        animation-duration: .01ms !important;
-        animation-iteration-count: 1 !important;
-        scroll-behavior: auto !important;
+
+        animation-duration:
+          .01ms !important;
+
+        animation-iteration-count:
+          1 !important;
+
+        scroll-behavior:
+          auto !important;
       }
     }
+
   </style>
 </head>
 
@@ -1481,6 +1830,11 @@
   <div class="float-symbol symbol-3">🪙</div>
   <div class="float-symbol symbol-4">🗺️</div>
 
+
+  <!-- =========================================================
+       頁首
+  ========================================================== -->
+
   <header class="hero">
 
     <div class="hero-badge">
@@ -1492,8 +1846,15 @@
     </div>
 
     <h1>
-      <span class="gold">教師</span>
-      <span class="red">航海地圖</span>
+
+      <span class="gold">
+        教師
+      </span>
+
+      <span class="red">
+        航海地圖
+      </span>
+
     </h1>
 
     <p>
@@ -1502,6 +1863,11 @@
 
   </header>
 
+
+  <!-- =========================================================
+       快捷入口
+  ========================================================== -->
+
   <section class="shortcut-wrap">
 
     <div class="shortcut-board">
@@ -1509,6 +1875,7 @@
       <div class="shortcut-header">
 
         <div>
+
           <div class="shortcut-title">
             ⭐ 我的快捷航線
           </div>
@@ -1516,6 +1883,7 @@
           <div class="shortcut-subtitle">
             把每天最常使用的系統放在這裡
           </div>
+
         </div>
 
         <button
@@ -1538,6 +1906,11 @@
 
   </section>
 
+
+  <!-- =========================================================
+       航海地圖
+  ========================================================== -->
+
   <main class="map-wrap">
 
     <div class="map-frame">
@@ -1548,6 +1921,8 @@
           TREASURE ROUTE MAP ・ 教師工具航海圖
         </div>
 
+
+        <!-- 紅色虛線航線 -->
         <svg
           class="route-svg"
           viewBox="0 0 1200 980"
@@ -1574,6 +1949,7 @@
             "
           />
 
+
           <path
             class="route-shadow"
             d="
@@ -1594,9 +1970,11 @@
 
         </svg>
 
+
         <div class="compass">
           🧭
         </div>
+
 
         <div class="decor decor-ship">
           ⛵
@@ -1618,10 +1996,17 @@
           ☁️
         </div>
 
-        <!-- 班級管理島 -->
+
+        <!-- =====================================================
+             班級管理島
+        ====================================================== -->
+
         <div class="island-cluster cluster-class">
 
-          <button class="island-btn" type="button">
+          <button
+            class="island-btn"
+            type="button"
+          >
 
             <div class="island-icon">
               🏝️
@@ -1645,6 +2030,7 @@
 
           </button>
 
+
           <div class="flyout flyout-right">
 
             <div class="tool-panel">
@@ -1663,10 +2049,25 @@
 
               <div class="tool-links">
 
-                <div class="tool-link" data-tool-id="classTracker"></div>
-                <div class="tool-link" data-tool-id="subclassTracker"></div>
-                <div class="tool-link" data-tool-id="classWork"></div>
-                <div class="tool-link" data-tool-id="classAdmin"></div>
+                <div
+                  class="tool-link"
+                  data-tool-id="classTracker"
+                ></div>
+
+                <div
+                  class="tool-link"
+                  data-tool-id="subclassTracker"
+                ></div>
+
+                <div
+                  class="tool-link"
+                  data-tool-id="classWork"
+                ></div>
+
+                <div
+                  class="tool-link"
+                  data-tool-id="classAdmin"
+                ></div>
 
               </div>
 
@@ -1676,10 +2077,17 @@
 
         </div>
 
-        <!-- 學習成績島 -->
+
+        <!-- =====================================================
+             學習成績島
+        ====================================================== -->
+
         <div class="island-cluster cluster-learning">
 
-          <button class="island-btn" type="button">
+          <button
+            class="island-btn"
+            type="button"
+          >
 
             <div class="island-icon">
               📚
@@ -1703,6 +2111,7 @@
 
           </button>
 
+
           <div class="flyout flyout-left">
 
             <div class="tool-panel">
@@ -1721,8 +2130,15 @@
 
               <div class="tool-links">
 
-                <div class="tool-link" data-tool-id="examScore"></div>
-                <div class="tool-link" data-tool-id="math"></div>
+                <div
+                  class="tool-link"
+                  data-tool-id="examScore"
+                ></div>
+
+                <div
+                  class="tool-link"
+                  data-tool-id="math"
+                ></div>
 
               </div>
 
@@ -1732,10 +2148,17 @@
 
         </div>
 
-        <!-- 教學活動島 -->
+
+        <!-- =====================================================
+             教學活動島
+        ====================================================== -->
+
         <div class="island-cluster cluster-activity">
 
-          <button class="island-btn" type="button">
+          <button
+            class="island-btn"
+            type="button"
+          >
 
             <div class="island-icon">
               🎪
@@ -1759,6 +2182,7 @@
 
           </button>
 
+
           <div class="flyout flyout-right">
 
             <div class="tool-panel">
@@ -1777,8 +2201,15 @@
 
               <div class="tool-links">
 
-                <div class="tool-link" data-tool-id="scratch"></div>
-                <div class="tool-link" data-tool-id="seat"></div>
+                <div
+                  class="tool-link"
+                  data-tool-id="scratch"
+                ></div>
+
+                <div
+                  class="tool-link"
+                  data-tool-id="seat"
+                ></div>
 
               </div>
 
@@ -1788,10 +2219,17 @@
 
         </div>
 
-        <!-- 學生生活島 -->
+
+        <!-- =====================================================
+             學生生活島
+        ====================================================== -->
+
         <div class="island-cluster cluster-life">
 
-          <button class="island-btn" type="button">
+          <button
+            class="island-btn"
+            type="button"
+          >
 
             <div class="island-icon">
               🌴
@@ -1815,6 +2253,7 @@
 
           </button>
 
+
           <div class="flyout flyout-left">
 
             <div class="tool-panel">
@@ -1833,9 +2272,20 @@
 
               <div class="tool-links">
 
-                <div class="tool-link" data-tool-id="contact"></div>
-                <div class="tool-link" data-tool-id="birthday"></div>
-                <div class="tool-link" data-tool-id="running"></div>
+                <div
+                  class="tool-link"
+                  data-tool-id="contact"
+                ></div>
+
+                <div
+                  class="tool-link"
+                  data-tool-id="birthday"
+                ></div>
+
+                <div
+                  class="tool-link"
+                  data-tool-id="running"
+                ></div>
 
               </div>
 
@@ -1845,10 +2295,17 @@
 
         </div>
 
-        <!-- 外部工具港口 -->
+
+        <!-- =====================================================
+             外部工具港口
+        ====================================================== -->
+
         <div class="island-cluster cluster-external">
 
-          <button class="island-btn" type="button">
+          <button
+            class="island-btn"
+            type="button"
+          >
 
             <div class="island-icon">
               ⚓
@@ -1872,6 +2329,7 @@
 
           </button>
 
+
           <div class="flyout flyout-top">
 
             <div class="tool-panel">
@@ -1890,7 +2348,10 @@
 
               <div class="tool-links">
 
-                <div class="tool-link" data-tool-id="dojo"></div>
+                <div
+                  class="tool-link"
+                  data-tool-id="dojo"
+                ></div>
 
               </div>
 
@@ -1905,6 +2366,11 @@
     </div>
 
   </main>
+
+
+  <!-- =========================================================
+       快捷設定視窗
+  ========================================================== -->
 
   <div
     class="modal-backdrop"
@@ -1927,6 +2393,7 @@
 
         </div>
 
+
         <button
           class="close-setting"
           id="closeSettingBtn"
@@ -1937,11 +2404,13 @@
 
       </div>
 
+
       <div
         class="setting-list"
         id="settingList"
       >
       </div>
+
 
       <div class="setting-footer">
 
@@ -1951,6 +2420,7 @@
         >
           已選 0 / 6
         </div>
+
 
         <button
           class="save-setting"
@@ -1966,6 +2436,11 @@
 
   </div>
 
+
+  <!-- =========================================================
+       頁尾
+  ========================================================== -->
+
   <footer class="footer">
 
     <div class="footer-title">
@@ -1980,6 +2455,7 @@
 
   </footer>
 
+
   <button
     class="back-top"
     id="backTop"
@@ -1989,7 +2465,13 @@
     ↑
   </button>
 
+
   <script>
+
+    /* =========================================================
+       所有工具
+    ========================================================= */
+
     const TOOLS = {
 
       classTracker: {
@@ -2090,6 +2572,11 @@
 
     };
 
+
+    /* =========================================================
+       快捷入口
+    ========================================================= */
+
     const DEFAULT_SHORTCUTS = [
       "classTracker",
       "classAdmin",
@@ -2103,8 +2590,11 @@
     const MAX_SHORTCUTS =
       6;
 
+
     function loadShortcuts() {
+
       try {
+
         const saved =
           JSON.parse(
             localStorage.getItem(
@@ -2112,68 +2602,98 @@
             )
           );
 
-        if (Array.isArray(saved)) {
+        if (
+          Array.isArray(saved)
+        ) {
+
           return saved.filter(
             id => TOOLS[id]
           );
+
         }
+
       }
       catch (error) {
+
         console.warn(
           "快捷入口讀取失敗",
           error
         );
+
       }
 
       return [
         ...DEFAULT_SHORTCUTS
       ];
+
     }
+
 
     let shortcutIds =
       loadShortcuts();
 
+
     function saveShortcuts() {
+
       localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify(
           shortcutIds
         )
       );
+
     }
 
+
     function renderShortcuts() {
+
       const grid =
         document.getElementById(
           "shortcutGrid"
         );
 
+
       if (
         shortcutIds.length === 0
       ) {
+
         grid.innerHTML = `
+
           <div class="shortcut-empty">
+
             尚未設定快捷入口。
+
             點右上方「設定快捷入口」
             開始加入常用工具。
+
           </div>
+
         `;
+
         return;
+
       }
 
+
       grid.innerHTML =
+
         shortcutIds
+
           .map(id => {
+
             const tool =
               TOOLS[id];
 
+
             return `
+
               <a
                 class="shortcut-item"
                 href="${tool.url}"
                 target="_blank"
                 rel="noopener noreferrer"
               >
+
                 <div class="shortcut-item-icon">
                   ${tool.icon}
                 </div>
@@ -2181,32 +2701,110 @@
                 <div class="shortcut-item-name">
                   ${tool.shortName}
                 </div>
+
               </a>
+
             `;
+
           })
+
           .join("");
+
     }
 
+
+    /* =========================================================
+       ★ 開啟工具
+       整張工具卡片都會呼叫這個函式
+    ========================================================= */
+
+    function openTool(url) {
+
+      const newWindow =
+        window.open(
+          url,
+          "_blank",
+          "noopener,noreferrer"
+        );
+
+      /*
+        少數瀏覽器可能忽略 features，
+        再確保 opener 為 null。
+      */
+      if (newWindow) {
+
+        newWindow.opener =
+          null;
+
+      }
+
+    }
+
+
+    /* =========================================================
+       建立地圖工具卡
+    ========================================================= */
+
     function renderToolCards() {
+
       document
+
         .querySelectorAll(
           "[data-tool-id]"
         )
+
         .forEach(card => {
+
           const id =
             card.dataset.toolId;
+
 
           const tool =
             TOOLS[id];
 
-          if (!tool) return;
+
+          if (!tool) {
+            return;
+          }
+
+
+          /*
+            ★ 把 URL 存在卡片本身
+          */
+
+          card.dataset.url =
+            tool.url;
+
+
+          /*
+            ★ 加入鍵盤操作能力
+          */
+
+          card.setAttribute(
+            "role",
+            "link"
+          );
+
+          card.setAttribute(
+            "tabindex",
+            "0"
+          );
+
+          card.setAttribute(
+            "aria-label",
+            `開啟 ${tool.name}`
+          );
+
 
           card.innerHTML = `
+
             <div class="tool-link-icon">
               ${tool.icon}
             </div>
 
+
             <div class="tool-link-body">
+
               <div class="tool-link-title">
                 ${tool.name}
               </div>
@@ -2214,19 +2812,29 @@
               <div class="tool-link-desc">
                 ${tool.desc}
               </div>
+
             </div>
+
 
             <div class="tool-actions">
 
-              <a
+              <!--
+                箭頭只是提示，
+                整張卡片本身都可點擊
+              -->
+
+              <div
                 class="tool-link-arrow"
-                href="${tool.url}"
-                target="_blank"
-                rel="noopener noreferrer"
+                aria-hidden="true"
                 title="開啟系統"
               >
                 ↗
-              </a>
+              </div>
+
+
+              <!--
+                星星是唯一不會開啟系統的區域
+              -->
 
               <button
                 class="favorite-btn ${
@@ -2236,144 +2844,319 @@
                 }"
                 type="button"
                 data-favorite="${id}"
+                aria-label="加入或移除快捷"
                 title="加入或移除快捷"
               >
                 ⭐
               </button>
 
             </div>
+
           `;
+
         });
 
+
+      /* =======================================================
+         ★ 整張工具卡片點擊
+      ======================================================== */
+
       document
+
+        .querySelectorAll(
+          ".tool-link[data-tool-id]"
+        )
+
+        .forEach(card => {
+
+          card.addEventListener(
+            "click",
+            event => {
+
+              /*
+                如果點到星星，
+                不開啟網站。
+              */
+
+              if (
+                event.target.closest(
+                  ".favorite-btn"
+                )
+              ) {
+
+                return;
+
+              }
+
+
+              const url =
+                card.dataset.url;
+
+
+              if (url) {
+
+                openTool(url);
+
+              }
+
+            }
+          );
+
+
+          /*
+            鍵盤 Enter / Space
+            也可以開啟工具
+          */
+
+          card.addEventListener(
+            "keydown",
+            event => {
+
+              /*
+                如果焦點在星星，
+                讓星星自己處理。
+              */
+
+              if (
+                event.target.closest(
+                  ".favorite-btn"
+                )
+              ) {
+
+                return;
+
+              }
+
+
+              if (
+                event.key === "Enter" ||
+                event.key === " "
+              ) {
+
+                event.preventDefault();
+
+
+                const url =
+                  card.dataset.url;
+
+
+                if (url) {
+
+                  openTool(url);
+
+                }
+
+              }
+
+            }
+          );
+
+        });
+
+
+      /* =======================================================
+         星星收藏
+      ======================================================== */
+
+      document
+
         .querySelectorAll(
           "[data-favorite]"
         )
+
         .forEach(button => {
+
           button.addEventListener(
             "click",
             event => {
+
+              /*
+                ★ 關鍵
+                阻止星星點擊冒泡到整張工具卡片
+              */
+
               event.preventDefault();
+
               event.stopPropagation();
+
 
               toggleFavorite(
                 button.dataset.favorite
               );
+
             }
           );
+
         });
+
     }
 
+
+    /* =========================================================
+       加入 / 移除快捷
+    ========================================================= */
+
     function toggleFavorite(id) {
+
       const index =
         shortcutIds.indexOf(id);
 
-      if (index >= 0) {
+
+      if (
+        index >= 0
+      ) {
+
         shortcutIds.splice(
           index,
           1
         );
+
       }
       else {
+
         if (
           shortcutIds.length >=
           MAX_SHORTCUTS
         ) {
+
           alert(
             "快捷入口最多只能設定 6 個。請先移除一個再新增。"
           );
+
           return;
+
         }
 
-        shortcutIds.push(id);
+
+        shortcutIds.push(
+          id
+        );
+
       }
 
+
       saveShortcuts();
+
       renderShortcuts();
+
       renderToolCards();
+
       renderSettingList();
+
     }
+
+
+    /* =========================================================
+       快捷設定
+    ========================================================= */
 
     const shortcutModal =
       document.getElementById(
         "shortcutModal"
       );
 
+
     const shortcutSettingBtn =
       document.getElementById(
         "shortcutSettingBtn"
       );
+
 
     const closeSettingBtn =
       document.getElementById(
         "closeSettingBtn"
       );
 
+
     const saveSettingBtn =
       document.getElementById(
         "saveSettingBtn"
       );
 
+
     function openShortcutSetting() {
+
       renderSettingList();
+
 
       shortcutModal.classList.add(
         "show"
       );
 
+
       document.body.style.overflow =
         "hidden";
+
     }
 
+
     function closeShortcutSetting() {
+
       shortcutModal.classList.remove(
         "show"
       );
 
+
       document.body.style.overflow =
         "";
+
     }
+
 
     shortcutSettingBtn.addEventListener(
       "click",
       openShortcutSetting
     );
 
+
     closeSettingBtn.addEventListener(
       "click",
       closeShortcutSetting
     );
 
+
     shortcutModal.addEventListener(
       "click",
       event => {
+
         if (
           event.target ===
           shortcutModal
         ) {
+
           closeShortcutSetting();
+
         }
+
       }
     );
 
+
     function renderSettingList() {
+
       const list =
         document.getElementById(
           "settingList"
         );
 
+
       list.innerHTML =
+
         Object.entries(
           TOOLS
         )
+
           .map(
             ([id, tool]) => {
+
               const checked =
                 shortcutIds.includes(id)
                   ? "checked"
                   : "";
 
+
               return `
+
                 <label class="setting-item">
 
                   <input
@@ -2391,219 +3174,315 @@
                   </div>
 
                 </label>
+
               `;
+
             }
           )
+
           .join("");
 
+
       list
+
         .querySelectorAll(
           "input[type='checkbox']"
         )
+
         .forEach(input => {
+
           input.addEventListener(
             "change",
             updateSelectedCount
           );
+
         });
 
+
       updateSelectedCount();
+
     }
 
+
     function updateSelectedCount() {
+
       const checked =
         document.querySelectorAll(
           "#settingList input:checked"
         );
 
+
       const count =
         checked.length;
+
 
       const countElement =
         document.getElementById(
           "selectedCount"
         );
 
+
       countElement.textContent =
         `已選 ${count} / ${MAX_SHORTCUTS}`;
+
 
       if (
         count > MAX_SHORTCUTS
       ) {
+
         countElement.style.color =
           "#a3232b";
+
       }
       else {
+
         countElement.style.color =
           "";
+
       }
+
     }
+
 
     saveSettingBtn.addEventListener(
       "click",
       () => {
+
         const selected =
+
           Array.from(
+
             document.querySelectorAll(
               "#settingList input:checked"
             )
+
           )
+
           .map(
-            input => input.value
+            input =>
+              input.value
           );
+
 
         if (
           selected.length >
           MAX_SHORTCUTS
         ) {
+
           alert(
             "最多只能選擇 6 個快捷入口。"
           );
+
           return;
+
         }
+
 
         shortcutIds =
           selected;
 
+
         saveShortcuts();
+
         renderShortcuts();
+
         renderToolCards();
+
         closeShortcutSetting();
+
       }
     );
 
+
     /* =========================================================
        島嶼控制
-       ★ 同時間只能開一個
+       同時間只開啟一座
     ========================================================= */
 
     const islandClusters =
+
       document.querySelectorAll(
         ".island-cluster"
       );
 
+
     function closeAllIslands() {
+
       islandClusters.forEach(
         cluster => {
+
           cluster.classList.remove(
             "active"
           );
+
         }
       );
+
     }
+
 
     islandClusters.forEach(
       cluster => {
+
         const button =
           cluster.querySelector(
             ".island-btn"
           );
 
+
         button.addEventListener(
           "click",
           event => {
+
             event.stopPropagation();
+
 
             const isActive =
               cluster.classList.contains(
                 "active"
               );
 
-            /*
-              先關閉全部
-            */
-            closeAllIslands();
 
             /*
-              如果剛剛不是開啟狀態，
-              就只開目前這一個。
+              先關閉其他全部島嶼
             */
-            if (!isActive) {
+
+            closeAllIslands();
+
+
+            /*
+              如果原本沒有開啟，
+              就開啟目前島嶼。
+            */
+
+            if (
+              !isActive
+            ) {
+
               cluster.classList.add(
                 "active"
               );
+
             }
+
           }
         );
 
-        /*
-          點工具面板本身時，
-          不要被 document click 關掉
-        */
+
         cluster.addEventListener(
           "click",
           event => {
+
             event.stopPropagation();
+
           }
         );
+
       }
     );
 
-    /*
-      點地圖或頁面其他地方
-      關閉所有島嶼工具
-    */
+
+    /* =========================================================
+       點其他地方收起島嶼
+    ========================================================= */
+
     document.addEventListener(
       "click",
       event => {
+
         if (
           !event.target.closest(
             ".island-cluster"
           )
         ) {
+
           closeAllIslands();
+
         }
+
       }
     );
+
+
+    /* =========================================================
+       ESC
+    ========================================================= */
 
     document.addEventListener(
       "keydown",
       event => {
+
         if (
           event.key ===
           "Escape"
         ) {
+
           closeAllIslands();
+
           closeShortcutSetting();
+
         }
+
       }
     );
+
+
+    /* =========================================================
+       返回頂端
+    ========================================================= */
 
     const backTop =
       document.getElementById(
         "backTop"
       );
 
+
     window.addEventListener(
       "scroll",
       () => {
+
         if (
           window.scrollY > 350
         ) {
+
           backTop.classList.add(
             "show"
           );
+
         }
         else {
+
           backTop.classList.remove(
             "show"
           );
+
         }
+
       }
     );
+
 
     backTop.addEventListener(
       "click",
       () => {
+
         window.scrollTo({
           top: 0,
           behavior: "smooth"
         });
+
       }
     );
 
+
+    /* =========================================================
+       初始化
+    ========================================================= */
+
     renderShortcuts();
+
     renderToolCards();
+
     renderSettingList();
 
   </script>
