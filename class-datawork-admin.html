@@ -452,7 +452,26 @@ function legacy_renderRecords(){
   const all=[...collections.map(x=>({...x,_type:'collection'})),...assessments.map(x=>({...x,_type:'assessment'}))]
     .filter(x=>(x.semester||'')===sem&&canAdminClass(x.classId))
     .sort((a,b)=>(a.classId||'').localeCompare(b.classId||'')||(a.scopeName||'').localeCompare(b.scopeName||'','zh-Hant')||(b.date||'').localeCompare(a.date||''));
-  const classIds=[...new Set(all.map(x=>x.classId).filter(Boolean))].sort();
+  const assignmentPairs=myTeacherAssignments(sem);
+  const managerPairs=subjectManagers.filter(x=>x.semester===sem&&x.status!=='released'&&(isGlobalAdmin()||x.managerUid===me?.uid));
+
+  let classIds=[];
+  if(isTeacherMode()){
+    classIds=[...new Set([
+      ...assignmentPairs.map(x=>String(x.classId)),
+      ...managerPairs.map(x=>String(x.classId)),
+      ...all.map(x=>String(x.classId||'')).filter(Boolean)
+    ])].sort();
+  }else if(isHomeroomMode()){
+    classIds=homeroomClassId()?[String(homeroomClassId())]:[];
+  }else{
+    classIds=[...new Set([
+      ...configuredClassIds(),
+      ...classes.map(x=>String(x.id)),
+      ...subjectManagers.filter(x=>x.semester===sem&&x.status!=='released').map(x=>String(x.classId)),
+      ...all.map(x=>String(x.classId||'')).filter(Boolean)
+    ])].sort();
+  }
   const countCollection=all.filter(x=>x._type==='collection').length;
   const countAssessment=all.filter(x=>x._type==='assessment').length;
 
@@ -463,7 +482,7 @@ function legacy_renderRecords(){
     <div class="record-filter-row">
       <label>查看學期 <select id="recordSemester">${semesterOptions(sem)}</select></label>
       <label>班級 <select id="recordClass"><option value="all">全部班級</option>${classIds.map(id=>`<option value="${esc(id)}">${esc(id)}</option>`).join('')}</select></label>
-      <label>科目 <select id="recordSubject">${recordSubjectOptions('all')}</select></label>
+      <label>科目 <select id="recordSubject"></select></label>
       <label>類型 <select id="recordType"><option value="all">全部</option><option value="collection">作業繳交</option><option value="assessment">成績</option></select></label>
       <input id="recordSearch" placeholder="搜尋班級、科目、項目">
       <button class="btn gray" id="refreshRecords">重新整理</button>
@@ -489,6 +508,46 @@ function legacy_renderRecords(){
 
     <div id="recordList" class="record-export-list">${all.map(recordCard).join('')||'<div class="sub">這個學期尚無資料。</div>'}</div>
   </div>`;
+
+  const recordSubjectsForClass=(classId='all')=>{
+    let list=[];
+    if(isTeacherMode()){
+      list=[
+        ...assignmentPairs
+          .filter(x=>classId==='all'||String(x.classId)===String(classId))
+          .map(x=>x.scopeName),
+        ...managerPairs
+          .filter(x=>classId==='all'||String(x.classId)===String(classId))
+          .map(x=>x.subject),
+        ...all
+          .filter(x=>classId==='all'||String(x.classId)===String(classId))
+          .map(x=>x.scopeName)
+      ];
+    }else if(isHomeroomMode()){
+      list=[
+        ...subjects,
+        ...all.map(x=>x.scopeName)
+      ];
+    }else{
+      list=[
+        ...subjects,
+        ...subjectManagers.filter(x=>x.semester===sem&&x.status!=='released'&&(classId==='all'||String(x.classId)===String(classId))).map(x=>x.subject),
+        ...all.filter(x=>classId==='all'||String(x.classId)===String(classId)).map(x=>x.scopeName)
+      ];
+    }
+    return [...new Set(list.filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),'zh-Hant'));
+  };
+
+  const refreshRecordSubjectOptions=()=>{
+    const classId=$('#recordClass')?.value||'all';
+    const previous=$('#recordSubject')?.value||'all';
+    const list=recordSubjectsForClass(classId);
+    $('#recordSubject').innerHTML='<option value="all">全部科目</option>'+list.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
+    if(previous==='all'||list.includes(previous))$('#recordSubject').value=previous;
+    else $('#recordSubject').value='all';
+  };
+
+  refreshRecordSubjectOptions();
 
   const apply=()=>{
     const visible=new Set(filteredRecordRows(all).map(x=>`${x._type}|${x.id}`));
@@ -1019,8 +1078,19 @@ function availableModes(){
 }
 async function setWorkMode(mode){
   if(!availableModes().some(x=>x.id===mode))return alert('這個帳號沒有此身分。');
-  workMode=mode;modeChosenThisLogin=true;hideModal();
+  workMode=mode;
+  modeChosenThisLogin=true;
+  hideModal();
   configureAdminUI();
+
+  // 大改版相容：
+  // 原本「帳號連動／任課」已設定的 assignments，
+  // 在進入任課老師模式時自動建立新版 subjectClassManagers。
+  // 若同班同科已被別人管理，系統只警示、不覆蓋。
+  if(mode==='teacher'){
+    await syncMyTeacherAssignmentsToSubjectManagers({silent:false});
+  }
+
   await refreshAll();
   const dash=$('.nav button[data-page="dashboard"]');if(dash)dash.click();
 }
@@ -1208,6 +1278,174 @@ function schoolClassOptions(selected=''){
   ]);
   return [...known].sort().map(id=>`<option value="${esc(id)}" ${id===String(selected)?'selected':''}>${esc(id)}</option>`).join('');
 }
+
+function myTeacherAssignments(semester=currentSemester){
+  const fromUser=(me?.assignments||[]).filter(a=>
+    a.kind==='teacher' &&
+    a.scopeType==='subject' &&
+    a.semester===semester &&
+    a.classId &&
+    a.scopeName
+  );
+
+  const reg=registries.find(r=>r.linkedUid===me?.uid && r.type==='teacher');
+  const fromRegistry=(reg?.assignments||[]).filter(a=>
+    a.kind==='teacher' &&
+    a.scopeType==='subject' &&
+    a.semester===semester &&
+    a.classId &&
+    a.scopeName
+  );
+
+  return mergeAssignments([], [...fromUser,...fromRegistry]);
+}
+
+async function syncMyTeacherAssignmentsToSubjectManagers({silent=false}={}){
+  if(!me)return {created:0,conflicts:[]};
+
+  const assignments=myTeacherAssignments(currentSemester);
+  if(!assignments.length)return {created:0,conflicts:[]};
+
+  let created=0;
+  const conflicts=[];
+
+  for(const a of assignments){
+    const classId=String(a.classId);
+    const subject=a.scopeName;
+    const id=subjectManagerId(a.semester,classId,subject);
+    const ref=doc(db,'subjectClassManagers',id);
+
+    try{
+      await runTransaction(db,async tx=>{
+        const snap=await tx.get(ref);
+
+        if(snap.exists()){
+          const d=snap.data();
+
+          // 已由自己管理：保持即可。
+          if(d.managerUid===me.uid && d.status!=='released'){
+            return;
+          }
+
+          // 自己曾解除，但舊 assignments 仍存在：重新啟用。
+          if(d.managerUid===me.uid && d.status==='released'){
+            tx.set(ref,{
+              semester:a.semester,
+              classId,
+              subject,
+              managerUid:me.uid,
+              managerName:me.displayName||me.username||me.email,
+              status:'active',
+              reactivatedFromAssignment:true,
+              releasedBy:null,
+              releasedAt:null,
+              updatedAt:serverTimestamp()
+            },{merge:true});
+
+            tx.set(doc(db,'subjectClassRosters',id),{
+              semester:a.semester,
+              classId,
+              subject,
+              managerUid:me.uid,
+              studentIds:[],
+              students:[],
+              updatedAt:serverTimestamp()
+            },{merge:true});
+            created++;
+            return;
+          }
+
+          // 已被另一位老師使用中，不可直接搶走。
+          if(d.status!=='released' && d.managerUid!==me.uid){
+            throw new Error(`ASSIGNMENT_CONFLICT::${classId}::${subject}::${d.managerName||'其他老師'}`);
+          }
+
+          // 對方已解除，可由目前既有任課 assignment 接手。
+          tx.set(ref,{
+            semester:a.semester,
+            classId,
+            subject,
+            managerUid:me.uid,
+            managerName:me.displayName||me.username||me.email,
+            status:'active',
+            createdBy:me.uid,
+            claimedFromLegacyAssignment:true,
+            createdAt:serverTimestamp(),
+            releasedBy:null,
+            releasedAt:null,
+            updatedAt:serverTimestamp()
+          },{merge:false});
+
+          tx.set(doc(db,'subjectClassRosters',id),{
+            semester:a.semester,
+            classId,
+            subject,
+            managerUid:me.uid,
+            studentIds:[],
+            students:[],
+            updatedAt:serverTimestamp()
+          },{merge:true});
+          created++;
+          return;
+        }
+
+        // 還沒有人建立：把原本後台任課設定轉成新版任課班管理關聯。
+        tx.set(ref,{
+          semester:a.semester,
+          classId,
+          subject,
+          managerUid:me.uid,
+          managerName:me.displayName||me.username||me.email,
+          status:'active',
+          createdBy:me.uid,
+          importedFromAssignment:true,
+          createdAt:serverTimestamp(),
+          updatedAt:serverTimestamp()
+        },{merge:false});
+
+        tx.set(doc(db,'subjectClassRosters',id),{
+          semester:a.semester,
+          classId,
+          subject,
+          managerUid:me.uid,
+          studentIds:[],
+          students:[],
+          updatedAt:serverTimestamp()
+        },{merge:true});
+        created++;
+      });
+    }catch(e){
+      const msg=String(e?.message||e);
+      if(msg.startsWith('ASSIGNMENT_CONFLICT::')){
+        const [,classId2,subject2,owner]=msg.split('::');
+        conflicts.push({classId:classId2,subject:subject2,owner});
+        continue;
+      }
+      console.error('sync assignment -> subject manager failed',a,e);
+    }
+  }
+
+  if(created){
+    await audit(
+      'sync_teacher_assignments',
+      'subjectClassManagers',
+      me.uid,
+      `同步既有任課權限到任課班管理，共 ${created} 組`,
+      currentSemester
+    );
+  }
+
+  if(!silent && conflicts.length){
+    alert(
+      '⚠️ 有任課權限與目前任課班管理者重疊：\n\n' +
+      conflicts.map(x=>`${x.classId}｜${x.subject}：目前由 ${x.owner} 管理`).join('\n') +
+      '\n\n系統沒有直接覆蓋其他老師，請由最高管理員確認後再處理。'
+    );
+  }
+
+  return {created,conflicts};
+}
+
 async function createSubjectClass(){
   if(!(isTeacherMode()||isGlobalAdmin()))return alert('請切換到「任課老師」或「最高管理員」模式。');
   const semester=$('#scSemester').value,classId=$('#scClass').value,subject=$('#scSubject').value;
@@ -1263,12 +1501,13 @@ function renderSubjectClasses(){
   $('#page-subjectClasses').innerHTML=`<div class="page-title">我的任課班 × 科目</div>
     <div class="card">
       <div class="section-title">➕ 自行建立任課班</div>
-      <div class="notice"><b>不用最高管理員事先開科目。</b> 老師自行從選單選「班級＋科目」。系統以「學期＋班級＋科目」鎖定唯一管理者，若已有人建立就會警示。</div>
+      <div class="notice"><b>不用最高管理員事先開科目。</b> 老師自行從選單選「班級＋科目」。系統以「學期＋班級＋科目」鎖定唯一管理者，若已有人建立就會警示。<br><b>原本已在「帳號連動／任課」設定的任課權限會自動同步到這裡。</b></div>
       <div class="toolbar">
         <label>學期<select id="scSemester">${semesterOptions(currentSemester)}</select></label>
         <label>班級<select id="scClass">${schoolClassOptions()}</select></label>
         <label>科目<select id="scSubject">${subjects.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('')}</select></label>
         <button id="createSubjectClassBtn" class="btn primary">＋ 新增任課班</button>
+        <button id="syncExistingAssignmentsBtn" class="btn good">🔄 同步既有任課設定</button>
       </div>
     </div>
     <div class="grid" style="margin-top:14px">
@@ -1279,6 +1518,16 @@ function renderSubjectClasses(){
       }).join('')||'<div class="card"><div class="sub">尚未建立任課班。</div></div>'}
     </div>`;
   $('#createSubjectClassBtn').onclick=createSubjectClass;
+  $('#syncExistingAssignmentsBtn')?.addEventListener('click',async()=>{
+    const result=await syncMyTeacherAssignmentsToSubjectManagers({silent:false});
+    await refreshAll();
+    renderSubjectClasses();
+    if(!result.conflicts.length){
+      alert(result.created
+        ? `✅ 已同步 ${result.created} 組既有任課設定。`
+        : '✅ 目前既有任課設定都已同步，不需要新增。');
+    }
+  });
   $$('.manage-subject-roster').forEach(b=>b.onclick=()=>openSubjectRosterEditor(b.dataset.id));
   $$('.set-subject-assistant').forEach(b=>b.onclick=()=>setSubjectAssistant(b.dataset.id));
   $$('.release-subject').forEach(b=>b.onclick=()=>releaseSubjectClass(b.dataset.id));
@@ -1390,7 +1639,7 @@ function renderRecords(){
   const countCollection=all.filter(x=>x._type==='collection').length,countAssessment=all.filter(x=>x._type==='assessment').length;
   const scopeNote=isGlobalAdmin()?'全校可見':isTeacherMode()?'只顯示自己管理的班級 × 科目':`只顯示 ${homeroomClassId()} 導師班`;
   $('#page-records').innerHTML=`<div class="card"><div class="section-title">作業繳交／成績資料</div>
-    <div class="notice success"><b>${esc(scopeNote)}</b><br>工作模式只限制後台操作範圍；不會刪除你帳號原本擁有的其他角色。</div>
+    <div class="notice success"><b>${esc(scopeNote)}</b><br>工作模式只限制後台操作範圍；不會刪除你帳號原本擁有的其他角色。${isTeacherMode()?'<br>已建立／已授權的任課班會出現在班級與科目選單，即使目前還沒有任何作業或成績紀錄。':''}</div>
     <div class="record-filter-row"><label>查看學期 <select id="recordSemester">${semesterOptions(sem)}</select></label><label>班級 <select id="recordClass"><option value="all">全部班級</option>${classIds.map(id=>`<option value="${esc(id)}">${esc(id)}</option>`).join('')}</select></label><label>科目 <select id="recordSubject">${recordSubjectOptions('all')}</select></label><label>類型 <select id="recordType"><option value="all">全部</option><option value="collection">作業繳交</option><option value="assessment">成績</option></select></label><input id="recordSearch" placeholder="搜尋班級、科目、項目"><button class="btn gray" id="refreshRecords">重新整理</button></div>
     <div class="export-panel"><div class="export-title">☑️ 資料勾選匯出</div><div class="export-summary">${esc(sem)}｜作業 ${countCollection} 項｜成績 ${countAssessment} 項｜<span id="selectedExportCount">已勾選 0 項</span></div><div class="export-toolbar"><button class="btn gray" id="selectVisibleRecords">☑ 全選目前顯示</button><button class="btn gray" id="clearSelectedRecords">□ 清除勾選</button><button class="btn good" id="previewSelectedRecords">👀 預覽</button><button class="btn primary" id="downloadSelectedRecords">📥 Excel</button><button class="btn gray" id="printSelectedRecords">🖨️ 列印</button></div></div>
     <div class="summary-launch"><button class="btn good" id="openCollectionSummary">📚 作業繳交彙整</button><button class="btn primary" id="openScoreSummary">📊 成績彙整</button></div>
@@ -1402,7 +1651,7 @@ function renderRecords(){
   };
   bindRecordButtons();$$('.export-record-check').forEach(chk=>chk.onchange=updateSelectedExportCount);
   $('#recordSemester').onchange=e=>{recordSemester=e.target.value;renderRecords()};
-  $('#recordClass').onchange=apply;$('#recordSubject').onchange=apply;$('#recordType').onchange=apply;$('#recordSearch').oninput=apply;
+  $('#recordClass').onchange=()=>{refreshRecordSubjectOptions();apply()};$('#recordSubject').onchange=apply;$('#recordType').onchange=apply;$('#recordSearch').oninput=apply;
   $('#refreshRecords').onclick=async()=>{await refreshAll();renderRecords()};
   $('#openCollectionSummary').onclick=()=>openSummary('collection');$('#openScoreSummary').onclick=()=>openSummary('assessment');
   $('#selectVisibleRecords').onclick=()=>selectVisibleRecords(true);$('#clearSelectedRecords').onclick=()=>{$$('.export-record-check').forEach(x=>x.checked=false);updateSelectedExportCount()};
