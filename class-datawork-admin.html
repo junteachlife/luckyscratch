@@ -96,7 +96,7 @@
   </aside>
   <div class="main-area">
     <header class="hero">
-      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・學期權限・歷史任課一次管理</div></div>
+      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260911-A</div></div>
       <div class="hero-user"><div class="user-name">👨‍🏫 <span id="who"></span></div><div id="semesterBadge" class="semester-badge"></div><div class="header-actions"><button id="switchModeBtn" class="btn purple small">🎭 切換身分</button><a href="class-work.html" style="text-decoration:none"><button class="btn gray small">📋 回報頁</button></a><button id="logoutBtn" class="btn danger small">🚪 登出</button></div></div>
     </header>
     <div class="content"><div id="modeHost"></div><div id="appMsg"></div><section id="page-dashboard"></section><section id="page-roles" class="hidden"></section><section id="page-records" class="hidden"></section><section id="page-subjectClasses" class="hidden"></section><section id="page-accounts" class="hidden"></section><section id="page-classes" class="hidden"></section><section id="page-directory" class="hidden"></section><section id="page-teacherDirectory" class="hidden"></section><section id="page-history" class="hidden"></section><section id="page-upgrade" class="hidden"></section><section id="page-audit" class="hidden"></section><section id="page-adminPermissions" class="hidden"></section></div>
@@ -934,7 +934,9 @@ function renderTeacherDirectory(){
   $('#page-teacherDirectory').innerHTML=`
     <div class="page-title">👨‍🏫 全校教師主檔</div>
     <div class="card">
-      <div class="notice success"><b>教師主檔只記錄老師本人與學校 Google Email。</b><br>科目不是老師的固定屬性；同一位老師可以同時教不同班、不同科。任課內容由「學期 × 班級 × 科目」另外管理。</div>
+      <div class="notice success"><b>教師主檔只記錄老師本人與學校 Google Email。</b><br>
+        科目不是老師的固定屬性；同一位老師可以同時教不同班、不同科。任課內容由「學期 × 班級 × 科目」另外管理。<br>
+        導師管理員可從這份共用教師主檔選老師，並且只能替自己的導師班設定任課權限。</div>
       <div class="two">
         <div>
           <div class="field"><label>老師姓名</label><input id="directoryTeacherName" placeholder="例如 王老師"></div>
@@ -1007,18 +1009,19 @@ function renderAccounts(){
           <div class="section-title">👨‍🏫 ${esc(ownClass)} 班任課教師</div>
           <div class="notice">
             可以直接從「全校教師主檔」選老師，再指定本科。<b>同一位老師可以教不同班、不同科，科目不固定在老師主檔。</b><br>
+            按下「指定本班任課老師並授權」後，會同時授予該老師這個班級 × 科目的<b>查看、作業登記、成績登記</b>權限。<br>
             若任課老師已經先建立這個班級 × 科目，導師端會直接共用，不會再建立第二份。
           </div>
           <div class="toolbar">
             <label>老師<select id="classTeacherSelect">${teachers.map(r=>`<option value="${esc(r.id)}">${esc(r.displayName||r.email)}｜${esc(r.email||r.id)}${r.linkedUid?'｜✅已連動':'｜⚠️尚未連動'}</option>`).join('')}</select></label>
             <label>科目<select id="classTeacherSubject">${subjects.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('')}</select></label>
-            <button id="assignClassTeacherBtn" class="btn primary" ${teachers.length?'':'disabled'}>➕ 指定本班任課老師</button>
+            <button id="assignClassTeacherBtn" class="btn primary" ${teachers.length?'':'disabled'}>➕ 指定本班任課老師並授權</button>
           </div>
           ${teachers.length?'':'<div class="meta">目前沒有教師主檔。可到左側「全校教師主檔」新增老師姓名與 Email。</div>'}
 
           <div class="section-title" style="margin-top:16px">📚 ${esc(currentSemester)} 已設定任課</div>
           <div class="table-wrap"><table>
-            <thead><tr><th>科目</th><th>任課老師</th><th>Google</th><th>本科小老師</th></tr></thead>
+            <thead><tr><th>科目</th><th>任課老師</th><th>Google</th><th>授權</th><th>本科小老師</th></tr></thead>
             <tbody>
               ${subjectManagers.filter(sm=>sm.status!=='released'&&sm.semester===currentSemester&&classIds.includes(String(sm.classId)))
                 .sort((a,b)=>String(a.subject).localeCompare(String(b.subject),'zh-Hant'))
@@ -1029,9 +1032,10 @@ function renderAccounts(){
                     <td><b>${esc(sm.subject)}</b></td>
                     <td>${esc(sm.managerName||reg?.displayName||sm.managerEmail||'')}</td>
                     <td>${reg?.linkedUid||sm.managerUid?'<span class="assistant-linked">✅ 已連動</span>':'<span class="assistant-unlinked">⚠️ 尚未連動</span>'}</td>
+                    <td><span class="assistant-linked">✅ 查看／作業／成績</span></td>
                     <td>${ai.student?`${esc(ai.label)}｜${ai.linked?'✅':'⚠️'}`:'尚未指派'}</td>
                   </tr>`;
-                }).join('')||'<tr><td colspan="4">本學期尚未設定任課教師。</td></tr>'}
+                }).join('')||'<tr><td colspan="5">本學期尚未設定任課教師。</td></tr>'}
             </tbody>
           </table></div>
         </div>
@@ -1371,25 +1375,31 @@ function canUseSubjectClassManagement(){
 function configureAdminUI(){
   if(!me)return;
   const global=isGlobalAdmin(),teacher=isTeacherMode(),home=isHomeroomMode();
+  const classAdmin=me.type==='admin'&&!hasGlobalPrivilege();
+  const homeroomPrivilege=home&&(hasGlobalPrivilege()||classAdmin);
   const show=(id,on)=>$(id)?.classList.toggle('hidden',!on);
 
-  // 只有最高管理員看得到身分切換。
+  // 只有最高管理員可以切換「導師／任課／最高管理員」。
+  // 一般導師管理員固定就是導師模式，但導師工作權限要與最高管理員切到導師模式一致。
   show('#switchModeBtn',hasGlobalPrivilege());
 
+  // 全校級功能只保留最高管理員。
   show('#adminPermissionsNav',global);
   show('#directoryNav',global);
-  show('#teacherDirectoryNav',me.type==='admin');
   show('#upgradeNav',global);
 
-  // 一般班級管理員也可以直接使用「我的任課班」，
-  // 不必切成任課老師模式。
+  // 教師主檔是全校共用資料；一般導師管理員可讀取並用來指派「自己班」任課老師。
+  show('#teacherDirectoryNav',me.type==='admin');
+
+  // 導師自己同時也是任課老師時，可以直接建立自己的任課班。
   show('#subjectClassesNav',canUseSubjectClassManagement());
 
   show('#historyNav',true);
-  show('.nav button[data-page="roles"]',home||global);
-  show('.nav button[data-page="accounts"]',home||global);
-  show('.nav button[data-page="classes"]',home||global);
+  show('.nav button[data-page="roles"]',homeroomPrivilege||global);
+  show('.nav button[data-page="accounts"]',homeroomPrivilege||global);
+  show('.nav button[data-page="classes"]',homeroomPrivilege||global);
   show('.nav button[data-page="records"]',true);
+
   $('#who').textContent=`${me.displayName||me.username||'管理員'}｜${activeModeLabel()}`;
   renderModeBanner();
 }
@@ -1614,9 +1624,37 @@ async function refreshAll(){
 
     subjectRosters=[];
     for(const sm of subjectManagers){
-      const r=await safeDoc(doc(db,'subjectClassRosters',sm.id));if(r&&!subjectRosters.some(x=>x.id===r.id))subjectRosters.push(r);
-      if(!classes.some(c=>c.id===sm.classId)){const c=await safeDoc(doc(db,'classes',String(sm.classId)));if(c)classes.push(c)}
+      const r=await safeDoc(doc(db,'subjectClassRosters',sm.id));
+      if(r&&!subjectRosters.some(x=>x.id===r.id))subjectRosters.push(r);
+      if(!classes.some(c=>c.id===sm.classId)){
+        const c=await safeDoc(doc(db,'classes',String(sm.classId)));
+        if(c)classes.push(c);
+      }
     }
+
+    // ★ 共用班級學生身分資料：
+    // 除了導師班，也要把「自己任課班」以及「自己導師班已建立的任課班」
+    // 所涉及班級的 student identityRegistry 全部載入。
+    // 如此 802 的 Email/linkedUid 只要任何老師建立過，所有有 802 權限的老師都讀同一份。
+    const relatedClassIds=[...new Set([
+      ...ids.map(String),
+      ...subjectManagers.map(sm=>String(sm.classId))
+    ])];
+
+    for(const classId of relatedClassIds){
+      const regs=await safeDocs(query(
+        collection(db,'identityRegistry'),
+        where('classId','==',String(classId))
+      ));
+      for(const r of regs){
+        if(!registries.some(x=>x.id===r.id))registries.push(r);
+      }
+      if(!classes.some(c=>String(c.id)===String(classId))){
+        const c=await safeDoc(doc(db,'classes',String(classId)));
+        if(c)classes.push(c);
+      }
+    }
+
     studentDirectory=[];studentEnrollments=[];upgradeBatches=[];classRosterHistory=[];
   }
   try{await claimPendingSubjectManagersForMe()}catch(e){console.warn(e)}
@@ -1865,6 +1903,10 @@ async function createSubjectClass(){
     if(msg.startsWith('DUPLICATE::')){
       return alert(`⚠️ ${classId}班｜${subject} 已由 ${msg.split('::')[1]} 建立。\n\n同一學期、同一班、同一科不可由不同老師重複建立。`);
     }
+    const raw=String(e?.code||e?.message||e);
+    if(raw.includes('permission-denied')||raw.includes('PERMISSION_DENIED')){
+      return alert('建立失敗：目前 Firestore Rules 尚未開放「導師管理員／任課老師自行建立任課班」的寫入權限。\n\n前端功能已具備，下一步需要同步更新 Firestore Rules。');
+    }
     return alert(`建立失敗：${e.message||e}`);
   }
 
@@ -2039,8 +2081,13 @@ function renderSubjectClasses(){
     : mySubjectManagers();
   $('#page-subjectClasses').innerHTML=`<div class="page-title">我的任課班 × 科目</div>
     <div class="card">
-      <div class="section-title">➕ 自行建立任課班</div>
-      <div class="notice"><b>不用最高管理員事先開科目。</b> 老師自行從選單選「班級＋科目」。系統以「學期＋班級＋科目」鎖定唯一管理者，若已有人建立就會警示。<br><b>只要後台已經建置該班正式名單，新增任課班後會直接共用姓名、座號、Email 與既有 Google 連動，不需要重新輸入名單。</b></div>
+      <div class="section-title">➕ 新增我自己的任課班</div>
+      <div class="notice">
+        <b>這裡是替「目前登入的老師本人」建立任課班。</b> 選擇學期、班級、科目即可。<br>
+        若導師要替「其他老師」設定自己班的任課權限，請到「帳號連動／任課」。<br>
+        系統以「學期＋班級＋科目」管理唯一負責老師；同一位老師已建立的設定會直接共用，不會重複建立。<br>
+        <b>只要該班任何老師曾建置學生 Email／Google 連動，新增相同班級任課班後會直接讀取同一份共用資料。</b>
+      </div>
       <div class="toolbar">
         <label>學期<select id="scSemester">${semesterOptions(currentSemester)}</select></label>
         <label>班級<select id="scClass">${schoolClassOptions()}</select></label>
@@ -2120,7 +2167,9 @@ async function openSubjectRosterEditor(id){
       <button class="btn gray close-modal">關閉</button>
     </div>
     <div class="notice success">
-      此任課班直接使用 <b>${esc(sm.classId)} 班正式共用名單</b>。姓名、座號、Email 與 Google 連動狀態不需要每一科重新設定。
+      此任課班直接使用 <b>${esc(sm.classId)} 班正式共用名單</b>。<br>
+      學生姓名、座號、Email 與 Google 連動狀態都是班級共用資料：
+      <b>任何一位有權限的老師只要建立／更新一次，其他老師建立相同班級的任課班就會直接讀到，不需要重新設定。</b>
     </div>
     <div style="overflow:auto;max-height:65vh">
       <table>
