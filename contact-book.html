@@ -606,10 +606,10 @@
                                 </div>
                             </div>
 
-                            <!-- 3. 中文佳句抄寫 -->
+                            <!-- 3. 英文佳句抄寫 -->
                             <div class="col-md-4">
                                 <div class="check-group">
-                                    <label class="form-label fw-bold mb-2">3. 中文佳句抄寫</label>
+                                    <label class="form-label fw-bold mb-2">3. 英文佳句抄寫</label>
                                     <div class="d-flex gap-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" name="contactBookEnglishCopy" id="engYes" value="完成" checked>
@@ -784,9 +784,10 @@
             </div>
         </div>
 
-        <!-- 每週航行統計報告區塊 (預設隱藏) -->
-        <div class="text-end mb-3">
+        <!-- 每週／每月航行統計報告按鈕 -->
+        <div class="text-end mb-3 d-flex gap-2 justify-content-end flex-wrap">
             <button class="btn btn-gold btn-sm fw-bold shadow-sm" id="toggleWeeklyBtn" type="button">📊 展開每週航行統計報告</button>
+            <button class="btn btn-outline-warning btn-sm fw-bold shadow-sm" id="toggleMonthlyBtn" type="button">🗓️ 展開每月航行統計報告</button>
         </div>
         
         <div class="card p-3 p-md-4" id="weeklyReportCard" style="display: none;">
@@ -820,6 +821,42 @@
                         </tr>
                     </thead>
                     <tbody id="weeklyReportTableBody">
+                        <tr><td colspan="13" class="text-center text-muted text-light">統計載入中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 每月航行統計報告區塊 (預設隱藏) -->
+        <div class="card p-3 p-md-4" id="monthlyReportCard" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0">🗓️ 每月航行統計報告（全班 1~28 號總表）</h4>
+                <div>
+                    <select class="form-select form-select-sm d-inline-block w-auto" id="monthSelect" style="font-size: 0.9rem;">
+                        <!-- 動態產生月份選項 -->
+                    </select>
+                </div>
+            </div>
+            <div class="table-responsive sticky-audit-scroll">
+                <table class="table table-hover align-middle sticky-audit-table" id="monthlyStatsTable">
+                    <thead class="table-light">
+                        <tr style="font-size: 0.95rem;">
+                            <th>座號</th>
+                            <th class="text-start">夥伴姓名</th>
+                            <th>🌟 完美</th>
+                            <th>完全未交</th>
+                            <th>遲交</th>
+                            <th>缺席</th>
+                            <th>1.日期未填</th>
+                            <th>2.作業未交</th>
+                            <th>3.英文未完</th>
+                            <th>4.摘要未完</th>
+                            <th>5.時間異常</th>
+                            <th>6.札記未寫</th>
+                            <th>7.家長未簽</th>
+                        </tr>
+                    </thead>
+                    <tbody id="monthlyReportTableBody">
                         <tr><td colspan="13" class="text-center text-muted text-light">統計載入中...</td></tr>
                     </tbody>
                 </table>
@@ -926,6 +963,19 @@
             }
         });
 
+        // 每月統計報告展開/隱藏切換按鈕
+        const toggleMonthlyBtn = document.getElementById('toggleMonthlyBtn');
+        const monthlyReportCard = document.getElementById('monthlyReportCard');
+        toggleMonthlyBtn.addEventListener('click', function() {
+            if (monthlyReportCard.style.display === 'none') {
+                monthlyReportCard.style.display = 'block';
+                toggleMonthlyBtn.textContent = '🗓️ 收起每月航行統計報告';
+            } else {
+                monthlyReportCard.style.display = 'none';
+                toggleMonthlyBtn.textContent = '🗓️ 展開每月航行統計報告';
+            }
+        });
+
         // 「今日已審查紀錄」展開/隱藏切換按鈕
         const toggleReviewedBtn = document.getElementById('toggleReviewedBtn');
         const reviewedRecordsCard = document.getElementById('reviewedRecordsCard');
@@ -944,7 +994,7 @@
             1: "王禹涵", 2: "江育緹", 3: "呂思儀", 4: "李詠祺", 
             5: "林子歆", 6: "林禹萱", 7: "張馨勻", 8: "陳昕樂", 
             9: "陳梓安", 10: "陳筠蓁", 11: "陳苙絜", 12: "楊錚諭", 
-            13: "趙安褕", 14: "魏語潔", 15: "江靚恩", 16: "王洋振", 
+            13: "趙安瑜", 14: "魏語潔", 15: "江靚恩", 16: "王洋振", 
             17: "吳昊丞", 18: "李祐誠", 19: "林宸陞", 20: "林維辰", 
             21: "林鈺棟", 22: "洪楷祥", 23: "陳兆楷", 24: "陳沂璟", 
             25: "黑肚・尤明", 26: "賴震宇", 27: "戴震龍", 28: "謝宇哲"
@@ -1439,6 +1489,7 @@ ${currentDate} 登記為「請假／缺席」嗎？`);
                 renderReviewedRecords(records);
                 renderMissingRecords(records);
                 setupWeeklyReport(records);
+                setupMonthlyReport(records);
             } catch (error) {
                 console.error("讀取資料失敗", error);
             }
@@ -1696,8 +1747,49 @@ ${currentDate} 登記為「請假／缺席」嗎？`);
             renderWeeklyTable();
         }
 
+        // 月份統計初始化
+        function getMonthKey(dateStr) {
+            if (!dateStr || dateStr.length < 7) return '';
+            return dateStr.slice(0, 7);
+        }
+
+        function formatMonthLabel(monthKey) {
+            if (!monthKey || monthKey.length < 7) return monthKey;
+            const [year, month] = monthKey.split('-');
+            return `${year} 年 ${Number(month)} 月`;
+        }
+
+        function setupMonthlyReport(records) {
+            const monthSelect = document.getElementById('monthSelect');
+
+            let monthsSet = new Set();
+            records.forEach(r => {
+                const key = getMonthKey(r.date);
+                if (key) monthsSet.add(key);
+            });
+
+            const now = new Date();
+            const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            monthsSet.add(currentMonth);
+
+            const monthsArr = Array.from(monthsSet).sort((a, b) => b.localeCompare(a));
+            const currentSelected = monthSelect.value || currentMonth;
+
+            monthSelect.innerHTML = '';
+            monthsArr.forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = `🗓️ ${formatMonthLabel(key)} 月統計`;
+                if (key === currentSelected) opt.selected = true;
+                monthSelect.appendChild(opt);
+            });
+
+            renderMonthlyTable();
+        }
+
 
         document.getElementById('weekSelect').addEventListener('change', renderWeeklyTable);
+        document.getElementById('monthSelect').addEventListener('change', renderMonthlyTable);
 
         // 每週航行統計報告列印
         document.getElementById('printWeeklyBtn').addEventListener('click', function() {
@@ -1812,6 +1904,98 @@ ${currentDate} 登記為「請假／缺席」嗎？`);
                     <td>${cellBadge(stats.timeNo)}</td>
                     <td>${cellBadge(stats.lifeNo)}</td>
                     <td>${cellBadge(stats.signNo)}</td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+
+        // 渲染每月統計表格（統計規則與每週統計完全相同）
+        function renderMonthlyTable() {
+            const selectedMonth = document.getElementById('monthSelect').value;
+            const tbody = document.getElementById('monthlyReportTableBody');
+            tbody.innerHTML = '';
+
+            let monthRecords = globalAllRecords.filter(r =>
+                r.date && getMonthKey(r.date) === selectedMonth
+            );
+
+            for (let i = 1; i <= 28; i++) {
+                let sRecords = monthRecords.filter(r => r.studentNo === i);
+
+                let stats = {
+                    perfect: 0,
+                    unsubmitted: 0,
+                    late: 0,
+                    absent: 0,
+                    dateNo: 0,
+                    examNo: 0,
+                    engNo: 0,
+                    sumNo: 0,
+                    timeNo: 0,
+                    lifeNo: 0,
+                    signNo: 0
+                };
+
+                sRecords.forEach(r => {
+                    let isAbsent = (r.submissionStatus === "缺席");
+                    let isSubmitted = (r.submissionStatus !== "未繳交" && !isAbsent);
+                    let isLate = isSubmitted && r.wasLate === true;
+                    let isDateOk = (!r.dateCheck || r.dateCheck === "完成");
+                    let isExamOk = (!r.examHw || r.examHw === "完成" || r.examHw === "完成/正常" || r.examHw === "已完成");
+                    let isEngOk = (!r.englishCopy || r.englishCopy === "完成" || r.englishCopy === "已完成");
+                    let isSumOk = (!r.articleSummary || r.articleSummary === "完成" || r.articleSummary === "已完成");
+                    let isTimeOk = (!r.timeRecord || r.timeRecord === "完成" || r.timeRecord === "正常");
+                    let isLifeOk = (!r.lifeNote || r.lifeNote === "完成" || r.lifeNote === "已寫");
+                    let isSignOk = (!r.parentSign || r.parentSign === "已簽" || r.parentSign === "已簽名");
+
+                    if (isSubmitted && !isLate && isDateOk && isExamOk && isEngOk && isSumOk && isTimeOk && isLifeOk && isSignOk) {
+                        stats.perfect++;
+                    }
+
+                    if (r.submissionStatus === "缺席") {
+                        stats.absent++;
+                    } else if (r.submissionStatus === "未繳交") {
+                        stats.unsubmitted++;
+                    } else if (r.wasLate === true) {
+                        stats.late++;
+                    }
+
+                    if (isAbsent) return;
+
+                    if (r.dateCheck && r.dateCheck.includes("未")) stats.dateNo++;
+                    if (r.examHw && (r.examHw.includes("未") || r.examHw.includes("異常"))) stats.examNo++;
+                    if (r.englishCopy && r.englishCopy.includes("未")) stats.engNo++;
+                    if (r.articleSummary && r.articleSummary.includes("未")) stats.sumNo++;
+                    if (r.timeRecord && (r.timeRecord.includes("未") || r.timeRecord.includes("異常"))) stats.timeNo++;
+                    if (r.lifeNote && r.lifeNote.includes("未")) stats.lifeNo++;
+                    if (r.parentSign && (r.parentSign === "未簽" || r.parentSign === "未簽名")) stats.signNo++;
+                });
+
+                function monthlyCellBadge(count, isPerfect = false, isLateBadge = false) {
+                    if (count > 0) {
+                        let badgeColor = isPerfect
+                            ? "bg-warning text-dark"
+                            : (isLateBadge ? "bg-warning text-dark" : "bg-danger");
+                        return `<span class="badge ${badgeColor}">${count} 次</span>`;
+                    }
+                    return `<span class="text-muted">0</span>`;
+                }
+
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${i}</strong></td>
+                    <td class="text-start"><strong>${contactBookStudents[i]}</strong></td>
+                    <td>${monthlyCellBadge(stats.perfect, true)}</td>
+                    <td>${monthlyCellBadge(stats.unsubmitted)}</td>
+                    <td>${monthlyCellBadge(stats.late, false, true)}</td>
+                    <td>${monthlyCellBadge(stats.absent, false, true)}</td>
+                    <td>${monthlyCellBadge(stats.dateNo)}</td>
+                    <td>${monthlyCellBadge(stats.examNo)}</td>
+                    <td>${monthlyCellBadge(stats.engNo)}</td>
+                    <td>${monthlyCellBadge(stats.sumNo)}</td>
+                    <td>${monthlyCellBadge(stats.timeNo)}</td>
+                    <td>${monthlyCellBadge(stats.lifeNo)}</td>
+                    <td>${monthlyCellBadge(stats.signNo)}</td>
                 `;
                 tbody.appendChild(tr);
             }
