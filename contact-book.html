@@ -606,10 +606,10 @@
                                 </div>
                             </div>
 
-                            <!-- 3. 英文佳句抄寫 -->
+                            <!-- 3. 中文佳句抄寫 -->
                             <div class="col-md-4">
                                 <div class="check-group">
-                                    <label class="form-label fw-bold mb-2">3. 英文佳句抄寫</label>
+                                    <label class="form-label fw-bold mb-2">3. 中文佳句抄寫</label>
                                     <div class="d-flex gap-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" name="contactBookEnglishCopy" id="engYes" value="完成" checked>
@@ -715,7 +715,7 @@
                             <th>聯絡簿狀態</th>
                             <th>1.日期</th>
                             <th>2.作業/考試</th>
-                            <th>3.英文抄寫</th>
+                            <th>3.中文抄寫</th>
                             <th>4.文章摘要</th>
                             <th>5.時間狀況</th>
                             <th>6.生活札記</th>
@@ -813,7 +813,7 @@
                             <th>缺席</th>
                             <th>1.日期未填</th>
                             <th>2.作業未交</th>
-                            <th>3.英文未完</th>
+                            <th>3.中文未完</th>
                             <th>4.摘要未完</th>
                             <th>5.時間異常</th>
                             <th>6.札記未寫</th>
@@ -849,7 +849,7 @@
                             <th>缺席</th>
                             <th>1.日期未填</th>
                             <th>2.作業未交</th>
-                            <th>3.英文未完</th>
+                            <th>3.中文未完</th>
                             <th>4.摘要未完</th>
                             <th>5.時間異常</th>
                             <th>6.札記未寫</th>
@@ -994,7 +994,7 @@
             1: "王禹涵", 2: "江育緹", 3: "呂思儀", 4: "李詠祺", 
             5: "林子歆", 6: "林禹萱", 7: "張馨勻", 8: "陳昕樂", 
             9: "陳梓安", 10: "陳筠蓁", 11: "陳苙絜", 12: "楊錚諭", 
-            13: "趙安瑜", 14: "魏語潔", 15: "江靚恩", 16: "王洋振", 
+            13: "趙安褕", 14: "魏語潔", 15: "江靚恩", 16: "王洋振", 
             17: "吳昊丞", 18: "李祐誠", 19: "林宸陞", 20: "林維辰", 
             21: "林鈺棟", 22: "洪楷祥", 23: "陳兆楷", 24: "陳沂璟", 
             25: "黑肚・尤明", 26: "賴震宇", 27: "戴震龍", 28: "謝宇哲"
@@ -1446,7 +1446,7 @@ ${currentDate} 登記為「請假／缺席」嗎？`);
                 }
                 if (item.dateCheck && item.dateCheck.includes('未')) issues.push('日期未完成');
                 if (item.examHw && (item.examHw.includes('未') || item.examHw.includes('異常'))) issues.push('作業/考試未完成');
-                if (item.englishCopy && item.englishCopy.includes('未')) issues.push('英文抄寫未完成');
+                if (item.englishCopy && item.englishCopy.includes('未')) issues.push('中文抄寫未完成');
                 if (item.articleSummary && item.articleSummary.includes('未')) issues.push('文章摘要未完成');
                 if (item.timeRecord && (item.timeRecord.includes('未') || item.timeRecord.includes('異常'))) issues.push('到校與返家時間未完成');
                 if (item.lifeNote && item.lifeNote.includes('未')) issues.push('生活札記未完成');
