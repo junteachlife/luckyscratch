@@ -120,7 +120,7 @@
   </aside>
   <div class="main-area">
     <header class="hero">
-      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260912-I</div></div>
+      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260912-J</div></div>
       <div class="hero-user"><div class="user-name">👨‍🏫 <span id="who"></span></div><div id="semesterBadge" class="semester-badge"></div><div class="header-actions"><button id="switchModeBtn" class="btn purple small">🎭 切換身分</button><a href="class-work.html" style="text-decoration:none"><button class="btn gray small">📋 回報頁</button></a><button id="logoutBtn" class="btn danger small">🚪 登出</button></div></div>
     </header>
     <div class="content"><div id="modeHost"></div><div id="appMsg"></div><section id="page-dashboard"></section><section id="page-roles" class="hidden"></section><section id="page-records" class="hidden"></section><section id="page-subjectClasses" class="hidden"></section><section id="page-accounts" class="hidden"></section><section id="page-classes" class="hidden"></section><section id="page-directory" class="hidden"></section><section id="page-teacherDirectory" class="hidden"></section><section id="page-homeroomOverview" class="hidden"></section><section id="page-history" class="hidden"></section><section id="page-upgrade" class="hidden"></section><section id="page-audit" class="hidden"></section><section id="page-adminPermissions" class="hidden"></section></div>
@@ -139,7 +139,7 @@ const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$
 const seatFirebaseConfig={apiKey:"AIzaSyB2qXsbab4fh15C9YbCDWK208eJLLHgsKk",authDomain:"seatweb-ccd44.firebaseapp.com",databaseURL:"https://seatweb-ccd44-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"seatweb-ccd44",storageBucket:"seatweb-ccd44.firebasestorage.app",messagingSenderId:"607947077023",appId:"1:607947077023:web:1a0ec5832414cf376fb9aa"};
 const seatApp=initializeApp(seatFirebaseConfig,'seatSyncReader'),seatDb=getDatabase(seatApp),seatAuth=getAuth(seatApp);
 let me=null,users=[],registries=[],classes=[],collections=[],assessments=[],currentSemester='115-1',semesterHistory=['115-1'],recordSemester='115-1';
-// v20260912-I：全校教師主檔彙整僅最高管理員可見；導師仍可在「帳號連動／任課」快速新增教師到同一份全校共用主檔，再指定自己班級的任課與授權。
+// v20260912-J：延續教師主檔權限設計；最高管理員「帳號連動／任課」的教師任課清單改為同科目合併班級＋摘要/查看全部模式，避免跨多班教師把頁面拉得過長。
 let workMode='homeroom',subjectManagers=[],subjectRosters=[],studentDirectory=[],studentEnrollments=[],upgradeBatches=[],classRosterHistory=[];
 let schoolClassConfig={
   7:['701','702','703','704','705','706'],
@@ -1062,13 +1062,36 @@ function renderAccounts(){
 
     <div class="card" style="margin-top:14px">
       <div class="section-title">👨‍🏫 任課教師設定與連動狀態</div>
-      <div class="table-wrap"><table><thead><tr><th>姓名</th><th>Email</th><th>連動</th><th>${esc(currentSemester)} 任課</th><th>操作</th></tr></thead>
+      <div class="notice">任課顯示方式已與「全校教師主檔」一致：<b>相同科目自動合併班級</b>，主表只顯示摘要；任課很多的老師可按「查看全部任課」展開完整資料，原本的「任課設定」功能不變。</div>
+      <div class="table-wrap"><table><thead><tr><th>姓名</th><th>Email</th><th>連動</th><th>${esc(currentSemester)} 任課摘要</th><th>操作</th></tr></thead>
       <tbody>${teachers.map(reg=>{
-        const smRows=subjectManagers.filter(sm=>sm.status!=='released'&&sm.semester===currentSemester&&teacherIdentityMatchesManager(reg,sm))
-          .map(sm=>`${sm.classId}班｜${sm.subject}`);
-        const aRows=(reg.assignments||[]).filter(a=>a.semester===currentSemester&&a.kind==='teacher').map(a=>`${a.classId}班｜${a.scopeName}`);
-        const rows=[...new Set([...aRows,...smRows])];
-        return `<tr><td><b>${esc(reg.displayName||'')}</b></td><td>${esc(reg.email||reg.id)}</td><td>${reg.linkedUid?'<span class="registry-status linked">🟢 已連動</span>':'<span class="registry-status unlinked">⚪ 尚未連動</span>'}</td><td>${rows.map(x=>`<div class="assign">${esc(x)}</div>`).join('')||'尚未指派'}</td><td><button class="btn primary small edit-teacher-reg" data-id="${esc(reg.id)}">⚙ 任課設定</button></td></tr>`;
+        const list=[];
+        for(const a of (reg.assignments||[]).filter(a=>a.semester===currentSemester&&a.kind==='teacher')){
+          const classId=String(a.classId||''),subject=String(a.scopeName||'');
+          const k=`${classId}|${subject}`;
+          if(classId&&subject&&!list.some(x=>x.k===k))list.push({k,classId,subject});
+        }
+        for(const sm of subjectManagers.filter(sm=>sm.status!=='released'&&sm.semester===currentSemester&&teacherIdentityMatchesManager(reg,sm))){
+          const classId=String(sm.classId||''),subject=String(sm.subject||'');
+          const k=`${classId}|${subject}`;
+          if(classId&&subject&&!list.some(x=>x.k===k))list.push({k,classId,subject});
+        }
+        list.sort((a,b)=>String(a.subject).localeCompare(String(b.subject),'zh-Hant')||String(a.classId).localeCompare(String(b.classId),undefined,{numeric:true}));
+        const grouped={};
+        for(const x of list)(grouped[x.subject]??=[]).push(x.classId);
+        const groups=Object.entries(grouped).map(([subject,classIds])=>({subject,classIds:[...new Set(classIds)].sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true}))}));
+        const preview=groups.slice(0,2).map(g=>{
+          const shown=g.classIds.slice(0,4),more=g.classIds.length-shown.length;
+          return `<div class="teacher-summary-line"><span class="teacher-summary-subject">${esc(g.subject)}：</span><span class="teacher-class-chips">${shown.map(c=>`<span class="teacher-class-chip">${esc(c)}</span>`).join('')}${more>0?`<span class="teacher-class-chip">＋${more}</span>`:''}</span></div>`;
+        }).join('');
+        const hiddenSubjects=Math.max(0,groups.length-2);
+        return `<tr>
+          <td><b>${esc(reg.displayName||'')}</b></td>
+          <td>${esc(reg.email||reg.id)}</td>
+          <td>${reg.linkedUid?'<span class="registry-status linked">🟢 已連動</span>':'<span class="registry-status unlinked">⚪ 尚未連動</span>'}</td>
+          <td><div class="teacher-summary">${preview||'<span class="meta">尚未指派</span>'}${hiddenSubjects?`<div class="teacher-more-note">另有 ${hiddenSubjects} 個科目，請點「查看全部任課」。</div>`:''}<div class="meta" style="margin-top:4px">共 ${list.length} 筆任課</div></div></td>
+          <td><div class="toolbar" style="gap:6px;flex-wrap:wrap"><button class="btn gray small accounts-view-assignments" data-id="${esc(reg.id)}" ${list.length?'':'disabled'}>👁 查看全部任課</button><button class="btn primary small edit-teacher-reg" data-id="${esc(reg.id)}">⚙ 任課設定</button></div></td>
+        </tr>`;
       }).join('')||'<tr><td colspan="5">尚未建立任課教師主檔。</td></tr>'}</tbody></table></div>
     </div>`;
 
@@ -1078,6 +1101,24 @@ function renderAccounts(){
   $('#addTeacherRegistry').onclick=addTeacherRegistry;
   $('#applyTeacherPaste').onclick=applyTeacherRegistryPaste;
   $('#quickAddTeacherAssignment')?.addEventListener('click',addQuickTeacherAssignment);
+  $$('.accounts-view-assignments').forEach(b=>b.onclick=()=>{
+    const reg=teachers.find(r=>r.id===b.dataset.id);if(!reg)return;
+    const list=[];
+    for(const a of (reg.assignments||[]).filter(a=>a.semester===currentSemester&&a.kind==='teacher')){
+      const classId=String(a.classId||''),subject=String(a.scopeName||''),k=`${classId}|${subject}`;
+      if(classId&&subject&&!list.some(x=>x.k===k))list.push({k,classId,subject});
+    }
+    for(const sm of subjectManagers.filter(sm=>sm.status!=='released'&&sm.semester===currentSemester&&teacherIdentityMatchesManager(reg,sm))){
+      const classId=String(sm.classId||''),subject=String(sm.subject||''),k=`${classId}|${subject}`;
+      if(classId&&subject&&!list.some(x=>x.k===k))list.push({k,classId,subject});
+    }
+    const grouped={};for(const x of list)(grouped[x.subject]??=[]).push(x.classId);
+    const groups=Object.entries(grouped).sort((a,b)=>a[0].localeCompare(b[0],'zh-Hant'));
+    showModal(`<div class="section-title">👨‍🏫 ${esc(reg.displayName||reg.email)}｜${esc(currentSemester)} 全部任課</div>
+      <div class="notice"><b>${esc(reg.email||reg.id)}</b><br>共 ${list.length} 筆「班級 × 科目」任課設定；相同科目已自動合併班級顯示。</div>
+      <div>${groups.map(([subject,classIds])=>`<div class="teacher-detail-group"><div class="teacher-detail-title">${esc(subject)}｜${[...new Set(classIds)].length} 班</div><div class="teacher-class-chips">${[...new Set(classIds)].sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true})).map(c=>`<span class="teacher-class-chip">${esc(c)} 班</span>`).join('')}</div></div>`).join('')||'<div class="meta">尚未設定任課。</div>'}</div>
+      <div class="toolbar"><button class="btn gray close-modal">關閉</button></div>`);
+  });
   $$('.edit-teacher-reg').forEach(b=>b.onclick=()=>editTeacherRegistry(b.dataset.id));
   renderStudentRegistryList();
 }
