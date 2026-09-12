@@ -120,7 +120,7 @@
   </aside>
   <div class="main-area">
     <header class="hero">
-      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260912-K</div></div>
+      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260913-L</div></div>
       <div class="hero-user"><div class="user-name">👨‍🏫 <span id="who"></span></div><div id="semesterBadge" class="semester-badge"></div><div class="header-actions"><button id="switchModeBtn" class="btn purple small">🎭 切換身分</button><a href="class-work.html" style="text-decoration:none"><button class="btn gray small">📋 回報頁</button></a><button id="logoutBtn" class="btn danger small">🚪 登出</button></div></div>
     </header>
     <div class="content"><div id="modeHost"></div><div id="appMsg"></div><section id="page-dashboard"></section><section id="page-roles" class="hidden"></section><section id="page-records" class="hidden"></section><section id="page-subjectClasses" class="hidden"></section><section id="page-accounts" class="hidden"></section><section id="page-classes" class="hidden"></section><section id="page-directory" class="hidden"></section><section id="page-teacherDirectory" class="hidden"></section><section id="page-homeroomOverview" class="hidden"></section><section id="page-history" class="hidden"></section><section id="page-upgrade" class="hidden"></section><section id="page-audit" class="hidden"></section><section id="page-adminPermissions" class="hidden"></section></div>
@@ -139,7 +139,7 @@ const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$
 const seatFirebaseConfig={apiKey:"AIzaSyB2qXsbab4fh15C9YbCDWK208eJLLHgsKk",authDomain:"seatweb-ccd44.firebaseapp.com",databaseURL:"https://seatweb-ccd44-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"seatweb-ccd44",storageBucket:"seatweb-ccd44.firebasestorage.app",messagingSenderId:"607947077023",appId:"1:607947077023:web:1a0ec5832414cf376fb9aa"};
 const seatApp=initializeApp(seatFirebaseConfig,'seatSyncReader'),seatDb=getDatabase(seatApp),seatAuth=getAuth(seatApp);
 let me=null,users=[],registries=[],classes=[],collections=[],assessments=[],currentSemester='115-1',semesterHistory=['115-1'],recordSemester='115-1';
-// v20260912-K：延續教師主檔權限設計；最高管理員「帳號連動／任課」的教師任課清單改為同科目合併班級＋摘要/查看全部模式，避免跨多班教師把頁面拉得過長。
+// v20260913-L：延續教師主檔權限設計；最高管理員「帳號連動／任課」的教師任課清單改為同科目合併班級＋摘要/查看全部模式，避免跨多班教師把頁面拉得過長。
 let workMode='homeroom',subjectManagers=[],subjectRosters=[],studentDirectory=[],studentEnrollments=[],upgradeBatches=[],classRosterHistory=[];
 let schoolClassConfig={
   7:['701','702','703','704','705','706'],
@@ -3302,17 +3302,66 @@ function renderAdminPermissions(){
       const groups=Object.entries(grouped).map(([subject,classIds])=>({subject,classIds:[...new Set(classIds)].sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true}))}));
       const preview=groups.slice(0,2).map(g=>{const shown=g.classIds.slice(0,4),more=g.classIds.length-shown.length;return `<div class="teacher-summary-line"><span class="teacher-summary-subject">${esc(g.subject)}：</span><span class="teacher-class-chips">${shown.map(c=>`<span class="teacher-class-chip">${esc(c)}</span>`).join('')}${more>0?`<span class="teacher-class-chip">＋${more}</span>`:''}</span></div>`}).join('');
       const hiddenSubjects=Math.max(0,groups.length-2);
-      return `<tr><td><b>${esc(u.displayName||'')}</b></td><td>${esc(u.email||'')}</td><td><select class="class-admin-class" data-uid="${esc(u.uid)}">${schoolClassOptions((u.adminClassIds||[])[0]||u.homeroomClassId||'')}</select></td><td><div class="teacher-summary">${preview||'<span class="meta">目前未設定任課</span>'}${hiddenSubjects?`<div class="teacher-more-note">另有 ${hiddenSubjects} 個科目，請點「查看全部任課」。</div>`:''}</div></td><td><span class="teacher-count-badge">${list.length} 筆</span></td><td><button class="btn primary small admin-view-assignments" data-uid="${esc(u.uid)}" ${list.length?'':'disabled'}>👁 查看全部任課</button> <button class="btn good small save-class-admin" data-uid="${esc(u.uid)}">💾 儲存導師班</button> <button class="btn danger small revoke-class-admin" data-uid="${esc(u.uid)}">取消管理權限</button></td></tr>`;
+      return `<tr><td><b>${esc(u.displayName||'')}</b></td><td>${esc(u.email||'')}</td><td><select class="class-admin-class" data-uid="${esc(u.uid)}">${schoolClassOptions((u.adminClassIds||[])[0]||u.homeroomClassId||'')}</select></td><td><div class="teacher-summary">${preview||'<span class="meta">目前未設定任課</span>'}${hiddenSubjects?`<div class="teacher-more-note">另有 ${hiddenSubjects} 個科目，請點「查看全部任課」。</div>`:''}</div></td><td><span class="teacher-count-badge">${list.length} 筆</span></td><td><button type="button" class="btn primary small admin-view-assignments" data-uid="${esc(u.uid)}" ${list.length?'':'disabled'}>👁 查看全部任課</button> <button class="btn good small save-class-admin" data-uid="${esc(u.uid)}">💾 儲存導師班</button> <button class="btn danger small revoke-class-admin" data-uid="${esc(u.uid)}">取消管理權限</button></td></tr>`;
     }).join('')||'<tr><td colspan="6">尚未授予其他班級管理員。</td></tr>'}</tbody></table></div></div>`;
   $('#saveSchoolClassConfigBtn')?.addEventListener('click',saveSchoolClassConfig);$('#saveMyHomeroomBtn').onclick=saveMyHomeroom;$('#grantClassAdminBtn')?.addEventListener('click',grantClassAdmin);
-  $$('.save-class-admin').forEach(b=>b.onclick=()=>changeClassAdminClass(b.dataset.uid));$$('.revoke-class-admin').forEach(b=>b.onclick=()=>revokeClassAdmin(b.dataset.uid));
-  $$('.admin-view-assignments').forEach(b=>b.onclick=()=>{
-    const u=admins.find(x=>x.uid===b.dataset.uid);if(!u)return;
-    const list=(u.assignments||[]).filter(a=>a.kind==='teacher'&&(!a.semester||a.semester===currentSemester)).map(a=>({semester:a.semester||currentSemester,classId:String(a.classId||''),subject:a.scopeName||a.subject||'未命名科目'})).filter(a=>a.classId);
-    const grouped={};for(const a of list)(grouped[a.subject]??=[]).push(a.classId);
-    const groups=Object.entries(grouped).sort((a,b)=>a[0].localeCompare(b[0],'zh-Hant'));
-    showModal(`<div class="section-title">👨‍🏫 ${esc(u.displayName||u.email||'導師')}｜${esc(currentSemester)} 全部任課</div><div class="notice"><b>${esc(u.email||'')}</b><br>共 ${list.length} 筆「班級 × 科目」任課設定；相同科目已自動合併班級顯示。</div><div>${groups.map(([subject,classIds])=>{const ids=[...new Set(classIds)].sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true}));return `<div class="teacher-detail-group"><div class="teacher-detail-title">${esc(subject)}｜${ids.length} 班</div><div class="teacher-class-chips">${ids.map(c=>`<span class="teacher-class-chip">${esc(c)} 班</span>`).join('')}</div></div>`}).join('')||'<div class="meta">目前未設定任課。</div>'}</div><div class="toolbar"><button class="btn gray close-modal">關閉</button></div>`);
-  });
+  $$('.save-class-admin').forEach(b=>b.onclick=()=>changeClassAdminClass(b.dataset.uid));
+  $$('.revoke-class-admin').forEach(b=>b.onclick=()=>revokeClassAdmin(b.dataset.uid));
+
+  // v20260913-L：管理者權限的「查看全部任課」改用頁面層級事件委派。
+  // 原先直接逐顆綁定 onclick，在部分重新渲染／平板瀏覽器情境下可能失去事件；
+  // 改成委派後，不論表格重新產生幾次都可以正常開啟。
+  const adminPermissionPage=$('#page-adminPermissions');
+  if(adminPermissionPage){
+    adminPermissionPage.onclick=e=>{
+      const btn=e.target.closest('.admin-view-assignments');
+      if(!btn)return;
+      e.preventDefault();
+      e.stopPropagation();
+      if(btn.disabled)return;
+
+      const uid=String(btn.dataset.uid||'');
+      const u=admins.find(x=>String(x.uid||x.id||'')===uid);
+      if(!u){
+        alert('找不到這位導師的管理者資料，請重新整理後再試一次。');
+        return;
+      }
+
+      // 同時讀 users.assignments 與 subjectClassManagers，避免只看到舊資料或漏掉導師／最高管理員新設定。
+      const list=[];
+      const pushAssignment=(classId,subject,semester=currentSemester)=>{
+        classId=String(classId||'').trim();subject=String(subject||'').trim();
+        if(!classId||!subject)return;
+        const k=`${semester}|${classId}|${subject}`;
+        if(!list.some(x=>x.k===k))list.push({k,semester,classId,subject});
+      };
+
+      for(const a of (u.assignments||[])){
+        if(a.kind!=='teacher')continue;
+        const semester=a.semester||currentSemester;
+        if(semester!==currentSemester)continue;
+        pushAssignment(a.classId,a.scopeName||a.subject,semester);
+      }
+
+      const userEmail=String(u.email||'').toLowerCase();
+      for(const sm of subjectManagers){
+        if(sm.status==='released'||sm.semester!==currentSemester)continue;
+        const sameUid=!!u.uid && sm.managerUid===u.uid;
+        const sameEmail=!!userEmail && String(sm.managerEmail||'').toLowerCase()===userEmail;
+        if(sameUid||sameEmail)pushAssignment(sm.classId,sm.subject,sm.semester);
+      }
+
+      list.sort((a,b)=>String(a.subject).localeCompare(String(b.subject),'zh-Hant')||String(a.classId).localeCompare(String(b.classId),undefined,{numeric:true}));
+      const grouped={};
+      for(const a of list)(grouped[a.subject]??=[]).push(a.classId);
+      const groups=Object.entries(grouped).sort((a,b)=>a[0].localeCompare(b[0],'zh-Hant'));
+
+      showModal(`<div class="section-title">👨‍🏫 ${esc(u.displayName||u.email||'導師')}｜${esc(currentSemester)} 全部任課</div>
+        <div class="notice"><b>${esc(u.email||'')}</b><br>共 ${list.length} 筆「班級 × 科目」任課設定；相同科目已自動合併班級顯示。</div>
+        <div>${groups.map(([subject,classIds])=>{const ids=[...new Set(classIds)].sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true}));return `<div class="teacher-detail-group"><div class="teacher-detail-title">${esc(subject)}｜${ids.length} 班</div><div class="teacher-class-chips">${ids.map(c=>`<span class="teacher-class-chip">${esc(c)} 班</span>`).join('')}</div></div>`}).join('')||'<div class="meta">目前未設定任課。</div>'}</div>
+        <div class="toolbar"><button type="button" class="btn gray close-modal">關閉</button></div>`);
+    };
+  }
 }
 async function grantClassAdmin(){
   if(!isGlobalAdmin())return alert('只有最高管理員模式可以授予管理者權限。');
