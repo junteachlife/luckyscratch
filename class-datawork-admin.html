@@ -50,6 +50,29 @@
 @media(max-width:850px){.mode-grid{grid-template-columns:1fr}.mode-banner{align-items:flex-start;flex-direction:column}}
 
 
+/* 教師主檔：身分頁籤＋年級／科目篩選；任課摘要 C+D */
+.teacher-filter-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}
+.teacher-filter-tab{border:1px solid #cbb27b;background:#fffaf0;color:#5a4025;border-radius:999px;padding:8px 13px;font-weight:900;cursor:pointer}
+.teacher-filter-tab.active{background:#1687ec;color:#fff;border-color:#1687ec;box-shadow:0 3px 9px rgba(22,135,236,.22)}
+.teacher-filter-grid{display:grid;grid-template-columns:minmax(220px,1.4fr) minmax(130px,.55fr) minmax(150px,.65fr) auto;gap:8px;align-items:end}
+.teacher-filter-grid .field{margin:0}
+.teacher-summary{min-width:270px;max-width:620px}
+.teacher-summary-line{display:flex;gap:7px;align-items:flex-start;margin:3px 0;line-height:1.45}
+.teacher-summary-subject{font-weight:900;white-space:nowrap;color:#5a4025;min-width:58px}
+.teacher-class-chips{display:flex;gap:5px;flex-wrap:wrap}
+.teacher-class-chip{display:inline-block;padding:3px 7px;border:1px solid #dec78e;border-radius:999px;background:#fff8e7;font-size:12px;font-weight:800;color:#5d4931}
+.teacher-more-note{font-size:12px;color:#7a6a58;margin-top:4px}
+.teacher-count-badge{display:inline-block;padding:4px 9px;border-radius:999px;background:#eef6ff;color:#176da5;font-weight:900;white-space:nowrap}
+.teacher-role-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+.teacher-role-badge{display:inline-block;padding:3px 7px;border-radius:999px;font-size:11px;font-weight:900;background:#eef8ef;color:#277044;border:1px solid #b9dfc1}
+.teacher-role-badge.subject{background:#fff5df;color:#805e16;border-color:#e8d19a}
+.teacher-detail-group{padding:10px 0;border-bottom:1px dashed #dbcda9}
+.teacher-detail-group:last-child{border-bottom:0}
+.teacher-detail-title{font-weight:900;margin-bottom:7px;color:#4e3922}
+@media(max-width:850px){.teacher-filter-grid{grid-template-columns:1fr 1fr}.teacher-filter-grid .teacher-search-wrap{grid-column:1/-1}.teacher-summary{min-width:220px}}
+@media(max-width:560px){.teacher-filter-grid{grid-template-columns:1fr}.teacher-filter-grid .teacher-search-wrap{grid-column:auto}.teacher-filter-tab{flex:1 1 44%;text-align:center}}
+
+
 .score-stats{display:grid;grid-template-columns:repeat(6,minmax(90px,1fr));gap:8px;margin:12px 0}
 .score-stat{background:#fffaf0;border:1px solid #dbc391;border-radius:10px;padding:9px;text-align:center}
 .score-stat b{display:block;font-size:20px;line-height:1.1}.score-stat span{font-size:11px;color:#6f604d}
@@ -97,7 +120,7 @@
   </aside>
   <div class="main-area">
     <header class="hero">
-      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260912-F</div></div>
+      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260912-G</div></div>
       <div class="hero-user"><div class="user-name">👨‍🏫 <span id="who"></span></div><div id="semesterBadge" class="semester-badge"></div><div class="header-actions"><button id="switchModeBtn" class="btn purple small">🎭 切換身分</button><a href="class-work.html" style="text-decoration:none"><button class="btn gray small">📋 回報頁</button></a><button id="logoutBtn" class="btn danger small">🚪 登出</button></div></div>
     </header>
     <div class="content"><div id="modeHost"></div><div id="appMsg"></div><section id="page-dashboard"></section><section id="page-roles" class="hidden"></section><section id="page-records" class="hidden"></section><section id="page-subjectClasses" class="hidden"></section><section id="page-accounts" class="hidden"></section><section id="page-classes" class="hidden"></section><section id="page-directory" class="hidden"></section><section id="page-teacherDirectory" class="hidden"></section><section id="page-homeroomOverview" class="hidden"></section><section id="page-history" class="hidden"></section><section id="page-upgrade" class="hidden"></section><section id="page-audit" class="hidden"></section><section id="page-adminPermissions" class="hidden"></section></div>
@@ -116,7 +139,7 @@ const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$
 const seatFirebaseConfig={apiKey:"AIzaSyB2qXsbab4fh15C9YbCDWK208eJLLHgsKk",authDomain:"seatweb-ccd44.firebaseapp.com",databaseURL:"https://seatweb-ccd44-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"seatweb-ccd44",storageBucket:"seatweb-ccd44.firebasestorage.app",messagingSenderId:"607947077023",appId:"1:607947077023:web:1a0ec5832414cf376fb9aa"};
 const seatApp=initializeApp(seatFirebaseConfig,'seatSyncReader'),seatDb=getDatabase(seatApp),seatAuth=getAuth(seatApp);
 let me=null,users=[],registries=[],classes=[],collections=[],assessments=[],currentSemester='115-1',semesterHistory=['115-1'],recordSemester='115-1';
-// v20260912-F：導師/任課工作身分一致化；教師主檔全校共用；導師可自行新增教師；任課班可維護共用學生 Email 並自行指定本科小老師。
+// v20260912-G：導師/任課工作身分一致化；教師主檔全校共用；導師可自行新增教師；任課班可維護共用學生 Email 並自行指定本科小老師。
 let workMode='homeroom',subjectManagers=[],subjectRosters=[],studentDirectory=[],studentEnrollments=[],upgradeBatches=[],classRosterHistory=[];
 let schoolClassConfig={
   7:['701','702','703','704','705','706'],
@@ -768,6 +791,31 @@ function renderTeacherDirectory(){
     return;
   }
   const teachers=teacherRegistries();
+  const homeroomUsers=[...users.filter(u=>u.type==='admin'&&(u.adminScope==='class'||u.homeroomClassId||(u.adminClassIds||[]).length)),...(hasGlobalPrivilege()&&homeroomClassId()?[me]:[])];
+  const teacherMatchesUser=(reg,u)=>{
+    if(!reg||!u)return false;
+    const re=String(reg.email||reg.id||'').toLowerCase(),ue=String(u.email||'').toLowerCase();
+    return (!!reg.linkedUid&&reg.linkedUid===u.uid)||!!(re&&ue&&re===ue);
+  };
+  const isHomeroomTeacher=reg=>homeroomUsers.some(u=>teacherMatchesUser(reg,u));
+  const assignmentList=reg=>{
+    const list=[];
+    for(const a of (reg.assignments||[]).filter(a=>a.kind==='teacher'&&a.semester===currentSemester)){
+      const k=`${a.classId}|${a.scopeName}`;
+      if(!list.some(x=>x.k===k))list.push({k,classId:String(a.classId),subject:String(a.scopeName||'')});
+    }
+    for(const sm of subjectManagers.filter(sm=>sm.status!=='released'&&sm.semester===currentSemester&&teacherIdentityMatchesManager(reg,sm))){
+      const k=`${sm.classId}|${sm.subject}`;
+      if(!list.some(x=>x.k===k))list.push({k,classId:String(sm.classId),subject:String(sm.subject||'')});
+    }
+    return list.sort((a,b)=>String(a.subject).localeCompare(String(b.subject),'zh-Hant')||String(a.classId).localeCompare(String(b.classId),undefined,{numeric:true}));
+  };
+  const allSubjects=[...new Set([
+    ...subjects.map(String),
+    ...teachers.flatMap(r=>assignmentList(r).map(x=>x.subject))
+  ].filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh-Hant'));
+  const state=window.__teacherDirectoryFilters||{role:'all',grade:'all',subject:'all'};
+  window.__teacherDirectoryFilters=state;
 
   $('#page-teacherDirectory').innerHTML=`
     <div class="page-title">👨‍🏫 全校教師主檔</div>
@@ -789,32 +837,95 @@ function renderTeacherDirectory(){
     </div>
 
     <div class="card" style="margin-top:14px">
-      <div class="toolbar"><input id="teacherDirectorySearch" placeholder="搜尋姓名或 Email"><button id="refreshTeacherDirectoryBtn" class="btn gray">重新整理</button></div>
+      <div class="section-title">🔎 教師分類與篩選</div>
+      <div class="teacher-filter-tabs">
+        <button class="teacher-filter-tab ${state.role==='all'?'active':''}" data-role="all">全部教師</button>
+        <button class="teacher-filter-tab ${state.role==='homeroom'?'active':''}" data-role="homeroom">🏫 導師</button>
+        <button class="teacher-filter-tab ${state.role==='subject'?'active':''}" data-role="subject">📚 任課教師</button>
+        <button class="teacher-filter-tab ${state.role==='none'?'active':''}" data-role="none">尚未任課</button>
+        <button class="teacher-filter-tab ${state.role==='unlinked'?'active':''}" data-role="unlinked">⚠️ 尚未連動</button>
+      </div>
+      <div class="teacher-filter-grid">
+        <div class="field teacher-search-wrap"><label>搜尋</label><input id="teacherDirectorySearch" placeholder="搜尋姓名或 Email"></div>
+        <div class="field"><label>年級</label><select id="teacherDirectoryGrade"><option value="all">全部年級</option><option value="7">七年級</option><option value="8">八年級</option><option value="9">九年級</option><option value="cross">跨年級</option></select></div>
+        <div class="field"><label>科目</label><select id="teacherDirectorySubject"><option value="all">全部科目</option>${allSubjects.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('')}</select></div>
+        <button id="refreshTeacherDirectoryBtn" class="btn gray">🔄 重新整理</button>
+      </div>
+      <div id="teacherDirectoryResultMeta" class="meta" style="margin-top:9px"></div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
       <div class="table-wrap"><table>
-        <thead><tr><th>姓名</th><th>Email</th><th>Google連動</th><th>${esc(currentSemester)} 任課內容</th><th>任課組數</th></tr></thead>
+        <thead><tr><th>姓名</th><th>Email</th><th>身分／Google</th><th>${esc(currentSemester)} 任課摘要</th><th>任課組數</th><th>操作</th></tr></thead>
         <tbody id="teacherDirectoryBody"></tbody>
       </table></div>
     </div>`;
 
+  $('#teacherDirectoryGrade').value=state.grade||'all';
+  $('#teacherDirectorySubject').value=allSubjects.includes(state.subject)?state.subject:'all';
+
   const paint=()=>{
     const q=($('#teacherDirectorySearch').value||'').trim().toLowerCase();
-    const rows=teachers.filter(r=>!q||`${r.displayName||''} ${r.email||r.id||''}`.toLowerCase().includes(q));
-    $('#teacherDirectoryBody').innerHTML=rows.map(r=>{
-      const list=[];
-      for(const a of (r.assignments||[]).filter(a=>a.kind==='teacher'&&a.semester===currentSemester)){
-        const k=`${a.classId}|${a.scopeName}`;
-        if(!list.some(x=>x.k===k))list.push({k,classId:a.classId,subject:a.scopeName});
-      }
-      for(const sm of subjectManagers.filter(sm=>sm.status!=='released'&&sm.semester===currentSemester&&teacherIdentityMatchesManager(r,sm))){
-        const k=`${sm.classId}|${sm.subject}`;
-        if(!list.some(x=>x.k===k))list.push({k,classId:sm.classId,subject:sm.subject});
-      }
-      list.sort((a,b)=>String(a.classId).localeCompare(String(b.classId))||String(a.subject).localeCompare(String(b.subject),'zh-Hant'));
-      return `<tr><td><b>${esc(r.displayName||'')}</b></td><td>${esc(r.email||r.id)}</td><td>${r.linkedUid?'<span class="assistant-linked">✅ 已連動</span>':'<span class="assistant-unlinked">⚠️ 尚未連動</span>'}</td><td>${list.map(x=>`<div class="assign">${esc(x.classId)}｜${esc(x.subject)}</div>`).join('')||'尚未設定'}</td><td>${list.length}</td></tr>`;
-    }).join('')||'<tr><td colspan="5">目前沒有教師主檔。</td></tr>';
+    state.grade=$('#teacherDirectoryGrade').value||'all';
+    state.subject=$('#teacherDirectorySubject').value||'all';
+    let rows=teachers.map(r=>{
+      const list=assignmentList(r);
+      const grades=[...new Set(list.map(x=>gradeFromClassId(x.classId)).filter(Boolean))];
+      return {r,list,grades,isHomeroom:isHomeroomTeacher(r)};
+    });
+    rows=rows.filter(x=>{
+      const {r,list,grades,isHomeroom}=x;
+      if(q&&!`${r.displayName||''} ${r.email||r.id||''}`.toLowerCase().includes(q))return false;
+      if(state.role==='homeroom'&&!isHomeroom)return false;
+      if(state.role==='subject'&&!list.length)return false;
+      if(state.role==='none'&&list.length)return false;
+      if(state.role==='unlinked'&&r.linkedUid)return false;
+      if(state.grade==='cross'&&grades.length<2)return false;
+      if(['7','8','9'].includes(state.grade)&&!grades.includes(Number(state.grade)))return false;
+      if(state.subject!=='all'&&!list.some(a=>a.subject===state.subject))return false;
+      return true;
+    });
+    $('#teacherDirectoryResultMeta').textContent=`目前顯示 ${rows.length} 位教師｜${esc(currentSemester)}；科目篩選採多重歸類，同一位老師可同時出現在多個科目。`;
+    $('#teacherDirectoryBody').innerHTML=rows.map(({r,list,isHomeroom})=>{
+      const grouped={};
+      for(const x of list)(grouped[x.subject]??=[]).push(x.classId);
+      const groups=Object.entries(grouped).map(([subject,classIds])=>({subject,classIds:[...new Set(classIds)].sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true}))}));
+      const preview=groups.slice(0,2).map(g=>{
+        const shown=g.classIds.slice(0,4),more=g.classIds.length-shown.length;
+        return `<div class="teacher-summary-line"><span class="teacher-summary-subject">${esc(g.subject)}：</span><span class="teacher-class-chips">${shown.map(c=>`<span class="teacher-class-chip">${esc(c)}</span>`).join('')}${more>0?`<span class="teacher-class-chip">＋${more}</span>`:''}</span></div>`;
+      }).join('');
+      const hiddenSubjects=Math.max(0,groups.length-2);
+      const roleBadges=`<div class="teacher-role-badges">${isHomeroom?'<span class="teacher-role-badge">🏫 導師</span>':''}${list.length?'<span class="teacher-role-badge subject">📚 任課教師</span>':'<span class="teacher-role-badge" style="background:#f3f4f6;color:#666;border-color:#ddd">尚未任課</span>'}</div>`;
+      return `<tr>
+        <td><b>${esc(r.displayName||'')}</b></td>
+        <td>${esc(r.email||r.id)}</td>
+        <td>${r.linkedUid?'<span class="assistant-linked">✅ 已連動</span>':'<span class="assistant-unlinked">⚠️ 尚未連動</span>'}${roleBadges}</td>
+        <td><div class="teacher-summary">${preview||'<span class="meta">尚未設定任課</span>'}${hiddenSubjects?`<div class="teacher-more-note">另有 ${hiddenSubjects} 個科目，請點「查看全部任課」。</div>`:''}</div></td>
+        <td><span class="teacher-count-badge">${list.length} 筆</span></td>
+        <td><button class="btn primary small teacher-view-assignments" data-id="${esc(r.id)}" ${list.length?'':'disabled'}>👁 查看全部任課</button></td>
+      </tr>`;
+    }).join('')||'<tr><td colspan="6">目前沒有符合篩選條件的教師。</td></tr>';
+
+    $$('.teacher-view-assignments').forEach(b=>b.onclick=()=>{
+      const reg=teachers.find(r=>r.id===b.dataset.id);if(!reg)return;
+      const list=assignmentList(reg),grouped={};
+      for(const x of list)(grouped[x.subject]??=[]).push(x.classId);
+      const groups=Object.entries(grouped).sort((a,b)=>a[0].localeCompare(b[0],'zh-Hant'));
+      showModal(`<div class="section-title">👨‍🏫 ${esc(reg.displayName||reg.email)}｜${esc(currentSemester)} 全部任課</div>
+        <div class="notice"><b>${esc(reg.email||reg.id)}</b><br>共 ${list.length} 筆「班級 × 科目」任課設定；相同科目已自動合併班級顯示。</div>
+        <div>${groups.map(([subject,classIds])=>`<div class="teacher-detail-group"><div class="teacher-detail-title">${esc(subject)}｜${[...new Set(classIds)].length} 班</div><div class="teacher-class-chips">${[...new Set(classIds)].sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true})).map(c=>`<span class="teacher-class-chip">${esc(c)} 班</span>`).join('')}</div></div>`).join('')||'<div class="meta">尚未設定任課。</div>'}</div>
+        <div class="toolbar"><button class="btn gray close-modal">關閉</button></div>`);
+    });
   };
 
+  $$('.teacher-filter-tab').forEach(b=>b.onclick=()=>{
+    state.role=b.dataset.role;
+    $$('.teacher-filter-tab').forEach(x=>x.classList.toggle('active',x.dataset.role===state.role));
+    paint();
+  });
   $('#teacherDirectorySearch').oninput=paint;
+  $('#teacherDirectoryGrade').onchange=paint;
+  $('#teacherDirectorySubject').onchange=paint;
   $('#refreshTeacherDirectoryBtn').onclick=async()=>{await refreshAll();renderTeacherDirectory()};
   $('#directoryAddTeacherBtn').onclick=async()=>{
     const displayName=$('#directoryTeacherName').value.trim(),email=registryId($('#directoryTeacherEmail').value);
