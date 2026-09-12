@@ -120,7 +120,7 @@
   </aside>
   <div class="main-area">
     <header class="hero">
-      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260912-H</div></div>
+      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260912-I</div></div>
       <div class="hero-user"><div class="user-name">👨‍🏫 <span id="who"></span></div><div id="semesterBadge" class="semester-badge"></div><div class="header-actions"><button id="switchModeBtn" class="btn purple small">🎭 切換身分</button><a href="class-work.html" style="text-decoration:none"><button class="btn gray small">📋 回報頁</button></a><button id="logoutBtn" class="btn danger small">🚪 登出</button></div></div>
     </header>
     <div class="content"><div id="modeHost"></div><div id="appMsg"></div><section id="page-dashboard"></section><section id="page-roles" class="hidden"></section><section id="page-records" class="hidden"></section><section id="page-subjectClasses" class="hidden"></section><section id="page-accounts" class="hidden"></section><section id="page-classes" class="hidden"></section><section id="page-directory" class="hidden"></section><section id="page-teacherDirectory" class="hidden"></section><section id="page-homeroomOverview" class="hidden"></section><section id="page-history" class="hidden"></section><section id="page-upgrade" class="hidden"></section><section id="page-audit" class="hidden"></section><section id="page-adminPermissions" class="hidden"></section></div>
@@ -139,7 +139,7 @@ const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$
 const seatFirebaseConfig={apiKey:"AIzaSyB2qXsbab4fh15C9YbCDWK208eJLLHgsKk",authDomain:"seatweb-ccd44.firebaseapp.com",databaseURL:"https://seatweb-ccd44-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"seatweb-ccd44",storageBucket:"seatweb-ccd44.firebasestorage.app",messagingSenderId:"607947077023",appId:"1:607947077023:web:1a0ec5832414cf376fb9aa"};
 const seatApp=initializeApp(seatFirebaseConfig,'seatSyncReader'),seatDb=getDatabase(seatApp),seatAuth=getAuth(seatApp);
 let me=null,users=[],registries=[],classes=[],collections=[],assessments=[],currentSemester='115-1',semesterHistory=['115-1'],recordSemester='115-1';
-// v20260912-H：教師主檔僅最高管理員可見與維護；導師在「帳號連動／任課」只管理本班學生 Email 與任課設定。
+// v20260912-I：全校教師主檔彙整僅最高管理員可見；導師仍可在「帳號連動／任課」快速新增教師到同一份全校共用主檔，再指定自己班級的任課與授權。
 let workMode='homeroom',subjectManagers=[],subjectRosters=[],studentDirectory=[],studentEnrollments=[],upgradeBatches=[],classRosterHistory=[];
 let schoolClassConfig={
   7:['701','702','703','704','705','706'],
@@ -730,8 +730,8 @@ async function saveStudentRegistryClass(){
   await audit('save_student_registry','identityRegistry',classId,`更新 ${classId} 學生 Google Email 對照`);await refreshAll();alert('✅ 學生 Email 對照名單已儲存。');
 }
 function applyStudentRegistryPaste(){const text=$('#studentRegistryPaste').value.trim();if(!text)return;const map=new Map();text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).forEach(line=>{const p=line.split(/[,，\t]/).map(x=>x.trim());if(p.length>=3)map.set(Number(p[0]),p[p.length-1])});$$('.student-reg-email').forEach(inp=>{const e=map.get(Number(inp.dataset.seat));if(e)inp.value=e});alert('已套用到上方欄位，請再按「儲存這班 Email」。')}
-async function addTeacherRegistry(){const displayName=$('#teacherName').value.trim(),email=registryId($('#teacherEmail').value);if(!displayName||!email)return alert('請填老師姓名與 Email。');const existing=registries.find(r=>r.id===email);await saveRegistry({...(existing||{}),email,displayName,type:'teacher',active:existing?.active!==false,assignments:existing?.assignments||[],linked:!!existing?.linkedUid,linkedUid:existing?.linkedUid||null});await audit('add_teacher_registry','identityRegistry',email,`新增／更新任課教師 ${displayName}`);await refreshAll();}
-async function applyTeacherRegistryPaste(){const lines=$('#teacherPaste').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);if(!lines.length)return alert('請貼上教師資料。');for(const line of lines){const p=line.split(/[,，\t]/).map(x=>x.trim());if(p.length<2)continue;const displayName=p[0],email=registryId(p[1]);if(!email)continue;const existing=registries.find(r=>r.id===email);await saveRegistry({...(existing||{}),email,displayName,type:'teacher',active:existing?.active!==false,assignments:existing?.assignments||[],linked:!!existing?.linkedUid,linkedUid:existing?.linkedUid||null});}await audit('batch_teacher_registry','identityRegistry','teachers',`批次加入 ${lines.length} 筆教師資料`);await refreshAll();alert('✅ 任課教師名單已加入。')}
+async function addTeacherRegistry(){const displayName=$('#teacherName')?.value.trim()||'',email=registryId($('#teacherEmail')?.value||'');if(!displayName||!email)return alert('請填老師姓名與 Email。');const existing=registries.find(r=>r.id===email);await saveRegistry({...(existing||{}),email,displayName,type:'teacher',active:existing?.active!==false,assignments:existing?.assignments||[],linked:!!existing?.linkedUid,linkedUid:existing?.linkedUid||null});await audit('add_teacher_registry','identityRegistry',email,`新增／更新任課教師 ${displayName}`);await refreshAll();renderAccounts();alert('✅ 教師已加入全校共用教師主檔，可直接指定本班任課。');}
+async function applyTeacherRegistryPaste(){const lines=($('#teacherPaste')?.value||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);if(!lines.length)return alert('請貼上教師資料。');let count=0;for(const line of lines){const p=line.split(/[,，\t]/).map(x=>x.trim());if(p.length<2)continue;const displayName=p[0],email=registryId(p[1]);if(!displayName||!email)continue;const existing=registries.find(r=>r.id===email);await saveRegistry({...(existing||{}),email,displayName,type:'teacher',active:existing?.active!==false,assignments:existing?.assignments||[],linked:!!existing?.linkedUid,linkedUid:existing?.linkedUid||null});count++;}await audit('batch_teacher_registry','identityRegistry','teachers',`批次加入 ${count} 筆教師資料`);await refreshAll();renderAccounts();alert(`✅ 已加入／更新 ${count} 位教師，資料已同步到全校共用教師主檔。`)}
 function editTeacherRegistry(id){
   const reg=registries.find(r=>r.id===id);if(!reg)return;
   const assignments=[...(reg.assignments||[])];
@@ -957,16 +957,31 @@ function renderAccounts(){
         <div class="card">
           <div class="section-title">👨‍🏫 ${esc(ownClass)} 班任課教師</div>
           <div class="notice">
-            從最高管理員維護的教師名單選擇老師，再指定本科。<b>同一位老師可以教不同班、不同科。</b><br>
+            從<b>全校共用教師主檔</b>選擇老師，再指定本科。<b>同一位老師可以教不同班、不同科。</b><br>
             按下「指定本班任課老師並授權」後，會同時授予該老師這個班級 × 科目的<b>查看、作業登記、成績登記</b>權限。<br>
-            若任課老師已經先建立這個班級 × 科目，導師端會直接共用，不會再建立第二份。
+            若清單裡找不到老師，導師可直接在下方新增教師；新增後會寫入<b>同一份全校教師主檔</b>，最高管理員也會同步看到，不會另建第二套資料。
           </div>
           <div class="toolbar">
             <label>老師<select id="classTeacherSelect">${teachers.map(r=>`<option value="${esc(r.id)}">${esc(r.displayName||r.email)}｜${esc(r.email||r.id)}${r.linkedUid?'｜✅已連動':'｜⚠️尚未連動'}</option>`).join('')}</select></label>
             <label>科目<select id="classTeacherSubject">${subjects.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('')}</select></label>
             <button id="assignClassTeacherBtn" class="btn primary" ${teachers.length?'':'disabled'}>➕ 指定本班任課老師並授權</button>
           </div>
-          ${teachers.length?'':'<div class="notice warning">目前尚無可選的教師資料，請先由最高管理員到「全校教師主檔」新增教師，再回到這裡指定本班任課。</div>'}
+          ${teachers.length?'':'<div class="notice warning">目前尚無可選教師。可直接使用下方「新增教師」建立教師帳號，建立後即可指定本班任課與授權。</div>'}
+
+          <details style="margin-top:14px" open>
+            <summary style="cursor:pointer;font-weight:900">➕ 找不到老師？導師可直接新增教師</summary>
+            <div class="notice success" style="margin-top:10px">
+              這裡新增的是<b>全校共用教師主檔</b>，不是 804 班自己的另一份名單。<br>
+              導師只在這裡快速新增「姓名＋學校 Google Email」；全校教師主檔的彙整、篩選與完整管理仍只有最高管理員看得到。
+            </div>
+            <div class="two" style="grid-template-columns:1fr 1fr">
+              <div class="field"><label>老師姓名</label><input id="teacherName" placeholder="例如 王老師"></div>
+              <div class="field"><label>學校 Google Email</label><input id="teacherEmail" type="email" placeholder="teacher@tmail.ilc.edu.tw"></div>
+            </div>
+            <button id="addTeacherRegistry" class="btn good">➕ 新增／更新教師</button>
+            <div class="field" style="margin-top:10px"><label>也可批次貼上：姓名,Email</label><textarea id="teacherPaste" rows="4" placeholder="王老師,wang@tmail.ilc.edu.tw\n李老師,lee@tmail.ilc.edu.tw"></textarea></div>
+            <button id="applyTeacherPaste" class="btn gray">📥 批次加入教師</button>
+          </details>
 
           <div class="section-title" style="margin-top:16px">📚 ${esc(currentSemester)} 已設定任課</div>
           <div class="table-wrap"><table>
@@ -1001,6 +1016,8 @@ function renderAccounts(){
       if(!result.ok)return alert(result.message);
       await refreshAll();renderAccounts();alert(result.message);
     });
+    $('#addTeacherRegistry')?.addEventListener('click',addTeacherRegistry);
+    $('#applyTeacherPaste')?.addEventListener('click',applyTeacherRegistryPaste);
     $$('.edit-homeroom-teacher').forEach(b=>b.onclick=()=>editHomeroomTeacherAssignment(b.dataset.id));
     $$('.delete-homeroom-teacher').forEach(b=>b.onclick=()=>deleteHomeroomTeacherAssignment(b.dataset.id));
     renderStudentRegistryList();
