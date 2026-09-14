@@ -50,29 +50,6 @@
 @media(max-width:850px){.mode-grid{grid-template-columns:1fr}.mode-banner{align-items:flex-start;flex-direction:column}}
 
 
-/* 教師主檔：身分頁籤＋年級／科目篩選；任課摘要 C+D */
-.teacher-filter-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}
-.teacher-filter-tab{border:1px solid #cbb27b;background:#fffaf0;color:#5a4025;border-radius:999px;padding:8px 13px;font-weight:900;cursor:pointer}
-.teacher-filter-tab.active{background:#1687ec;color:#fff;border-color:#1687ec;box-shadow:0 3px 9px rgba(22,135,236,.22)}
-.teacher-filter-grid{display:grid;grid-template-columns:minmax(220px,1.4fr) minmax(130px,.55fr) minmax(150px,.65fr) auto;gap:8px;align-items:end}
-.teacher-filter-grid .field{margin:0}
-.teacher-summary{min-width:270px;max-width:620px}
-.teacher-summary-line{display:flex;gap:7px;align-items:flex-start;margin:3px 0;line-height:1.45}
-.teacher-summary-subject{font-weight:900;white-space:nowrap;color:#5a4025;min-width:58px}
-.teacher-class-chips{display:flex;gap:5px;flex-wrap:wrap}
-.teacher-class-chip{display:inline-block;padding:3px 7px;border:1px solid #dec78e;border-radius:999px;background:#fff8e7;font-size:12px;font-weight:800;color:#5d4931}
-.teacher-more-note{font-size:12px;color:#7a6a58;margin-top:4px}
-.teacher-count-badge{display:inline-block;padding:4px 9px;border-radius:999px;background:#eef6ff;color:#176da5;font-weight:900;white-space:nowrap}
-.teacher-role-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
-.teacher-role-badge{display:inline-block;padding:3px 7px;border-radius:999px;font-size:11px;font-weight:900;background:#eef8ef;color:#277044;border:1px solid #b9dfc1}
-.teacher-role-badge.subject{background:#fff5df;color:#805e16;border-color:#e8d19a}
-.teacher-detail-group{padding:10px 0;border-bottom:1px dashed #dbcda9}
-.teacher-detail-group:last-child{border-bottom:0}
-.teacher-detail-title{font-weight:900;margin-bottom:7px;color:#4e3922}
-@media(max-width:850px){.teacher-filter-grid{grid-template-columns:1fr 1fr}.teacher-filter-grid .teacher-search-wrap{grid-column:1/-1}.teacher-summary{min-width:220px}}
-@media(max-width:560px){.teacher-filter-grid{grid-template-columns:1fr}.teacher-filter-grid .teacher-search-wrap{grid-column:auto}.teacher-filter-tab{flex:1 1 44%;text-align:center}}
-
-
 .score-stats{display:grid;grid-template-columns:repeat(6,minmax(90px,1fr));gap:8px;margin:12px 0}
 .score-stat{background:#fffaf0;border:1px solid #dbc391;border-radius:10px;padding:9px;text-align:center}
 .score-stat b{display:block;font-size:20px;line-height:1.1}.score-stat span{font-size:11px;color:#6f604d}
@@ -110,7 +87,6 @@
       <button data-page="classes"><span class="nav-icon">👥</span>班級名單</button>
       <button id="directoryNav" data-page="directory"><span class="nav-icon">🗂️</span>全校學生主檔</button>
       <button id="teacherDirectoryNav" data-page="teacherDirectory"><span class="nav-icon">👨‍🏫</span>全校教師主檔</button>
-      <button id="homeroomOverviewNav" data-page="homeroomOverview"><span class="nav-icon">🏫</span>導師班設定總覽</button>
       <button id="historyNav" data-page="history"><span class="nav-icon">🕰️</span>歷史資料</button>
       <button id="upgradeNav" data-page="upgrade"><span class="nav-icon">⬆️</span>學年升級</button>
       <button data-page="audit"><span class="nav-icon">🧾</span>操作紀錄</button>
@@ -120,10 +96,10 @@
   </aside>
   <div class="main-area">
     <header class="hero">
-      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260913-M</div></div>
+      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260914-B</div></div>
       <div class="hero-user"><div class="user-name">👨‍🏫 <span id="who"></span></div><div id="semesterBadge" class="semester-badge"></div><div class="header-actions"><button id="switchModeBtn" class="btn purple small">🎭 切換身分</button><a href="class-work.html" style="text-decoration:none"><button class="btn gray small">📋 回報頁</button></a><button id="logoutBtn" class="btn danger small">🚪 登出</button></div></div>
     </header>
-    <div class="content"><div id="modeHost"></div><div id="appMsg"></div><section id="page-dashboard"></section><section id="page-roles" class="hidden"></section><section id="page-records" class="hidden"></section><section id="page-subjectClasses" class="hidden"></section><section id="page-accounts" class="hidden"></section><section id="page-classes" class="hidden"></section><section id="page-directory" class="hidden"></section><section id="page-teacherDirectory" class="hidden"></section><section id="page-homeroomOverview" class="hidden"></section><section id="page-history" class="hidden"></section><section id="page-upgrade" class="hidden"></section><section id="page-audit" class="hidden"></section><section id="page-adminPermissions" class="hidden"></section></div>
+    <div class="content"><div id="modeHost"></div><div id="appMsg"></div><section id="page-dashboard"></section><section id="page-roles" class="hidden"></section><section id="page-records" class="hidden"></section><section id="page-subjectClasses" class="hidden"></section><section id="page-accounts" class="hidden"></section><section id="page-classes" class="hidden"></section><section id="page-directory" class="hidden"></section><section id="page-teacherDirectory" class="hidden"></section><section id="page-history" class="hidden"></section><section id="page-upgrade" class="hidden"></section><section id="page-audit" class="hidden"></section><section id="page-adminPermissions" class="hidden"></section></div>
   </div>
 </div>
 </main>
@@ -139,7 +115,6 @@ const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$
 const seatFirebaseConfig={apiKey:"AIzaSyB2qXsbab4fh15C9YbCDWK208eJLLHgsKk",authDomain:"seatweb-ccd44.firebaseapp.com",databaseURL:"https://seatweb-ccd44-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"seatweb-ccd44",storageBucket:"seatweb-ccd44.firebasestorage.app",messagingSenderId:"607947077023",appId:"1:607947077023:web:1a0ec5832414cf376fb9aa"};
 const seatApp=initializeApp(seatFirebaseConfig,'seatSyncReader'),seatDb=getDatabase(seatApp),seatAuth=getAuth(seatApp);
 let me=null,users=[],registries=[],classes=[],collections=[],assessments=[],currentSemester='115-1',semesterHistory=['115-1'],recordSemester='115-1';
-// v20260913-M：延續教師主檔權限設計；最高管理員「帳號連動／任課」的教師任課清單改為同科目合併班級＋摘要/查看全部模式，避免跨多班教師把頁面拉得過長。
 let workMode='homeroom',subjectManagers=[],subjectRosters=[],studentDirectory=[],studentEnrollments=[],upgradeBatches=[],classRosterHistory=[];
 let schoolClassConfig={
   7:['701','702','703','704','705','706'],
@@ -180,8 +155,20 @@ function semesterOptions(selected=currentSemester){const list=[...new Set([...se
 function computeAccess(assignments=[],semester=currentSemester){const viewKeys=[],collectionWriteKeys=[],scoreWriteKeys=[],classAccess=[];for(const a of assignments.filter(x=>x.semester===semester)){const k=scopeKey(a);if(!viewKeys.includes(k))viewKeys.push(k);if(a.canCollection&&!collectionWriteKeys.includes(k))collectionWriteKeys.push(k);if(a.canScores&&!scoreWriteKeys.includes(k))scoreWriteKeys.push(k);if(!classAccess.includes(a.classId))classAccess.push(a.classId)}return{viewKeys,collectionWriteKeys,scoreWriteKeys,classAccess}}
 async function audit(action,targetType,targetId,detail,semester=currentSemester){await addDoc(collection(db,'auditLogs'),{actorUid:auth.currentUser.uid,actorName:me.displayName||me.username,semester,action,targetType,targetId,detail,createdAt:serverTimestamp()})}
 function activePage(){return $('.nav .active')?.dataset.page||'dashboard'}
+function legacy_isGlobalAdmin(){return !!me&&me.type==='admin'&&(!me.adminScope||me.adminScope==='global')}
+function legacy_allowedAdminClassIds(){
+  if(isGlobalAdmin())return [...new Set([...classes.map(c=>String(c.id)),...Object.keys(defaultRosters)])].sort();
+  return [...new Set((me?.adminClassIds||[]).map(String))].sort();
+}
+function legacy_canAdminClass(classId){return isGlobalAdmin()||allowedAdminClassIds().includes(String(classId))}
+function legacy_assertAdminClass(classId){if(!canAdminClass(classId))throw new Error(`你沒有 ${classId} 班的管理權限。`)}
 function scopedClassDocs(){return classes.filter(c=>canAdminClass(c.id))}
 function scopedClassIds(){const ids=allowedAdminClassIds();return ids.length?ids:(isGlobalAdmin()?Object.keys(defaultRosters).sort():[])}
+function legacy_adminLabel(){return isGlobalAdmin()?'最高管理員':`班級管理員｜${allowedAdminClassIds().join('、')||'未設定班級'}`}
+function legacy_configureAdminUI(){
+  const nav=$('#adminPermissionsNav');if(nav)nav.classList.toggle('hidden',!isGlobalAdmin());
+  $('#who').textContent=`${me.displayName||me.username||'管理員'}｜${adminLabel()}`;
+}
 
 
 const googleProvider=new GoogleAuthProvider();
@@ -253,7 +240,7 @@ onAuthStateChanged(auth,async u=>{
   }
 });
 
-$$('.nav button').forEach(b=>b.onclick=()=>{if(b.classList.contains('hidden'))return;if((b.dataset.page==='adminPermissions'||b.dataset.page==='directory'||b.dataset.page==='teacherDirectory'||b.dataset.page==='upgrade'||b.dataset.page==='homeroomOverview')&&!isGlobalAdmin())return;$$('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');['dashboard','roles','records','subjectClasses','accounts','classes','directory','teacherDirectory','homeroomOverview','history','upgrade','audit','adminPermissions'].forEach(p=>$(`#page-${p}`)?.classList.toggle('hidden',p!==b.dataset.page));renderPage(b.dataset.page)});
+$$('.nav button').forEach(b=>b.onclick=()=>{if(b.classList.contains('hidden'))return;if((b.dataset.page==='adminPermissions'||b.dataset.page==='directory'||b.dataset.page==='upgrade')&&!isGlobalAdmin())return;$$('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');['dashboard','roles','records','subjectClasses','accounts','classes','directory','history','upgrade','audit','adminPermissions'].forEach(p=>$(`#page-${p}`)?.classList.toggle('hidden',p!==b.dataset.page));renderPage(b.dataset.page)});
 
 async function ensureSystemSettings(){
   const ref=doc(db,'settings','system'),s=await getDoc(ref);
@@ -287,7 +274,30 @@ async function ensureSystemSettings(){
   recordSemester=currentSemester;
   $('#semesterBadge').textContent=`目前學期：${currentSemester}`;
 }
-function renderPage(p){if(p==='dashboard')renderDashboard();if(p==='roles')renderRoleAssignments();if(p==='records')renderRecords();if(p==='subjectClasses')renderSubjectClasses();if(p==='accounts')renderAccounts();if(p==='classes')renderClasses();if(p==='directory')renderDirectory();if(p==='teacherDirectory')renderTeacherDirectory();if(p==='homeroomOverview')renderHomeroomOverview();if(p==='history')renderHistory();if(p==='upgrade')renderUpgrade();if(p==='audit')renderAudit();if(p==='adminPermissions')renderAdminPermissions()}
+function renderPage(p){if(p==='dashboard')renderDashboard();if(p==='roles')renderRoleAssignments();if(p==='records')renderRecords();if(p==='subjectClasses')renderSubjectClasses();if(p==='accounts')renderAccounts();if(p==='classes')renderClasses();if(p==='directory')renderDirectory();if(p==='teacherDirectory')renderTeacherDirectory();if(p==='history')renderHistory();if(p==='upgrade')renderUpgrade();if(p==='audit')renderAudit();if(p==='adminPermissions')renderAdminPermissions()}
+
+function legacy_renderDashboard(){
+  const cc=collections.filter(x=>x.semester===currentSemester&&canAdminClass(x.classId));
+  const aa=assessments.filter(x=>x.semester===currentSemester&&canAdminClass(x.classId));
+  const pending=cc.filter(x=>x.reviewStatus!=='confirmed').length+aa.filter(x=>x.reviewStatus!=='confirmed').length;
+  const studentRegs=registries.filter(x=>x.type==='student'&&x.active!==false&&canAdminClass(x.classId));
+  const linked=studentRegs.filter(x=>x.linkedUid).length;
+  const scopeText=isGlobalAdmin()?'802、804、904、906 等全部授權班級':`${allowedAdminClassIds().join('、')} 班`;
+  $('#page-dashboard').innerHTML=`
+    <div class="page-title">今日航海總覽</div>
+    <div class="notice success"><b>目前身分：${esc(adminLabel())}</b><br>管理範圍：${esc(scopeText)}。${isGlobalAdmin()?'你可以管理系統設定與其他班級管理員。':'後台所有班級資料都只會顯示你的導師班；其他班級不會載入。'}</div>
+    <div class="grid g4">
+      <div class="card stat"><div class="sub">🔗 班級學生對照</div><b>${studentRegs.length}</b><div class="meta">僅計算可管理班級</div></div>
+      <div class="card stat"><div class="sub">🟢 已完成 Google 連動</div><b>${linked}</b><div class="meta">尚未連動 ${Math.max(0,studentRegs.length-linked)} 人</div></div>
+      <div class="card stat"><div class="sub">📚 ${esc(currentSemester)} 作業／成績</div><b>${cc.length+aa.length}</b><div class="meta">作業 ${cc.length}｜成績 ${aa.length}</div></div>
+      <div class="card stat"><div class="sub">⏳ 本學期待確認</div><b>${pending}</b><div class="meta">持續航行中！</div></div>
+    </div>
+    ${isGlobalAdmin()?`<div class="two" style="margin-top:14px">
+      <div class="card"><div class="section-title">📅 新學期／切換學期</div><div class="notice"><b>目前學期：${esc(currentSemester)}</b><br>只有最高管理員可切換全系統學期。</div><div class="field"><label>新學期</label><input id="newSemester" value="${esc(currentSemester)}" placeholder="例如 115-2"></div><button id="changeSemesterBtn" class="btn primary">🚩 建立／切換新學期</button></div>
+      <div class="card"><div class="section-title">🔐 管理者權限</div><div class="notice success">你可以在左側「管理者權限」把已完成 Google 連動的任課老師升級為 802、904、906 等班級管理員。</div></div>
+    </div>`:`<div class="card" style="margin-top:14px"><div class="section-title">📅 學期資訊</div><div class="notice"><b>目前學期：${esc(currentSemester)}</b><br>班級管理員可管理自己班級的職務、學生 Email、作業與成績；全系統學期切換與管理者授權由最高管理員負責。</div></div>`}`;
+  if(isGlobalAdmin()&&$('#changeSemesterBtn'))$('#changeSemesterBtn').onclick=changeCurrentSemester;
+}
 async function changeCurrentSemester(){
   if(!isGlobalAdmin())return alert('只有最高管理員可以切換全系統學期。');
   const sem=$('#newSemester').value.trim();
@@ -317,13 +327,36 @@ async function changeCurrentSemester(){
 async function recalcAllAccess(){if(!isGlobalAdmin())return;for(const u of users.filter(x=>x.type!=='admin')){const access=computeAccess(u.assignments||[],currentSemester);await updateDoc(doc(db,'users',u.uid),{...access,updatedAt:serverTimestamp()});Object.assign(u,access)}}
 
 function renderRoleAssignments(){
-  const sem=$('#roleSemester')?.value||currentSemester,selectedClass=$('#roleClass')?.value||'804',classIds=(classes.length?classes.map(x=>x.id):Object.keys(defaultRosters)).sort();
-  $('#page-roles').innerHTML=`<div class="page-title">學生幹部／小老師派發</div><div class="card"><div class="notice"><b>804 班可直接從 seat.html 同步。</b> 你只需要在座位系統調整幹部與小老師，這裡按一次同步即可寫入目前選擇的學期；舊學期資料不會被改掉。其他班級仍可手動派發。</div><div class="toolbar"><label>學期 <select id="roleSemester">${semesterOptions(sem)}</select></label><label>班級 <select id="roleClass">${classIds.map(c=>`<option value="${c}" ${c===selectedClass?'selected':''}>${c}</option>`).join('')}</select></label><button id="loadRoleTable" class="btn gray">載入</button><button id="seatSyncBtn" class="btn purple">🔄 從 seat.html 同步 804</button><button id="saveRoleTable" class="btn primary">💾 儲存這份職務表</button></div><div id="seatSyncStatus" class="meta"></div><div id="roleTable"></div></div>`;
-  $('#loadRoleTable').onclick=renderRoleTable;$('#saveRoleTable').onclick=saveRoleTable;$('#seatSyncBtn').onclick=syncRolesFromSeat;$('#roleClass').onchange=()=>{renderRoleTable();updateSeatSyncButton()};$('#roleSemester').onchange=renderRoleTable;updateSeatSyncButton();renderRoleTable();
+  const sem=$('#roleSemester')?.value||currentSemester;
+  const homeClass=homeroomClassId();
+
+  if(!homeClass){
+    $('#page-roles').innerHTML=`<div class="page-title">學生幹部／小老師派發</div><div class="notice error">這個帳號尚未設定導師班，因此不能使用職務派發。</div>`;
+    return;
+  }
+
+  // ★ 職務派發是「導師班功能」：不論一般導師管理員，或最高管理員切到任何模式，
+  // 進到這一頁都只管理自己的導師班，不提供其他班級選擇。
+  const classIds=[String(homeClass)];
+  const selectedClass=String(homeClass);
+  const canSeatSync=hasGlobalPrivilege() && selectedClass==='804';
+
+  const seatNotice=canSeatSync
+    ?`<div class="notice"><b>804 班可直接從 seat.html 同步。</b> 這個同步入口只保留給最高管理員本人使用；其他導師管理員不會看到此按鈕。</div>`
+    :`<div class="notice success"><b>${esc(selectedClass)} 導師班職務設定</b><br>這一頁只會顯示你的導師班。班級幹部與各科小老師都在這裡設定，不會看到或修改其他班級。</div>`;
+
+  $('#page-roles').innerHTML=`<div class="page-title">學生幹部／小老師派發</div><div class="card">${seatNotice}<div class="toolbar"><label>學期 <select id="roleSemester">${semesterOptions(sem)}</select></label><label>班級 <select id="roleClass" disabled>${classIds.map(c=>`<option value="${c}" selected>${c}</option>`).join('')}</select></label><button id="loadRoleTable" class="btn gray">載入</button>${canSeatSync?'<button id="seatSyncBtn" class="btn purple">🔄 從 seat.html 同步 804</button>':''}<button id="saveRoleTable" class="btn primary">💾 儲存這份職務表</button></div><div id="seatSyncStatus" class="meta"></div><div id="roleTable"></div></div>`;
+
+  $('#loadRoleTable').onclick=renderRoleTable;
+  $('#saveRoleTable').onclick=saveRoleTable;
+  if($('#seatSyncBtn'))$('#seatSyncBtn').onclick=syncRolesFromSeat;
+  $('#roleSemester').onchange=renderRoleTable;
+  updateSeatSyncButton();
+  renderRoleTable();
 }
 function getRosterForClass(classId){const c=classes.find(x=>x.id===classId);if(c&&Array.isArray(c.students))return c.students.filter(s=>s.active!==false).sort((a,b)=>Number(a.seat)-Number(b.seat));return(defaultRosters[classId]||[]).map(([seat,name])=>({seat,name,id:String(seat),active:true}))}
 function studentUserFor(classId,seat){const reg=registryByStudent(classId,seat);return reg?.linkedUid?users.find(u=>u.uid===reg.linkedUid)||null:null}
-function updateSeatSyncButton(){const b=$('#seatSyncBtn');if(!b)return;const is804=$('#roleClass')?.value==='804';b.disabled=!is804;b.title=is804?'讀取 seat.html 目前的幹部與小老師並套用到選擇學期':'seat.html 同步目前只適用 804 班'}
+function updateSeatSyncButton(){const b=$('#seatSyncBtn');if(!b)return;const allowed=hasGlobalPrivilege()&&homeroomClassId()==='804'&&$('#roleClass')?.value==='804';b.classList.toggle('hidden',!allowed);b.disabled=!allowed;b.title=allowed?'讀取 seat.html 目前的幹部與小老師並套用到選擇學期':'此同步功能只提供最高管理員的 804 導師班使用'}
 function roleSelectedSeat(role,classId,sem){const preset=rolePresetFor(classId,sem),key=`${role.kind}|${role.scopeType}|${role.scopeName}`;if(preset[key]?.seat!=null)return String(preset[key].seat);const reg=registries.find(r=>r.type==='student'&&(r.assignments||[]).some(a=>a.semester===sem&&a.classId===classId&&a.kind===role.kind&&a.scopeType===role.scopeType&&a.scopeName===role.scopeName));return reg?.seat!=null?String(reg.seat):''}
 function renderRoleTable(){
   const classId=$('#roleClass').value,sem=$('#roleSemester').value,roster=getRosterForClass(classId);
@@ -348,7 +381,9 @@ async function applyRoleSelectionsToRegistries(classId,sem,selections){
   }
 }
 async function saveRoleTable(){
-  const classId=$('#roleClass').value,sem=$('#roleSemester').value;if(!confirm(`確定儲存 ${classId} 班 ${sem} 的幹部與小老師設定？\n\n即使學生尚未填 Google Email，職務也會先保存在班級設定中；日後補上 Email 時會自動套用。`))return;
+  const classId=$('#roleClass').value,sem=$('#roleSemester').value;
+  if(String(classId)!==String(homeroomClassId()))return alert(`職務派發只能管理自己的導師班 ${homeroomClassId()}。`);
+  if(!confirm(`確定儲存 ${classId} 班 ${sem} 的幹部與小老師設定？\n\n即使學生尚未填 Google Email，職務也會先保存在班級設定中；日後補上 Email 時會自動套用。`))return;
   const selections=$$('.role-select').map(sel=>({seat:sel.value?Number(sel.value):null,kind:sel.dataset.kind,scopeType:sel.dataset.type,scopeName:sel.dataset.name}));
   await persistRolePreset(classId,sem,selections);await applyRoleSelectionsToRegistries(classId,sem,selections);
   await audit('save_role_table','roles',`${sem}-${classId}`,`儲存 ${sem} ${classId} 幹部與小老師職務`,sem);alert('✅ 職務派發已儲存。未填 Email 的學生也已先保留職務設定。');await refreshAll();
@@ -366,6 +401,7 @@ function seatRoleToStandard(label){
   return null;
 }
 async function syncRolesFromSeat(){
+  if(!hasGlobalPrivilege() || homeroomClassId()!=='804')return alert('此功能只提供最高管理員本人同步 804 的 seat.html 職務資料。');
   if(!canAdminClass($('#roleClass').value))return alert('你沒有這個班級的管理權限。');
   if($('#roleClass').value!=='804')return alert('seat.html 目前只連動 804 班。');
   const sem=$('#roleSemester').value;if(!await ensureSeatLogin())return;
@@ -446,11 +482,140 @@ function filteredRecordRows(all){
     &&(classId==='all'||x.classId===classId)
     &&`${x.classId} ${x.scopeName} ${x.itemName||x.name}`.toLowerCase().includes(q))
 }
+function legacy_renderRecords(){
+  const sem=recordSemester||currentSemester;
+  const all=[...collections.map(x=>({...x,_type:'collection'})),...assessments.map(x=>({...x,_type:'assessment'}))]
+    .filter(x=>(x.semester||'')===sem&&canAdminClass(x.classId))
+    .sort((a,b)=>(a.classId||'').localeCompare(b.classId||'')||(a.scopeName||'').localeCompare(b.scopeName||'','zh-Hant')||(b.date||'').localeCompare(a.date||''));
+  const assignmentPairs=myTeacherAssignments(sem);
+  const managerPairs=subjectManagers.filter(x=>x.semester===sem&&x.status!=='released'&&(isGlobalAdmin()||x.managerUid===me?.uid));
+
+  let classIds=[];
+  if(isTeacherMode()){
+    classIds=[...new Set([
+      ...assignmentPairs.map(x=>String(x.classId)),
+      ...managerPairs.map(x=>String(x.classId)),
+      ...all.map(x=>String(x.classId||'')).filter(Boolean)
+    ])].sort();
+  }else if(isHomeroomMode()){
+    classIds=homeroomClassId()?[String(homeroomClassId())]:[];
+  }else{
+    classIds=[...new Set([
+      ...configuredClassIds(),
+      ...classes.map(x=>String(x.id)),
+      ...subjectManagers.filter(x=>x.semester===sem&&x.status!=='released').map(x=>String(x.classId)),
+      ...all.map(x=>String(x.classId||'')).filter(Boolean)
+    ])].sort();
+  }
+  const countCollection=all.filter(x=>x._type==='collection').length;
+  const countAssessment=all.filter(x=>x._type==='assessment').length;
+
+  $('#page-records').innerHTML=`<div class="card">
+    <div class="section-title">作業繳交／成績資料</div>
+    <div class="notice success"><b>管理員可查看本學期全部班級、全部科別的作業繳交與成績。</b><br>可直接勾選想要的項目，再預覽、列印或下載成一份 Excel。Excel 會包含「總表」以及每一個勾選項目的獨立工作表。</div>
+
+    <div class="record-filter-row">
+      <label>查看學期 <select id="recordSemester">${semesterOptions(sem)}</select></label>
+      <label>班級 <select id="recordClass"><option value="all">全部班級</option>${classIds.map(id=>`<option value="${esc(id)}">${esc(id)}</option>`).join('')}</select></label>
+      <label>科目 <select id="recordSubject"></select></label>
+      <label>類型 <select id="recordType"><option value="all">全部</option><option value="collection">作業繳交</option><option value="assessment">成績</option></select></label>
+      <input id="recordSearch" placeholder="搜尋班級、科目、項目">
+      <button class="btn gray" id="refreshRecords">重新整理</button>
+    </div>
+
+    <div class="export-panel">
+      <div class="export-title">☑️ 全科資料勾選匯出</div>
+      <div class="export-summary">${esc(sem)}｜作業繳交 ${countCollection} 項｜成績 ${countAssessment} 項｜<span id="selectedExportCount">已勾選 0 項</span></div>
+      <div class="export-toolbar">
+        <button class="btn gray" id="selectVisibleRecords">☑ 全選目前顯示</button>
+        <button class="btn gray" id="clearSelectedRecords">□ 清除勾選</button>
+        <button class="btn good" id="previewSelectedRecords">👀 預覽勾選</button>
+        <button class="btn primary" id="downloadSelectedRecords">📥 下載勾選 Excel</button>
+        <button class="btn gray" id="printSelectedRecords">🖨️ 列印勾選</button>
+      </div>
+      <div class="meta">例如可同時勾選：國文作業、數學小考、自然作業、本土語成績……只匯出你這次需要的資料。</div>
+    </div>
+
+    <div class="summary-launch">
+      <button class="btn good" id="openCollectionSummary">📚 各科作業繳交彙整</button>
+      <button class="btn primary" id="openScoreSummary">📊 各科成績彙整（週紀錄）</button>
+    </div>
+
+    <div id="recordList" class="record-export-list">${all.map(recordCard).join('')||'<div class="sub">這個學期尚無資料。</div>'}</div>
+  </div>`;
+
+  const recordSubjectsForClass=(classId='all')=>{
+    let list=[];
+    if(isTeacherMode()){
+      list=[
+        ...assignmentPairs
+          .filter(x=>classId==='all'||String(x.classId)===String(classId))
+          .map(x=>x.scopeName),
+        ...managerPairs
+          .filter(x=>classId==='all'||String(x.classId)===String(classId))
+          .map(x=>x.subject),
+        ...all
+          .filter(x=>classId==='all'||String(x.classId)===String(classId))
+          .map(x=>x.scopeName)
+      ];
+    }else if(isHomeroomMode()){
+      list=[
+        ...subjects,
+        ...all.map(x=>x.scopeName)
+      ];
+    }else{
+      list=[
+        ...subjects,
+        ...subjectManagers.filter(x=>x.semester===sem&&x.status!=='released'&&(classId==='all'||String(x.classId)===String(classId))).map(x=>x.subject),
+        ...all.filter(x=>classId==='all'||String(x.classId)===String(classId)).map(x=>x.scopeName)
+      ];
+    }
+    return [...new Set(list.filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),'zh-Hant'));
+  };
+
+  const refreshRecordSubjectOptions=()=>{
+    const classId=$('#recordClass')?.value||'all';
+    const previous=$('#recordSubject')?.value||'all';
+    const list=recordSubjectsForClass(classId);
+    $('#recordSubject').innerHTML='<option value="all">全部科目</option>'+list.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
+    if(previous==='all'||list.includes(previous))$('#recordSubject').value=previous;
+    else $('#recordSubject').value='all';
+  };
+
+  refreshRecordSubjectOptions();
+
+  const apply=()=>{
+    const visible=new Set(filteredRecordRows(all).map(x=>`${x._type}|${x.id}`));
+    $$('.record-export-row').forEach(row=>{
+      row.style.display=visible.has(`${row.dataset.recordType}|${row.dataset.recordId}`)?'':'none'
+    });
+    bindRecordButtons();
+    updateSelectedExportCount()
+  };
+
+  bindRecordButtons();
+  $$('.export-record-check').forEach(chk=>chk.onchange=updateSelectedExportCount);
+  $('#recordSemester').onchange=e=>{recordSemester=e.target.value;renderRecords()};
+  $('#recordClass').onchange=apply;
+  $('#recordSubject').onchange=apply;
+  $('#recordType').onchange=apply;
+  $('#recordSearch').oninput=apply;
+  $('#refreshRecords').onclick=async()=>{await refreshAll();renderRecords()};
+  $('#openCollectionSummary').onclick=()=>openSummary('collection');
+  $('#openScoreSummary').onclick=()=>openSummary('assessment');
+  $('#selectVisibleRecords').onclick=()=>selectVisibleRecords(true);
+  $('#clearSelectedRecords').onclick=()=>{$$('.export-record-check').forEach(x=>x.checked=false);updateSelectedExportCount()};
+  $('#previewSelectedRecords').onclick=previewSelectedRecords;
+  $('#downloadSelectedRecords').onclick=downloadSelectedRecordsExcel;
+  $('#printSelectedRecords').onclick=printSelectedRecords;
+}
 function bindRecordButtons(){
   $$('.confirm-record').forEach(b=>b.onclick=()=>confirmRecord(b.dataset.type,b.dataset.id));
   $$('.delete-record').forEach(b=>b.onclick=()=>deleteRecord(b.dataset.type,b.dataset.id));
   $$('.edit-record').forEach(b=>b.onclick=()=>editRecord(b.dataset.type,b.dataset.id))
 }
+async function legacy_confirmRecord(type,id){const col=type==='collection'?'collectionItems':'assessments',arr=type==='collection'?collections:assessments,x=arr.find(y=>y.id===id),confirming=x.reviewStatus!=='confirmed';await updateDoc(doc(db,col,id),{reviewStatus:confirming?'confirmed':'pending',locked:confirming,confirmedBy:confirming?auth.currentUser.uid:null,confirmedAt:confirming?serverTimestamp():null,updatedAt:serverTimestamp()});await audit(confirming?'confirm':'unconfirm',type,id,`${confirming?'確認並鎖定':'取消確認'}：${x.itemName||x.name}`,x.semester||currentSemester);await refreshAll()}
+async function legacy_deleteRecord(type,id){const col=type==='collection'?'collectionItems':'assessments',arr=type==='collection'?collections:assessments,x=arr.find(y=>y.id===id);if(!confirm(`確定刪除「${x.itemName||x.name}」？`))return;await deleteDoc(doc(db,col,id));await audit('delete',type,id,`管理員刪除：${x.itemName||x.name}`,x.semester||currentSemester);await refreshAll()}
 async function editRecord(type,id){
   const arr=type==='collection'?collections:assessments;
   const x=arr.find(y=>y.id===id);
@@ -730,8 +895,8 @@ async function saveStudentRegistryClass(){
   await audit('save_student_registry','identityRegistry',classId,`更新 ${classId} 學生 Google Email 對照`);await refreshAll();alert('✅ 學生 Email 對照名單已儲存。');
 }
 function applyStudentRegistryPaste(){const text=$('#studentRegistryPaste').value.trim();if(!text)return;const map=new Map();text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).forEach(line=>{const p=line.split(/[,，\t]/).map(x=>x.trim());if(p.length>=3)map.set(Number(p[0]),p[p.length-1])});$$('.student-reg-email').forEach(inp=>{const e=map.get(Number(inp.dataset.seat));if(e)inp.value=e});alert('已套用到上方欄位，請再按「儲存這班 Email」。')}
-async function addTeacherRegistry(){const displayName=$('#teacherName')?.value.trim()||'',email=registryId($('#teacherEmail')?.value||'');if(!displayName||!email)return alert('請填老師姓名與 Email。');const existing=registries.find(r=>r.id===email);await saveRegistry({...(existing||{}),email,displayName,type:'teacher',active:existing?.active!==false,assignments:existing?.assignments||[],linked:!!existing?.linkedUid,linkedUid:existing?.linkedUid||null});await audit('add_teacher_registry','identityRegistry',email,`新增／更新任課教師 ${displayName}`);await refreshAll();renderAccounts();alert('✅ 教師已加入全校共用教師主檔，可直接指定本班任課。');}
-async function applyTeacherRegistryPaste(){const lines=($('#teacherPaste')?.value||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);if(!lines.length)return alert('請貼上教師資料。');let count=0;for(const line of lines){const p=line.split(/[,，\t]/).map(x=>x.trim());if(p.length<2)continue;const displayName=p[0],email=registryId(p[1]);if(!displayName||!email)continue;const existing=registries.find(r=>r.id===email);await saveRegistry({...(existing||{}),email,displayName,type:'teacher',active:existing?.active!==false,assignments:existing?.assignments||[],linked:!!existing?.linkedUid,linkedUid:existing?.linkedUid||null});count++;}await audit('batch_teacher_registry','identityRegistry','teachers',`批次加入 ${count} 筆教師資料`);await refreshAll();renderAccounts();alert(`✅ 已加入／更新 ${count} 位教師，資料已同步到全校共用教師主檔。`)}
+async function addTeacherRegistry(){const displayName=$('#teacherName').value.trim(),email=registryId($('#teacherEmail').value);if(!displayName||!email)return alert('請填老師姓名與 Email。');const existing=registries.find(r=>r.id===email);await saveRegistry({...(existing||{}),email,displayName,type:'teacher',active:existing?.active!==false,assignments:existing?.assignments||[],linked:!!existing?.linkedUid,linkedUid:existing?.linkedUid||null});await audit('add_teacher_registry','identityRegistry',email,`新增／更新任課教師 ${displayName}`);await refreshAll();}
+async function applyTeacherRegistryPaste(){const lines=$('#teacherPaste').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);if(!lines.length)return alert('請貼上教師資料。');for(const line of lines){const p=line.split(/[,，\t]/).map(x=>x.trim());if(p.length<2)continue;const displayName=p[0],email=registryId(p[1]);if(!email)continue;const existing=registries.find(r=>r.id===email);await saveRegistry({...(existing||{}),email,displayName,type:'teacher',active:existing?.active!==false,assignments:existing?.assignments||[],linked:!!existing?.linkedUid,linkedUid:existing?.linkedUid||null});}await audit('batch_teacher_registry','identityRegistry','teachers',`批次加入 ${lines.length} 筆教師資料`);await refreshAll();alert('✅ 任課教師名單已加入。')}
 function editTeacherRegistry(id){
   const reg=registries.find(r=>r.id===id);if(!reg)return;
   const assignments=[...(reg.assignments||[])];
@@ -786,43 +951,18 @@ async function toggleRegistry(id){const reg=registries.find(r=>r.id===id);if(!re
 
 
 function renderTeacherDirectory(){
-  if(!isGlobalAdmin()){
-    $('#page-teacherDirectory').innerHTML='<div class="notice error">教師主檔僅供最高管理員查看與維護。</div>';
+  if(me?.type!=='admin'){
+    $('#page-teacherDirectory').innerHTML='<div class="notice error">只有管理員可以查看教師主檔。</div>';
     return;
   }
   const teachers=teacherRegistries();
-  const homeroomUsers=[...users.filter(u=>u.type==='admin'&&(u.adminScope==='class'||u.homeroomClassId||(u.adminClassIds||[]).length)),...(hasGlobalPrivilege()&&homeroomClassId()?[me]:[])];
-  const teacherMatchesUser=(reg,u)=>{
-    if(!reg||!u)return false;
-    const re=String(reg.email||reg.id||'').toLowerCase(),ue=String(u.email||'').toLowerCase();
-    return (!!reg.linkedUid&&reg.linkedUid===u.uid)||!!(re&&ue&&re===ue);
-  };
-  const isHomeroomTeacher=reg=>homeroomUsers.some(u=>teacherMatchesUser(reg,u));
-  const assignmentList=reg=>{
-    const list=[];
-    for(const a of (reg.assignments||[]).filter(a=>a.kind==='teacher'&&a.semester===currentSemester)){
-      const k=`${a.classId}|${a.scopeName}`;
-      if(!list.some(x=>x.k===k))list.push({k,classId:String(a.classId),subject:String(a.scopeName||'')});
-    }
-    for(const sm of subjectManagers.filter(sm=>sm.status!=='released'&&sm.semester===currentSemester&&teacherIdentityMatchesManager(reg,sm))){
-      const k=`${sm.classId}|${sm.subject}`;
-      if(!list.some(x=>x.k===k))list.push({k,classId:String(sm.classId),subject:String(sm.subject||'')});
-    }
-    return list.sort((a,b)=>String(a.subject).localeCompare(String(b.subject),'zh-Hant')||String(a.classId).localeCompare(String(b.classId),undefined,{numeric:true}));
-  };
-  const allSubjects=[...new Set([
-    ...subjects.map(String),
-    ...teachers.flatMap(r=>assignmentList(r).map(x=>x.subject))
-  ].filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh-Hant'));
-  const state=window.__teacherDirectoryFilters||{role:'all',grade:'all',subject:'all'};
-  window.__teacherDirectoryFilters=state;
 
   $('#page-teacherDirectory').innerHTML=`
     <div class="page-title">👨‍🏫 全校教師主檔</div>
     <div class="card">
       <div class="notice success"><b>教師主檔只記錄老師本人與學校 Google Email。</b><br>
         科目不是老師的固定屬性；同一位老師可以同時教不同班、不同科。任課內容由「學期 × 班級 × 科目」另外管理。<br>
-        教師主檔僅由最高管理員維護；導師只在「帳號連動／任課」替自己的導師班設定任課，不顯示或維護全校教師主檔。</div>
+        導師管理員可從這份共用教師主檔選老師，並且只能替自己的導師班設定任課權限。</div>
       <div class="two">
         <div>
           <div class="field"><label>老師姓名</label><input id="directoryTeacherName" placeholder="例如 王老師"></div>
@@ -837,95 +977,32 @@ function renderTeacherDirectory(){
     </div>
 
     <div class="card" style="margin-top:14px">
-      <div class="section-title">🔎 教師分類與篩選</div>
-      <div class="teacher-filter-tabs">
-        <button class="teacher-filter-tab ${state.role==='all'?'active':''}" data-role="all">全部教師</button>
-        <button class="teacher-filter-tab ${state.role==='homeroom'?'active':''}" data-role="homeroom">🏫 導師</button>
-        <button class="teacher-filter-tab ${state.role==='subject'?'active':''}" data-role="subject">📚 任課教師</button>
-        <button class="teacher-filter-tab ${state.role==='none'?'active':''}" data-role="none">尚未任課</button>
-        <button class="teacher-filter-tab ${state.role==='unlinked'?'active':''}" data-role="unlinked">⚠️ 尚未連動</button>
-      </div>
-      <div class="teacher-filter-grid">
-        <div class="field teacher-search-wrap"><label>搜尋</label><input id="teacherDirectorySearch" placeholder="搜尋姓名或 Email"></div>
-        <div class="field"><label>年級</label><select id="teacherDirectoryGrade"><option value="all">全部年級</option><option value="7">七年級</option><option value="8">八年級</option><option value="9">九年級</option><option value="cross">跨年級</option></select></div>
-        <div class="field"><label>科目</label><select id="teacherDirectorySubject"><option value="all">全部科目</option>${allSubjects.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('')}</select></div>
-        <button id="refreshTeacherDirectoryBtn" class="btn gray">🔄 重新整理</button>
-      </div>
-      <div id="teacherDirectoryResultMeta" class="meta" style="margin-top:9px"></div>
-    </div>
-
-    <div class="card" style="margin-top:14px">
+      <div class="toolbar"><input id="teacherDirectorySearch" placeholder="搜尋姓名或 Email"><button id="refreshTeacherDirectoryBtn" class="btn gray">重新整理</button></div>
       <div class="table-wrap"><table>
-        <thead><tr><th>姓名</th><th>Email</th><th>身分／Google</th><th>${esc(currentSemester)} 任課摘要</th><th>任課組數</th><th>操作</th></tr></thead>
+        <thead><tr><th>姓名</th><th>Email</th><th>Google連動</th><th>${esc(currentSemester)} 任課內容</th><th>任課組數</th></tr></thead>
         <tbody id="teacherDirectoryBody"></tbody>
       </table></div>
     </div>`;
 
-  $('#teacherDirectoryGrade').value=state.grade||'all';
-  $('#teacherDirectorySubject').value=allSubjects.includes(state.subject)?state.subject:'all';
-
   const paint=()=>{
     const q=($('#teacherDirectorySearch').value||'').trim().toLowerCase();
-    state.grade=$('#teacherDirectoryGrade').value||'all';
-    state.subject=$('#teacherDirectorySubject').value||'all';
-    let rows=teachers.map(r=>{
-      const list=assignmentList(r);
-      const grades=[...new Set(list.map(x=>gradeFromClassId(x.classId)).filter(Boolean))];
-      return {r,list,grades,isHomeroom:isHomeroomTeacher(r)};
-    });
-    rows=rows.filter(x=>{
-      const {r,list,grades,isHomeroom}=x;
-      if(q&&!`${r.displayName||''} ${r.email||r.id||''}`.toLowerCase().includes(q))return false;
-      if(state.role==='homeroom'&&!isHomeroom)return false;
-      if(state.role==='subject'&&!list.length)return false;
-      if(state.role==='none'&&list.length)return false;
-      if(state.role==='unlinked'&&r.linkedUid)return false;
-      if(state.grade==='cross'&&grades.length<2)return false;
-      if(['7','8','9'].includes(state.grade)&&!grades.includes(Number(state.grade)))return false;
-      if(state.subject!=='all'&&!list.some(a=>a.subject===state.subject))return false;
-      return true;
-    });
-    $('#teacherDirectoryResultMeta').textContent=`目前顯示 ${rows.length} 位教師｜${esc(currentSemester)}；科目篩選採多重歸類，同一位老師可同時出現在多個科目。`;
-    $('#teacherDirectoryBody').innerHTML=rows.map(({r,list,isHomeroom})=>{
-      const grouped={};
-      for(const x of list)(grouped[x.subject]??=[]).push(x.classId);
-      const groups=Object.entries(grouped).map(([subject,classIds])=>({subject,classIds:[...new Set(classIds)].sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true}))}));
-      const preview=groups.slice(0,2).map(g=>{
-        const shown=g.classIds.slice(0,4),more=g.classIds.length-shown.length;
-        return `<div class="teacher-summary-line"><span class="teacher-summary-subject">${esc(g.subject)}：</span><span class="teacher-class-chips">${shown.map(c=>`<span class="teacher-class-chip">${esc(c)}</span>`).join('')}${more>0?`<span class="teacher-class-chip">＋${more}</span>`:''}</span></div>`;
-      }).join('');
-      const hiddenSubjects=Math.max(0,groups.length-2);
-      const roleBadges=`<div class="teacher-role-badges">${isHomeroom?'<span class="teacher-role-badge">🏫 導師</span>':''}${list.length?'<span class="teacher-role-badge subject">📚 任課教師</span>':'<span class="teacher-role-badge" style="background:#f3f4f6;color:#666;border-color:#ddd">尚未任課</span>'}</div>`;
-      return `<tr>
-        <td><b>${esc(r.displayName||'')}</b></td>
-        <td>${esc(r.email||r.id)}</td>
-        <td>${r.linkedUid?'<span class="assistant-linked">✅ 已連動</span>':'<span class="assistant-unlinked">⚠️ 尚未連動</span>'}${roleBadges}</td>
-        <td><div class="teacher-summary">${preview||'<span class="meta">尚未設定任課</span>'}${hiddenSubjects?`<div class="teacher-more-note">另有 ${hiddenSubjects} 個科目，請點「查看全部任課」。</div>`:''}</div></td>
-        <td><span class="teacher-count-badge">${list.length} 筆</span></td>
-        <td><button class="btn primary small teacher-view-assignments" data-id="${esc(r.id)}" ${list.length?'':'disabled'}>👁 查看全部任課</button></td>
-      </tr>`;
-    }).join('')||'<tr><td colspan="6">目前沒有符合篩選條件的教師。</td></tr>';
-
-    $$('.teacher-view-assignments').forEach(b=>b.onclick=()=>{
-      const reg=teachers.find(r=>r.id===b.dataset.id);if(!reg)return;
-      const list=assignmentList(reg),grouped={};
-      for(const x of list)(grouped[x.subject]??=[]).push(x.classId);
-      const groups=Object.entries(grouped).sort((a,b)=>a[0].localeCompare(b[0],'zh-Hant'));
-      showModal(`<div class="section-title">👨‍🏫 ${esc(reg.displayName||reg.email)}｜${esc(currentSemester)} 全部任課</div>
-        <div class="notice"><b>${esc(reg.email||reg.id)}</b><br>共 ${list.length} 筆「班級 × 科目」任課設定；相同科目已自動合併班級顯示。</div>
-        <div>${groups.map(([subject,classIds])=>`<div class="teacher-detail-group"><div class="teacher-detail-title">${esc(subject)}｜${[...new Set(classIds)].length} 班</div><div class="teacher-class-chips">${[...new Set(classIds)].sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true})).map(c=>`<span class="teacher-class-chip">${esc(c)} 班</span>`).join('')}</div></div>`).join('')||'<div class="meta">尚未設定任課。</div>'}</div>
-        <div class="toolbar"><button class="btn gray close-modal">關閉</button></div>`);
-    });
+    const rows=teachers.filter(r=>!q||`${r.displayName||''} ${r.email||r.id||''}`.toLowerCase().includes(q));
+    $('#teacherDirectoryBody').innerHTML=rows.map(r=>{
+      const list=[];
+      for(const a of (r.assignments||[]).filter(a=>a.kind==='teacher'&&a.semester===currentSemester)){
+        const k=`${a.classId}|${a.scopeName}`;
+        if(!list.some(x=>x.k===k))list.push({k,classId:a.classId,subject:a.scopeName});
+      }
+      for(const sm of subjectManagers.filter(sm=>sm.status!=='released'&&sm.semester===currentSemester&&teacherIdentityMatchesManager(r,sm))){
+        const k=`${sm.classId}|${sm.subject}`;
+        if(!list.some(x=>x.k===k))list.push({k,classId:sm.classId,subject:sm.subject});
+      }
+      list.sort((a,b)=>String(a.classId).localeCompare(String(b.classId))||String(a.subject).localeCompare(String(b.subject),'zh-Hant'));
+      return `<tr><td><b>${esc(r.displayName||'')}</b></td><td>${esc(r.email||r.id)}</td><td>${r.linkedUid?'<span class="assistant-linked">✅ 已連動</span>':'<span class="assistant-unlinked">⚠️ 尚未連動</span>'}</td><td>${list.map(x=>`<div class="assign">${esc(x.classId)}｜${esc(x.subject)}</div>`).join('')||'尚未設定'}</td><td>${list.length}</td></tr>`;
+    }).join('')||'<tr><td colspan="5">目前沒有教師主檔。</td></tr>';
   };
 
-  $$('.teacher-filter-tab').forEach(b=>b.onclick=()=>{
-    state.role=b.dataset.role;
-    $$('.teacher-filter-tab').forEach(x=>x.classList.toggle('active',x.dataset.role===state.role));
-    paint();
-  });
   $('#teacherDirectorySearch').oninput=paint;
-  $('#teacherDirectoryGrade').onchange=paint;
-  $('#teacherDirectorySubject').onchange=paint;
   $('#refreshTeacherDirectoryBtn').onclick=async()=>{await refreshAll();renderTeacherDirectory()};
   $('#directoryAddTeacherBtn').onclick=async()=>{
     const displayName=$('#directoryTeacherName').value.trim(),email=registryId($('#directoryTeacherEmail').value);
@@ -938,6 +1015,30 @@ function renderTeacherDirectory(){
   paint();
 }
 
+
+async function upsertTeacherFromHomeroomAdmin(displayName,email){
+  displayName=String(displayName||'').trim();
+  email=registryId(email);
+  if(!displayName||!email)throw new Error('請填老師姓名與學校 Google Email。');
+
+  const ref=doc(db,'identityRegistry',email);
+  const snap=await getDoc(ref);
+  if(snap.exists()){
+    const old=snap.data();
+    if(old.type && old.type!=='teacher')throw new Error('這個 Email 已被其他身分使用，不能建立成教師主檔。');
+    await setDoc(ref,{displayName,active:true,updatedAt:serverTimestamp()},{merge:true});
+  }else{
+    await setDoc(ref,{
+      email,displayName,type:'teacher',active:true,
+      assignments:[],linked:false,linkedUid:null,
+      createdByUid:me.uid,createdByName:me.displayName||me.username||'',
+      createdAt:serverTimestamp(),updatedAt:serverTimestamp()
+    },{merge:false});
+  }
+  try{await audit('teacher_directory_upsert','identityRegistry',email,`導師新增／更新教師主檔：${displayName}`)}catch(e){console.warn(e)}
+  return email;
+}
+
 function renderAccounts(){
   if(!isGlobalAdmin()){
     const classIds=scopedClassIds();
@@ -947,7 +1048,7 @@ function renderAccounts(){
     $('#page-accounts').innerHTML=`<div class="page-title">帳號連動／本班任課教師</div>
       <div class="two">
         <div class="card">
-<div class="section-title">🎒 導師班學生 Email 對照名單</div>
+          <div class="section-title">🎒 導師班學生 Email 對照名單</div>
           <div class="notice success"><b>${esc(adminLabel())}</b><br>你可以管理 ${esc(classIds.join('、'))} 班學生的 Google Email 與連動狀態。</div>
           <div class="toolbar"><label>班級<select id="registryClass">${classIds.map(id=>`<option value="${esc(id)}">${esc(id)}</option>`).join('')}</select></label><button id="saveStudentRegistry" class="btn primary">💾 儲存這班 Email</button></div>
           <div id="studentRegistryList"></div>
@@ -957,35 +1058,29 @@ function renderAccounts(){
         <div class="card">
           <div class="section-title">👨‍🏫 ${esc(ownClass)} 班任課教師</div>
           <div class="notice">
-            從<b>全校共用教師主檔</b>選擇老師，再指定本科。<b>同一位老師可以教不同班、不同科。</b><br>
+            可以直接從「全校教師主檔」選老師，再指定本科。<b>同一位老師可以教不同班、不同科，科目不固定在老師主檔。</b><br>
             按下「指定本班任課老師並授權」後，會同時授予該老師這個班級 × 科目的<b>查看、作業登記、成績登記</b>權限。<br>
-            若清單裡找不到老師，導師可直接在下方新增教師；新增後會寫入<b>同一份全校教師主檔</b>，最高管理員也會同步看到，不會另建第二套資料。
+            若任課老師已經先建立這個班級 × 科目，導師端會直接共用，不會再建立第二份。
           </div>
           <div class="toolbar">
             <label>老師<select id="classTeacherSelect">${teachers.map(r=>`<option value="${esc(r.id)}">${esc(r.displayName||r.email)}｜${esc(r.email||r.id)}${r.linkedUid?'｜✅已連動':'｜⚠️尚未連動'}</option>`).join('')}</select></label>
             <label>科目<select id="classTeacherSubject">${subjects.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('')}</select></label>
             <button id="assignClassTeacherBtn" class="btn primary" ${teachers.length?'':'disabled'}>➕ 指定本班任課老師並授權</button>
           </div>
-          ${teachers.length?'':'<div class="notice warning">目前尚無可選教師。可直接使用下方「新增教師」建立教師帳號，建立後即可指定本班任課與授權。</div>'}
+          ${teachers.length?'':'<div class="meta">目前沒有教師主檔。你可以直接在下方新增老師。</div>'}
 
-          <details style="margin-top:14px" open>
-            <summary style="cursor:pointer;font-weight:900">➕ 找不到老師？導師可直接新增教師</summary>
-            <div class="notice success" style="margin-top:10px">
-              這裡新增的是<b>全校共用教師主檔</b>，不是 804 班自己的另一份名單。<br>
-              導師只在這裡快速新增「姓名＋學校 Google Email」；全校教師主檔的彙整、篩選與完整管理仍只有最高管理員看得到。
+          <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:900">➕ 找不到老師？導師可直接新增教師</summary>
+            <div class="notice success" style="margin-top:10px">這裡新增的是<b>全校共用教師主檔</b>，不是你班級自己的第二份教師名單。只建立「姓名＋學校 Google Email」，科目仍由每個班級個別指派。</div>
+            <div class="two">
+              <div class="field"><label>老師姓名</label><input id="classAdminTeacherName" placeholder="例如 王老師"></div>
+              <div class="field"><label>學校 Google Email</label><input id="classAdminTeacherEmail" type="email" placeholder="teacher@tmail.ilc.edu.tw"></div>
             </div>
-            <div class="two" style="grid-template-columns:1fr 1fr">
-              <div class="field"><label>老師姓名</label><input id="teacherName" placeholder="例如 王老師"></div>
-              <div class="field"><label>學校 Google Email</label><input id="teacherEmail" type="email" placeholder="teacher@tmail.ilc.edu.tw"></div>
-            </div>
-            <button id="addTeacherRegistry" class="btn good">➕ 新增／更新教師</button>
-            <div class="field" style="margin-top:10px"><label>也可批次貼上：姓名,Email</label><textarea id="teacherPaste" rows="4" placeholder="王老師,wang@tmail.ilc.edu.tw\n李老師,lee@tmail.ilc.edu.tw"></textarea></div>
-            <button id="applyTeacherPaste" class="btn gray">📥 批次加入教師</button>
+            <button id="classAdminAddTeacherBtn" class="btn good">新增／更新教師</button>
           </details>
 
           <div class="section-title" style="margin-top:16px">📚 ${esc(currentSemester)} 已設定任課</div>
           <div class="table-wrap"><table>
-            <thead><tr><th>科目</th><th>任課老師</th><th>Google</th><th>授權</th><th>本科小老師</th><th>操作</th></tr></thead>
+            <thead><tr><th>科目</th><th>任課老師</th><th>Google</th><th>授權</th><th>本科小老師</th></tr></thead>
             <tbody>
               ${subjectManagers.filter(sm=>sm.status!=='released'&&sm.semester===currentSemester&&classIds.includes(String(sm.classId)))
                 .sort((a,b)=>String(a.subject).localeCompare(String(b.subject),'zh-Hant'))
@@ -998,9 +1093,8 @@ function renderAccounts(){
                     <td>${reg?.linkedUid||sm.managerUid?'<span class="assistant-linked">✅ 已連動</span>':'<span class="assistant-unlinked">⚠️ 尚未連動</span>'}</td>
                     <td><span class="assistant-linked">✅ 查看／作業／成績</span></td>
                     <td>${ai.student?`${esc(ai.label)}｜${ai.linked?'✅':'⚠️'}`:'尚未指派'}</td>
-                    <td><button class="btn primary small edit-homeroom-teacher" data-id="${esc(sm.id)}">✏️ 修改</button> <button class="btn danger small delete-homeroom-teacher" data-id="${esc(sm.id)}">🗑️ 刪除</button></td>
                   </tr>`;
-                }).join('')||'<tr><td colspan="6">本學期尚未設定任課教師。</td></tr>'}
+                }).join('')||'<tr><td colspan="5">本學期尚未設定任課教師。</td></tr>'}
             </tbody>
           </table></div>
         </div>
@@ -1009,17 +1103,28 @@ function renderAccounts(){
     $('#registryClass').onchange=renderStudentRegistryList;
     $('#saveStudentRegistry').onclick=saveStudentRegistryClass;
     $('#applyStudentPaste').onclick=applyStudentRegistryPaste;
+    $('#classAdminAddTeacherBtn')?.addEventListener('click',async()=>{
+      const btn=$('#classAdminAddTeacherBtn');
+      try{
+        if(btn){btn.disabled=true;btn.textContent='儲存中…'}
+        await upsertTeacherFromHomeroomAdmin($('#classAdminTeacherName').value,$('#classAdminTeacherEmail').value);
+        await refreshAll();
+        renderAccounts();
+        alert('✅ 教師已加入全校共用教師主檔，現在可以直接選取並指派本科。');
+      }catch(e){
+        alert(`新增教師失敗：${e.message||e}`);
+      }finally{
+        if(btn){btn.disabled=false;btn.textContent='新增／更新教師'}
+      }
+    });
+
     $('#assignClassTeacherBtn')?.addEventListener('click',async()=>{
       const reg=registries.find(r=>r.id===$('#classTeacherSelect').value);
       if(!reg)return alert('請先選擇老師。');
-      const result=await assignTeacherToSubject(reg,currentSemester,ownClass,$('#classTeacherSubject').value,{source:`${ownClass} 導師新增`});
+      const result=await assignTeacherToSubject(reg,currentSemester,ownClass,$('#classTeacherSubject').value,{source:`${ownClass} 導師指派`});
       if(!result.ok)return alert(result.message);
       await refreshAll();renderAccounts();alert(result.message);
     });
-    $('#addTeacherRegistry')?.addEventListener('click',addTeacherRegistry);
-    $('#applyTeacherPaste')?.addEventListener('click',applyTeacherRegistryPaste);
-    $$('.edit-homeroom-teacher').forEach(b=>b.onclick=()=>editHomeroomTeacherAssignment(b.dataset.id));
-    $$('.delete-homeroom-teacher').forEach(b=>b.onclick=()=>deleteHomeroomTeacherAssignment(b.dataset.id));
     renderStudentRegistryList();
     return;
   }
@@ -1062,36 +1167,13 @@ function renderAccounts(){
 
     <div class="card" style="margin-top:14px">
       <div class="section-title">👨‍🏫 任課教師設定與連動狀態</div>
-      <div class="notice">任課顯示方式已與「全校教師主檔」一致：<b>相同科目自動合併班級</b>，主表只顯示摘要；任課很多的老師可按「查看全部任課」展開完整資料，原本的「任課設定」功能不變。</div>
-      <div class="table-wrap"><table><thead><tr><th>姓名</th><th>Email</th><th>連動</th><th>${esc(currentSemester)} 任課摘要</th><th>操作</th></tr></thead>
+      <div class="table-wrap"><table><thead><tr><th>姓名</th><th>Email</th><th>連動</th><th>${esc(currentSemester)} 任課</th><th>操作</th></tr></thead>
       <tbody>${teachers.map(reg=>{
-        const list=[];
-        for(const a of (reg.assignments||[]).filter(a=>a.semester===currentSemester&&a.kind==='teacher')){
-          const classId=String(a.classId||''),subject=String(a.scopeName||'');
-          const k=`${classId}|${subject}`;
-          if(classId&&subject&&!list.some(x=>x.k===k))list.push({k,classId,subject});
-        }
-        for(const sm of subjectManagers.filter(sm=>sm.status!=='released'&&sm.semester===currentSemester&&teacherIdentityMatchesManager(reg,sm))){
-          const classId=String(sm.classId||''),subject=String(sm.subject||'');
-          const k=`${classId}|${subject}`;
-          if(classId&&subject&&!list.some(x=>x.k===k))list.push({k,classId,subject});
-        }
-        list.sort((a,b)=>String(a.subject).localeCompare(String(b.subject),'zh-Hant')||String(a.classId).localeCompare(String(b.classId),undefined,{numeric:true}));
-        const grouped={};
-        for(const x of list)(grouped[x.subject]??=[]).push(x.classId);
-        const groups=Object.entries(grouped).map(([subject,classIds])=>({subject,classIds:[...new Set(classIds)].sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true}))}));
-        const preview=groups.slice(0,2).map(g=>{
-          const shown=g.classIds.slice(0,4),more=g.classIds.length-shown.length;
-          return `<div class="teacher-summary-line"><span class="teacher-summary-subject">${esc(g.subject)}：</span><span class="teacher-class-chips">${shown.map(c=>`<span class="teacher-class-chip">${esc(c)}</span>`).join('')}${more>0?`<span class="teacher-class-chip">＋${more}</span>`:''}</span></div>`;
-        }).join('');
-        const hiddenSubjects=Math.max(0,groups.length-2);
-        return `<tr>
-          <td><b>${esc(reg.displayName||'')}</b></td>
-          <td>${esc(reg.email||reg.id)}</td>
-          <td>${reg.linkedUid?'<span class="registry-status linked">🟢 已連動</span>':'<span class="registry-status unlinked">⚪ 尚未連動</span>'}</td>
-          <td><div class="teacher-summary">${preview||'<span class="meta">尚未指派</span>'}${hiddenSubjects?`<div class="teacher-more-note">另有 ${hiddenSubjects} 個科目，請點「查看全部任課」。</div>`:''}<div class="meta" style="margin-top:4px">共 ${list.length} 筆任課</div></div></td>
-          <td><div class="toolbar" style="gap:6px;flex-wrap:wrap"><button class="btn gray small accounts-view-assignments" data-id="${esc(reg.id)}" ${list.length?'':'disabled'}>👁 查看全部任課</button><button class="btn primary small edit-teacher-reg" data-id="${esc(reg.id)}">⚙ 任課設定</button></div></td>
-        </tr>`;
+        const smRows=subjectManagers.filter(sm=>sm.status!=='released'&&sm.semester===currentSemester&&teacherIdentityMatchesManager(reg,sm))
+          .map(sm=>`${sm.classId}班｜${sm.subject}`);
+        const aRows=(reg.assignments||[]).filter(a=>a.semester===currentSemester&&a.kind==='teacher').map(a=>`${a.classId}班｜${a.scopeName}`);
+        const rows=[...new Set([...aRows,...smRows])];
+        return `<tr><td><b>${esc(reg.displayName||'')}</b></td><td>${esc(reg.email||reg.id)}</td><td>${reg.linkedUid?'<span class="registry-status linked">🟢 已連動</span>':'<span class="registry-status unlinked">⚪ 尚未連動</span>'}</td><td>${rows.map(x=>`<div class="assign">${esc(x)}</div>`).join('')||'尚未指派'}</td><td><button class="btn primary small edit-teacher-reg" data-id="${esc(reg.id)}">⚙ 任課設定</button></td></tr>`;
       }).join('')||'<tr><td colspan="5">尚未建立任課教師主檔。</td></tr>'}</tbody></table></div>
     </div>`;
 
@@ -1101,24 +1183,6 @@ function renderAccounts(){
   $('#addTeacherRegistry').onclick=addTeacherRegistry;
   $('#applyTeacherPaste').onclick=applyTeacherRegistryPaste;
   $('#quickAddTeacherAssignment')?.addEventListener('click',addQuickTeacherAssignment);
-  $$('.accounts-view-assignments').forEach(b=>b.onclick=()=>{
-    const reg=teachers.find(r=>r.id===b.dataset.id);if(!reg)return;
-    const list=[];
-    for(const a of (reg.assignments||[]).filter(a=>a.semester===currentSemester&&a.kind==='teacher')){
-      const classId=String(a.classId||''),subject=String(a.scopeName||''),k=`${classId}|${subject}`;
-      if(classId&&subject&&!list.some(x=>x.k===k))list.push({k,classId,subject});
-    }
-    for(const sm of subjectManagers.filter(sm=>sm.status!=='released'&&sm.semester===currentSemester&&teacherIdentityMatchesManager(reg,sm))){
-      const classId=String(sm.classId||''),subject=String(sm.subject||''),k=`${classId}|${subject}`;
-      if(classId&&subject&&!list.some(x=>x.k===k))list.push({k,classId,subject});
-    }
-    const grouped={};for(const x of list)(grouped[x.subject]??=[]).push(x.classId);
-    const groups=Object.entries(grouped).sort((a,b)=>a[0].localeCompare(b[0],'zh-Hant'));
-    showModal(`<div class="section-title">👨‍🏫 ${esc(reg.displayName||reg.email)}｜${esc(currentSemester)} 全部任課</div>
-      <div class="notice"><b>${esc(reg.email||reg.id)}</b><br>共 ${list.length} 筆「班級 × 科目」任課設定；相同科目已自動合併班級顯示。</div>
-      <div>${groups.map(([subject,classIds])=>`<div class="teacher-detail-group"><div class="teacher-detail-title">${esc(subject)}｜${[...new Set(classIds)].length} 班</div><div class="teacher-class-chips">${[...new Set(classIds)].sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true})).map(c=>`<span class="teacher-class-chip">${esc(c)} 班</span>`).join('')}</div></div>`).join('')||'<div class="meta">尚未設定任課。</div>'}</div>
-      <div class="toolbar"><button class="btn gray close-modal">關閉</button></div>`);
-  });
   $$('.edit-teacher-reg').forEach(b=>b.onclick=()=>editTeacherRegistry(b.dataset.id));
   renderStudentRegistryList();
 }
@@ -1176,36 +1240,13 @@ async function seedClasses(){if(!isGlobalAdmin())return alert('只有最高管�
   for(const[id,arr]of Object.entries(defaultRosters)){
     const existing=classDocLocal(id),oldStudents=existing?.students||[];
     const bySeat=new Map(oldStudents.map(s=>[Number(s.seat),s]));
-    for(const[seat,name0]of arr){
-      const name=normalizeStudentName(name0),old=bySeat.get(Number(seat));
-      if(old){
-        const sid=old.studentId||((String(old.id||'').startsWith('stu_'))?old.id:'');
-        bySeat.set(Number(seat),{...old,id:sid||old.id||String(seat),studentId:sid||old.studentId||null,seat:Number(seat),name:old.name||name});
-      }else bySeat.set(Number(seat),{id:String(seat),seat:Number(seat),name,active:true});
-    }
+    for(const[seat,name]of arr){const old=bySeat.get(Number(seat));if(old)bySeat.set(Number(seat),{...old,id:String(seat),seat:Number(seat),name:old.name||name});else bySeat.set(Number(seat),{id:String(seat),seat:Number(seat),name,active:true})}
     await setDoc(doc(db,'classes',id),{classId:id,students:[...bySeat.values()].sort((a,b)=>Number(a.seat)-Number(b.seat)),updatedAt:serverTimestamp()},{merge:true});
   }
-  await audit('seed','classes','default','建立／更新預設班級名單（保留固定 studentId）');await refreshAll();alert('預設班級名單已建立／補齊；既有 studentId 與轉出狀態不會被覆蓋。');
+  await audit('seed','classes','default','建立／更新預設班級名單');await refreshAll();alert('預設班級名單已建立／補齊；既有轉出狀態不會被覆蓋。');
 }
-function parseRoster(text){return text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).map(line=>{const[seat,...rest]=line.split(/[,，\t]/);return{seat:Number(seat),name:normalizeStudentName(rest.join('').trim()),active:true}}).filter(x=>x.seat&&x.name).sort((a,b)=>a.seat-b.seat)}
-async function saveClass(id,text){
-  if(!isGlobalAdmin())return alert('只有最高管理員可以新增自訂班級。');id=id.trim();if(!id)return alert('請輸入班級');
-  const parsed=parseRoster(text);if(!parsed.length)return alert('請輸入名單');
-  const old=classDocLocal(id)?.students||[],students=[];
-  for(const row of parsed){
-    const existing=old.find(s=>Number(s.seat)===Number(row.seat) && normalizeStudentName(s.name||'')===normalizeStudentName(row.name));
-    if(existing){
-      const sid=existing.studentId||((String(existing.id||'').startsWith('stu_'))?existing.id:'');
-      students.push({...existing,...row,id:sid||existing.id||String(row.seat),studentId:sid||existing.studentId||null,active:existing.active!==false});
-    }else{
-      const exact=chooseBestDirectoryStudent(directoryExactCandidates(id,row.seat,row.name),{classId:id,seat:row.seat});
-      if(exact)students.push({...row,id:exact.id,studentId:exact.id,email:exact.email||'',active:true});
-      else students.push({...row,id:String(row.seat),active:true});
-    }
-  }
-  await setDoc(doc(db,'classes',id),{classId:id,students,updatedAt:serverTimestamp()},{merge:true});
-  await audit('save_class','class',id,`更新班級名單 ${id}（保留既有 studentId）`);await refreshAll();alert('✅ 已儲存班級名單；既有學生固定 studentId 會保留，不會因重新貼名單而重建。')
-}
+function parseRoster(text){return text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).map(line=>{const[seat,...rest]=line.split(/[,，\t]/);return{id:String(Number(seat)),seat:Number(seat),name:rest.join('').trim(),active:true}}).filter(x=>x.seat&&x.name).sort((a,b)=>a.seat-b.seat)}
+async function saveClass(id,text){if(!isGlobalAdmin())return alert('只有最高管理員可以新增自訂班級。');id=id.trim();if(!id)return alert('請輸入班級');const students=parseRoster(text);if(!students.length)return alert('請輸入名單');await setDoc(doc(db,'classes',id),{classId:id,students,updatedAt:serverTimestamp()},{merge:true});await audit('save_class','class',id,`更新班級名單 ${id}`);await refreshAll();alert('已儲存')}
 function editClass(id){
   if(!canAdminClass(id))return alert('你沒有這個班級的管理權限。');
   const c=classDocLocal(id);if(!c)return;showModal(`<div class="item-head"><div><div class="section-title">👥 ${esc(id)} 班學生管理</div><div class="meta">新增／轉出／恢復都會保留舊資料，不必改程式碼。</div></div><button class="btn gray close-modal">關閉</button></div><div class="toolbar"><button id="addStudentBtn" class="btn primary">＋ 新增學生</button></div><div id="activeStudentList"></div><div id="inactiveStudentList" style="margin-top:16px"></div>`);
@@ -1221,6 +1262,9 @@ async function saveClassStudents(id,students,detail){
   if(!canAdminClass(id))return alert('你沒有這個班級的管理權限。');
   await setDoc(doc(db,'classes',id),{classId:id,students:[...students].sort((a,b)=>Number(a.seat)-Number(b.seat)),updatedAt:serverTimestamp()},{merge:true});const c=classDocLocal(id);if(c)c.students=students;await audit('class_students','class',id,detail);await refreshAll();
 }
+async function legacy_addStudentToClass(id){
+  const c=classDocLocal(id);if(!c)return;const seat=Number(prompt(`新增 ${id} 班學生\n請輸入座號：`));if(!Number.isInteger(seat)||seat<=0)return alert('座號格式不正確。');if((c.students||[]).some(s=>Number(s.seat)===seat))return alert(`${seat} 號已存在。若是原學生回班，請使用「恢復在班」。`);const name=(prompt('請輸入學生姓名：')||'').trim();if(!name)return;const students=[...(c.students||[]),{id:String(seat),seat,name,active:true,joinedSemester:currentSemester}];await saveClassStudents(id,students,`新增學生：${seat} ${name}`);editClass(id);alert(`✅ 已新增 ${id} 班 ${seat}號 ${name}。\n現在到「帳號連動／任課」就會看到他，可再填 Google Email。`);
+}
 async function transferOutStudent(id,seat){
   const c=classDocLocal(id),student=c?.students?.find(s=>Number(s.seat)===seat);if(!student)return;if(!confirm(`確定將 ${seat}號 ${student.name} 標記為「已轉出」？\n\n舊收繳、成績與歷史紀錄都會保留，但目前在班名單不再顯示；若已連動 Google 帳號，也會停用系統存取。`))return;
   const students=c.students.map(s=>Number(s.seat)===seat?{...s,active:false,transferredOutSemester:currentSemester,transferredOutAt:new Date().toISOString()}:s);const reg=registryByStudent(id,seat);if(reg){reg.active=false;await saveRegistry(reg)}await saveClassStudents(id,students,`學生轉出：${seat} ${student.name}`);editClass(id);
@@ -1229,23 +1273,81 @@ async function restoreStudent(id,seat){
   const c=classDocLocal(id),student=c?.students?.find(s=>Number(s.seat)===seat);if(!student)return;if(!confirm(`確定恢復 ${seat}號 ${student.name} 為目前在班學生？`))return;
   const students=c.students.map(s=>Number(s.seat)===seat?{...s,active:true,transferredOutSemester:null,transferredOutAt:null}:s);const reg=registryByStudent(id,seat);if(reg){reg.active=true;await saveRegistry(reg)}await saveClassStudents(id,students,`恢復學生：${seat} ${student.name}`);editClass(id);
 }
+async function legacy_editStudentInClass(id,oldSeat){
+  const c=classDocLocal(id),student=c?.students?.find(s=>Number(s.seat)===oldSeat);if(!student)return;const newSeat=Number(prompt('修改座號：',String(student.seat)));if(!Number.isInteger(newSeat)||newSeat<=0)return alert('座號格式不正確。');if(newSeat!==oldSeat&&(c.students||[]).some(s=>Number(s.seat)===newSeat))return alert(`${newSeat} 號已有人使用。`);const newName=(prompt('修改姓名：',student.name)||'').trim();if(!newName)return;
+  const students=c.students.map(s=>Number(s.seat)===oldSeat?{...s,id:String(newSeat),seat:newSeat,name:newName}:s);
+  // 同步所有學期職務表中的座號與姓名，避免換座號後職務失聯。
+  const roleAssignments=structuredClone(c.roleAssignments||{});for(const roles of Object.values(roleAssignments)){for(const who of Object.values(roles||{})){if(Number(who?.seat)===oldSeat){who.seat=newSeat;who.name=newName}}}
+  await setDoc(doc(db,'classes',id),{classId:id,students,roleAssignments,updatedAt:serverTimestamp()},{merge:true});c.students=students;c.roleAssignments=roleAssignments;
+  const reg=registryByStudent(id,oldSeat);if(reg){reg.seat=newSeat;reg.displayName=newName;reg.username=`${id}${String(newSeat).padStart(2,'0')}`;await saveRegistry(reg)}await audit('edit_student','class',id,`修改學生：${oldSeat} ${student.name} → ${newSeat} ${newName}`);await refreshAll();editClass(id);alert('✅ 學生資料已更新，既有 Google UID 連動會保留。');
+}
 
 
 function adminTeacherCandidates(){
   return registries.filter(r=>r.type==='teacher'&&r.active!==false&&r.linkedUid&&r.linkedUid!==me.uid).sort((a,b)=>String(a.displayName||'').localeCompare(String(b.displayName||''),'zh-Hant'));
 }
-function userDocUid(u){return String(u?.uid||u?.id||'').trim()}
 function currentClassAdminUsers(){
-  return users.filter(u=>userDocUid(u)!==String(me?.uid||'')&&u.type==='admin'&&u.adminScope==='class').sort((a,b)=>String(a.displayName||'').localeCompare(String(b.displayName||''),'zh-Hant'));
+  return users.filter(u=>u.uid!==me.uid&&u.type==='admin'&&u.adminScope==='class').sort((a,b)=>String(a.displayName||'').localeCompare(String(b.displayName||''),'zh-Hant'));
+}
+async function legacy_grantClassAdmin(){
+  if(!isGlobalAdmin())return alert('只有最高管理員可以授予管理者權限。');
+  const regId=$('#adminTeacherSelect')?.value,classId=$('#adminClassSelect')?.value;
+  const reg=registries.find(r=>r.id===regId);
+  if(!reg||!reg.linkedUid)return alert('請選擇一位已完成 Google 連動的老師。');
+  if(!classId)return alert('請選擇導師班。');
+  if(!confirm(`確定授予 ${reg.displayName}「${classId} 班班級管理員」權限？\n\n他登入後台後只會載入 ${classId} 班資料。`))return;
+  await setDoc(doc(db,'users',reg.linkedUid),{type:'admin',adminScope:'class',adminClassIds:[classId],updatedAt:serverTimestamp()},{merge:true});
+  await audit('grant_class_admin','user',reg.linkedUid,`授予 ${reg.displayName} ${classId} 班班級管理員`);
+  await refreshAll();
+  renderAdminPermissions();
+  alert(`✅ ${reg.displayName} 已成為 ${classId} 班班級管理員。`);
 }
 async function revokeClassAdmin(uid){
   if(!isGlobalAdmin())return alert('只有最高管理員可以取消管理者權限。');
-  uid=String(uid||'').trim();
-  const u=users.find(x=>userDocUid(x)===uid);if(!u)return;
+  const u=users.find(x=>x.uid===uid);if(!u)return;
   if(!confirm(`確定取消 ${u.displayName||u.email} 的班級管理員權限？\n\n取消後仍會保留原本任課教師 assignments。`))return;
   await setDoc(doc(db,'users',uid),{type:'teacher',adminScope:null,adminClassIds:[],updatedAt:serverTimestamp()},{merge:true});
   await audit('revoke_class_admin','user',uid,`取消 ${u.displayName||u.email} 班級管理員權限`);
   await refreshAll();renderAdminPermissions();
+}
+async function legacy_changeClassAdminClass(uid){
+  if(!isGlobalAdmin())return;
+  const u=users.find(x=>x.uid===uid);if(!u)return;
+  const sel=document.querySelector(`.class-admin-class[data-uid="${CSS.escape(uid)}"]`);const classId=sel?.value;
+  if(!classId)return;
+  await setDoc(doc(db,'users',uid),{adminScope:'class',adminClassIds:[classId],updatedAt:serverTimestamp()},{merge:true});
+  await audit('change_class_admin_scope','user',uid,`調整 ${u.displayName||u.email} 管理班級為 ${classId}`);
+  await refreshAll();renderAdminPermissions();
+}
+function legacy_renderAdminPermissions(){
+  if(!isGlobalAdmin()){
+    $('#page-adminPermissions').innerHTML='<div class="notice error">只有最高管理員可以管理其他班級管理員。</div>';return;
+  }
+  const candidates=adminTeacherCandidates(),admins=currentClassAdminUsers(),classIds=[...new Set([...classes.map(c=>c.id),...Object.keys(defaultRosters)])].sort();
+  $('#page-adminPermissions').innerHTML=`<div class="page-title">管理者權限</div>
+    <div class="card"><div class="section-title">🔐 授予班級管理員</div><div class="notice success"><b>你的帳號維持最高管理員。</b><br>802、904、906 導師請先以老師身分登入 class-work.html 一次，完成 Google UID 連動後，再在這裡授權。班級管理員登入同一個後台網址，但只能看到自己導師班。</div>
+    <div class="toolbar"><label>老師<select id="adminTeacherSelect">${candidates.map(r=>`<option value="${esc(r.id)}">${esc(r.displayName||r.email)}｜${esc(r.email||r.id)}</option>`).join('')}</select></label><label>導師班<select id="adminClassSelect">${classIds.map(id=>`<option value="${esc(id)}">${esc(id)}</option>`).join('')}</select></label><button id="grantClassAdminBtn" class="btn primary" ${candidates.length?'':'disabled'}>🔐 授予班級管理員</button></div>${candidates.length?'':'<div class="meta">目前沒有可授權的已連動任課教師。請先建立老師 Email，並請該老師登入 class-work.html 一次。</div>'}</div>
+    <div class="card" style="margin-top:14px"><div class="section-title">👨‍🏫 目前班級管理員</div><div class="table-wrap"><table><thead><tr><th>姓名</th><th>Email</th><th>管理班級</th><th>原任課權限</th><th>操作</th></tr></thead><tbody>${admins.map(u=>`<tr><td><b>${esc(u.displayName||'')}</b></td><td>${esc(u.email||'')}</td><td><select class="class-admin-class" data-uid="${esc(u.uid)}">${classIds.map(id=>`<option value="${esc(id)}" ${(u.adminClassIds||[]).includes(id)?'selected':''}>${esc(id)}</option>`).join('')}</select></td><td>${(u.assignments||[]).filter(a=>a.kind==='teacher').map(a=>`${esc(a.semester)}｜${esc(a.classId)}｜${esc(a.scopeName)}`).join('<br>')||'—'}</td><td><button class="btn good small save-class-admin" data-uid="${esc(u.uid)}">💾 儲存班級</button> <button class="btn danger small revoke-class-admin" data-uid="${esc(u.uid)}">取消管理權限</button></td></tr>`).join('')||'<tr><td colspan="5">尚未授予其他班級管理員。</td></tr>'}</tbody></table></div></div>`;
+  $('#grantClassAdminBtn')?.addEventListener('click',grantClassAdmin);
+  $$('.save-class-admin').forEach(b=>b.onclick=()=>changeClassAdminClass(b.dataset.uid));
+  $$('.revoke-class-admin').forEach(b=>b.onclick=()=>revokeClassAdmin(b.dataset.uid));
+}
+
+async function legacy_renderAudit(){
+  let logs=[];
+  try{
+    if(isGlobalAdmin()){
+      const s=await getDocs(query(collection(db,'auditLogs'),orderBy('createdAt','desc')));
+      logs=s.docs.slice(0,250).map(d=>d.data());
+    }else{
+      const s=await getDocs(query(collection(db,'auditLogs'),where('actorUid','==',auth.currentUser.uid)));
+      logs=s.docs.map(d=>d.data()).sort((a,b)=>((b.createdAt?.seconds||0)-(a.createdAt?.seconds||0))).slice(0,250);
+    }
+  }catch(e){
+    console.error(e);
+    logs=[];
+  }
+  $('#page-audit').innerHTML=`<div class="card"><div class="section-title">最近操作紀錄</div><div class="notice">${isGlobalAdmin()?'最高管理員可查看全系統操作紀錄。':'班級管理員只顯示自己在後台執行的操作紀錄，且所有可操作資料都限定於自己的導師班。'}</div><div class="table-wrap"><table><thead><tr><th>時間</th><th>學期</th><th>操作者</th><th>動作</th><th>內容</th></tr></thead><tbody>${logs.map(l=>`<tr><td>${l.createdAt?.toDate?l.createdAt.toDate().toLocaleString('zh-TW'):''}</td><td>${esc(l.semester||'')}</td><td>${esc(l.actorName||'')}</td><td>${esc(l.action||'')}</td><td>${esc(l.detail||'')}</td></tr>`).join('')||'<tr><td colspan="5">目前沒有可顯示的操作紀錄。</td></tr>'}</tbody></table></div></div>`;
 }
 
 // ============================================================================
@@ -1338,44 +1440,38 @@ function assertAdminClass(classId){
 }
 function adminLabel(){return activeModeLabel()}
 
-function isClassAdminAccount(){
-  return !!me && me.type==='admin' && !hasGlobalPrivilege();
-}
-function hasHomeroomWorkspace(){
-  return isHomeroomMode() && !!homeroomClassId() && (hasGlobalPrivilege() || isClassAdminAccount());
-}
 function canUseSubjectClassManagement(){
   if(!me||me.active===false)return false;
-  // 「目前工作身分」決定畫面與權限，不再因為底層帳號是最高管理員就額外多出功能。
-  // 一般導師管理員固定使用導師工作區；最高管理員切到導師模式時使用完全相同的工作區。
-  if(isGlobalAdmin())return true;
-  if(isTeacherMode())return true;
-  return hasHomeroomWorkspace();
+  // 最高管理員、一般班級管理員、任課老師都可以管理「自己的任課班」。
+  // 一般班級管理員不需要出現身分切換按鈕。
+  return me.type==='admin' || me.type==='teacher' || isTeacherMode();
 }
 function configureAdminUI(){
   if(!me)return;
-  const global=isGlobalAdmin(),teacher=isTeacherMode(),homeroom=hasHomeroomWorkspace();
+  const global=isGlobalAdmin(),teacher=isTeacherMode(),home=isHomeroomMode();
+  const classAdmin=me.type==='admin'&&!hasGlobalPrivilege();
+  const homeroomPrivilege=home&&(hasGlobalPrivilege()||classAdmin);
   const show=(id,on)=>$(id)?.classList.toggle('hidden',!on);
 
-  // 只有帳號本身具最高管理員資格才顯示身分切換；切換後所有日常功能依「目前工作身分」決定。
+  // 只有最高管理員可以切換「導師／任課／最高管理員」。
+  // 一般導師管理員固定就是導師模式，但導師工作權限要與最高管理員切到導師模式一致。
   show('#switchModeBtn',hasGlobalPrivilege());
 
-  // 全校級高風險功能只在「最高管理員模式」顯示。
+  // 全校級功能只保留最高管理員。
   show('#adminPermissionsNav',global);
   show('#directoryNav',global);
-  show('#homeroomOverviewNav',global);
   show('#upgradeNav',global);
 
-  // 全校教師主檔僅供最高管理員管理；導師與任課老師不顯示此入口。
-  show('#teacherDirectoryNav',global);
+  // 教師主檔是全校共用資料；一般導師管理員可讀取並用來指派「自己班」任課老師。
+  show('#teacherDirectoryNav',me.type==='admin');
 
-  // 導師可管理自己同時兼任的任課班；任課老師模式則只管理自己的任課班。
-  show('#subjectClassesNav',global||homeroom||teacher);
+  // 導師自己同時也是任課老師時，可以直接建立自己的任課班。
+  show('#subjectClassesNav',canUseSubjectClassManagement());
 
   show('#historyNav',true);
-  show('.nav button[data-page="roles"]',global||homeroom);
-  show('.nav button[data-page="accounts"]',global||homeroom);
-  show('.nav button[data-page="classes"]',global||homeroom);
+  show('.nav button[data-page="roles"]',homeroomPrivilege||global);
+  show('.nav button[data-page="accounts"]',homeroomPrivilege||global);
+  show('.nav button[data-page="classes"]',homeroomPrivilege||global);
   show('.nav button[data-page="records"]',true);
 
   $('#who').textContent=`${me.displayName||me.username||'管理員'}｜${activeModeLabel()}`;
@@ -1387,8 +1483,8 @@ function renderModeBanner(){
   const text=workMode==='global'
     ?'目前是最高管理員模式：可操作全校資料與高風險設定。處理日常班務後建議切回導師／任課老師模式。'
     :workMode==='teacher'
-      ?'目前是任課老師模式：介面與一般任課老師相同，只能操作你自己的任課班 × 科目與該班共用學生 Email。'
-      :`目前是 ${homeroomClassId()} 導師模式：介面與一般班級管理員相同，只管理導師班，不顯示全校管理功能。`;
+      ?'目前是任課老師模式：只顯示你自己的任課班 × 科目，不會因為你同時是最高管理員而放大日常操作範圍。'
+      :`目前是 ${homeroomClassId()} 導師模式：只管理導師班，不顯示全校管理功能。`;
   host.innerHTML=`<div class="mode-banner ${cls}"><div><span class="mode-pill">🎭 ${esc(activeModeLabel())}</span><div class="meta" style="margin-top:5px">${esc(text)}</div></div>${hasGlobalPrivilege()?'<button class="btn purple small" id="modeBannerSwitch">切換身分</button>':''}</div>`;
   if($('#modeBannerSwitch')) $('#modeBannerSwitch').onclick=()=>showWorkModePicker(false);
 }
@@ -1403,66 +1499,6 @@ function promotedClassId(classId){
 function subjectManagerId(semester,classId,subject){
   return [semester,String(classId),subject].map(x=>encodeURIComponent(String(x))).join('__');
 }
-
-function newStudentId(){
-  try{return `stu_${crypto.randomUUID().replaceAll('-','')}`}catch{return `stu_${Date.now().toString(36)}${Math.random().toString(36).slice(2,14)}`}
-}
-function directoryStudentById(id){return studentDirectory.find(s=>s.id===id)||null}
-function directoryExactCandidates(classId,seat,name){
-  const n=normalizeStudentName(name);
-  return studentDirectory.filter(s=>
-    s.status!=='merged' &&
-    String(s.currentClassId||'')===String(classId) &&
-    Number(s.currentSeat)===Number(seat) &&
-    normalizeStudentName(s.displayName||'')===n
-  );
-}
-async function findDirectoryByEmail(email){
-  const key=registryId(email);if(!key)return null;
-  return studentDirectory.find(s=>registryId(s.email)===key&&s.status!=='merged')||null;
-}
-function chooseBestDirectoryStudent(candidates,{classId='',seat=null,email=''}={}){
-  if(!candidates?.length)return null;
-  const emailKey=registryId(email);
-  const classObj=classDocLocal(String(classId));
-  const classSid=classObj?.students?.find(x=>Number(x.seat)===Number(seat))?.studentId || classObj?.students?.find(x=>Number(x.seat)===Number(seat))?.id || '';
-  const score=s=>{
-    let n=0;
-    if(s.id===classSid)n+=100;
-    if(registries.some(r=>r.studentId===s.id&&r.linkedUid))n+=80;
-    if(emailKey&&registryId(s.email)===emailKey)n+=60;
-    if(registries.some(r=>r.studentId===s.id&&r.email))n+=40;
-    if(collections.some(x=>x.records&&Object.prototype.hasOwnProperty.call(x.records,s.id)))n+=30;
-    if(assessments.some(x=>x.scores&&Object.prototype.hasOwnProperty.call(x.scores,s.id)))n+=30;
-    if(s.active!==false&&s.status!=='transferred'&&s.status!=='graduated')n+=10;
-    return n;
-  };
-  return [...candidates].sort((a,b)=>score(b)-score(a))[0]||candidates[0];
-}
-async function upsertDirectoryStudent(row,classId,semester=currentSemester,creator='管理員'){
-  const seat=Number(row.seat),name=normalizeStudentName(row.name||''),email=registryId(row.email||'');
-  let sid=(String(row.studentId||'').startsWith('stu_')?String(row.studentId):'')||((String(row.id||'').startsWith('stu_'))?String(row.id):'');
-  let sd=sid?directoryStudentById(sid):null;
-  if(!sd&&email)sd=await findDirectoryByEmail(email);
-  if(!sd){
-    const exact=directoryExactCandidates(classId,seat,name);
-    sd=chooseBestDirectoryStudent(exact,{classId,seat,email});
-  }
-  if(!sid)sid=sd?.id||newStudentId();
-  const existing=directoryStudentById(sid)||sd;
-  await setDoc(doc(db,'studentDirectory',sid),{
-    displayName:name,email:email||existing?.email||'',currentClassId:String(classId),currentSeat:seat,
-    grade:gradeFromClassId(classId),status:row.active===false?'transferred':'enrolled',active:row.active!==false,
-    createdByUid:existing?.createdByUid||me?.uid||null,createdByName:existing?.createdByName||creator,
-    createdAt:existing?.createdAt||serverTimestamp(),updatedAt:serverTimestamp()
-  },{merge:true});
-  const sy=schoolYearFromSemester(semester);
-  await setDoc(doc(db,'studentEnrollments',`${sy}__${sid}`),{
-    studentId:sid,schoolYear:sy,semester,classId:String(classId),grade:gradeFromClassId(classId),seat,
-    displayName:name,email:email||existing?.email||'',status:row.active===false?'transferred':'active',updatedAt:serverTimestamp()
-  },{merge:true});
-  return {...row,id:sid,studentId:sid,seat,name,email:email||existing?.email||'',active:row.active!==false};
-}
 function mySubjectManagers(semester=null){
   const myEmail=String(me?.email||auth.currentUser?.email||'').toLowerCase();
   return subjectManagers.filter(x=>
@@ -1473,19 +1509,6 @@ function mySubjectManagers(semester=null){
       (myEmail && String(x.managerEmail||'').toLowerCase()===myEmail)
     )
   );
-}
-
-function currentUserOwnsSubjectManager(sm){
-  if(!sm||!me)return false;
-  const myEmail=String(me.email||auth.currentUser?.email||'').toLowerCase();
-  return sm.managerUid===me.uid || (!!myEmail && String(sm.managerEmail||'').toLowerCase()===myEmail);
-}
-function canEditSubjectRosterEmails(sm){
-  if(!sm||!me)return false;
-  if(isGlobalAdmin())return true;
-  if(isTeacherMode())return currentUserOwnsSubjectManager(sm);
-  if(hasHomeroomWorkspace())return canAdminClass(sm.classId) || currentUserOwnsSubjectManager(sm);
-  return false;
 }
 
 function teacherRegistries(){
@@ -1557,7 +1580,6 @@ async function ensureSubjectManagerForTeacher(reg,semester,classId,subject,{crea
       createdBy:me.uid,
       createdByName:me.displayName||me.username||'',
       createdByLabel,
-      createdByRole:isGlobalAdmin()?'global_admin':'homeroom_admin',
       createdAt:serverTimestamp(),
       updatedAt:serverTimestamp()
     },{merge:false});
@@ -1576,126 +1598,79 @@ async function ensureSubjectManagerForTeacher(reg,semester,classId,subject,{crea
 }
 async function addAssignmentToTeacherRegistry(reg,semester,classId,subject){
   const a={semester,classId:String(classId),kind:'teacher',scopeType:'subject',scopeName:subject,canCollection:true,canScores:true};
-  reg.assignments=mergeAssignments(reg.assignments||[],[a]);
-  await saveRegistry(reg);
+  const assignments=mergeAssignments(reg.assignments||[],[a]);
+  const email=registryId(reg.email||reg.id);
+  if(!email)throw new Error('教師 Email 不可空白。');
 
+  // ★ 一般導師管理員只更新教師主檔真正需要的欄位。
+  // 舊版呼叫 saveRegistry() 時會再同步 displayName/type/email 等整份 users 欄位，
+  // 對一般導師管理員會撞到 Firestore 權限，造成 Missing or insufficient permissions。
+  await setDoc(doc(db,'identityRegistry',email),{
+    assignments,
+    updatedAt:serverTimestamp()
+  },{merge:true});
+
+  reg.assignments=assignments;
+  reg.id=email;
+  reg.email=email;
+
+  // 已完成 Google 連動的任課老師：只同步「任課授權陣列」，不碰帳號身分欄位。
   if(reg.linkedUid){
-    try{
-      const uref=doc(db,'users',reg.linkedUid),usnap=await getDoc(uref);
-      if(usnap.exists()){
-        const ud=usnap.data(),assignments=mergeAssignments(ud.assignments||[],[a]),access=computeAccess(assignments,currentSemester);
-        await setDoc(uref,{assignments,...access,updatedAt:serverTimestamp()},{merge:true});
-      }
-    }catch(e){console.warn('sync linked teacher user failed',e)}
+    const uref=doc(db,'users',reg.linkedUid);
+    const usnap=await getDoc(uref);
+    if(usnap.exists()){
+      const ud=usnap.data();
+      const userAssignments=mergeAssignments(ud.assignments||[],[a]);
+      const access=computeAccess(userAssignments,currentSemester);
+      await setDoc(uref,{
+        assignments:userAssignments,
+        ...access,
+        updatedAt:serverTimestamp()
+      },{merge:true});
+    }
   }
   return a;
 }
 async function assignTeacherToSubject(reg,semester,classId,subject,{source='導師指派'}={}){
+  const targetClass=String(classId);
+
+  // 一般導師管理員只能替自己的導師班指派任課老師。
+  if(me?.type==='admin'&&!hasGlobalPrivilege()&&targetClass!==String(homeroomClassId())){
+    return {ok:false,message:`你只能替自己的導師班 ${homeroomClassId()} 指派任課老師。`};
+  }
+
+  let ensured=null;
   try{
-    const ensured=await ensureSubjectManagerForTeacher(reg,semester,classId,subject,{createdByLabel:source});
-    await addAssignmentToTeacherRegistry(reg,semester,classId,subject);
-    await audit('teacher_assignment','subjectClassManagers',ensured.id,`${source}：${reg.displayName||reg.email}｜${semester}｜${classId}｜${subject}`,semester);
-    return {
-      ok:true,
-      existed:ensured.result==='same',
-      message:ensured.result==='same'
-        ?`✅ ${semester}｜${classId}｜${subject} 原本就已由 ${reg.displayName||reg.email} 負責，已直接共用現有設定。`
-        :`✅ 已設定：${reg.displayName||reg.email}｜${semester}｜${classId}｜${subject}`
-    };
+    ensured=await ensureSubjectManagerForTeacher(reg,semester,targetClass,subject,{createdByLabel:source});
   }catch(e){
     const msg=String(e?.message||e);
     if(msg.startsWith('MANAGER_CONFLICT::')){
-      return {ok:false,message:`⚠️ ${semester}｜${classId}｜${subject} 已由 ${msg.split('::')[1]} 負責，不能重複指定。`};
+      return {ok:false,message:`⚠️ ${semester}｜${targetClass}｜${subject} 已由 ${msg.split('::')[1]} 負責，不能重複指定。`};
     }
-    return {ok:false,message:`設定失敗：${msg}`};
-  }
-}
-
-async function removeTeacherSubjectAssignment(reg,semester,classId,subject){
-  if(!reg)return;
-  reg.assignments=(reg.assignments||[]).filter(a=>!(
-    a.kind==='teacher' && a.scopeType==='subject' && a.semester===semester &&
-    String(a.classId)===String(classId) && a.scopeName===subject
-  ));
-  await saveRegistry(reg);
-
-  if(reg.linkedUid){
-    try{
-      const uref=doc(db,'users',reg.linkedUid),usnap=await getDoc(uref);
-      if(usnap.exists()){
-        const ud=usnap.data();
-        const assignments=(ud.assignments||[]).filter(a=>!(
-          a.kind==='teacher' && a.scopeType==='subject' && a.semester===semester &&
-          String(a.classId)===String(classId) && a.scopeName===subject
-        ));
-        const access=computeAccess(assignments,currentSemester);
-        await setDoc(uref,{assignments,...access,updatedAt:serverTimestamp()},{merge:true});
-      }
-    }catch(e){console.warn('remove linked teacher assignment failed',e)}
-  }
-}
-
-async function deleteHomeroomTeacherAssignment(smId){
-  const sm=subjectManagers.find(x=>x.id===smId);
-  if(!sm)return alert('找不到這筆任課設定。');
-  if(!canAdminClass(sm.classId))return alert('你只能修改自己導師班的任課設定。');
-  if(!confirm(`確定刪除「${sm.classId} 班｜${sm.subject}｜${sm.managerName||sm.managerEmail||'任課老師'}」的任課設定？\n\n歷史作業與成績不會刪除，只會解除這位老師目前的任課權限。`))return;
-  const reg=teacherRegistries().find(r=>teacherIdentityMatchesManager(r,sm));
-  if(reg)await removeTeacherSubjectAssignment(reg,sm.semester,sm.classId,sm.subject);
-  await setDoc(doc(db,'subjectClassManagers',sm.id),{
-    status:'released',releasedAt:serverTimestamp(),releasedBy:me.uid,updatedAt:serverTimestamp()
-  },{merge:true});
-  await audit('teacher_assignment_release','subjectClassManagers',sm.id,`${activeModeLabel()} 刪除任課：${sm.subject}｜${sm.managerName||sm.managerEmail||''}`,sm.semester);
-  await refreshAll(); if(activePage()==='homeroomOverview')renderHomeroomOverview();else renderAccounts();
-  alert('✅ 任課設定已刪除。');
-}
-
-function editHomeroomTeacherAssignment(smId){
-  const sm=subjectManagers.find(x=>x.id===smId);
-  if(!sm)return alert('找不到這筆任課設定。');
-  if(!canAdminClass(sm.classId))return alert('你只能修改自己導師班的任課設定。');
-  const teachers=teacherRegistries();
-  const currentReg=teachers.find(r=>teacherIdentityMatchesManager(r,sm));
-  showModal(`<div class="item-head"><div><div class="section-title">✏️ 修改任課老師</div><div class="meta">${esc(sm.semester)}｜${esc(sm.classId)} 班</div></div><button class="btn gray close-modal">關閉</button></div>
-    <div class="notice">可以修改「任課老師」或「科目」。系統會先檢查「學期＋班級＋科目」是否已被其他老師使用，避免重複；同一位老師可以在同一班教授不同科目。</div>
-    <div class="two">
-      <div class="field"><label>任課老師</label><select id="editHomeroomTeacher">${teachers.map(r=>`<option value="${esc(r.id)}" ${currentReg?.id===r.id?'selected':''}>${esc(r.displayName||r.email)}｜${esc(r.email||r.id)}</option>`).join('')}</select></div>
-      <div class="field"><label>科目</label><select id="editHomeroomSubject">${subjects.map(s=>`<option value="${esc(s)}" ${s===sm.subject?'selected':''}>${esc(s)}</option>`).join('')}</select></div>
-    </div>
-    <button id="saveHomeroomTeacherEdit" class="btn primary">💾 儲存修改</button>`);
-
-  $('#saveHomeroomTeacherEdit').onclick=async()=>{
-    const newReg=teachers.find(r=>r.id===$('#editHomeroomTeacher').value);
-    const newSubject=$('#editHomeroomSubject').value;
-    if(!newReg||!newSubject)return alert('請選擇老師與科目。');
-    const sameTeacher=currentReg?.id===newReg.id;
-    const sameSubject=sm.subject===newSubject;
-    if(sameTeacher&&sameSubject)return alert('設定沒有變更。');
-
-    // 若科目未變，可直接替換同一筆 manager；若科目改變，先建立新設定再釋放舊設定。
-    if(sameSubject){
-      if(currentReg)await removeTeacherSubjectAssignment(currentReg,sm.semester,sm.classId,sm.subject);
-      await setDoc(doc(db,'subjectClassManagers',sm.id),{
-        managerUid:newReg.linkedUid||null,
-        managerEmail:String(newReg.email||newReg.id||'').toLowerCase(),
-        managerName:newReg.displayName||newReg.email||'',
-        updatedByUid:me.uid,updatedByName:me.displayName||me.username||'',updatedByLabel:isGlobalAdmin()?'最高管理員修改':`${sm.classId} 導師修改`,
-        status:'active',updatedAt:serverTimestamp()
-      },{merge:true});
-      await addAssignmentToTeacherRegistry(newReg,sm.semester,sm.classId,sm.subject);
-    }else{
-      const ensured=await ensureSubjectManagerForTeacher(newReg,sm.semester,sm.classId,newSubject,{createdByLabel:isGlobalAdmin()?'最高管理員修改':`${sm.classId} 導師修改`});
-      await addAssignmentToTeacherRegistry(newReg,sm.semester,sm.classId,newSubject);
-      if(currentReg)await removeTeacherSubjectAssignment(currentReg,sm.semester,sm.classId,sm.subject);
-      await setDoc(doc(db,'subjectClassManagers',sm.id),{
-        status:'released',releasedAt:serverTimestamp(),releasedBy:me.uid,updatedAt:serverTimestamp()
-      },{merge:true});
+    if(msg.includes('permission')||msg.includes('PERMISSION')){
+      return {ok:false,message:'建立本科任課設定時被 Firebase 拒絕。請確認已發布最新版 Firestore Rules。'};
     }
-    await audit('teacher_assignment_edit','subjectClassManagers',sm.id,`${activeModeLabel()} 修改任課：${sm.subject}｜${sm.managerName||sm.managerEmail||''} → ${newSubject}｜${newReg.displayName||newReg.email}`,sm.semester);
-    hideModal();await refreshAll();if(activePage()==='homeroomOverview')renderHomeroomOverview();else renderAccounts();alert('✅ 任課設定已修改。');
+    return {ok:false,message:`建立任課設定失敗：${msg}`};
+  }
+
+  try{
+    await addAssignmentToTeacherRegistry(reg,semester,targetClass,subject);
+  }catch(e){
+    const msg=String(e?.message||e);
+    console.error('teacher permission sync failed',e);
+    return {ok:false,message:`任課班已建立，但授權同步失敗：${msg}\n\n請重新按一次「指定本班任課老師並授權」。`};
+  }
+
+  try{await audit('teacher_assignment','subjectClassManagers',ensured.id,`${source}：${reg.displayName||reg.email}｜${semester}｜${targetClass}｜${subject}`,semester)}catch(e){console.warn(e)}
+
+  return {
+    ok:true,
+    existed:ensured.result==='same',
+    message:ensured.result==='same'
+      ?`✅ ${semester}｜${targetClass}｜${subject} 原本就已由 ${reg.displayName||reg.email} 負責，已補齊／確認查看、作業與成績權限。`
+      :`✅ 已設定並授權：${reg.displayName||reg.email}｜${semester}｜${targetClass}｜${subject}`
   };
 }
-
 function ownsSubject(semester,classId,subject){
   return mySubjectManagers(semester).some(x=>String(x.classId)===String(classId)&&x.subject===subject);
 }
@@ -1722,22 +1697,6 @@ async function safeDoc(ref){
 }
 
 // 覆寫資料載入：舊集合與新集合並存，Rules 尚未更新時新集合讀取失敗也不會讓舊後台整頁掛掉。
-async function syncAllLegacyTeacherAssignmentsToSubjectManagers(){
-  if(!hasGlobalPrivilege())return 0;
-  let created=0;
-  const teachers=registries.filter(r=>r.type==='teacher'&&r.active!==false);
-  for(const reg of teachers){
-    for(const a of (reg.assignments||[]).filter(a=>a.kind==='teacher'&&a.scopeType==='subject'&&a.semester&&a.classId&&a.scopeName)){
-      const id=subjectManagerId(a.semester,a.classId,a.scopeName);
-      if(subjectManagers.some(sm=>sm.id===id&&sm.status!=='released'))continue;
-      try{
-        await ensureSubjectManagerForTeacher(reg,a.semester,String(a.classId),a.scopeName,{createdByLabel:'舊任課設定自動整併'});
-        created++;
-      }catch(e){console.warn('legacy teacher assignment migration skipped',id,e)}
-    }
-  }
-  return created;
-}
 async function refreshAll(){
   const globalPrivilege=hasGlobalPrivilege();
   if(globalPrivilege){
@@ -1750,8 +1709,6 @@ async function refreshAll(){
     ]);
     users=us;registries=rs;classes=cs;collections=co;assessments=as;
     subjectManagers=sm;subjectRosters=sr;studentDirectory=sd;studentEnrollments=se;upgradeBatches=ub;classRosterHistory=crh;
-    const migrated=await syncAllLegacyTeacherAssignmentsToSubjectManagers();
-    if(migrated){subjectManagers=await safeDocs(collection(db,'subjectClassManagers'));subjectRosters=await safeDocs(collection(db,'subjectClassRosters'))}
   }else{
     const ids=[...new Set((me?.adminClassIds||[]).map(String))];
     users=[me];registries=[];classes=[];collections=[];assessments=[];
@@ -2154,6 +2111,7 @@ async function syncSubjectRosterFromSharedClass(sm,{silent=true}={}){
   if(!silent)alert(`✅ 已同步 ${sm.classId} 班共用名單，共 ${normalized.length} 人。`);
   return normalized.length;
 }
+
 function subjectAssistantInfo(sm){
   const c=classes.find(x=>String(x.id)===String(sm.classId));
   const roles=c?.roleAssignments?.[sm.semester]||{};
@@ -2265,7 +2223,7 @@ function renderSubjectClasses(){
             </div>`;
         return `<div class="card subject-card"><div class="item-head"><div><div class="section-title">${esc(sm.classId)}｜${esc(sm.subject)}</div><div class="meta">${esc(sm.semester)}｜管理者：${esc(sm.managerName||'')}</div></div><span class="mini-badge">${n} 人</span></div>
           ${assistantHtml}
-          <div class="toolbar"><button class="btn good small manage-subject-roster" data-id="${esc(sm.id)}">👥 任課名單 / Email</button><button class="btn purple small set-subject-assistant" data-id="${esc(sm.id)}">⭐ 指定本科小老師</button><button class="btn gray small release-subject" data-id="${esc(sm.id)}">解除任課班</button></div></div>`;
+          <div class="toolbar"><button class="btn good small manage-subject-roster" data-id="${esc(sm.id)}">👥 共用班級名單</button><button class="btn purple small set-subject-assistant" data-id="${esc(sm.id)}">⭐ 指定本科小老師</button><button class="btn gray small release-subject" data-id="${esc(sm.id)}">解除任課班</button></div></div>`;
       }).join('')||'<div class="card"><div class="sub">尚未建立任課班。</div></div>'}
     </div>`;
   $('#createSubjectClassBtn').onclick=createSubjectClass;
@@ -2286,15 +2244,15 @@ function renderSubjectClasses(){
 async function openSubjectRosterEditor(id){
   const sm=subjectManagers.find(x=>x.id===id);
   if(!sm)return alert('找不到這個任課班。');
-  if(!canEditSubjectRosterEmails(sm))return alert('目前工作身分沒有這個任課班的學生 Email 編輯權限。');
 
-  // 每次開啟先以正式班級名單更新任課班快照；Email 本身仍以 identityRegistry 為共用主來源。
+  // 每次開啟都先嘗試用正式班級名單更新 subjectClassRosters，
+  // 讓不同科任老師使用相同的學生身分與 Email。
   try{await syncSubjectRosterFromSharedClass(sm,{silent:true})}catch(e){console.warn(e)}
 
   const students=sharedRosterForSubjectManager(sm);
   if(!students.length){
     return showModal(`<div class="section-title">👥 ${esc(sm.classId)}｜${esc(sm.subject)} 共用班級名單</div>
-      <div class="notice warn">目前後台尚未建立 ${esc(sm.classId)} 班正式名單，因此沒有可設定 Email 的學生。請先由該班導師／管理者建立班級名單。</div>
+      <div class="notice warn">目前後台尚未建立 ${esc(sm.classId)} 班正式名單，因此沒有可同步的學生。請先由該班導師／管理者建立班級名單與 Email。</div>
       <div class="toolbar"><button class="btn gray close-modal">關閉</button></div>`);
   }
 
@@ -2308,101 +2266,38 @@ async function openSubjectRosterEditor(id){
     const email=reg?.email||s.email||'';
     return `<tr>
       <td>${esc(s.seat)}</td>
-      <td><b>${esc(s.name)}</b></td>
-      <td><input class="subject-student-email" data-seat="${esc(s.seat)}" data-name="${esc(s.name)}" data-studentid="${esc(s.studentId||s.id||String(s.seat))}" data-oldid="${esc(reg?.id||'')}" type="email" value="${esc(email)}" placeholder="學校 Google Email" style="min-width:250px" ${linked?'title="已連動；若要更換 Email 會被系統阻擋"':''}></td>
+      <td>${esc(s.name)}</td>
+      <td>${email?esc(email):'<span class="sub">尚未設定</span>'}</td>
       <td>${linked?'<span class="assistant-linked">✅ 已連動</span>':email?'<span class="assistant-unlinked">⚠️ Email已建／尚未連動</span>':'<span class="assistant-none">尚未設定 Email</span>'}</td>
     </tr>`;
   }).join('');
 
   showModal(`<div class="item-head">
       <div>
-        <div class="section-title">👥 ${esc(sm.classId)}｜${esc(sm.subject)} 任課名單 / Email</div>
-        <div class="meta">${esc(sm.semester)}｜共 ${students.length} 人｜目前身分：${esc(activeModeLabel())}</div>
+        <div class="section-title">👥 ${esc(sm.classId)}｜${esc(sm.subject)} 共用班級名單</div>
+        <div class="meta">${esc(sm.semester)}｜共 ${students.length} 人</div>
       </div>
       <button class="btn gray close-modal">關閉</button>
     </div>
     <div class="notice success">
-      此處使用 <b>${esc(sm.classId)} 班共用學生資料</b>。任課老師可以直接補上尚未設定的學生 Google Email；儲存一次後，同班其他科老師與導師都會讀到同一份資料。<br>
-      <b>已完成 Google UID 連動的學生不能在這裡直接改成另一個 Email</b>，避免把帳號連到錯的人。
+      此任課班直接使用 <b>${esc(sm.classId)} 班正式共用名單</b>。<br>
+      學生姓名、座號、Email 與 Google 連動狀態都是班級共用資料：
+      <b>任何一位有權限的老師只要建立／更新一次，其他老師建立相同班級的任課班就會直接讀到，不需要重新設定。</b>
     </div>
-    <div class="toolbar">
-      <button id="saveSubjectEmailsBtn" class="btn primary">💾 儲存學生 Email</button>
-      <button id="resyncSharedRosterBtn" class="btn good">🔄 重新同步班級主檔</button>
-    </div>
-    <details style="margin:10px 0"><summary style="cursor:pointer;font-weight:900">📥 批次貼上 Email</summary>
-      <div class="field"><label>每行格式：座號,姓名,Email</label><textarea id="subjectEmailPaste" rows="6" placeholder="1,王小明,xxx@smail.ilc.edu.tw"></textarea></div>
-      <button id="applySubjectEmailPasteBtn" class="btn gray">套用到上方欄位</button>
-    </details>
-    <div style="overflow:auto;max-height:58vh">
+    <div style="overflow:auto;max-height:65vh">
       <table>
-        <thead><tr><th>座號</th><th>姓名</th><th>Google Email</th><th>Google 連動</th></tr></thead>
+        <thead><tr><th>座號</th><th>姓名</th><th>Email</th><th>Google 連動</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
     <div class="toolbar">
-      <button id="saveSubjectEmailsBtnBottom" class="btn primary">💾 儲存學生 Email</button>
+      <button id="resyncSharedRosterBtn" class="btn good">🔄 重新同步班級主檔</button>
       <button class="btn gray close-modal">關閉</button>
     </div>`);
 
-  const applyPaste=()=>{
-    const text=($('#subjectEmailPaste')?.value||'').trim();
-    if(!text)return alert('請先貼上 Email 名單。');
-    const map=new Map();
-    text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).forEach(line=>{
-      const p=line.split(/[,，\t]/).map(x=>x.trim());
-      if(p.length>=3)map.set(Number(p[0]),p[p.length-1]);
-    });
-    $$('.subject-student-email').forEach(inp=>{const email=map.get(Number(inp.dataset.seat));if(email)inp.value=email});
-    alert('已套用到名單欄位，請再按「儲存學生 Email」。');
-  };
-
-  const saveEmails=async()=>{
-    if(!canEditSubjectRosterEmails(sm))return alert('目前工作身分沒有儲存這個任課班 Email 的權限。');
-    if(!confirm(`確定儲存 ${sm.classId} 班學生 Google Email？\n\n這是班級共用資料，其他有權限的導師與任課老師會同步看到。`))return;
-    let saved=0,skipped=0;
-    for(const inp of $$('.subject-student-email')){
-      const email=registryId(inp.value),seat=Number(inp.dataset.seat),name=inp.dataset.name,studentId=inp.dataset.studentid,oldId=inp.dataset.oldid;
-      if(!email)continue;
-      const oldReg=(oldId?registries.find(r=>r.id===oldId):null)||registryByStudent(String(sm.classId),seat);
-      if(oldReg?.linkedUid && oldReg.id!==email){
-        skipped++;
-        alert(`${seat}號 ${name} 已完成 Google 連動，不能直接更換 Email。這一筆已略過。`);
-        continue;
-      }
-      const assignments=mergeAssignments(oldReg?.assignments||[],presetAssignmentsForStudent(String(sm.classId),seat));
-      await setDoc(doc(db,'identityRegistry',email),{
-        email,
-        studentId:studentId||oldReg?.studentId||String(seat),
-        username:`${sm.classId}${String(seat).padStart(2,'0')}`,
-        displayName:name,
-        type:'student',
-        classId:String(sm.classId),
-        seat,
-        active:oldReg?.active!==false,
-        linked:!!oldReg?.linkedUid,
-        linkedUid:oldReg?.linkedUid||null,
-        linkedAt:oldReg?.linkedAt||null,
-        lastLoginAt:oldReg?.lastLoginAt||null,
-        assignments,
-        updatedAt:serverTimestamp()
-      },{merge:true});
-      if(oldId&&oldId!==email&&!oldReg?.linkedUid)await deleteDoc(doc(db,'identityRegistry',oldId));
-      saved++;
-    }
-    await audit('subject_roster_email_save','identityRegistry',String(sm.classId),`${sm.classId}｜${sm.subject} 任課老師更新學生 Email ${saved} 筆${skipped?`，略過 ${skipped} 筆已連動資料`:''}`,sm.semester);
-    try{await syncSubjectRosterFromSharedClass(sm,{silent:true})}catch(e){console.warn(e)}
-    hideModal();
-    await refreshAll();
-    renderSubjectClasses();
-    alert(`✅ 已儲存 ${saved} 筆學生 Email。${skipped?`\n另有 ${skipped} 筆因已完成 Google 連動而未變更。`:''}`);
-  };
-
-  $('#applySubjectEmailPasteBtn')?.addEventListener('click',applyPaste);
-  $('#saveSubjectEmailsBtn')?.addEventListener('click',saveEmails);
-  $('#saveSubjectEmailsBtnBottom')?.addEventListener('click',saveEmails);
   $('#resyncSharedRosterBtn').onclick=async()=>{
     try{
-      await syncSubjectRosterFromSharedClass(sm,{silent:false});
+      const n=await syncSubjectRosterFromSharedClass(sm,{silent:false});
       hideModal();
       await refreshAll();
       renderSubjectClasses();
@@ -2774,19 +2669,24 @@ async function deleteRecord(type,id){
 // 全校學生主檔與舊名單遷移
 async function migrateLegacyStudentsToDirectory(){
   if(!isGlobalAdmin())return alert('只有最高管理員模式可執行。');
-  if(!confirm('這會把現有班級學生建立／校正固定 studentId。\n\n系統會優先沿用：既有 studentId → Email → 同班同座號同姓名；只有全部找不到才建立新 studentId。\n\n確定開始？'))return;
-  let changed=0,reused=0,created=0;
+  if(!confirm('這會把現有班級學生建立固定 studentId，並同步目前作業／成績的學生鍵值。\n\n舊資料不刪除，但此步驟屬於資料結構升級，請確認目前沒有其他老師同時輸入資料。\n\n確定開始？'))return;
+  let changed=0;
   for(const c of classes){
     let classChanged=false;const students=[];
     for(const old of (c.students||[])){
-      const oldKey=old.id||String(old.seat),oldSid=old.studentId||((String(old.id||'').startsWith('stu_'))?old.id:'');
-      const reg=registryByStudent(c.id,old.seat),email=registryId(old.email||reg?.email||'');
-      const beforeCount=studentDirectory.length;
-      const row=await upsertDirectoryStudent({...old,email},c.id,currentSemester,me.displayName||'最高管理員');
-      const sid=row.studentId;
-      if(oldSid&&oldSid===sid)reused++;else if(directoryStudentById(sid))reused++;else created++;
-      students.push(row);
-      if(oldKey!==sid || old.studentId!==sid){
+      let sid=old.studentId||((String(old.id||'').startsWith('stu_'))?old.id:null);
+      const reg=registryByStudent(c.id,old.seat);
+      const email=registryId(old.email||reg?.email||'');
+      let sd=email?await findDirectoryByEmail(email):null;
+      if(!sid)sid=sd?.id||newStudentId();
+      if(!sd){
+        await setDoc(doc(db,'studentDirectory',sid),{displayName:old.name,email,currentClassId:c.id,currentSeat:Number(old.seat),grade:gradeFromClassId(c.id),status:old.active===false?'transferred':'enrolled',active:old.active!==false,createdByUid:me.uid,createdByName:me.displayName||'最高管理員',createdAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true});
+      }
+      const sy=schoolYearFromSemester(currentSemester);
+      await setDoc(doc(db,'studentEnrollments',`${sy}__${sid}`),{studentId:sid,schoolYear:sy,semester:currentSemester,classId:c.id,grade:gradeFromClassId(c.id),seat:Number(old.seat),displayName:old.name,email,status:old.active===false?'transferred':'active',updatedAt:serverTimestamp()},{merge:true});
+      const oldKey=old.id||String(old.seat);
+      students.push({...old,id:sid,studentId:sid,email});
+      if(oldKey!==sid){
         for(const x of collections.filter(x=>String(x.classId)===String(c.id))){
           if(x.records&&Object.prototype.hasOwnProperty.call(x.records,oldKey)&&!Object.prototype.hasOwnProperty.call(x.records,sid)){
             const records={...x.records,[sid]:x.records[oldKey]};delete records[oldKey];await updateDoc(doc(db,'collectionItems',x.id),{records,updatedAt:serverTimestamp()});x.records=records;
@@ -2803,64 +2703,17 @@ async function migrateLegacyStudentsToDirectory(){
     }
     if(classChanged)await setDoc(doc(db,'classes',c.id),{students,updatedAt:serverTimestamp()},{merge:true});
   }
-  await audit('migrate_student_ids','studentDirectory','all',`固定 studentId 同步，共校正 ${changed} 筆；同步時優先辨識既有學生`);
-  await refreshAll();renderDirectory();alert(`✅ 學生主檔同步完成。\n校正班級名單 ${changed} 筆。\n接著可使用「掃描重複學生」清理先前已產生的重複主檔。`);
+  await audit('migrate_student_ids','studentDirectory','all',`建立／同步固定 studentId，共處理 ${changed} 筆既有班級學生`);
+  await refreshAll();renderDirectory();alert(`✅ 學生主檔同步完成，共 ${changed} 筆舊名單完成固定 studentId。`);
 }
 function directoryStatusLabel(s){return s.status==='graduated'?'🎓 已畢業':s.status==='transferred'?'↗ 已轉出':s.active===false?'停用':'在校'}
-function duplicateStudentGroups(classId=''){
-  const m=new Map();
-  for(const s of studentDirectory.filter(x=>x.status!=='merged'&&(!classId||String(x.currentClassId||'')===String(classId)))){
-    const key=`${s.currentClassId||''}|${Number(s.currentSeat)||0}|${normalizeStudentName(s.displayName||'')}`;
-    if(!m.has(key))m.set(key,[]);m.get(key).push(s);
-  }
-  return [...m.values()].filter(g=>g.length>1);
-}
-async function mergeStudentRecords(sourceId,targetId,{silent=false}={}){
-  if(sourceId===targetId)return;
-  const src=studentDirectory.find(x=>x.id===sourceId),target=studentDirectory.find(x=>x.id===targetId);if(!src||!target)return;
-  const srcLinked=registries.find(r=>r.studentId===sourceId&&r.linkedUid),tarLinked=registries.find(r=>r.studentId===targetId&&r.linkedUid);
-  if(srcLinked&&tarLinked&&srcLinked.linkedUid!==tarLinked.linkedUid)throw new Error(`兩筆資料都已連動不同 Google UID：${src.displayName}`);
-  for(const r of subjectRosters.filter(x=>(x.studentIds||[]).includes(sourceId))){
-    const ids=[...new Set((r.studentIds||[]).map(x=>x===sourceId?targetId:x))];
-    const students=(r.students||[]).map(x=>x.studentId===sourceId?{...x,studentId:targetId,id:targetId}:x).filter((x,i,a)=>a.findIndex(y=>y.studentId===x.studentId)===i);
-    await updateDoc(doc(db,'subjectClassRosters',r.id),{studentIds:ids,students,updatedAt:serverTimestamp()});
-  }
-  for(const c of classes.filter(c=>(c.students||[]).some(x=>(x.studentId||x.id)===sourceId))){
-    const students=c.students.map(x=>(x.studentId||x.id)===sourceId?{...x,id:targetId,studentId:targetId,name:target.displayName||x.name,email:target.email||x.email}:x).filter((x,i,a)=>a.findIndex(y=>(y.studentId||y.id)===(x.studentId||x.id))===i);
-    await updateDoc(doc(db,'classes',c.id),{students,updatedAt:serverTimestamp()});
-  }
-  for(const x of collections){if(x.records&&Object.prototype.hasOwnProperty.call(x.records,sourceId)){const records={...x.records};if(!Object.prototype.hasOwnProperty.call(records,targetId))records[targetId]=records[sourceId];delete records[sourceId];await updateDoc(doc(db,'collectionItems',x.id),{records,updatedAt:serverTimestamp()})}}
-  for(const x of assessments){if(x.scores&&Object.prototype.hasOwnProperty.call(x.scores,sourceId)){const scores={...x.scores};if(!Object.prototype.hasOwnProperty.call(scores,targetId))scores[targetId]=scores[sourceId];delete scores[sourceId];await updateDoc(doc(db,'assessments',x.id),{scores,updatedAt:serverTimestamp()})}}
-  for(const e of studentEnrollments.filter(x=>x.studentId===sourceId)){const newId=`${e.schoolYear}__${targetId}`;await setDoc(doc(db,'studentEnrollments',newId),{...e,studentId:targetId,mergedFrom:sourceId,updatedAt:serverTimestamp()},{merge:true});await deleteDoc(doc(db,'studentEnrollments',e.id))}
-  const srcReg=registries.find(r=>r.studentId===sourceId);if(srcReg&&!tarLinked){srcReg.studentId=targetId;srcReg.displayName=target.displayName;await saveRegistry(srcReg)}
-  await setDoc(doc(db,'studentDirectory',sourceId),{active:false,status:'merged',mergedInto:targetId,mergedAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true});
-  await audit('merge_duplicate_student','studentDirectory',sourceId,`合併重複學生：${src.displayName} → ${target.displayName}（保留 ${targetId}）`);
-  if(!silent){await refreshAll();renderDirectory();alert('✅ 重複學生已合併。')}
-}
-async function scanAndMergeDuplicateStudents(){
-  if(!isGlobalAdmin())return;
-  const classId=window.__directorySelectedClass||'';
-  const groups=duplicateStudentGroups(classId);
-  if(!groups.length)return alert(`✅ ${classId||'目前範圍'} 沒有偵測到「同班＋同座號＋同姓名」的重複學生。`);
-  const preview=groups.slice(0,8).map(g=>`${g[0].currentClassId}班 ${g[0].currentSeat}號 ${g[0].displayName}（${g.length}筆）`).join('\n');
-  if(!confirm(`偵測到 ${groups.length} 組高度確定的重複學生：\n\n${preview}${groups.length>8?'\n…':''}\n\n系統會優先保留：目前班級正在使用 → 已連動 Google UID → 有 Email → 有作業／成績資料 的 studentId，其他筆標記 merged。\n\n確定執行安全整併？`))return;
-  let merged=0,blocked=[];
-  for(const group of groups){
-    const target=chooseBestDirectoryStudent(group,{classId:group[0].currentClassId,seat:group[0].currentSeat,email:group.find(x=>x.email)?.email||''});
-    for(const src of group.filter(x=>x.id!==target.id)){
-      try{await mergeStudentRecords(src.id,target.id,{silent:true});merged++}catch(e){blocked.push(`${src.displayName}：${e.message||e}`)}
-    }
-  }
-  await refreshAll();renderDirectory();
-  alert(`✅ 重複學生整併完成：${merged} 筆來源主檔已合併。${blocked.length?`\n\n有 ${blocked.length} 筆因 Google UID 衝突未自動處理：\n${blocked.slice(0,6).join('\n')}`:''}`);
-}
 function renderDirectory(){
   if(!isGlobalAdmin()){
     $('#page-directory').innerHTML='<div class="notice error">只有最高管理員模式可以開啟全校學生主檔。</div>';
     return;
   }
 
-  const allRows=studentDirectory.filter(s=>s.status!=='merged').slice().sort((a,b)=>
+  const allRows=studentDirectory.slice().sort((a,b)=>
     String(a.currentClassId||'').localeCompare(String(b.currentClassId||'')) ||
     Number(a.currentSeat||999)-Number(b.currentSeat||999)
   );
@@ -2886,11 +2739,6 @@ function renderDirectory(){
         學生資料仍然共用同一份 studentDirectory，只是畫面改成依班級切換，避免全校名單過長。
       </div>
 
-      <div class="section-title">🏫 班級快速切換</div>
-      <div class="toolbar" style="align-items:center">
-        ${activeClassIds.map(id=>`<button class="btn ${id===String(selectedClass)?'primary':'gray'} small directory-class-chip" data-class="${esc(id)}">${esc(id)} 班</button>`).join('')}
-      </div>
-
       <div class="toolbar">
         <button id="prevDirectoryClass" class="btn gray">◀ 上一班</button>
         <label>班級
@@ -2909,7 +2757,6 @@ function renderDirectory(){
         </select>
 
         <button id="migrateStudentIdsBtn" class="btn primary">🔄 同步既有班級到學生主檔</button>
-        <button id="scanDuplicateStudentsBtn" class="btn warn">🧹 掃描重複學生</button>
       </div>
 
       <div class="notice success" style="margin-top:10px">
@@ -2953,7 +2800,6 @@ function renderDirectory(){
     </div>`;
 
   $('#migrateStudentIdsBtn').onclick=migrateLegacyStudentsToDirectory;
-  $('#scanDuplicateStudentsBtn')?.addEventListener('click',scanAndMergeDuplicateStudents);
 
   const apply=()=>{
     const q=$('#directorySearch').value.trim().toLowerCase();
@@ -2972,7 +2818,6 @@ function renderDirectory(){
     window.__directorySelectedClass=e.target.value;
     renderDirectory();
   };
-  $$('.directory-class-chip').forEach(b=>b.onclick=()=>{window.__directorySelectedClass=b.dataset.class;renderDirectory()});
 
   const moveClass=(dir)=>{
     const idx=activeClassIds.indexOf(String(window.__directorySelectedClass));
@@ -3026,8 +2871,36 @@ async function mergeStudentPrompt(sourceId){
   const target=studentDirectory.find(x=>x.id===key||registryId(x.email)===registryId(key));
   if(!target)return alert('找不到要保留的學生。');
   if(target.id===sourceId)return alert('來源與保留學生不能是同一筆。');
-  if(!confirm(`確定合併？\n\n保留：${target.displayName}｜${target.email||target.id}\n合併來源：${src.displayName}｜${src.email||src.id}\n\n來源 studentId 將標記 merged，相關資料會改指向保留 studentId。`))return;
-  try{await mergeStudentRecords(sourceId,target.id,{silent:false})}catch(e){alert(`無法自動合併：${e.message||e}`)}
+  const srcLinked=registries.find(r=>r.studentId===sourceId&&r.linkedUid),tarLinked=registries.find(r=>r.studentId===target.id&&r.linkedUid);
+  if(srcLinked&&tarLinked&&srcLinked.linkedUid!==tarLinked.linkedUid)return alert('兩筆資料都已連動不同 Google UID，為避免誤合併，請先人工確認帳號後再處理。');
+  if(!confirm(`確定合併？\n\n保留：${target.displayName}｜${target.email||target.id}\n合併來源：${src.displayName}｜${src.email||src.id}\n\n來源 studentId 將標記 merged，相關新制資料會改指向保留 studentId。`))return;
+  for(const r of subjectRosters.filter(x=>(x.studentIds||[]).includes(sourceId))){
+    const ids=[...new Set((r.studentIds||[]).map(x=>x===sourceId?target.id:x))];
+    const students=(r.students||[]).map(x=>x.studentId===sourceId?{...x,studentId:target.id,id:target.id}:x).filter((x,i,a)=>a.findIndex(y=>y.studentId===x.studentId)===i);
+    await updateDoc(doc(db,'subjectClassRosters',r.id),{studentIds:ids,students,updatedAt:serverTimestamp()});
+  }
+  for(const c of classes.filter(c=>(c.students||[]).some(x=>(x.studentId||x.id)===sourceId))){
+    const students=c.students.map(x=>(x.studentId||x.id)===sourceId?{...x,id:target.id,studentId:target.id,name:target.displayName||x.name,email:target.email||x.email}:x).filter((x,i,a)=>a.findIndex(y=>(y.studentId||y.id)===(x.studentId||x.id))===i);
+    await updateDoc(doc(db,'classes',c.id),{students,updatedAt:serverTimestamp()});
+  }
+  for(const x of collections){
+    if(x.records&&Object.prototype.hasOwnProperty.call(x.records,sourceId)){
+      const records={...x.records};if(!Object.prototype.hasOwnProperty.call(records,target.id))records[target.id]=records[sourceId];delete records[sourceId];await updateDoc(doc(db,'collectionItems',x.id),{records,updatedAt:serverTimestamp()});
+    }
+  }
+  for(const x of assessments){
+    if(x.scores&&Object.prototype.hasOwnProperty.call(x.scores,sourceId)){
+      const scores={...x.scores};if(!Object.prototype.hasOwnProperty.call(scores,target.id))scores[target.id]=scores[sourceId];delete scores[sourceId];await updateDoc(doc(db,'assessments',x.id),{scores,updatedAt:serverTimestamp()});
+    }
+  }
+  for(const e of studentEnrollments.filter(x=>x.studentId===sourceId)){
+    const newId=`${e.schoolYear}__${target.id}`;await setDoc(doc(db,'studentEnrollments',newId),{...e,studentId:target.id,mergedFrom:sourceId,updatedAt:serverTimestamp()},{merge:true});await deleteDoc(doc(db,'studentEnrollments',e.id));
+  }
+  const srcReg=registries.find(r=>r.studentId===sourceId);
+  if(srcReg&&!tarLinked){srcReg.studentId=target.id;srcReg.displayName=target.displayName;await saveRegistry(srcReg)}
+  await setDoc(doc(db,'studentDirectory',sourceId),{active:false,status:'merged',mergedInto:target.id,mergedAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true});
+  await audit('merge_duplicate_student','studentDirectory',sourceId,`合併重複學生：${src.displayName} → ${target.displayName}（保留 ${target.id}）`);
+  await refreshAll();renderDirectory();alert('✅ 重複學生已合併。來源主檔保留 merged 標記供稽核。');
 }
 
 // 歷史資料
@@ -3238,51 +3111,8 @@ async function saveMyHomeroom(){
   const classId=$('#myHomeroomSelect').value;
   await setDoc(doc(db,'users',me.uid),{homeroomClassId:classId,updatedAt:serverTimestamp()},{merge:true});
   me.homeroomClassId=classId;await audit('set_my_homeroom','user',me.uid,`最高管理員導師班設定為 ${classId}`);
-configureAdminUI();renderAdminPermissions();alert(`✅ 你的導師模式已設定為 ${classId}。`);
+  configureAdminUI();renderAdminPermissions();alert(`✅ 你的導師模式已設定為 ${classId}。`);
 }
-
-function renderHomeroomOverview(){
-  if(!isGlobalAdmin()){
-    $('#page-homeroomOverview').innerHTML='<div class="notice error">只有最高管理員模式可以查看導師班設定總覽。</div>';
-    return;
-  }
-  const classAdmins=currentClassAdminUsers();
-  const myHome=homeroomClassId();
-  const grantedClassIds=[...new Set([
-    ...classAdmins.flatMap(u=>[...(u.adminClassIds||[]).map(String),...(u.homeroomClassId?[String(u.homeroomClassId)]:[])]),
-    ...(myHome?[String(myHome)]:[])
-  ])].filter(Boolean).sort();
-  const selected=window.__homeroomOverviewClass&&grantedClassIds.includes(String(window.__homeroomOverviewClass))?String(window.__homeroomOverviewClass):(grantedClassIds.includes(String(myHome))?String(myHome):(grantedClassIds[0]||''));
-  window.__homeroomOverviewClass=selected;
-  const sem=window.__homeroomOverviewSemester||currentSemester;
-  const admins=[...classAdmins.filter(u=>(u.adminClassIds||[]).map(String).includes(selected)||String(u.homeroomClassId||'')===selected)];
-  if(myHome&&String(myHome)===selected&&!admins.some(u=>u.uid===me.uid))admins.unshift(me);
-  const c=classes.find(x=>String(x.id)===selected),roleMap=c?.roleAssignments?.[sem]||{},roster=getRosterForClass(selected),teachers=teacherRegistries();
-  const teacherRows=subjectManagers.filter(sm=>sm.status!=='released'&&sm.semester===sem&&String(sm.classId)===selected).sort((a,b)=>String(a.subject).localeCompare(String(b.subject),'zh-Hant'));
-  const roleWho=(kind,type,name)=>{const who=roleMap[`${kind}|${type}|${name}`];if(!who)return '—';const st=roster.find(s=>Number(s.seat)===Number(who.seat));return `${who.seat}號 ${st?.name||who.name||''}`};
-  const sourceLabel=sm=>sm.updatedByLabel||sm.createdByLabel||((sm.createdByRole==='homeroom_admin')?'導師新增':(sm.createdByRole==='global_admin'?'最高管理員設定':'既有設定'));
-
-  $('#page-homeroomOverview').innerHTML=`<div class="page-title">導師班設定總覽</div>
-    <div class="card">
-      <div class="notice success"><b>這裡是最高管理員的集中檢視與設定中心。</b><br>最高管理員與各班導師現在共用同一份「學期＋班級＋科目」任課設定。任何一方新增、修改或刪除，另一方都會同步看到；歷史作業與成績不會因解除任課而刪除。</div>
-      ${grantedClassIds.length?`<div class="toolbar"><label>學期<select id="homeroomOverviewSemester">${semesterOptions(sem)}</select></label><label>導師班<select id="homeroomOverviewClass">${grantedClassIds.map(id=>`<option value="${esc(id)}" ${id===selected?'selected':''}>${esc(id)}</option>`).join('')}</select></label></div>
-      <div class="toolbar">${grantedClassIds.map(id=>`<button class="btn ${id===selected?'primary':'gray'} small overview-class-chip" data-class="${esc(id)}">${esc(id)} 班</button>`).join('')}</div>
-      <div class="grid g4" style="margin-top:10px"><div class="card stat"><div class="sub">🏫 導師班</div><b>${esc(selected)}</b><div class="meta">目前授權班級</div></div><div class="card stat"><div class="sub">👨‍🏫 導師管理員</div><b>${admins.length}</b><div class="meta">${admins.map(u=>u.displayName||u.email||'').join('、')||'—'}</div></div><div class="card stat"><div class="sub">📚 任課設定</div><b>${teacherRows.length}</b><div class="meta">${esc(sem)}</div></div><div class="card stat"><div class="sub">👥 班級人數</div><b>${roster.length}</b><div class="meta">正式班級名單</div></div></div>
-
-      <div class="card" style="margin-top:14px"><div class="section-title">➕ 最高管理員設定本班任課老師</div><div class="notice">同一位老師可以在同一班教授不同科目；唯一設定鍵是「學期＋班級＋科目」。若該科已有人負責，請使用下方「修改」而不是重複新增。</div><div class="toolbar"><label>老師<select id="overviewTeacher">${teachers.map(r=>`<option value="${esc(r.id)}">${esc(r.displayName||r.email)}｜${esc(r.email||r.id)}</option>`).join('')}</select></label><label>科目<select id="overviewSubject">${subjects.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('')}</select></label><button id="overviewAssignTeacher" class="btn primary" ${teachers.length?'':'disabled'}>➕ 設定任課老師</button></div></div>
-
-      <div class="two" style="margin-top:14px"><div class="card"><div class="section-title">👨‍🏫 導師管理員</div>${admins.map(u=>`<div class="item"><b>${esc(u.displayName||u.username||'')}</b><div class="meta">${esc(u.email||'')}｜${esc((u.adminClassIds||[]).join('、')||u.homeroomClassId||'')}${u.uid===me.uid?'｜最高管理員本人':''}</div></div>`).join('')||'<div class="sub">尚無導師管理員。</div>'}</div>
-      <div class="card"><div class="section-title">📚 任課老師設定</div><div class="table-wrap"><table><thead><tr><th>科目</th><th>任課老師</th><th>Email</th><th>Google</th><th>本科小老師</th><th>來源</th><th>操作</th></tr></thead><tbody>${teacherRows.map(sm=>{const reg=teachers.find(r=>teacherIdentityMatchesManager(r,sm));const ai=subjectAssistantInfo(sm);return `<tr><td><b>${esc(sm.subject)}</b></td><td>${esc(sm.managerName||reg?.displayName||'')}</td><td>${esc(sm.managerEmail||reg?.email||'')}</td><td>${reg?.linkedUid||sm.managerUid?'✅ 已連動':'⚠️ 尚未連動'}</td><td>${ai.student?esc(ai.label):'—'}</td><td><span class="mini-badge">${esc(sourceLabel(sm))}</span></td><td><button class="btn primary small overview-edit-teacher" data-id="${esc(sm.id)}">✏️ 修改</button> <button class="btn danger small overview-delete-teacher" data-id="${esc(sm.id)}">🗑️ 刪除</button></td></tr>`}).join('')||'<tr><td colspan="7">這個學期尚未設定任課老師。</td></tr>'}</tbody></table></div></div></div>
-      <div class="two" style="margin-top:14px"><div class="card"><div class="section-title">🏴 班級幹部</div>${standardRoles.filter(r=>r.kind==='officer').map(r=>`<div class="role-row"><b>${esc(r.label)}</b><span>${esc(roleWho(r.kind,r.scopeType,r.scopeName))}</span></div>`).join('')}</div><div class="card"><div class="section-title">⭐ 各科小老師</div>${standardRoles.filter(r=>r.kind==='assistant').map(r=>`<div class="role-row"><b>${esc(r.label)}</b><span>${esc(roleWho(r.kind,r.scopeType,r.scopeName))}</span></div>`).join('')}</div></div>`:'<div class="notice">目前尚未授予任何班級管理員／導師班權限。</div>'}
-    </div>`;
-  $('#homeroomOverviewSemester')?.addEventListener('change',e=>{window.__homeroomOverviewSemester=e.target.value;renderHomeroomOverview()});
-  $('#homeroomOverviewClass')?.addEventListener('change',e=>{window.__homeroomOverviewClass=e.target.value;renderHomeroomOverview()});
-  $$('.overview-class-chip').forEach(b=>b.onclick=()=>{window.__homeroomOverviewClass=b.dataset.class;renderHomeroomOverview()});
-  $('#overviewAssignTeacher')?.addEventListener('click',async()=>{const reg=teachers.find(r=>r.id===$('#overviewTeacher').value);if(!reg)return alert('請先選擇老師。');const result=await assignTeacherToSubject(reg,sem,selected,$('#overviewSubject').value,{source:'最高管理員設定'});if(!result.ok)return alert(result.message);await refreshAll();renderHomeroomOverview();alert(result.message)});
-  $$('.overview-edit-teacher').forEach(b=>b.onclick=()=>editHomeroomTeacherAssignment(b.dataset.id));
-  $$('.overview-delete-teacher').forEach(b=>b.onclick=()=>deleteHomeroomTeacherAssignment(b.dataset.id));
-}
-
 function renderAdminPermissions(){
   if(!isGlobalAdmin()){ $('#page-adminPermissions').innerHTML='<div class="notice error">只有最高管理員模式可以管理其他班級管理員。</div>';return}
   const candidates=adminTeacherCandidates(),admins=currentClassAdminUsers(),classIds=[...new Set([...classes.map(c=>c.id),...Object.keys(defaultRosters)])].sort();
@@ -3298,74 +3128,9 @@ function renderAdminPermissions(){
     </div>
     <div class="card" style="margin-top:14px"><div class="section-title">🎭 我的多重身分</div><div class="notice success">你的 Google 帳號可以同時是「最高管理員＋導師＋任課老師」。這裡設定導師班，登入後即可用「切換身分」限制自己平常的工作範圍。</div><div class="toolbar"><label>我的導師班<select id="myHomeroomSelect">${schoolClassOptions(homeroomClassId())}</select></label><button id="saveMyHomeroomBtn" class="btn primary">💾 儲存我的導師班</button></div></div>
     <div class="card" style="margin-top:14px"><div class="section-title">🔐 授予班級管理員</div><div class="notice">其他導師先完成 Google UID 連動，再授予「導師班管理」；他仍可另外用任課老師模式自行建立班級 × 科目。</div><div class="toolbar"><label>老師<select id="adminTeacherSelect">${candidates.map(r=>`<option value="${esc(r.id)}">${esc(r.displayName||r.email)}｜${esc(r.email||r.id)}</option>`).join('')}</select></label><label>導師班<select id="adminClassSelect">${schoolClassOptions()}</select></label><button id="grantClassAdminBtn" class="btn primary" ${candidates.length?'':'disabled'}>🔐 授予班級管理員</button></div></div>
-    <div class="card" style="margin-top:14px"><div class="section-title">👨‍🏫 目前班級管理員</div><div class="table-wrap"><table><thead><tr><th>姓名</th><th>Email</th><th>導師班</th><th>任課摘要</th><th>任課組數</th><th>操作</th></tr></thead><tbody>${admins.map(u=>{
-      const list=(u.assignments||[]).filter(a=>a.kind==='teacher'&&(!a.semester||a.semester===currentSemester)).map(a=>({semester:a.semester||currentSemester,classId:String(a.classId||''),subject:a.scopeName||a.subject||'未命名科目'})).filter(a=>a.classId);
-      const grouped={};for(const a of list)(grouped[a.subject]??=[]).push(a.classId);
-      const groups=Object.entries(grouped).map(([subject,classIds])=>({subject,classIds:[...new Set(classIds)].sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true}))}));
-      const preview=groups.slice(0,2).map(g=>{const shown=g.classIds.slice(0,4),more=g.classIds.length-shown.length;return `<div class="teacher-summary-line"><span class="teacher-summary-subject">${esc(g.subject)}：</span><span class="teacher-class-chips">${shown.map(c=>`<span class="teacher-class-chip">${esc(c)}</span>`).join('')}${more>0?`<span class="teacher-class-chip">＋${more}</span>`:''}</span></div>`}).join('');
-      const hiddenSubjects=Math.max(0,groups.length-2);
-      const adminUid=userDocUid(u);
-      return `<tr><td><b>${esc(u.displayName||'')}</b></td><td>${esc(u.email||'')}</td><td><select class="class-admin-class" data-uid="${esc(adminUid)}">${schoolClassOptions((u.adminClassIds||[])[0]||u.homeroomClassId||'')}</select></td><td><div class="teacher-summary">${preview||'<span class="meta">目前未設定任課</span>'}${hiddenSubjects?`<div class="teacher-more-note">另有 ${hiddenSubjects} 個科目，請點「查看全部任課」。</div>`:''}</div></td><td><span class="teacher-count-badge">${list.length} 筆</span></td><td><button type="button" class="btn primary small admin-view-assignments" data-uid="${esc(adminUid)}" ${list.length?'':'disabled'}>👁 查看全部任課</button> <button class="btn good small save-class-admin" data-uid="${esc(adminUid)}">💾 儲存導師班</button> <button class="btn danger small revoke-class-admin" data-uid="${esc(adminUid)}">取消管理權限</button></td></tr>`;
-    }).join('')||'<tr><td colspan="6">尚未授予其他班級管理員。</td></tr>'}</tbody></table></div></div>`;
+    <div class="card" style="margin-top:14px"><div class="section-title">👨‍🏫 目前班級管理員</div><div class="table-wrap"><table><thead><tr><th>姓名</th><th>Email</th><th>導師班</th><th>任課權限</th><th>操作</th></tr></thead><tbody>${admins.map(u=>`<tr><td><b>${esc(u.displayName||'')}</b></td><td>${esc(u.email||'')}</td><td><select class="class-admin-class" data-uid="${esc(u.uid)}">${schoolClassOptions((u.adminClassIds||[])[0]||u.homeroomClassId||'')}</select></td><td>${(u.assignments||[]).filter(a=>a.kind==='teacher').map(a=>`${esc(a.semester)}｜${esc(a.classId)}｜${esc(a.scopeName)}`).join('<br>')||'可自行建立'}</td><td><button class="btn good small save-class-admin" data-uid="${esc(u.uid)}">💾 儲存導師班</button> <button class="btn danger small revoke-class-admin" data-uid="${esc(u.uid)}">取消管理權限</button></td></tr>`).join('')||'<tr><td colspan="5">尚未授予其他班級管理員。</td></tr>'}</tbody></table></div></div>`;
   $('#saveSchoolClassConfigBtn')?.addEventListener('click',saveSchoolClassConfig);$('#saveMyHomeroomBtn').onclick=saveMyHomeroom;$('#grantClassAdminBtn')?.addEventListener('click',grantClassAdmin);
-  $$('.save-class-admin').forEach(b=>b.onclick=()=>changeClassAdminClass(b.dataset.uid));
-  $$('.revoke-class-admin').forEach(b=>b.onclick=()=>revokeClassAdmin(b.dataset.uid));
-
-  // v20260913-M：管理者權限統一使用 Firestore 文件 id／uid 相容識別，修正查看全部任課、儲存導師班與取消管理權限找不到導師資料的問題；事件仍採頁面層級委派。
-  // 原先直接逐顆綁定 onclick，在部分重新渲染／平板瀏覽器情境下可能失去事件；
-  // 改成委派後，不論表格重新產生幾次都可以正常開啟。
-  const adminPermissionPage=$('#page-adminPermissions');
-  if(adminPermissionPage){
-    adminPermissionPage.onclick=e=>{
-      const btn=e.target.closest('.admin-view-assignments');
-      if(!btn)return;
-      e.preventDefault();
-      e.stopPropagation();
-      if(btn.disabled)return;
-
-      const uid=String(btn.dataset.uid||'');
-      const u=admins.find(x=>userDocUid(x)===uid);
-      if(!u){
-        alert('找不到這位導師的管理者資料，請重新整理後再試一次。');
-        return;
-      }
-
-      // 同時讀 users.assignments 與 subjectClassManagers，避免只看到舊資料或漏掉導師／最高管理員新設定。
-      const list=[];
-      const pushAssignment=(classId,subject,semester=currentSemester)=>{
-        classId=String(classId||'').trim();subject=String(subject||'').trim();
-        if(!classId||!subject)return;
-        const k=`${semester}|${classId}|${subject}`;
-        if(!list.some(x=>x.k===k))list.push({k,semester,classId,subject});
-      };
-
-      for(const a of (u.assignments||[])){
-        if(a.kind!=='teacher')continue;
-        const semester=a.semester||currentSemester;
-        if(semester!==currentSemester)continue;
-        pushAssignment(a.classId,a.scopeName||a.subject,semester);
-      }
-
-      const userEmail=String(u.email||'').toLowerCase();
-      for(const sm of subjectManagers){
-        if(sm.status==='released'||sm.semester!==currentSemester)continue;
-        const adminUid=userDocUid(u);
-        const sameUid=!!adminUid && String(sm.managerUid||'')===adminUid;
-        const sameEmail=!!userEmail && String(sm.managerEmail||'').toLowerCase()===userEmail;
-        if(sameUid||sameEmail)pushAssignment(sm.classId,sm.subject,sm.semester);
-      }
-
-      list.sort((a,b)=>String(a.subject).localeCompare(String(b.subject),'zh-Hant')||String(a.classId).localeCompare(String(b.classId),undefined,{numeric:true}));
-      const grouped={};
-      for(const a of list)(grouped[a.subject]??=[]).push(a.classId);
-      const groups=Object.entries(grouped).sort((a,b)=>a[0].localeCompare(b[0],'zh-Hant'));
-
-      showModal(`<div class="section-title">👨‍🏫 ${esc(u.displayName||u.email||'導師')}｜${esc(currentSemester)} 全部任課</div>
-        <div class="notice"><b>${esc(u.email||'')}</b><br>共 ${list.length} 筆「班級 × 科目」任課設定；相同科目已自動合併班級顯示。</div>
-        <div>${groups.map(([subject,classIds])=>{const ids=[...new Set(classIds)].sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true}));return `<div class="teacher-detail-group"><div class="teacher-detail-title">${esc(subject)}｜${ids.length} 班</div><div class="teacher-class-chips">${ids.map(c=>`<span class="teacher-class-chip">${esc(c)} 班</span>`).join('')}</div></div>`}).join('')||'<div class="meta">目前未設定任課。</div>'}</div>
-        <div class="toolbar"><button type="button" class="btn gray close-modal">關閉</button></div>`);
-    };
-  }
+  $$('.save-class-admin').forEach(b=>b.onclick=()=>changeClassAdminClass(b.dataset.uid));$$('.revoke-class-admin').forEach(b=>b.onclick=()=>revokeClassAdmin(b.dataset.uid));
 }
 async function grantClassAdmin(){
   if(!isGlobalAdmin())return alert('只有最高管理員模式可以授予管理者權限。');
@@ -3378,8 +3143,7 @@ async function grantClassAdmin(){
 }
 async function changeClassAdminClass(uid){
   if(!isGlobalAdmin())return;
-  uid=String(uid||'').trim();
-  const u=users.find(x=>userDocUid(x)===uid),sel=document.querySelector(`.class-admin-class[data-uid="${CSS.escape(uid)}"]`),classId=sel?.value;if(!u||!classId)return;
+  const u=users.find(x=>x.uid===uid),sel=document.querySelector(`.class-admin-class[data-uid="${CSS.escape(uid)}"]`),classId=sel?.value;if(!u||!classId)return;
   await setDoc(doc(db,'users',uid),{adminScope:'class',adminClassIds:[classId],homeroomClassId:classId,updatedAt:serverTimestamp()},{merge:true});
   await audit('change_class_admin_scope','user',uid,`調整 ${u.displayName||u.email} 導師班為 ${classId}`);await refreshAll();renderAdminPermissions();
 }
