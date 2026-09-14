@@ -108,7 +108,7 @@
   </aside>
   <div class="main-area">
     <header class="hero">
-      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260914-L</div></div>
+      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260915-M</div></div>
       <div class="hero-user"><div class="user-name">👨‍🏫 <span id="who"></span></div><div id="semesterBadge" class="semester-badge"></div><div class="header-actions"><button id="switchModeBtn" class="btn purple small">🎭 切換身分</button><a href="class-work.html" style="text-decoration:none"><button class="btn gray small">📋 回報頁</button></a><button id="logoutBtn" class="btn danger small">🚪 登出</button></div></div>
     </header>
     <div class="content"><div id="modeHost"></div><div id="appMsg"></div><section id="page-dashboard"></section><section id="page-roles" class="hidden"></section><section id="page-records" class="hidden"></section><section id="page-subjectClasses" class="hidden"></section><section id="page-accounts" class="hidden"></section><section id="page-classes" class="hidden"></section><section id="page-directory" class="hidden"></section><section id="page-teacherDirectory" class="hidden"></section><section id="page-history" class="hidden"></section><section id="page-upgrade" class="hidden"></section><section id="page-audit" class="hidden"></section><section id="page-adminPermissions" class="hidden"></section></div>
@@ -1955,7 +1955,16 @@ function adminTeacherCandidates(){
   return registries.filter(r=>r.type==='teacher'&&r.active!==false&&r.linkedUid&&r.linkedUid!==me.uid).sort((a,b)=>String(a.displayName||'').localeCompare(String(b.displayName||''),'zh-Hant'));
 }
 function currentClassAdminUsers(){
-  return users.filter(u=>u.uid!==me.uid&&u.type==='admin'&&u.adminScope==='class').sort((a,b)=>String(a.displayName||'').localeCompare(String(b.displayName||''),'zh-Hant'));
+  const homeroomOf=u=>String((u.adminClassIds||[])[0]||u.homeroomClassId||'');
+  return users
+    .filter(u=>u.uid!==me.uid&&u.type==='admin'&&u.adminScope==='class')
+    .sort((a,b)=>{
+      const ac=homeroomOf(a),bc=homeroomOf(b);
+      const an=Number(ac),bn=Number(bc);
+      if(Number.isFinite(an)&&Number.isFinite(bn)&&an!==bn)return an-bn;
+      if(ac!==bc)return ac.localeCompare(bc,'zh-Hant',{numeric:true});
+      return String(a.displayName||'').localeCompare(String(b.displayName||''),'zh-Hant');
+    });
 }
 async function legacy_grantClassAdmin(){
   if(!isGlobalAdmin())return alert('只有最高管理員可以授予管理者權限。');
@@ -4943,11 +4952,23 @@ function renderAdminPermissions(){
   $('#grantClassAdminBtn')?.addEventListener('click',grantClassAdmin);
   $$('.save-class-admin').forEach(b=>b.onclick=()=>changeClassAdminClass(b.dataset.uid));
   $$('.revoke-class-admin').forEach(b=>b.onclick=()=>revokeClassAdmin(b.dataset.uid));
-  $$('.admin-permission-view-teaching').forEach(b=>b.onclick=()=>{
-    const u=admins.find(x=>x.uid===b.dataset.uid);
-    if(!u)return;
-    openTeachingRowsModal(`${u.displayName||u.email||'老師'}｜全部任課班`,teacherTeachingRowsForUser(u,currentSemester));
-  });
+
+  // 使用頁面層級事件委派，確保任課摘要按鈕即使由 innerHTML 動態產生，
+  // 「查看全部任課班」仍能穩定作動。
+  const adminPermissionPage=$('#page-adminPermissions');
+  if(adminPermissionPage){
+    adminPermissionPage.onclick=e=>{
+      const b=e.target.closest('.admin-permission-view-teaching');
+      if(!b||!adminPermissionPage.contains(b))return;
+      e.preventDefault();
+      const u=admins.find(x=>String(x.uid)===String(b.dataset.uid));
+      if(!u)return alert('找不到這位導師的任課資料，請重新整理後再試。');
+      openTeachingRowsModal(
+        `${u.displayName||u.email||'老師'}｜全部任課班`,
+        teacherTeachingRowsForUser(u,currentSemester)
+      );
+    };
+  }
 }
 async function grantClassAdmin(){
   if(!isGlobalAdmin())return alert('只有最高管理員模式可以授予管理者權限。');
