@@ -96,7 +96,7 @@
   </aside>
   <div class="main-area">
     <header class="hero">
-      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260914-B</div></div>
+      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260914-C</div></div>
       <div class="hero-user"><div class="user-name">👨‍🏫 <span id="who"></span></div><div id="semesterBadge" class="semester-badge"></div><div class="header-actions"><button id="switchModeBtn" class="btn purple small">🎭 切換身分</button><a href="class-work.html" style="text-decoration:none"><button class="btn gray small">📋 回報頁</button></a><button id="logoutBtn" class="btn danger small">🚪 登出</button></div></div>
     </header>
     <div class="content"><div id="modeHost"></div><div id="appMsg"></div><section id="page-dashboard"></section><section id="page-roles" class="hidden"></section><section id="page-records" class="hidden"></section><section id="page-subjectClasses" class="hidden"></section><section id="page-accounts" class="hidden"></section><section id="page-classes" class="hidden"></section><section id="page-directory" class="hidden"></section><section id="page-teacherDirectory" class="hidden"></section><section id="page-history" class="hidden"></section><section id="page-upgrade" class="hidden"></section><section id="page-audit" class="hidden"></section><section id="page-adminPermissions" class="hidden"></section></div>
@@ -122,6 +122,14 @@ let schoolClassConfig={
   9:['901','902','903','904','905','906','907']
 };
 let modeChosenThisLogin=false;
+
+// 帳號連動頁第一次建立班級時使用的暫存名單。
+// 例如 803 尚未有 classes/803，導師可直接貼上「座號,姓名,Email」建立正式共用班級主檔。
+const studentRegistryDrafts={};
+function makeStableStudentId(){
+  return 'stu_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,10);
+}
+
 
 const defaultRosters={
 '804':[[1,'王禹涵'],[2,'江育緹'],[3,'呂思儀'],[4,'李詠騏'],[5,'林子歆'],[6,'林禹萱'],[7,'張馨勻'],[8,'陳昕樂'],[9,'陳梓安'],[10,'陳筠蓁'],[11,'陳苙絜'],[12,'楊錚諭'],[13,'趙安褕'],[14,'魏語潔'],[15,'江靚恩'],[16,'王洋振'],[17,'吳昊丞'],[18,'李祐誠'],[19,'林宸陞'],[20,'林維辰'],[21,'林鈺棟'],[22,'洪楷祥'],[23,'陳兆楷'],[24,'陳沂璟'],[25,'黑肚·尤明'],[26,'賴震宇'],[27,'戴震龍'],[28,'謝宇哲']],
@@ -885,53 +893,309 @@ function printSummary(st,title){const rows=summaryPlainRows(st),w=window.open(''
 
 
 function renderStudentRegistryList(){
-  const box=$('#studentRegistryList'),classId=$('#registryClass')?.value;if(!box||!classId)return;const roster=getRosterForClass(classId);
-  box.innerHTML=`<div class="table-wrap"><table><thead><tr><th>座號</th><th>姓名</th><th>Google Email</th><th>連動狀態</th><th>最近登入</th></tr></thead><tbody>${roster.map(s=>{const reg=registryByStudent(classId,s.seat);return `<tr><td>${s.seat}</td><td><b>${esc(s.name)}</b></td><td><input class="student-reg-email" data-seat="${s.seat}" data-name="${esc(s.name)}" data-oldid="${esc(reg?.id||'')}" type="email" value="${esc(reg?.email||reg?.id||'')}" placeholder="學校 Google Email" style="min-width:230px"></td><td>${reg?.linkedUid?'<span class="registry-status linked">🟢 已連動</span>':'<span class="registry-status unlinked">⚪ 尚未連動</span>'}</td><td>${esc(fmtTs(reg?.lastLoginAt))}</td></tr>`}).join('')}</tbody></table></div>`;
+  const box=$('#studentRegistryList'),classId=$('#registryClass')?.value;
+  if(!box||!classId)return;
+
+  const official=getRosterForClass(classId);
+  const draft=studentRegistryDrafts[classId]||[];
+  const roster=official.length?official:draft;
+
+  if(!roster.length){
+    box.innerHTML=`
+      <div class="notice warn">
+        <b>${esc(classId)} 班目前尚未建立正式班級名單。</b><br>
+        請在下方「批次貼上 Email 名單」貼上：
+        <b>座號,姓名,Email</b>，再按「套用到上方名單」。
+        系統會先產生預覽，最後按「儲存這班 Email」時一次建立
+        <b>classes/${esc(classId)} 正式共用名單＋學生 Email／Google 連動主檔</b>。
+      </div>`;
+    return;
+  }
+
+  box.innerHTML=`
+    ${!official.length?`<div class="notice success"><b>🆕 ${esc(classId)} 班新名單預覽</b><br>目前尚未寫入 Firebase。確認座號、姓名與 Email 後，請按上方「儲存這班 Email」。</div>`:''}
+    <div class="table-wrap"><table>
+      <thead><tr><th>座號</th><th>姓名</th><th>Google Email</th><th>連動狀態</th><th>最近登入</th></tr></thead>
+      <tbody>${roster.map(s=>{
+        const reg=registryByStudent(classId,s.seat);
+        const email=reg?.email||reg?.id||s.email||'';
+        return `<tr>
+          <td>${esc(s.seat)}</td>
+          <td><b>${esc(s.name)}</b></td>
+          <td><input class="student-reg-email"
+            data-seat="${esc(s.seat)}"
+            data-name="${esc(s.name)}"
+            data-studentid="${esc(s.studentId||s.id||'')}"
+            data-oldid="${esc(reg?.id||'')}"
+            type="email"
+            value="${esc(email)}"
+            placeholder="學校 Google Email"
+            style="min-width:230px"></td>
+          <td>${reg?.linkedUid?'<span class="registry-status linked">🟢 已連動</span>':email?'<span class="registry-status unlinked">⚪ Email 已建／尚未連動</span>':'<span class="registry-status unlinked">⚪ 尚未設定</span>'}</td>
+          <td>${esc(fmtTs(reg?.lastLoginAt))}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
 }
 async function saveStudentRegistryClass(){
-  const classId=$('#registryClass').value,inputs=$$('.student-reg-email');
-  if(!confirm(`確定儲存 ${classId} 班的 Google Email 對照名單？`))return;
-  for(const inp of inputs){const email=registryId(inp.value),seat=Number(inp.dataset.seat),name=inp.dataset.name,oldId=inp.dataset.oldid;if(!email)continue;const oldReg=oldId?registries.find(r=>r.id===oldId):registryByStudent(classId,seat);if(oldReg?.linkedUid&&oldReg.id!==email){alert(`${seat}號 ${name} 已完成連動，不能直接更換 Email。請先確認連動身分後再處理。`);continue}const assignments=mergeAssignments(oldReg?.assignments||[],presetAssignmentsForStudent(classId,seat));await setDoc(doc(db,'identityRegistry',email),{email,username:`${classId}${String(seat).padStart(2,'0')}`,displayName:name,type:'student',classId,seat,active:oldReg?.active!==false,linked:!!oldReg?.linkedUid,linkedUid:oldReg?.linkedUid||null,linkedAt:oldReg?.linkedAt||null,lastLoginAt:oldReg?.lastLoginAt||null,assignments,updatedAt:serverTimestamp()},{merge:true});if(oldId&&oldId!==email&&!oldReg?.linkedUid)await deleteDoc(doc(db,'identityRegistry',oldId));}
-  await audit('save_student_registry','identityRegistry',classId,`更新 ${classId} 學生 Google Email 對照`);await refreshAll();alert('✅ 學生 Email 對照名單已儲存。');
-}
-function applyStudentRegistryPaste(){const text=$('#studentRegistryPaste').value.trim();if(!text)return;const map=new Map();text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).forEach(line=>{const p=line.split(/[,，\t]/).map(x=>x.trim());if(p.length>=3)map.set(Number(p[0]),p[p.length-1])});$$('.student-reg-email').forEach(inp=>{const e=map.get(Number(inp.dataset.seat));if(e)inp.value=e});alert('已套用到上方欄位，請再按「儲存這班 Email」。')}
-async function addTeacherRegistry(){const displayName=$('#teacherName').value.trim(),email=registryId($('#teacherEmail').value);if(!displayName||!email)return alert('請填老師姓名與 Email。');const existing=registries.find(r=>r.id===email);await saveRegistry({...(existing||{}),email,displayName,type:'teacher',active:existing?.active!==false,assignments:existing?.assignments||[],linked:!!existing?.linkedUid,linkedUid:existing?.linkedUid||null});await audit('add_teacher_registry','identityRegistry',email,`新增／更新任課教師 ${displayName}`);await refreshAll();}
-async function applyTeacherRegistryPaste(){const lines=$('#teacherPaste').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);if(!lines.length)return alert('請貼上教師資料。');for(const line of lines){const p=line.split(/[,，\t]/).map(x=>x.trim());if(p.length<2)continue;const displayName=p[0],email=registryId(p[1]);if(!email)continue;const existing=registries.find(r=>r.id===email);await saveRegistry({...(existing||{}),email,displayName,type:'teacher',active:existing?.active!==false,assignments:existing?.assignments||[],linked:!!existing?.linkedUid,linkedUid:existing?.linkedUid||null});}await audit('batch_teacher_registry','identityRegistry','teachers',`批次加入 ${lines.length} 筆教師資料`);await refreshAll();alert('✅ 任課教師名單已加入。')}
-function editTeacherRegistry(id){
-  const reg=registries.find(r=>r.id===id);if(!reg)return;
-  const assignments=[...(reg.assignments||[])];
+  const classId=$('#registryClass')?.value;
+  if(!classId)return alert('請先選擇班級。');
 
-  showModal(`<div class="item-head"><div><div class="section-title">👨‍🏫 ${esc(reg.displayName||'')} 任課設定</div><div class="meta">${esc(reg.email||reg.id)}｜${reg.linkedUid?'🟢 已連動':'⚪ 尚未連動'}</div></div><button class="btn gray close-modal">✖ 關閉</button></div>
-    <div class="notice"><b>教師本人與 Email 是主檔；科目不是固定屬性。</b> 同一位老師可以同時教不同班、不同科。若相同「學期＋班級＋科目」已經由這位老師建立，會直接共用；若是別的老師，才會阻擋衝突。</div>
-    <div id="teacherAssignments"></div><hr>
-    <div class="toolbar">
-      <label>學期 <select id="taSemester">${semesterOptions(currentSemester)}</select></label>
-      <label>班級 <select id="taClass">${configuredClassIds().map(x=>`<option>${esc(x)}</option>`).join('')}</select></label>
-      <label>科目 <select id="taSubject">${subjects.map(x=>`<option>${esc(x)}</option>`).join('')}</select></label>
-      <button id="addTeacherAssignment" class="btn primary">➕ 加入任課</button>
-    </div>`);
+  let inputs=$$('.student-reg-email');
 
-  const rerender=()=>{
-    const merged=[...(reg.assignments||[])];
-    for(const sm of subjectManagers.filter(sm=>sm.status!=='released'&&teacherIdentityMatchesManager(reg,sm))){
-      const a={semester:sm.semester,classId:String(sm.classId),kind:'teacher',scopeType:'subject',scopeName:sm.subject,canCollection:true,canScores:true};
-      if(!merged.some(x=>assignmentKey(x)===assignmentKey(a)))merged.push(a);
+  // 防呆：沒有任何學生列時，不再顯示「儲存成功」。
+  if(!inputs.length){
+    const raw=$('#studentRegistryPaste')?.value.trim();
+    if(raw){
+      applyStudentRegistryPaste();
+      inputs=$$('.student-reg-email');
     }
-    $('#teacherAssignments').innerHTML=merged.filter(a=>a.kind==='teacher')
-      .sort((a,b)=>String(b.semester).localeCompare(String(a.semester))||String(a.classId).localeCompare(String(b.classId)))
-      .map(a=>`<div class="assign">${esc(a.semester)}｜${esc(a.classId)}班｜${esc(a.scopeName)}</div>`).join('')
-      ||'<div class="meta">尚未設定任課。</div>';
-  };
+  }
+  if(!inputs.length){
+    return alert(`⚠️ ${classId} 班目前沒有可儲存的學生名單。\n\n請先在「批次貼上 Email 名單」貼上「座號,姓名,Email」，並按「套用到上方名單」。`);
+  }
 
-  $('#addTeacherAssignment').onclick=async()=>{
-    const semester=$('#taSemester').value,classId=$('#taClass').value,subject=$('#taSubject').value;
-    const result=await assignTeacherToSubject(reg,semester,classId,subject,{source:'教師任課設定'});
-    if(!result.ok)return alert(result.message);
+  if(!confirm(`確定儲存 ${classId} 班正式共用名單與 Google Email 對照？\n\n共 ${inputs.length} 位學生。`))return;
+
+  try{
+    const oldClass=classDocLocal(classId);
+    const oldStudents=Array.isArray(oldClass?.students)?oldClass.students:[];
+    const oldBySeat=new Map(oldStudents.map(s=>[Number(s.seat),s]));
+
+    const activeStudents=[];
+    let emailSaved=0;
+    let linkedKept=0;
+    let skippedEmailChanges=0;
+
+    // 先組出正式班級名單。
+    for(const inp of inputs){
+      const seat=Number(inp.dataset.seat);
+      const name=normalizeStudentName(inp.dataset.name);
+      if(!Number.isFinite(seat)||!name)continue;
+
+      const oldStudent=oldBySeat.get(seat);
+      const oldReg=inp.dataset.oldid
+        ?registries.find(r=>r.id===inp.dataset.oldid)
+        :registryByStudent(classId,seat);
+
+      let email=registryId(inp.value);
+      if(oldReg?.linkedUid && email && oldReg.id!==email){
+        // 已連動的 Email 不允許直接換掉，避免把 Google UID 對錯人。
+        email=oldReg.id;
+        inp.value=oldReg.id;
+        skippedEmailChanges++;
+      }
+
+      const studentId=
+        oldStudent?.studentId ||
+        (String(oldStudent?.id||'').startsWith('stu_')?oldStudent.id:null) ||
+        inp.dataset.studentid ||
+        makeStableStudentId();
+
+      activeStudents.push({
+        ...(oldStudent||{}),
+        studentId,
+        id:studentId,
+        seat,
+        name,
+        email:email||oldStudent?.email||'',
+        active:true
+      });
+    }
+
+    if(!activeStudents.length){
+      return alert('沒有可儲存的有效學生資料。');
+    }
+
+    // 保留原本已轉出的學生，避免建立／更新 Email 時把歷史名單洗掉。
+    const inactiveStudents=oldStudents
+      .filter(s=>s.active===false && !activeStudents.some(a=>Number(a.seat)===Number(s.seat)));
+
+    const finalStudents=[
+      ...activeStudents.sort((a,b)=>Number(a.seat)-Number(b.seat)),
+      ...inactiveStudents
+    ];
+
+    // ① 先建立／更新正式 classes/{classId}。
+    // 一般導師管理員依 Firestore Rules 只能建立／管理自己的導師班。
+    await setDoc(doc(db,'classes',classId),{
+      classId,
+      students:finalStudents,
+      updatedAt:serverTimestamp()
+    },{merge:true});
+
+    // 讓後續 registryByStudent / presetAssignments 可立即使用最新 class。
+    const localIndex=classes.findIndex(c=>String(c.id)===String(classId));
+    const localClass={...(oldClass||{}),id:classId,classId,students:finalStudents};
+    if(localIndex>=0)classes[localIndex]=localClass;
+    else classes.push(localClass);
+
+    // ② 建立／更新共用 identityRegistry + studentDirectory + enrollment。
+    for(const s of activeStudents){
+      const oldReg=registryByStudent(classId,s.seat);
+      const email=registryId(s.email||oldReg?.email||oldReg?.id||'');
+
+      // 全校學生主檔：即使 Email 尚未填，也先建立穩定 studentId。
+      try{
+        await setDoc(doc(db,'studentDirectory',s.studentId),{
+          displayName:s.name,
+          email,
+          currentClassId:classId,
+          currentSeat:Number(s.seat),
+          grade:gradeFromClassId(classId),
+          status:'enrolled',
+          active:true,
+          createdByUid:oldReg?.createdByUid||me.uid,
+          createdByName:oldReg?.createdByName||me.displayName||me.username||'導師',
+          createdAt:oldReg?.createdAt||serverTimestamp(),
+          updatedAt:serverTimestamp()
+        },{merge:true});
+
+        const sy=schoolYearFromSemester(currentSemester);
+        await setDoc(doc(db,'studentEnrollments',`${sy}__${s.studentId}`),{
+          studentId:s.studentId,
+          schoolYear:sy,
+          semester:currentSemester,
+          classId,
+          grade:gradeFromClassId(classId),
+          seat:Number(s.seat),
+          displayName:s.name,
+          email,
+          status:'active',
+          updatedAt:serverTimestamp()
+        },{merge:true});
+      }catch(e){
+        console.warn('studentDirectory/enrollment 同步未完成',s.studentId,e);
+      }
+
+      if(!email)continue;
+
+      const linkedUid=oldReg?.linkedUid||null;
+      if(linkedUid)linkedKept++;
+
+      const assignments=mergeAssignments(
+        oldReg?.assignments||[],
+        presetAssignmentsForStudent(classId,s.seat)
+      );
+
+      await setDoc(doc(db,'identityRegistry',email),{
+        email,
+        studentId:s.studentId,
+        username:`${classId}${String(s.seat).padStart(2,'0')}`,
+        displayName:s.name,
+        type:'student',
+        classId,
+        seat:Number(s.seat),
+        active:oldReg?.active!==false,
+        linked:!!linkedUid,
+        linkedUid,
+        linkedAt:oldReg?.linkedAt||null,
+        lastLoginAt:oldReg?.lastLoginAt||null,
+        assignments,
+        updatedAt:serverTimestamp()
+      },{merge:true});
+
+      if(oldReg?.id && oldReg.id!==email && !oldReg.linkedUid){
+        await deleteDoc(doc(db,'identityRegistry',oldReg.id));
+      }
+      emailSaved++;
+    }
+
+    // ③ 同步所有已存在的「本班任課班」快照。
+    // 真正主檔仍是 classes + identityRegistry；這裡只是相容舊資料。
+    const managers=subjectManagers.filter(sm=>sm.status!=='released'&&String(sm.classId)===String(classId));
+    for(const sm of managers){
+      try{await syncSubjectRosterFromSharedClass(sm,{silent:true})}
+      catch(e){console.warn('任課班共用名單同步失敗',sm.id,e)}
+    }
+
+    await audit(
+      'save_student_registry',
+      'identityRegistry',
+      classId,
+      `建立／更新 ${classId} 正式共用名單 ${activeStudents.length} 人；Email ${emailSaved} 筆`
+    );
+
+    delete studentRegistryDrafts[classId];
     await refreshAll();
-    rerender();
-    alert(result.message);
-  };
-  rerender();
+    renderStudentRegistryList();
+
+    let msg=`✅ ${classId} 班共用名單已儲存。\n\n學生：${activeStudents.length} 人\nEmail：${emailSaved} 筆`;
+    if(linkedKept)msg+=`\n既有 Google 連動：${linkedKept} 人已保留`;
+    if(skippedEmailChanges)msg+=`\n\n⚠️ ${skippedEmailChanges} 位學生已完成 Google 連動，因此系統保留原 Email，未直接更換。`;
+    alert(msg);
+
+  }catch(e){
+    console.error(e);
+    const raw=String(e?.code||e?.message||e);
+    if(raw.includes('permission-denied')||raw.includes('PERMISSION_DENIED')){
+      return alert(`儲存失敗：Firebase 權限不足。\n\n${classId} 導師必須具有該班的導師管理員權限，且 Firestore Rules 必須是目前最新版。`);
+    }
+    alert(`儲存失敗：${e.message||e}`);
+  }
+}
+function applyStudentRegistryPaste(){
+  const classId=$('#registryClass')?.value;
+  const raw=$('#studentRegistryPaste')?.value.trim();
+  if(!classId)return alert('請先選擇班級。');
+  if(!raw)return alert('請先貼上學生資料。');
+
+  const parsed=[];
+  const errors=[];
+  raw.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).forEach((line,idx)=>{
+    const p=line.split(/[,，\t]/).map(x=>x.trim());
+    const seat=Number(p[0]);
+    const name=normalizeStudentName(p[1]||'');
+    const email=registryId(p[2]||p[p.length-1]||'');
+
+    if(!Number.isFinite(seat)||seat<=0||!name){
+      errors.push(`第 ${idx+1} 行格式不完整：${line}`);
+      return;
+    }
+    parsed.push({seat,name,email});
+  });
+
+  if(!parsed.length){
+    return alert('沒有可套用的學生資料。\n\n格式請使用：座號,姓名,Email');
+  }
+
+  // 去除重複座號，後出現者覆蓋前者。
+  const bySeat=new Map();
+  parsed.forEach(s=>bySeat.set(Number(s.seat),s));
+  const clean=[...bySeat.values()].sort((a,b)=>Number(a.seat)-Number(b.seat));
+
+  const official=getRosterForClass(classId);
+
+  if(!official.length){
+    // 第一次建立班級：貼上的姓名＋座號就是班級正式名單草稿。
+    studentRegistryDrafts[classId]=clean.map(s=>({
+      seat:Number(s.seat),
+      name:s.name,
+      email:s.email,
+      studentId:makeStableStudentId(),
+      id:null,
+      active:true
+    }));
+    renderStudentRegistryList();
+  }else{
+    // 已有正式班級：只把 Email 套入對應座號，不破壞既有姓名／學生身分。
+    const emailMap=new Map(clean.map(s=>[Number(s.seat),s.email]));
+    $$('.student-reg-email').forEach(inp=>{
+      const email=emailMap.get(Number(inp.dataset.seat));
+      if(email)inp.value=email;
+    });
+
+    // 如果貼上的座號不在正式名單中，明確提醒，不默默新增。
+    const officialSeats=new Set(official.map(s=>Number(s.seat)));
+    const extra=clean.filter(s=>!officialSeats.has(Number(s.seat)));
+    if(extra.length){
+      alert(`Email 已套用到既有 ${classId} 班名單。\n\n但有 ${extra.length} 筆座號不在正式班級名單中：${extra.map(s=>s.seat).join('、')}\n若是新轉入學生，請到「班級名單」先新增學生。`);
+      return;
+    }
+  }
+
+  const suffix=errors.length?`\n\n另有 ${errors.length} 行格式不完整，未套用。`:'';
+  alert(`✅ 已套用 ${clean.length} 筆資料到上方名單。\n請確認後再按「儲存這班 Email」。${suffix}`);
 }
 async function addQuickTeacherAssignment(){
   const id=$('#quickTeacher')?.value;
@@ -1052,7 +1316,7 @@ function renderAccounts(){
           <div class="notice success"><b>${esc(adminLabel())}</b><br>你可以管理 ${esc(classIds.join('、'))} 班學生的 Google Email 與連動狀態。</div>
           <div class="toolbar"><label>班級<select id="registryClass">${classIds.map(id=>`<option value="${esc(id)}">${esc(id)}</option>`).join('')}</select></label><button id="saveStudentRegistry" class="btn primary">💾 儲存這班 Email</button></div>
           <div id="studentRegistryList"></div>
-          <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:900">📥 批次貼上 Email 名單</summary><div class="field"><label>每行格式：座號,姓名,Email</label><textarea id="studentRegistryPaste" rows="8" placeholder="1,王小明,xxx@smail.ilc.edu.tw"></textarea></div><button id="applyStudentPaste" class="btn good">套用到上方名單</button></details>
+          <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:900">📥 批次建立／貼上學生名單與 Email</summary><div class="field"><label>每行格式：座號,姓名,Email（若本班尚無正式名單，會用這裡的座號與姓名建立）</label><textarea id="studentRegistryPaste" rows="8" placeholder="1,王小明,xxx@smail.ilc.edu.tw"></textarea></div><button id="applyStudentPaste" class="btn good">套用到上方名單</button></details>
         </div>
 
         <div class="card">
@@ -1139,7 +1403,7 @@ function renderAccounts(){
         <div class="notice">不建立新 Firebase 密碼。先把「學生 ↔ 學校 Google Email」存進後端；學生第一次 Google 登入後會自動連結 UID。</div>
         <div class="toolbar"><label>班級 <select id="registryClass">${classIds.map(id=>`<option value="${esc(id)}" ${id==='804'?'selected':''}>${esc(id)}</option>`).join('')}</select></label><button id="saveStudentRegistry" class="btn primary">💾 儲存這班 Email</button></div>
         <div id="studentRegistryList"></div>
-        <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:900">📥 批次貼上 Email 名單</summary><div class="field"><label>每行格式：座號,姓名,Email</label><textarea id="studentRegistryPaste" rows="8" placeholder="1,王禹涵,xxx@smail.ilc.edu.tw"></textarea></div><button id="applyStudentPaste" class="btn good">套用到上方名單</button></details>
+        <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:900">📥 批次建立／貼上學生名單與 Email</summary><div class="field"><label>每行格式：座號,姓名,Email（若本班尚無正式名單，會用這裡的座號與姓名建立）</label><textarea id="studentRegistryPaste" rows="8" placeholder="1,王禹涵,xxx@smail.ilc.edu.tw"></textarea></div><button id="applyStudentPaste" class="btn good">套用到上方名單</button></details>
       </div>
 
       <div class="card">
@@ -1230,7 +1494,7 @@ async function saveAssignments(u,assignments){const access=computeAccess(assignm
 
 function renderClasses(){
   const cards=scopedClassDocs().sort((a,b)=>a.id.localeCompare(b.id)).map(c=>{const all=c.students||[],active=all.filter(s=>s.active!==false).length,out=all.length-active;return `<div class="item"><div class="item-head"><div><b>${c.id} 班</b><div class="meta">在班 ${active} 人${out?`｜已轉出 ${out} 人`:''}</div></div><button class="btn gray small edit-class" data-id="${c.id}">管理學生</button></div></div>`}).join('');
-  const right=isGlobalAdmin()?`<div class="card"><div class="section-title">快速建立</div><div class="notice">第一次使用可直接匯入目前預設的 804、802、904、906 名單；之後請使用左側「管理學生」處理轉入轉出，不會破壞歷史資料。</div><button id="seedClasses" class="btn primary">建立／更新預設班級名單</button><hr style="border:none;border-top:1px solid #e4e7ec;margin:15px 0"><b>新增自訂班級</b><div class="field"><label>班級</label><input id="classId" placeholder="例如 805"></div><div class="field"><label>名單（每行：座號,姓名）</label><textarea id="classRoster" rows="10" placeholder="1,王小明\n2,李小華"></textarea></div><button id="saveClass" class="btn primary">儲存班級</button></div>`:`<div class="card"><div class="section-title">🔒 班級範圍</div><div class="notice success"><b>${esc(adminLabel())}</b><br>你只能管理 ${esc(scopedClassIds().join('、'))} 班名單。新增其他班級與建立預設班級由最高管理員負責。</div></div>`;
+  const right=isGlobalAdmin()?`<div class="card"><div class="section-title">快速建立</div><div class="notice">第一次使用可直接匯入目前預設的 804、802、904、906 名單；之後請使用左側「管理學生」處理轉入轉出，不會破壞歷史資料。</div><button id="seedClasses" class="btn primary">建立／更新預設班級名單</button><hr style="border:none;border-top:1px solid #e4e7ec;margin:15px 0"><b>新增自訂班級</b><div class="field"><label>班級</label><input id="classId" placeholder="例如 805"></div><div class="field"><label>名單（每行：座號,姓名）</label><textarea id="classRoster" rows="10" placeholder="1,王小明\n2,李小華"></textarea></div><button id="saveClass" class="btn primary">儲存班級</button></div>`:`<div class="card"><div class="section-title">🔒 班級範圍</div><div class="notice success"><b>${esc(adminLabel())}</b><br>你只能管理 ${esc(scopedClassIds().join('、'))} 班名單。若自己的導師班尚未建立正式名單，可直接到「帳號連動／任課」批次貼上「座號,姓名,Email」，第一次儲存時會自動建立自己的正式班級共用名單。新增其他班級仍由最高管理員負責。</div></div>`;
   $('#page-classes').innerHTML=`<div class="two"><div class="card"><div class="section-title">👥 班級名單</div><div class="notice">轉學生不用再改程式碼：進入班級後可直接「新增學生」、「標記轉出」、「恢復」或修改座號／姓名。Email 對照名單會自動跟著目前在班名單更新。</div>${cards||'<div class="sub">尚未建立可管理班級。</div>'}</div>${right}</div>`;
   if(isGlobalAdmin()&&$('#seedClasses'))$('#seedClasses').onclick=seedClasses;
   if(isGlobalAdmin()&&$('#saveClass'))$('#saveClass').onclick=()=>saveClass($('#classId').value,$('#classRoster').value);
