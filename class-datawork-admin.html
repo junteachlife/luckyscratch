@@ -108,7 +108,7 @@
   </aside>
   <div class="main-area">
     <header class="hero">
-      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260914-K</div></div>
+      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260914-L</div></div>
       <div class="hero-user"><div class="user-name">👨‍🏫 <span id="who"></span></div><div id="semesterBadge" class="semester-badge"></div><div class="header-actions"><button id="switchModeBtn" class="btn purple small">🎭 切換身分</button><a href="class-work.html" style="text-decoration:none"><button class="btn gray small">📋 回報頁</button></a><button id="logoutBtn" class="btn danger small">🚪 登出</button></div></div>
     </header>
     <div class="content"><div id="modeHost"></div><div id="appMsg"></div><section id="page-dashboard"></section><section id="page-roles" class="hidden"></section><section id="page-records" class="hidden"></section><section id="page-subjectClasses" class="hidden"></section><section id="page-accounts" class="hidden"></section><section id="page-classes" class="hidden"></section><section id="page-directory" class="hidden"></section><section id="page-teacherDirectory" class="hidden"></section><section id="page-history" class="hidden"></section><section id="page-upgrade" class="hidden"></section><section id="page-audit" class="hidden"></section><section id="page-adminPermissions" class="hidden"></section></div>
@@ -2548,6 +2548,28 @@ function teacherLinkedUser(reg){
   )||null;
 }
 
+function teacherRegistryForUser(u){
+  if(!u)return null;
+  const email=registryId(u.email||'');
+  return registries.find(r=>
+    r.type==='teacher' &&
+    (
+      (r.linkedUid&&r.linkedUid===u.uid) ||
+      (email&&r.id===email)
+    )
+  )||null;
+}
+
+function teacherTeachingRowsForUser(u,semester=currentSemester){
+  const reg=teacherRegistryForUser(u);
+  if(reg)return teacherTeachingRows(reg,semester);
+  return normalizeTeachingRows(
+    (u?.assignments||[])
+      .filter(a=>a.kind==='teacher'&&a.semester===semester)
+      .map(a=>({classId:a.classId,subject:a.scopeName}))
+  );
+}
+
 function teacherHomeroomClasses(reg){
   const u=teacherLinkedUser(reg);
   if(!u)return [];
@@ -4164,6 +4186,7 @@ function renderDirectory(){
                 <button class="btn gray small view-student-history" data-id="${esc(s.id)}">歷程</button>
                 <button class="btn warn small merge-student" data-id="${esc(s.id)}">合併重複</button>
                 <button class="btn danger small delete-mistake" data-id="${esc(s.id)}">刪除誤建</button>
+                ${studentHasFormalData(s.id)?`<button class="btn danger small force-delete-mistake" data-id="${esc(s.id)}">🔥 強制徹底刪除</button>`:''}
               </td>
             </tr>`).join('') || '<tr><td colspan="7">這個班目前沒有學生主檔。</td></tr>'}
           </tbody>
@@ -4205,6 +4228,7 @@ function renderDirectory(){
   $$('.view-student-history').forEach(b=>b.onclick=()=>openStudentHistory(b.dataset.id));
   $$('.merge-student').forEach(b=>b.onclick=()=>mergeStudentPrompt(b.dataset.id));
   $$('.delete-mistake').forEach(b=>b.onclick=()=>deleteMistakenStudent(b.dataset.id));
+  $$('.force-delete-mistake').forEach(b=>b.onclick=()=>forceDeleteMistakenStudent(b.dataset.id));
 }
 
 function openStudentHistory(studentId){
@@ -4218,10 +4242,207 @@ function studentHasFormalData(sid){
   if(assessments.some(x=>x.scores&&Object.prototype.hasOwnProperty.call(x.scores,sid)))return true;
   return false;
 }
+
+function studentFormalDataSummary(sid){
+  const linkedRegs=registries.filter(r=>r.type==='student'&&r.studentId===sid&&r.linkedUid);
+  const collectionRefs=collections.filter(x=>
+    (x.records&&Object.prototype.hasOwnProperty.call(x.records,sid)) ||
+    (x.lockedRecords&&Object.prototype.hasOwnProperty.call(x.lockedRecords,sid)) ||
+    (x.lateSubmitted&&Object.prototype.hasOwnProperty.call(x.lateSubmitted,sid))
+  );
+  const assessmentRefs=assessments.filter(x=>
+    (x.scores&&Object.prototype.hasOwnProperty.call(x.scores,sid)) ||
+    (x.scoreLocks&&Object.prototype.hasOwnProperty.call(x.scoreLocks,sid))
+  );
+  return{
+    linkedRegs,
+    collectionRefs,
+    assessmentRefs,
+    hasFormal:linkedRegs.length>0||collectionRefs.length>0||assessmentRefs.length>0
+  };
+}
+
+function removeMapKey(obj,key){
+  const next={...(obj||{})};
+  delete next[key];
+  return next;
+}
+
+function removeStudentFromRoleAssignments(roleAssignments,sid,student){
+  const next=structuredClone(roleAssignments||{});
+  for(const [semester,roles] of Object.entries(next)){
+    for(const [roleKey,who] of Object.entries(roles||{})){
+      const bySid=who?.studentId&&String(who.studentId)===String(sid);
+      const byLegacy=
+        !who?.studentId &&
+        String(student?.currentClassId||'') &&
+        Number(who?.seat)===Number(student?.currentSeat) &&
+        sameStudentName(who?.name||'',student?.displayName||'');
+      if(bySid||byLegacy)delete next[semester][roleKey];
+    }
+  }
+  return next;
+}
+
+async function forceDeleteMistakenStudent(sid){
+  if(!isGlobalAdmin())return alert('只有最高管理員可以強制徹底刪除誤建學生。');
+
+  const s=studentDirectory.find(x=>x.id===sid);
+  if(!s)return alert('找不到這筆學生主檔。');
+
+  const refs=studentFormalDataSummary(sid);
+  const linkedUidList=[...new Set(refs.linkedRegs.map(r=>r.linkedUid).filter(Boolean))];
+
+  const typedName=prompt(
+    `🔥 強制徹底刪除誤建學生\n\n`+
+    `姓名：${s.displayName||''}\n`+
+    `班級／座號：${s.currentClassId||'—'}／${s.currentSeat??'—'}\n`+
+    `studentId：${sid}\n\n`+
+    `偵測到：Google連動 ${refs.linkedRegs.length} 筆、作業引用 ${refs.collectionRefs.length} 筆、成績引用 ${refs.assessmentRefs.length} 筆。\n\n`+
+    `這個動作會把這位誤建學生從班級、學籍、作業、成績、Google身分對照與系統帳號資料中移除，無法復原。\n\n`+
+    `請輸入學生姓名「${s.displayName}」確認：`
+  );
+  if(typedName===null)return;
+  if(typedName.trim()!==String(s.displayName||''))return alert('姓名輸入不一致，已取消強制刪除。');
+
+  const typedSid=prompt(`第二次確認：請輸入完整 studentId\n\n${sid}`);
+  if(typedSid===null)return;
+  if(typedSid.trim()!==sid)return alert('studentId 輸入不一致，已取消強制刪除。');
+
+  if(!confirm(
+    `最後確認：永久清除「${s.displayName}」的誤建系統資料？\n\n`+
+    `作業與成績中屬於這個 studentId 的紀錄也會一起刪除。\n`+
+    `操作紀錄 auditLogs 會保留，方便日後追查。`
+  ))return;
+
+  try{
+    // ① 作業：清除 studentId 在 records / lockedRecords / lateSubmitted 的引用
+    for(const item of refs.collectionRefs){
+      await updateDoc(doc(db,'collectionItems',item.id),{
+        records:removeMapKey(item.records,sid),
+        lockedRecords:removeMapKey(item.lockedRecords,sid),
+        lateSubmitted:removeMapKey(item.lateSubmitted,sid),
+        updatedAt:serverTimestamp()
+      });
+    }
+
+    // ② 成績：清除 studentId 在 scores / scoreLocks 的引用
+    for(const item of refs.assessmentRefs){
+      await updateDoc(doc(db,'assessments',item.id),{
+        scores:removeMapKey(item.scores,sid),
+        scoreLocks:removeMapKey(item.scoreLocks,sid),
+        updatedAt:serverTimestamp()
+      });
+    }
+
+    // ③ 任課班快照
+    for(const r of subjectRosters.filter(r=>
+      (r.studentIds||[]).includes(sid) ||
+      (r.students||[]).some(x=>String(x.studentId||x.id||'')===sid)
+    )){
+      const studentIds=(r.studentIds||[]).filter(x=>String(x)!==sid);
+      const students=(r.students||[]).filter(x=>String(x.studentId||x.id||'')!==sid);
+      await updateDoc(doc(db,'subjectClassRosters',r.id),{
+        studentIds,students,updatedAt:serverTimestamp()
+      });
+    }
+
+    // ④ 班級主檔、職務、名單鎖定快照
+    for(const c of classes.filter(c=>
+      (c.students||[]).some(x=>String(x.studentId||x.id||'')===sid) ||
+      (c.rosterLock?.lockedStudents||[]).some(x=>String(x.studentId||'')===sid)
+    )){
+      const students=(c.students||[]).filter(x=>String(x.studentId||x.id||'')!==sid);
+      const roleAssignments=removeStudentFromRoleAssignments(c.roleAssignments,sid,s);
+      const oldLocks=Array.isArray(c.rosterLock?.lockedStudents)?c.rosterLock.lockedStudents:[];
+      const lockedStudents=oldLocks.filter(x=>String(x.studentId||'')!==sid);
+      const rosterLock=c.rosterLock?{
+        ...c.rosterLock,
+        lockedStudents,
+        lockedCount:lockedStudents.length,
+        enabled:lockedStudents.length>0
+      }:undefined;
+
+      const patch={students,roleAssignments,updatedAt:serverTimestamp()};
+      if(rosterLock)patch.rosterLock=rosterLock;
+      await updateDoc(doc(db,'classes',c.id),patch);
+    }
+
+    // ⑤ 學籍歷程
+    for(const e of studentEnrollments.filter(x=>x.studentId===sid)){
+      await deleteDoc(doc(db,'studentEnrollments',e.id));
+    }
+
+    // ⑥ identityRegistry：刪除所有指向此 studentId 的學生 Email 身分
+    const regsToDelete=registries.filter(r=>r.type==='student'&&r.studentId===sid);
+    for(const reg of regsToDelete){
+      await deleteDoc(doc(db,'identityRegistry',reg.id));
+    }
+
+    // ⑦ users：若這筆誤建學生已建立 Firestore 登入帳號，一併移除
+    const userUids=new Set([
+      ...linkedUidList,
+      ...users.filter(u=>String(u.studentId||'')===sid).map(u=>u.uid)
+    ]);
+    for(const uid of userUids){
+      const u=users.find(x=>x.uid===uid);
+      if(!u||u.type==='student'){
+        await deleteDoc(doc(db,'users',uid));
+      }
+    }
+
+    // ⑧ 最後刪除全校學生永久主檔
+    await deleteDoc(doc(db,'studentDirectory',sid));
+
+    await audit(
+      'force_delete_mistaken_student',
+      'studentDirectory',
+      sid,
+      `最高管理員強制徹底刪除誤建學生：${s.currentClassId||''} ${s.currentSeat||''} ${s.displayName||''}｜作業引用 ${refs.collectionRefs.length}｜成績引用 ${refs.assessmentRefs.length}｜Google UID ${linkedUidList.length}`
+    );
+
+    await refreshAll();
+    renderDirectory();
+
+    if(linkedUidList.length){
+      showModal(`<div class="item-head">
+          <div><div class="section-title">✅ 誤建學生系統資料已徹底清除</div><div class="meta">${esc(s.displayName||'')}｜${esc(sid)}</div></div>
+          <button class="btn gray close-modal">關閉</button>
+        </div>
+        <div class="notice success">Firestore 中的班級、學籍、作業、成績、學生主檔、Email 身分對照與系統 users 權限都已清除。</div>
+        <div class="notice warn"><b>Firebase Authentication 仍需人工處理。</b><br>
+          網頁前端無法直接刪除 Firebase Authentication 使用者。若下列 UID 是這筆誤建測試帳號，請到 Firebase Authentication 再刪除一次；即使尚未刪 Auth，因 identityRegistry 與 users 已移除，這個帳號已無法重新取得系統權限。</div>
+        <div class="field"><label>相關 Firebase Authentication UID</label><textarea id="forceDeletedUids" rows="4" readonly>${esc(linkedUidList.join('\n'))}</textarea></div>
+        <div class="toolbar">
+          <button class="btn gray" id="copyForceDeletedUids">複製 UID</button>
+          <button class="btn primary" id="openFirebaseAuthAfterForceDelete">開啟 Firebase Authentication</button>
+          <button class="btn gray close-modal">關閉</button>
+        </div>`);
+      $('#copyForceDeletedUids').onclick=async()=>{
+        try{await navigator.clipboard.writeText(linkedUidList.join('\n'));alert('UID 已複製。')}
+        catch{$('#forceDeletedUids').select();document.execCommand('copy');alert('UID 已複製。')}
+      };
+      $('#openFirebaseAuthAfterForceDelete').onclick=()=>window.open('https://console.firebase.google.com/project/class-datawork/authentication/users','_blank');
+    }else{
+      alert(`✅ ${s.displayName} 的誤建系統資料已徹底清除。`);
+    }
+  }catch(e){
+    console.error(e);
+    alert(`強制刪除失敗：${e.message||e}`);
+  }
+}
 async function deleteMistakenStudent(sid){
   if(!isGlobalAdmin())return;
   const s=studentDirectory.find(x=>x.id===sid);if(!s)return;
-  if(studentHasFormalData(sid))return alert('這位學生已有登入／作業／成績正式資料，不能使用「刪除誤建」。請使用「合併重複學生」。');
+  if(studentHasFormalData(sid)){
+    const go=confirm(
+      `這位學生已有登入／作業／成績正式資料，不能使用一般「刪除誤建」。\n\n`+
+      `如果這整筆學生資料確定都是誤建（包含相關作業與成績也都不需要保留），可以改用最高管理員「強制徹底刪除」。\n\n`+
+      `要進入強制徹底刪除確認流程嗎？`
+    );
+    if(go)await forceDeleteMistakenStudent(sid);
+    return;
+  }
   if(!confirm(`確定刪除誤建學生「${s.displayName}」？\n\n這不是轉出；系統會清除這筆主檔與尚未產生正式資料的名單關聯。`))return;
   for(const e of studentEnrollments.filter(x=>x.studentId===sid))await deleteDoc(doc(db,'studentEnrollments',e.id));
   for(const r of subjectRosters.filter(x=>(x.studentIds||[]).includes(sid))){
@@ -4702,9 +4923,31 @@ function renderAdminPermissions(){
     </div>
     <div class="card" style="margin-top:14px"><div class="section-title">🎭 我的多重身分</div><div class="notice success">你的 Google 帳號可以同時是「最高管理員＋導師＋任課老師」。這裡設定導師班，登入後即可用「切換身分」限制自己平常的工作範圍。</div><div class="toolbar"><label>我的導師班<select id="myHomeroomSelect">${schoolClassOptions(homeroomClassId())}</select></label><button id="saveMyHomeroomBtn" class="btn primary">💾 儲存我的導師班</button></div></div>
     <div class="card" style="margin-top:14px"><div class="section-title">🔐 授予班級管理員</div><div class="notice">其他導師先完成 Google UID 連動，再授予「導師班管理」；他仍可另外用任課老師模式自行建立班級 × 科目。</div><div class="toolbar"><label>老師<select id="adminTeacherSelect">${candidates.map(r=>`<option value="${esc(r.id)}">${esc(r.displayName||r.email)}｜${esc(r.email||r.id)}</option>`).join('')}</select></label><label>導師班<select id="adminClassSelect">${schoolClassOptions()}</select></label><button id="grantClassAdminBtn" class="btn primary" ${candidates.length?'':'disabled'}>🔐 授予班級管理員</button></div></div>
-    <div class="card" style="margin-top:14px"><div class="section-title">👨‍🏫 目前班級管理員</div><div class="table-wrap"><table><thead><tr><th>姓名</th><th>Email</th><th>導師班</th><th>任課權限</th><th>操作</th></tr></thead><tbody>${admins.map(u=>`<tr><td><b>${esc(u.displayName||'')}</b></td><td>${esc(u.email||'')}</td><td><select class="class-admin-class" data-uid="${esc(u.uid)}">${schoolClassOptions((u.adminClassIds||[])[0]||u.homeroomClassId||'')}</select></td><td>${(u.assignments||[]).filter(a=>a.kind==='teacher').map(a=>`${esc(a.semester)}｜${esc(a.classId)}｜${esc(a.scopeName)}`).join('<br>')||'可自行建立'}</td><td><button class="btn good small save-class-admin" data-uid="${esc(u.uid)}">💾 儲存導師班</button> <button class="btn danger small revoke-class-admin" data-uid="${esc(u.uid)}">取消管理權限</button></td></tr>`).join('')||'<tr><td colspan="5">尚未授予其他班級管理員。</td></tr>'}</tbody></table></div></div>`;
-  $('#saveSchoolClassConfigBtn')?.addEventListener('click',saveSchoolClassConfig);$('#saveMyHomeroomBtn').onclick=saveMyHomeroom;$('#grantClassAdminBtn')?.addEventListener('click',grantClassAdmin);
-  $$('.save-class-admin').forEach(b=>b.onclick=()=>changeClassAdminClass(b.dataset.uid));$$('.revoke-class-admin').forEach(b=>b.onclick=()=>revokeClassAdmin(b.dataset.uid));
+    <div class="card" style="margin-top:14px"><div class="section-title">👨‍🏫 目前班級管理員</div><div class="table-wrap"><table><thead><tr><th>姓名</th><th>Email</th><th>導師班</th><th>任課權限</th><th>操作</th></tr></thead><tbody>${admins.map(u=>{
+      const teachingRows=teacherTeachingRowsForUser(u,currentSemester);
+      return `<tr>
+        <td><b>${esc(u.displayName||'')}</b></td>
+        <td>${esc(u.email||'')}</td>
+        <td><select class="class-admin-class" data-uid="${esc(u.uid)}">${schoolClassOptions((u.adminClassIds||[])[0]||u.homeroomClassId||'')}</select></td>
+        <td>${teachingCompactHtml(teachingRows,{
+          buttonClass:'admin-permission-view-teaching',
+          buttonData:`data-uid="${esc(u.uid)}"`,
+          showButton:true,
+          maxChips:3
+        })}</td>
+        <td><button class="btn good small save-class-admin" data-uid="${esc(u.uid)}">💾 儲存導師班</button> <button class="btn danger small revoke-class-admin" data-uid="${esc(u.uid)}">取消管理權限</button></td>
+      </tr>`;
+    }).join('')||'<tr><td colspan="5">尚未授予其他班級管理員。</td></tr>'}</tbody></table></div></div>`;
+  $('#saveSchoolClassConfigBtn')?.addEventListener('click',saveSchoolClassConfig);
+  $('#saveMyHomeroomBtn').onclick=saveMyHomeroom;
+  $('#grantClassAdminBtn')?.addEventListener('click',grantClassAdmin);
+  $$('.save-class-admin').forEach(b=>b.onclick=()=>changeClassAdminClass(b.dataset.uid));
+  $$('.revoke-class-admin').forEach(b=>b.onclick=()=>revokeClassAdmin(b.dataset.uid));
+  $$('.admin-permission-view-teaching').forEach(b=>b.onclick=()=>{
+    const u=admins.find(x=>x.uid===b.dataset.uid);
+    if(!u)return;
+    openTeachingRowsModal(`${u.displayName||u.email||'老師'}｜全部任課班`,teacherTeachingRowsForUser(u,currentSemester));
+  });
 }
 async function grantClassAdmin(){
   if(!isGlobalAdmin())return alert('只有最高管理員模式可以授予管理者權限。');
@@ -4732,7 +4975,11 @@ async function renderAudit(){
   $('#page-audit').innerHTML=`<div class="page-title">操作紀錄</div><div class="card"><div class="notice">${isGlobalAdmin()?'最高管理員模式可查看全系統操作紀錄。':`目前 ${esc(activeModeLabel())}：只顯示你本人後台操作紀錄。`}</div><div class="table-wrap"><table><thead><tr><th>時間</th><th>學期</th><th>操作者</th><th>動作</th><th>內容</th></tr></thead><tbody>${logs.map(l=>`<tr><td>${l.createdAt?.toDate?l.createdAt.toDate().toLocaleString('zh-TW'):''}</td><td>${esc(l.semester||'')}</td><td>${esc(l.actorName||'')}</td><td>${esc(l.action||'')}</td><td>${esc(l.detail||'')}</td></tr>`).join('')||'<tr><td colspan="5">目前沒有紀錄。</td></tr>'}</tbody></table></div></div>`;
 }
 
-function showModal(h){$('#modalBody').innerHTML=h;$('#modal').classList.remove('hidden');$('.close-modal')?.addEventListener('click',hideModal)}
+function showModal(h){
+  $('#modalBody').innerHTML=h;
+  $('#modal').classList.remove('hidden');
+  $$('.close-modal').forEach(btn=>btn.addEventListener('click',hideModal));
+}
 function hideModal(){$('#modal').classList.add('hidden');$('#modalBody').innerHTML=''}
 </script>
 </body>
