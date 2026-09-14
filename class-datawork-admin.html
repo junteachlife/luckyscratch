@@ -96,7 +96,7 @@
   </aside>
   <div class="main-area">
     <header class="hero">
-      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260914-F</div></div>
+      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260914-G</div></div>
       <div class="hero-user"><div class="user-name">👨‍🏫 <span id="who"></span></div><div id="semesterBadge" class="semester-badge"></div><div class="header-actions"><button id="switchModeBtn" class="btn purple small">🎭 切換身分</button><a href="class-work.html" style="text-decoration:none"><button class="btn gray small">📋 回報頁</button></a><button id="logoutBtn" class="btn danger small">🚪 登出</button></div></div>
     </header>
     <div class="content"><div id="modeHost"></div><div id="appMsg"></div><section id="page-dashboard"></section><section id="page-roles" class="hidden"></section><section id="page-records" class="hidden"></section><section id="page-subjectClasses" class="hidden"></section><section id="page-accounts" class="hidden"></section><section id="page-classes" class="hidden"></section><section id="page-directory" class="hidden"></section><section id="page-teacherDirectory" class="hidden"></section><section id="page-history" class="hidden"></section><section id="page-upgrade" class="hidden"></section><section id="page-audit" class="hidden"></section><section id="page-adminPermissions" class="hidden"></section></div>
@@ -2100,6 +2100,10 @@ async function refreshAll(){
 
     studentDirectory=[];studentEnrollments=[];upgradeBatches=[];classRosterHistory=[];
   }
+  // 舊版本只把 subjectClassManagers 標成 released，可能留下 users /
+  // identityRegistry assignments，造成已解除的誤建班級仍出現在總覽。
+  // 每次 refresh 自動做一次安全清理。
+  try{await cleanupReleasedAssignmentsForCurrentUser()}catch(e){console.warn('cleanup released assignments failed',e)}
   try{await claimPendingSubjectManagersForMe()}catch(e){console.warn(e)}
   configureAdminUI();
   $('#semesterBadge').textContent=`目前學期：${currentSemester}`;
@@ -2170,7 +2174,25 @@ function myTeacherAssignments(semester=currentSemester){
     a.scopeName
   );
 
-  return mergeAssignments([], [...fromUser,...fromRegistry]);
+  // 若「我的任課班」已明確解除，就不能再被舊 users / identityRegistry assignments
+  // 帶回總覽或作業／成績篩選器。
+  const myEmail=String(me?.email||auth.currentUser?.email||'').toLowerCase();
+  const releasedKeys=new Set(
+    subjectManagers
+      .filter(sm=>
+        sm.status==='released' &&
+        sm.semester===semester &&
+        (
+          sm.managerUid===me?.uid ||
+          (myEmail && String(sm.managerEmail||'').toLowerCase()===myEmail)
+        )
+      )
+      .map(sm=>`${sm.semester}|${sm.classId}|${sm.subject}`)
+  );
+
+  return mergeAssignments([], [...fromUser,...fromRegistry]).filter(a=>
+    !releasedKeys.has(`${a.semester}|${a.classId}|${a.scopeName}`)
+  );
 }
 
 async function syncMyTeacherAssignmentsToSubjectManagers({silent=false}={}){
@@ -2380,19 +2402,162 @@ async function createSubjectClass(){
   await audit('create_subject_class','subjectClassManagers',id,`自行建立任課班：${semester}｜${classId}｜${subject}`,semester);
   await refreshAll();renderSubjectClasses();
 }
-async function releaseSubjectClass(id){
-  const sm=subjectManagers.find(x=>x.id===id);if(!sm)return;
-  if(!(isGlobalAdmin()||sm.managerUid===me.uid))return alert('只能解除自己建立的任課班；最高管理員可解除全部。');
-  if(!confirm(`確定解除 ${sm.semester}｜${sm.classId}｜${sm.subject}？\n\n學生共用主檔、歷史作業與成績不會刪除。`))return;
-  await setDoc(doc(db,'subjectClassManagers',id),{status:'released',releasedBy:me.uid,releasedAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true});
-  if(sm.managerUid===me.uid){
-    const assignments=(me.assignments||[]).filter(a=>!(a.semester===sm.semester&&a.classId===sm.classId&&a.scopeName===sm.subject&&a.kind==='teacher'));
-    const access=computeAccess(assignments,currentSemester);
-    await setDoc(doc(db,'users',me.uid),{assignments,...access,updatedAt:serverTimestamp()},{merge:true});
-    me.assignments=assignments;Object.assign(me,access);
+
+function teacherAssignmentMatchesManager(a,sm){
+  return !!a && !!sm &&
+    a.kind==='teacher' &&
+    a.scopeType==='subject' &&
+    String(a.semester)===String(sm.semester) &&
+    String(a.classId)===String(sm.classId) &&
+    String(a.scopeName)===String(sm.subject);
+}
+
+async function removeTeacherAssignmentGrant(sm){
+  if(!sm)return false;
+
+  const managerEmail=registryId(sm.managerEmail||'');
+  let reg=managerEmail
+    ?registries.find(r=>r.type==='teacher'&&r.id===managerEmail)||null
+    :null;
+
+  if(!reg && sm.managerUid){
+    reg=registries.find(r=>r.type==='teacher'&&r.linkedUid===sm.managerUid)||null;
   }
-  await audit('release_subject_class','subjectClassManagers',id,`解除任課班：${sm.semester}｜${sm.classId}｜${sm.subject}`,sm.semester);
-  await refreshAll();renderSubjectClasses();
+
+  const targetUid=sm.managerUid||reg?.linkedUid||null;
+  let changed=false;
+
+  // ① users/{uid}：移除任課 assignment，重新計算 viewKeys / classAccess 等。
+  if(targetUid){
+    try{
+      const ref=doc(db,'users',targetUid);
+      const snap=await getDoc(ref);
+      if(snap.exists()){
+        const ud=snap.data();
+        const before=Array.isArray(ud.assignments)?ud.assignments:[];
+        const assignments=before.filter(a=>!teacherAssignmentMatchesManager(a,sm));
+
+        if(assignments.length!==before.length){
+          const access=computeAccess(assignments,currentSemester);
+          await setDoc(ref,{
+            assignments,
+            ...access,
+            updatedAt:serverTimestamp()
+          },{merge:true});
+          changed=true;
+
+          const ui=users.findIndex(u=>u.uid===targetUid);
+          if(ui>=0)users[ui]={...users[ui],assignments,...access};
+
+          if(targetUid===me?.uid){
+            me.assignments=assignments;
+            Object.assign(me,access);
+          }
+        }
+      }
+    }catch(e){
+      console.warn('remove released assignment from users failed',sm.id,e);
+    }
+  }
+
+  // ② identityRegistry：同樣移除舊任課 assignment，
+  //    否則 refresh 後 myTeacherAssignments 仍可能把誤建班級帶回來。
+  if(reg){
+    try{
+      const before=Array.isArray(reg.assignments)?reg.assignments:[];
+      const assignments=before.filter(a=>!teacherAssignmentMatchesManager(a,sm));
+      if(assignments.length!==before.length){
+        await setDoc(doc(db,'identityRegistry',reg.id),{
+          assignments,
+          updatedAt:serverTimestamp()
+        },{merge:true});
+        reg.assignments=assignments;
+        changed=true;
+      }
+    }catch(e){
+      console.warn('remove released assignment from identityRegistry failed',sm.id,e);
+    }
+  }
+
+  return changed;
+}
+
+async function cleanupReleasedAssignmentsForCurrentUser(){
+  if(!me)return 0;
+  const myEmail=String(me.email||auth.currentUser?.email||'').toLowerCase();
+  const released=subjectManagers.filter(sm=>
+    sm.status==='released' &&
+    (
+      sm.managerUid===me.uid ||
+      (myEmail && String(sm.managerEmail||'').toLowerCase()===myEmail)
+    )
+  );
+
+  let cleaned=0;
+  for(const sm of released){
+    const hasUserAssignment=(me.assignments||[]).some(a=>teacherAssignmentMatchesManager(a,sm));
+    const selfReg=registries.find(r=>
+      r.type==='teacher' &&
+      (
+        r.linkedUid===me.uid ||
+        (myEmail && r.id===myEmail)
+      )
+    );
+    const hasRegistryAssignment=(selfReg?.assignments||[]).some(a=>teacherAssignmentMatchesManager(a,sm));
+
+    if(hasUserAssignment||hasRegistryAssignment){
+      const changed=await removeTeacherAssignmentGrant(sm);
+      if(changed)cleaned++;
+    }
+  }
+  return cleaned;
+}
+
+async function releaseSubjectClass(id){
+  const sm=subjectManagers.find(x=>x.id===id);
+  if(!sm)return;
+
+  const myEmail=String(me?.email||auth.currentUser?.email||'').toLowerCase();
+  const ownManager=
+    sm.managerUid===me?.uid ||
+    (myEmail && String(sm.managerEmail||'').toLowerCase()===myEmail);
+
+  // 導師可解除自己導師班的任課設定；任課老師可解除自己的；最高管理員可解除全部。
+  const allowed=isGlobalAdmin()||ownManager||canAdminClass(String(sm.classId));
+  if(!allowed)return alert('你沒有解除這個任課班的權限。');
+
+  if(!confirm(
+    `確定解除 ${sm.semester}｜${sm.classId}｜${sm.subject}？\n\n`+
+    `解除後會從目前任課介面、總覽、班級／科目篩選中移除。\n`+
+    `學生共用主檔、歷史作業、歷史成績與操作紀錄都不會刪除。`
+  ))return;
+
+  try{
+    await setDoc(doc(db,'subjectClassManagers',id),{
+      status:'released',
+      releasedBy:me.uid,
+      releasedAt:serverTimestamp(),
+      updatedAt:serverTimestamp()
+    },{merge:true});
+
+    // 重要：解除任課班時，不只改 status，也要把舊 assignments / classAccess 清掉。
+    await removeTeacherAssignmentGrant(sm);
+
+    await audit(
+      'release_subject_class',
+      'subjectClassManagers',
+      id,
+      `解除任課班：${sm.semester}｜${sm.classId}｜${sm.subject}`,
+      sm.semester
+    );
+
+    await refreshAll();
+    renderSubjectClasses();
+    alert(`✅ 已解除 ${sm.classId}｜${sm.subject}。\n\n此任課班已從目前介面與總覽移除；歷史資料仍保留。`);
+  }catch(e){
+    console.error(e);
+    alert(`解除失敗：${e.message||e}`);
+  }
 }
 function subjectRosterFor(id){return subjectRosters.find(x=>x.id===id)||null}
 
@@ -2916,7 +3081,8 @@ async function openSubjectRosterEditor(id){
       此任課班使用 <b>${esc(sm.classId)} 班唯一共用學生主檔</b>。<br>
       導師、任課老師或最高管理員只要其中一人先建立名單／Email，
       其他有這個班級權限的老師就會直接共用，不需要重新建立。<br>
-      <b>身分保護：</b>同 Email 或同 studentId 才沿用既有 Google UID；同座號但姓名不同會視為可能換人，建立新的 studentId，絕不把舊學生 UID 接給新學生。
+      <b>身分保護：</b>同 Email 或同 studentId 才沿用既有 Google UID；同座號但姓名不同會視為可能換人，建立新的 studentId，絕不把舊學生 UID 接給新學生。<br>
+      <b>座號不是永久身分：</b>學生座號修正後，舊座號會立即釋放；之後真正使用該座號的學生會建立自己的 studentId，不會被前一位學生卡住。
     </div>
 
     ${students.length?`
@@ -3725,15 +3891,166 @@ async function undoSchoolYearUpgrade(batchId){
   await refreshAll();renderUpgrade();alert('✅ 已安全還原到升級前狀態。');
 }
 
+
+async function upsertDirectoryStudent({seat,name,email},classId,semester=currentSemester,actorName='老師'){
+  classId=String(classId);
+  seat=Number(seat);
+  name=normalizeStudentName(name);
+  email=registryId(email);
+
+  if(!Number.isInteger(seat)||seat<=0)throw new Error('座號格式不正確。');
+  if(!name)throw new Error('學生姓名不可空白。');
+
+  // Email 是強身分依據：若同一 Email 已屬於不同姓名，直接阻擋，避免 UID 接錯人。
+  const emailReg=email
+    ?registries.find(r=>r.type==='student'&&r.id===email)||null
+    :null;
+
+  if(emailReg?.displayName && !sameStudentName(emailReg.displayName,name)){
+    throw new Error(
+      `這個 Email 已登記給「${emailReg.displayName}」，不能直接改成「${name}」。\n`+
+      `為保護 Google UID，請先確認學生 Email。`
+    );
+  }
+
+  // 若同 Email 已存在於別班，不直接把身分搶到目前班級。
+  if(emailReg?.classId && String(emailReg.classId)!==classId){
+    throw new Error(
+      `${email} 目前登記在 ${emailReg.classId} 班。\n`+
+      `若是正式轉班／轉入，請由最高管理員處理學生主檔轉班，避免歷史資料錯接。`
+    );
+  }
+
+  const studentId=emailReg?.studentId||makeStableStudentId();
+  const linkedUid=emailReg?.linkedUid||null;
+
+  // 建立／更新固定學生主檔。
+  await setDoc(doc(db,'studentDirectory',studentId),{
+    displayName:name,
+    email,
+    currentClassId:classId,
+    currentSeat:seat,
+    grade:gradeFromClassId(classId),
+    status:'enrolled',
+    active:true,
+    createdByUid:me.uid,
+    createdByName:actorName,
+    updatedAt:serverTimestamp()
+  },{merge:true});
+
+  const sy=schoolYearFromSemester(semester);
+  await setDoc(doc(db,'studentEnrollments',`${sy}__${studentId}`),{
+    studentId,
+    schoolYear:sy,
+    semester,
+    classId,
+    grade:gradeFromClassId(classId),
+    seat,
+    displayName:name,
+    email,
+    status:'active',
+    updatedAt:serverTimestamp()
+  },{merge:true});
+
+  if(email){
+    const assignments=mergeAssignments(
+      emailReg?.assignments||[],
+      presetAssignmentsForStudent(classId,seat)
+    );
+
+    await setDoc(doc(db,'identityRegistry',email),{
+      email,
+      studentId,
+      username:`${classId}${String(seat).padStart(2,'0')}`,
+      displayName:name,
+      type:'student',
+      classId,
+      seat,
+      active:true,
+      linked:!!linkedUid,
+      linkedUid,
+      linkedAt:emailReg?.linkedAt||null,
+      lastLoginAt:emailReg?.lastLoginAt||null,
+      assignments,
+      updatedAt:serverTimestamp()
+    },{merge:true});
+
+    const ri=registries.findIndex(r=>r.id===email);
+    const localReg={
+      ...(emailReg||{}),
+      id:email,email,studentId,
+      username:`${classId}${String(seat).padStart(2,'0')}`,
+      displayName:name,type:'student',
+      classId,seat,active:true,
+      linked:!!linkedUid,linkedUid,
+      assignments
+    };
+    if(ri>=0)registries[ri]=localReg;
+    else registries.push(localReg);
+  }
+
+  return {
+    studentId,
+    id:studentId,
+    seat,
+    name,
+    email,
+    active:true
+  };
+}
+
 // 班級名單：新加入的學生直接使用固定 studentId；舊學生在主檔遷移後也保持固定 ID
 async function addStudentToClass(id){
-  const c=classDocLocal(id);if(!c)return;assertAdminClass(id);
-  const seat=Number(prompt(`新增 ${id} 班學生\n請輸入座號：`));if(!Number.isInteger(seat)||seat<=0)return alert('座號格式不正確。');if((c.students||[]).some(s=>Number(s.seat)===seat&&s.active!==false))return alert(`${seat} 號已存在。若是原學生回班，請使用「恢復在班」。`);
-  const name=normalizeStudentName((prompt('請輸入學生姓名：')||'').trim());if(!name)return;
+  const c=classDocLocal(id);
+  if(!c)return;
+  assertAdminClass(id);
+
+  const seat=Number(prompt(`新增 ${id} 班學生\n請輸入座號：`));
+  if(!Number.isInteger(seat)||seat<=0)return alert('座號格式不正確。');
+
+  // 只看「目前在班」學生是否真的占用這個座號。
+  // 已轉出學生、歷史紀錄、舊 identityRegistry 的舊座號都不會阻擋座號再使用。
+  const occupied=(c.students||[]).find(s=>
+    s.active!==false && Number(s.seat)===seat
+  );
+
+  if(occupied){
+    return alert(
+      `${seat} 號目前仍由「${occupied.name}」使用。\n\n`+
+      `如果這是先前輸錯座號的學生，請先點該生「編輯」把座號修正；`+
+      `修正後 ${seat} 號就可以立即給真正的學生使用。`
+    );
+  }
+
+  const name=normalizeStudentName((prompt('請輸入學生姓名：')||'').trim());
+  if(!name)return;
+
   const email=registryId((prompt('學生 Google Email（可先留白，之後補）：')||'').trim());
-  const row=await upsertDirectoryStudent({seat,name,email},id,currentSemester,me.displayName||'導師');
-  const students=[...(c.students||[]),row];await saveClassStudents(id,students,`新增學生：${seat} ${name}｜studentId ${row.studentId}`);
-  editClass(id);alert(`✅ 已新增 ${id} 班 ${seat}號 ${name}。${email?'\nGoogle Email 已同步。':'\n尚未填 Email，可之後補上。'}`);
+
+  try{
+    const row=await upsertDirectoryStudent(
+      {seat,name,email},
+      id,
+      currentSemester,
+      me.displayName||'導師'
+    );
+
+    const students=[...(c.students||[]),row];
+    await saveClassStudents(
+      id,
+      students,
+      `新增學生：${seat} ${name}｜studentId ${row.studentId}`
+    );
+
+    editClass(id);
+    alert(
+      `✅ 已新增 ${id} 班 ${seat}號 ${name}。`+
+      (email?'\nGoogle Email 已同步。':'\n尚未填 Email，可之後補上。')
+    );
+  }catch(e){
+    console.error(e);
+    alert(`新增學生失敗：${e.message||e}`);
+  }
 }
 async function editStudentInClass(id,oldSeat,studentId=null){
   const c=classDocLocal(id);
@@ -3790,7 +4107,7 @@ async function editStudentInClass(id,oldSeat,studentId=null){
 
   await audit('edit_student','class',id,`修改學生：${student.seat} ${student.name} → ${newSeat} ${newName}｜studentId 保持 ${sid}`);
   await refreshAll();editClass(id);
-  alert('✅ 學生資料已更新；固定 studentId 與既有 Google UID 連動都會保留。');
+  alert(`✅ 學生資料已更新。\n\n固定 studentId 與既有 Google UID 連動都會保留；原座號 ${student.seat} 已釋放，可以再新增其他學生。`);
 }
 
 // 管理者權限：可設定導師班；最高管理員自己也可設定導師班，方便三身分切換
