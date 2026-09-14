@@ -108,7 +108,7 @@
   </aside>
   <div class="main-area">
     <header class="hero">
-      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260915-M</div></div>
+      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260915-N</div></div>
       <div class="hero-user"><div class="user-name">👨‍🏫 <span id="who"></span></div><div id="semesterBadge" class="semester-badge"></div><div class="header-actions"><button id="switchModeBtn" class="btn purple small">🎭 切換身分</button><a href="class-work.html" style="text-decoration:none"><button class="btn gray small">📋 回報頁</button></a><button id="logoutBtn" class="btn danger small">🚪 登出</button></div></div>
     </header>
     <div class="content"><div id="modeHost"></div><div id="appMsg"></div><section id="page-dashboard"></section><section id="page-roles" class="hidden"></section><section id="page-records" class="hidden"></section><section id="page-subjectClasses" class="hidden"></section><section id="page-accounts" class="hidden"></section><section id="page-classes" class="hidden"></section><section id="page-directory" class="hidden"></section><section id="page-teacherDirectory" class="hidden"></section><section id="page-history" class="hidden"></section><section id="page-upgrade" class="hidden"></section><section id="page-audit" class="hidden"></section><section id="page-adminPermissions" class="hidden"></section></div>
@@ -1956,8 +1956,9 @@ function adminTeacherCandidates(){
 }
 function currentClassAdminUsers(){
   const homeroomOf=u=>String((u.adminClassIds||[])[0]||u.homeroomClassId||'');
+  const myUid=String(me?.uid||me?.id||'');
   return users
-    .filter(u=>u.uid!==me.uid&&u.type==='admin'&&u.adminScope==='class')
+    .filter(u=>String(u.uid||u.id||'')!==myUid&&u.type==='admin'&&u.adminScope==='class')
     .sort((a,b)=>{
       const ac=homeroomOf(a),bc=homeroomOf(b);
       const an=Number(ac),bn=Number(bc);
@@ -2384,11 +2385,12 @@ async function refreshAll(){
       safeDocs(collection(db,'studentDirectory')),safeDocs(collection(db,'studentEnrollments')),
       safeDocs(collection(db,'upgradeBatches')),safeDocs(collection(db,'classRosterHistory'))
     ]);
-    users=us;registries=rs;classes=cs;collections=co;assessments=as;
+    users=us.map(u=>({...u,uid:u.uid||u.id}));
+    registries=rs;classes=cs;collections=co;assessments=as;
     subjectManagers=sm;subjectRosters=sr;studentDirectory=sd;studentEnrollments=se;upgradeBatches=ub;classRosterHistory=crh;
   }else{
     const ids=[...new Set((me?.adminClassIds||[]).map(String))];
-    users=[me];registries=[];classes=[];collections=[];assessments=[];
+    users=[{...me,uid:me?.uid||me?.id}];registries=[];classes=[];collections=[];assessments=[];
     for(const classId of ids){
       const c=await safeDoc(doc(db,'classes',classId));if(c)classes.push(c);
       registries.push(...await safeDocs(query(collection(db,'identityRegistry'),where('classId','==',classId))));
@@ -2560,10 +2562,11 @@ function teacherLinkedUser(reg){
 function teacherRegistryForUser(u){
   if(!u)return null;
   const email=registryId(u.email||'');
+  const uid=String(u.uid||u.id||'');
   return registries.find(r=>
     r.type==='teacher' &&
     (
-      (r.linkedUid&&r.linkedUid===u.uid) ||
+      (uid&&r.linkedUid&&String(r.linkedUid)===uid) ||
       (email&&r.id===email)
     )
   )||null;
@@ -4934,17 +4937,18 @@ function renderAdminPermissions(){
     <div class="card" style="margin-top:14px"><div class="section-title">🔐 授予班級管理員</div><div class="notice">其他導師先完成 Google UID 連動，再授予「導師班管理」；他仍可另外用任課老師模式自行建立班級 × 科目。</div><div class="toolbar"><label>老師<select id="adminTeacherSelect">${candidates.map(r=>`<option value="${esc(r.id)}">${esc(r.displayName||r.email)}｜${esc(r.email||r.id)}</option>`).join('')}</select></label><label>導師班<select id="adminClassSelect">${schoolClassOptions()}</select></label><button id="grantClassAdminBtn" class="btn primary" ${candidates.length?'':'disabled'}>🔐 授予班級管理員</button></div></div>
     <div class="card" style="margin-top:14px"><div class="section-title">👨‍🏫 目前班級管理員</div><div class="table-wrap"><table><thead><tr><th>姓名</th><th>Email</th><th>導師班</th><th>任課權限</th><th>操作</th></tr></thead><tbody>${admins.map(u=>{
       const teachingRows=teacherTeachingRowsForUser(u,currentSemester);
+      const teacherUid=String(u.uid||u.id||'');
       return `<tr>
         <td><b>${esc(u.displayName||'')}</b></td>
         <td>${esc(u.email||'')}</td>
-        <td><select class="class-admin-class" data-uid="${esc(u.uid)}">${schoolClassOptions((u.adminClassIds||[])[0]||u.homeroomClassId||'')}</select></td>
+        <td><select class="class-admin-class" data-uid="${esc(teacherUid)}">${schoolClassOptions((u.adminClassIds||[])[0]||u.homeroomClassId||'')}</select></td>
         <td>${teachingCompactHtml(teachingRows,{
           buttonClass:'admin-permission-view-teaching',
-          buttonData:`data-uid="${esc(u.uid)}"`,
+          buttonData:`data-uid="${esc(teacherUid)}"`,
           showButton:true,
           maxChips:3
         })}</td>
-        <td><button class="btn good small save-class-admin" data-uid="${esc(u.uid)}">💾 儲存導師班</button> <button class="btn danger small revoke-class-admin" data-uid="${esc(u.uid)}">取消管理權限</button></td>
+        <td><button class="btn good small save-class-admin" data-uid="${esc(teacherUid)}">💾 儲存導師班</button> <button class="btn danger small revoke-class-admin" data-uid="${esc(teacherUid)}">取消管理權限</button></td>
       </tr>`;
     }).join('')||'<tr><td colspan="5">尚未授予其他班級管理員。</td></tr>'}</tbody></table></div></div>`;
   $('#saveSchoolClassConfigBtn')?.addEventListener('click',saveSchoolClassConfig);
@@ -4961,7 +4965,7 @@ function renderAdminPermissions(){
       const b=e.target.closest('.admin-permission-view-teaching');
       if(!b||!adminPermissionPage.contains(b))return;
       e.preventDefault();
-      const u=admins.find(x=>String(x.uid)===String(b.dataset.uid));
+      const u=admins.find(x=>String(x.uid||x.id||'')===String(b.dataset.uid||''));
       if(!u)return alert('找不到這位導師的任課資料，請重新整理後再試。');
       openTeachingRowsModal(
         `${u.displayName||u.email||'老師'}｜全部任課班`,
