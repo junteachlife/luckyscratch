@@ -108,7 +108,7 @@
   </aside>
   <div class="main-area">
     <header class="hero">
-      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260915-Q</div></div>
+      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260915-R</div></div>
       <div class="hero-user"><div class="user-name">👨‍🏫 <span id="who"></span></div><div id="semesterBadge" class="semester-badge"></div><div class="header-actions"><button id="switchModeBtn" class="btn purple small">🎭 切換身分</button><a href="class-work.html" style="text-decoration:none"><button class="btn gray small">📋 回報頁</button></a><button id="logoutBtn" class="btn danger small">🚪 登出</button></div></div>
     </header>
     <div class="content"><div id="modeHost"></div><div id="appMsg"></div><section id="page-dashboard"></section><section id="page-roles" class="hidden"></section><section id="page-records" class="hidden"></section><section id="page-subjectClasses" class="hidden"></section><section id="page-accounts" class="hidden"></section><section id="page-classes" class="hidden"></section><section id="page-directory" class="hidden"></section><section id="page-teacherDirectory" class="hidden"></section><section id="page-history" class="hidden"></section><section id="page-upgrade" class="hidden"></section><section id="page-audit" class="hidden"></section><section id="page-adminPermissions" class="hidden"></section></div>
@@ -4965,7 +4965,7 @@ async function migrateLegacyStudentsToDirectory(){
 
   alert(msg);
 }
-function directoryStatusLabel(s){return s.status==='graduated'?'🎓 已畢業':s.status==='transferred'?'↗ 已轉出':s.active===false?'停用':'在校'}
+function directoryStatusLabel(s){return s.status==='merged'?'🔗 已合併':s.status==='graduated'?'🎓 已畢業':s.status==='transferred'?'↗ 已轉出':s.active===false?'停用':'在校'}
 function renderDirectory(){
   if(!isGlobalAdmin()){
     $('#page-directory').innerHTML='<div class="notice error">只有最高管理員模式可以開啟全校學生主檔。</div>';
@@ -5013,6 +5013,7 @@ function renderDirectory(){
           <option value="enrolled">在校</option>
           <option value="graduated">已畢業</option>
           <option value="transferred">已轉出</option>
+          <option value="merged">已合併</option>
         </select>
 
         <button id="migrateStudentIdsBtn" class="btn primary">🔄 同步既有班級到學生主檔</button>
@@ -5102,10 +5103,7 @@ function openStudentHistory(studentId){
     <div class="table-wrap"><table><thead><tr><th>學年</th><th>學期</th><th>班級</th><th>座號</th><th>狀態</th></tr></thead><tbody>${ens.map(e=>`<tr><td>${esc(e.schoolYear||'')}</td><td>${esc(e.semester||'')}</td><td>${esc(e.classId||'')}</td><td>${esc(e.seat??'')}</td><td>${esc(e.status||'')}</td></tr>`).join('')||'<tr><td colspan="5">尚無學籍歷程。</td></tr>'}</tbody></table></div>`);
 }
 function studentHasFormalData(sid){
-  if(registries.some(r=>r.studentId===sid&&r.linkedUid))return true;
-  if(collections.some(x=>x.records&&Object.prototype.hasOwnProperty.call(x.records,sid)))return true;
-  if(assessments.some(x=>x.scores&&Object.prototype.hasOwnProperty.call(x.scores,sid)))return true;
-  return false;
+  return studentFormalDataSummary(sid).hasFormal;
 }
 
 function studentFormalDataSummary(sid){
@@ -5321,46 +5319,643 @@ async function deleteMistakenStudent(sid){
   await audit('delete_mistaken_student','studentDirectory',sid,`刪除誤建學生：${s.displayName}`);
   await refreshAll();renderDirectory();
 }
-async function mergeStudentPrompt(sourceId){
-  if(!isGlobalAdmin())return;
-  const src=studentDirectory.find(x=>x.id===sourceId);if(!src)return;
-  const key=(prompt(`合併重複學生\n\n來源：${src.displayName}（${src.email||sourceId}）\n\n請輸入「要保留」那一筆學生的 Email 或 studentId：`)||'').trim();
-  if(!key)return;
-  const target=studentDirectory.find(x=>x.id===key||registryId(x.email)===registryId(key));
-  if(!target)return alert('找不到要保留的學生。');
-  if(target.id===sourceId)return alert('來源與保留學生不能是同一筆。');
-  const srcLinked=registries.find(r=>r.studentId===sourceId&&r.linkedUid),tarLinked=registries.find(r=>r.studentId===target.id&&r.linkedUid);
-  if(srcLinked&&tarLinked&&srcLinked.linkedUid!==tarLinked.linkedUid)return alert('兩筆資料都已連動不同 Google UID，為避免誤合併，請先人工確認帳號後再處理。');
-  if(!confirm(`確定合併？\n\n保留：${target.displayName}｜${target.email||target.id}\n合併來源：${src.displayName}｜${src.email||src.id}\n\n來源 studentId 將標記 merged，相關新制資料會改指向保留 studentId。`))return;
-  for(const r of subjectRosters.filter(x=>(x.studentIds||[]).includes(sourceId))){
-    const ids=[...new Set((r.studentIds||[]).map(x=>x===sourceId?target.id:x))];
-    const students=(r.students||[]).map(x=>x.studentId===sourceId?{...x,studentId:target.id,id:target.id}:x).filter((x,i,a)=>a.findIndex(y=>y.studentId===x.studentId)===i);
-    await updateDoc(doc(db,'subjectClassRosters',r.id),{studentIds:ids,students,updatedAt:serverTimestamp()});
-  }
-  for(const c of classes.filter(c=>(c.students||[]).some(x=>(x.studentId||x.id)===sourceId))){
-    const students=c.students.map(x=>(x.studentId||x.id)===sourceId?{...x,id:target.id,studentId:target.id,name:target.displayName||x.name,email:target.email||x.email}:x).filter((x,i,a)=>a.findIndex(y=>(y.studentId||y.id)===(x.studentId||x.id))===i);
-    await updateDoc(doc(db,'classes',c.id),{students,updatedAt:serverTimestamp()});
-  }
-  for(const x of collections){
-    if(x.records&&Object.prototype.hasOwnProperty.call(x.records,sourceId)){
-      const records={...x.records};if(!Object.prototype.hasOwnProperty.call(records,target.id))records[target.id]=records[sourceId];delete records[sourceId];await updateDoc(doc(db,'collectionItems',x.id),{records,updatedAt:serverTimestamp()});
-    }
-  }
-  for(const x of assessments){
-    if(x.scores&&Object.prototype.hasOwnProperty.call(x.scores,sourceId)){
-      const scores={...x.scores};if(!Object.prototype.hasOwnProperty.call(scores,target.id))scores[target.id]=scores[sourceId];delete scores[sourceId];await updateDoc(doc(db,'assessments',x.id),{scores,updatedAt:serverTimestamp()});
-    }
-  }
-  for(const e of studentEnrollments.filter(x=>x.studentId===sourceId)){
-    const newId=`${e.schoolYear}__${target.id}`;await setDoc(doc(db,'studentEnrollments',newId),{...e,studentId:target.id,mergedFrom:sourceId,updatedAt:serverTimestamp()},{merge:true});await deleteDoc(doc(db,'studentEnrollments',e.id));
-  }
-  const srcReg=registries.find(r=>r.studentId===sourceId);
-  if(srcReg&&!tarLinked){srcReg.studentId=target.id;srcReg.displayName=target.displayName;await saveRegistry(srcReg)}
-  await setDoc(doc(db,'studentDirectory',sourceId),{active:false,status:'merged',mergedInto:target.id,mergedAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true});
-  await audit('merge_duplicate_student','studentDirectory',sourceId,`合併重複學生：${src.displayName} → ${target.displayName}（保留 ${target.id}）`);
-  await refreshAll();renderDirectory();alert('✅ 重複學生已合併。來源主檔保留 merged 標記供稽核。');
+
+function mergeStatusText(s){
+  if(!s)return '未知';
+  if(s.status==='merged')return '已合併';
+  if(s.status==='graduated')return '已畢業';
+  if(s.status==='transferred')return '已轉出';
+  if(s.active===false)return '停用';
+  return '在校';
 }
 
+function packedValueEqual(a,b){
+  try{return JSON.stringify(a)===JSON.stringify(b)}
+  catch{return a===b}
+}
+
+function packedConflictForField(docObj,field,sourceId,targetId){
+  const map=docObj?.[field];
+  if(!map)return false;
+  const hasSource=Object.prototype.hasOwnProperty.call(map,sourceId);
+  const hasTarget=Object.prototype.hasOwnProperty.call(map,targetId);
+  if(!hasSource||!hasTarget)return false;
+  return !packedValueEqual(map[sourceId],map[targetId]);
+}
+
+function mergePackedMapNoConflict(map,sourceId,targetId){
+  if(!map||!Object.prototype.hasOwnProperty.call(map,sourceId))return map||{};
+  const next={...map};
+  if(!Object.prototype.hasOwnProperty.call(next,targetId)){
+    next[targetId]=next[sourceId];
+  }
+  delete next[sourceId];
+  return next;
+}
+
+function replaceMergeRoleAssignments(roleAssignments,sourceId,targetId,sourceStudent,targetStudent){
+  const next=structuredClone(roleAssignments||{});
+  for(const roles of Object.values(next)){
+    for(const who of Object.values(roles||{})){
+      if(!who)continue;
+      const bySid=String(who.studentId||'')===String(sourceId);
+      const byLegacy=
+        !who.studentId &&
+        sourceStudent &&
+        Number(who.seat)===Number(sourceStudent.seat) &&
+        sameStudentName(who.name||'',sourceStudent.name||'');
+      if(bySid||byLegacy){
+        who.studentId=targetId;
+        who.seat=Number(targetStudent.seat);
+        who.name=targetStudent.name;
+      }
+    }
+  }
+  return next;
+}
+
+function replaceMergeRosterLock(rosterLock,sourceId,targetId,targetStudent){
+  if(!rosterLock)return rosterLock;
+  const old=Array.isArray(rosterLock.lockedStudents)?rosterLock.lockedStudents:[];
+  const mapped=old.map(x=>
+    String(x.studentId||'')===String(sourceId)
+      ?{...x,studentId:targetId,seat:Number(targetStudent.seat),name:targetStudent.name,email:targetStudent.email||x.email||''}
+      :x
+  );
+  const seen=new Set();
+  const lockedStudents=mapped.filter(x=>{
+    const k=String(x.studentId||`${x.seat}|${x.name||''}`);
+    if(seen.has(k))return false;
+    seen.add(k);
+    return true;
+  });
+  return {
+    ...rosterLock,
+    lockedStudents,
+    lockedCount:lockedStudents.length,
+    enabled:lockedStudents.length>0
+  };
+}
+
+function currentTargetEnrollmentStatus(target){
+  if(target.status==='graduated')return 'graduated';
+  if(target.status==='transferred'||target.active===false)return 'transferred';
+  return 'active';
+}
+
+function mergeEnrollmentSourceSnapshot(e,sourceId){
+  return {
+    sourceStudentId:sourceId,
+    schoolYear:e.schoolYear||'',
+    semester:e.semester||'',
+    classId:e.classId||'',
+    seat:e.seat??null,
+    displayName:e.displayName||'',
+    email:e.email||'',
+    status:e.status||''
+  };
+}
+
+async function mergeStudentPrompt(sourceId){
+  if(!isGlobalAdmin())return alert('只有最高管理員可以合併重複學生。');
+
+  const src=studentDirectory.find(x=>String(x.id)===String(sourceId));
+  if(!src)return alert('找不到來源學生主檔。');
+  if(src.status==='merged'||src.mergedInto){
+    return alert(`這筆學生主檔已經合併到 ${src.mergedInto||'其他 studentId'}，不需要再次合併。`);
+  }
+
+  const likely=studentDirectory.filter(x=>{
+    if(String(x.id)===String(sourceId)||x.status==='merged')return false;
+    const sameEmail=registryId(src.email||'')&&registryId(x.email||'')===registryId(src.email||'');
+    const sameIdentity=
+      String(x.currentClassId||'')===String(src.currentClassId||'') &&
+      Number(x.currentSeat)===Number(src.currentSeat) &&
+      sameStudentName(x.displayName||'',src.displayName||'');
+    return sameEmail||sameIdentity;
+  });
+
+  const likelyText=likely.length
+    ?'\n\n可能的重複主檔：\n'+likely.slice(0,8).map(x=>
+        `• ${x.id}｜${x.currentClassId||'—'}-${x.currentSeat??'—'}｜${x.displayName||''}｜${mergeStatusText(x)}`
+      ).join('\n')
+    :'';
+
+  const key=(prompt(
+    `合併重複學生\n\n`+
+    `來源：${src.currentClassId||'—'}-${src.currentSeat??'—'} ${src.displayName||''}\n`+
+    `來源 studentId：${sourceId}\n`+
+    `來源狀態：${mergeStatusText(src)}\n\n`+
+    `請輸入「要保留」那一筆的 studentId。\n`+
+    `若輸入 Email，只有該 Email 在學生主檔中唯一時才會接受。`+
+    likelyText
+  )||'').trim();
+
+  if(!key)return;
+
+  let target=null;
+  if(studentDirectory.some(x=>String(x.id)===key)){
+    target=studentDirectory.find(x=>String(x.id)===key)||null;
+  }else{
+    const emailKey=registryId(key);
+    const emailMatches=emailKey
+      ?studentDirectory.filter(x=>registryId(x.email||'')===emailKey&&x.status!=='merged')
+      :[];
+
+    if(emailMatches.length>1){
+      return alert(
+        `這個 Email 對應 ${emailMatches.length} 筆學生主檔，不能自動判斷要保留哪一筆。\n\n`+
+        `請直接輸入要保留的 studentId：\n`+
+        emailMatches.map(x=>`${x.id}｜${mergeStatusText(x)}`).join('\n')
+      );
+    }
+    target=emailMatches[0]||null;
+  }
+
+  if(!target)return alert('找不到要保留的學生主檔。請使用完整 studentId。');
+  if(String(target.id)===String(sourceId))return alert('來源與保留學生不能是同一筆。');
+  if(target.status==='merged'||target.mergedInto){
+    return alert('不能把資料合併到一筆已經標記「已合併」的學生主檔，請選擇真正要保留的主檔。');
+  }
+
+  const sourceRegs=registries.filter(r=>r.type==='student'&&String(r.studentId||'')===String(sourceId));
+  const targetRegs=registries.filter(r=>r.type==='student'&&String(r.studentId||'')===String(target.id));
+  const allRegs=[...sourceRegs,...targetRegs].filter((r,i,a)=>a.findIndex(x=>x.id===r.id)===i);
+
+  const linkedUids=[...new Set(allRegs.map(r=>String(r.linkedUid||'')).filter(Boolean))];
+  if(linkedUids.length>1){
+    return alert(
+      `⚠️ 不能自動合併。\n\n兩筆主檔連到不同 Google UID：\n${linkedUids.join('\n')}\n\n`+
+      `為避免把兩位不同學生的登入帳號合併，請先人工確認 Firebase Authentication。`
+    );
+  }
+
+  // 先做完整衝突掃描。只要同一份作業／成績中兩個 studentId 都有不同值，
+  // 就完全停止，不進行任何資料寫入，避免靜默覆蓋正式資料。
+  const packedConflicts=[];
+
+  for(const x of collections){
+    for(const field of ['records','lockedRecords','lateSubmitted']){
+      if(packedConflictForField(x,field,sourceId,target.id)){
+        packedConflicts.push(`作業｜${x.semester||''} ${x.classId||''} ${x.scopeName||''}｜${x.itemName||x.name||x.id}｜${field}`);
+      }
+    }
+  }
+
+  for(const x of assessments){
+    for(const field of ['scores','scoreLocks']){
+      if(packedConflictForField(x,field,sourceId,target.id)){
+        packedConflicts.push(`成績｜${x.semester||''} ${x.classId||''} ${x.scopeName||''}｜${x.name||x.itemName||x.id}｜${field}`);
+      }
+    }
+  }
+
+  if(packedConflicts.length){
+    return alert(
+      `⚠️ 合併已停止，沒有修改任何資料。\n\n`+
+      `來源與保留 studentId 在 ${packedConflicts.length} 個正式欄位中都有不同資料，系統不會自行決定要保留哪一邊：\n\n`+
+      packedConflicts.slice(0,12).join('\n')+
+      (packedConflicts.length>12?`\n…另有 ${packedConflicts.length-12} 項`:'')+
+      `\n\n請先人工確認這些作業／成績，再進行合併。`
+    );
+  }
+
+  const targetActive=target.status==='enrolled'&&target.active!==false;
+  const targetClassId=String(target.currentClassId||'');
+  const targetSeat=Number(target.currentSeat);
+  const targetName=target.displayName||src.displayName||'';
+
+  // Google/Email 身分：已連動的 registry 優先，其次保留 target 的 registry。
+  const primaryReg=
+    targetRegs.find(r=>r.linkedUid) ||
+    sourceRegs.find(r=>r.linkedUid) ||
+    targetRegs[0] ||
+    sourceRegs[0] ||
+    null;
+
+  let primaryEmail=registryId(primaryReg?.email||primaryReg?.id||target.email||src.email||'');
+  const mergedAssignments=allRegs.reduce(
+    (acc,r)=>mergeAssignments(acc,Array.isArray(r.assignments)?r.assignments:[]),
+    []
+  );
+
+  const typed=(prompt(
+    `最後確認合併\n\n`+
+    `【保留】${targetClassId||'—'}-${target.currentSeat??'—'} ${targetName}\n`+
+    `${target.id}\n狀態：${mergeStatusText(target)}\n\n`+
+    `【合併來源】${src.currentClassId||'—'}-${src.currentSeat??'—'} ${src.displayName||''}\n`+
+    `${sourceId}\n狀態：${mergeStatusText(src)}\n\n`+
+    `保留主檔目前的「${mergeStatusText(target)}」狀態不會被來源資料覆蓋。\n`+
+    `請再次輸入要保留的完整 studentId：`
+  )||'').trim();
+
+  if(typed!==String(target.id))return alert('studentId 輸入不一致，已取消合併。');
+
+  const batch=writeBatch(db);
+  let writeCount=0;
+  const affectedClassIds=new Set();
+
+  const bSet=(ref,data,options)=>{
+    batch.set(ref,data,options);
+    writeCount++;
+  };
+  const bUpdate=(ref,data)=>{
+    batch.update(ref,data);
+    writeCount++;
+  };
+  const bDelete=(ref)=>{
+    batch.delete(ref);
+    writeCount++;
+  };
+
+  // ① 作業 packed maps：完整搬移三個欄位
+  for(const x of collections){
+    const patch={};
+    let touched=false;
+
+    for(const field of ['records','lockedRecords','lateSubmitted']){
+      const map=x[field];
+      if(map&&Object.prototype.hasOwnProperty.call(map,sourceId)){
+        patch[field]=mergePackedMapNoConflict(map,sourceId,target.id);
+        touched=true;
+      }
+    }
+
+    if(touched){
+      patch.updatedAt=serverTimestamp();
+      bUpdate(doc(db,'collectionItems',x.id),patch);
+    }
+  }
+
+  // ② 成績 packed maps：完整搬移 scores / scoreLocks
+  for(const x of assessments){
+    const patch={};
+    let touched=false;
+
+    for(const field of ['scores','scoreLocks']){
+      const map=x[field];
+      if(map&&Object.prototype.hasOwnProperty.call(map,sourceId)){
+        patch[field]=mergePackedMapNoConflict(map,sourceId,target.id);
+        touched=true;
+      }
+    }
+
+    if(touched){
+      patch.updatedAt=serverTimestamp();
+      bUpdate(doc(db,'assessments',x.id),patch);
+    }
+  }
+
+  // ③ 班級名單、職務、名單鎖定
+  const classPlans=new Map();
+
+  for(const c of classes){
+    const sourceRow=(c.students||[]).find(x=>String(x.studentId||x.id||'')===String(sourceId));
+    const existingTarget=(c.students||[]).find(x=>String(x.studentId||x.id||'')===String(target.id));
+
+    if(!sourceRow&&!existingTarget)continue;
+
+    // 只有真的包含來源 ID 的 class 才需要做合併寫入。
+    if(!sourceRow)continue;
+
+    affectedClassIds.add(String(c.id));
+
+    const authoritativeSeat=
+      targetClassId===String(c.id)&&Number.isFinite(targetSeat)
+        ?targetSeat
+        :Number(existingTarget?.seat??sourceRow.seat);
+
+    const authoritativeActive=
+      targetClassId===String(c.id)
+        ?targetActive
+        :false;
+
+    const targetRow={
+      ...(existingTarget||sourceRow),
+      id:target.id,
+      studentId:target.id,
+      seat:authoritativeSeat,
+      name:targetName,
+      email:primaryEmail||target.email||existingTarget?.email||sourceRow.email||'',
+      active:authoritativeActive,
+      transferredOutSemester:authoritativeActive
+        ?null
+        :(target.transferredOutSemester||existingTarget?.transferredOutSemester||sourceRow.transferredOutSemester||currentSemester),
+      transferredOutAt:authoritativeActive
+        ?null
+        :(target.transferredOutAt||existingTarget?.transferredOutAt||sourceRow.transferredOutAt||new Date().toISOString())
+    };
+
+    const nextStudents=[];
+    let insertedTarget=false;
+
+    for(const row of (c.students||[])){
+      const rid=String(row.studentId||row.id||'');
+
+      if(rid===String(sourceId)){
+        if(!existingTarget&&!insertedTarget){
+          nextStudents.push(targetRow);
+          insertedTarget=true;
+        }
+        continue;
+      }
+
+      if(rid===String(target.id)){
+        if(!insertedTarget){
+          nextStudents.push(targetRow);
+          insertedTarget=true;
+        }
+        continue;
+      }
+
+      nextStudents.push(row);
+    }
+
+    const roleAssignments=replaceMergeRoleAssignments(
+      c.roleAssignments,
+      sourceId,
+      target.id,
+      sourceRow,
+      targetRow
+    );
+
+    const rosterLock=replaceMergeRosterLock(
+      c.rosterLock,
+      sourceId,
+      target.id,
+      targetRow
+    );
+
+    const classPatch={
+      students:nextStudents.sort((a,b)=>Number(a.seat)-Number(b.seat)),
+      roleAssignments,
+      updatedAt:serverTimestamp()
+    };
+
+    if(rosterLock)classPatch.rosterLock=rosterLock;
+
+    classPlans.set(String(c.id),{
+      ...c,
+      students:classPatch.students,
+      roleAssignments,
+      rosterLock:rosterLock||c.rosterLock
+    });
+
+    bUpdate(doc(db,'classes',c.id),classPatch);
+  }
+
+  // ④ 任課班快照
+  // active manager 的快照直接依合併後 class 正式名單重建；
+  // 無 manager 的舊快照至少移除 sourceId，不會把「已轉出」target 又塞回任課名單。
+  for(const r of subjectRosters){
+    const classId=String(r.classId||'');
+    const plan=classPlans.get(classId);
+    const manager=subjectManagers.find(sm=>sm.id===r.id&&sm.status!=='released');
+
+    if(plan&&manager){
+      const activeStudents=(plan.students||[])
+        .filter(s=>s.active!==false)
+        .map(s=>({
+          studentId:s.studentId||s.id||String(s.seat),
+          id:s.id||s.studentId||String(s.seat),
+          seat:s.seat,
+          name:s.name||'',
+          email:s.email||'',
+          active:true
+        }))
+        .sort((a,b)=>Number(a.seat)-Number(b.seat));
+
+      bSet(doc(db,'subjectClassRosters',r.id),{
+        studentIds:activeStudents.map(s=>s.studentId),
+        students:activeStudents,
+        rosterSource:'sharedClass',
+        syncedAt:serverTimestamp(),
+        updatedAt:serverTimestamp()
+      },{merge:true});
+      continue;
+    }
+
+    const hasSource=
+      (r.studentIds||[]).some(x=>String(x)===String(sourceId)) ||
+      (r.students||[]).some(x=>String(x.studentId||x.id||'')===String(sourceId));
+
+    if(hasSource){
+      const ids=(r.studentIds||[]).filter(x=>String(x)!==String(sourceId));
+      const students=(r.students||[]).filter(x=>String(x.studentId||x.id||'')!==String(sourceId));
+
+      bUpdate(doc(db,'subjectClassRosters',r.id),{
+        studentIds:ids,
+        students,
+        updatedAt:serverTimestamp()
+      });
+    }
+  }
+
+  // 如果 class 有受影響，但該 active manager 尚沒有載入 subjectClassRosters 文件，也同步建立快照。
+  for(const classId of affectedClassIds){
+    const plan=classPlans.get(classId);
+    if(!plan)continue;
+
+    const activeStudents=(plan.students||[])
+      .filter(s=>s.active!==false)
+      .map(s=>({
+        studentId:s.studentId||s.id||String(s.seat),
+        id:s.id||s.studentId||String(s.seat),
+        seat:s.seat,
+        name:s.name||'',
+        email:s.email||'',
+        active:true
+      }))
+      .sort((a,b)=>Number(a.seat)-Number(b.seat));
+
+    for(const sm of subjectManagers.filter(sm=>sm.status!=='released'&&String(sm.classId)===classId)){
+      if(subjectRosters.some(r=>r.id===sm.id))continue;
+
+      bSet(doc(db,'subjectClassRosters',sm.id),{
+        semester:sm.semester,
+        classId,
+        subject:sm.subject,
+        managerUid:sm.managerUid||null,
+        managerEmail:sm.managerEmail||null,
+        studentIds:activeStudents.map(s=>s.studentId),
+        students:activeStudents,
+        rosterSource:'sharedClass',
+        syncedAt:serverTimestamp(),
+        updatedAt:serverTimestamp()
+      },{merge:true});
+    }
+  }
+
+  // ⑤ 學籍歷程
+  // 同一 schoolYear 已有 target 紀錄時，target 的 status / class / seat 全部保留；
+  // source 只以「合併來源快照」方式留下稽核資訊，絕不覆蓋 target 的已轉出狀態。
+  for(const e of studentEnrollments.filter(x=>String(x.studentId)===String(sourceId))){
+    const targetEnrollmentId=`${e.schoolYear}__${target.id}`;
+    const existing=studentEnrollments.find(x=>x.id===targetEnrollmentId)||null;
+    const snapshot=mergeEnrollmentSourceSnapshot(e,sourceId);
+
+    if(existing){
+      const oldSnapshots=Array.isArray(existing.mergedSourceRecords)?existing.mergedSourceRecords:[];
+      const oldFrom=Array.isArray(existing.mergedFromStudentIds)?existing.mergedFromStudentIds:[];
+      const mergedSourceRecords=[
+        ...oldSnapshots.filter(x=>String(x.sourceStudentId)!==String(sourceId)),
+        snapshot
+      ];
+
+      bSet(doc(db,'studentEnrollments',targetEnrollmentId),{
+        mergedFromStudentIds:[...new Set([...oldFrom,sourceId])],
+        mergedSourceRecords,
+        updatedAt:serverTimestamp()
+      },{merge:true});
+    }else{
+      const isCurrentYear=String(e.schoolYear)===String(schoolYearFromSemester(currentSemester));
+      const copied={...e};
+      delete copied.id;
+
+      const data={
+        ...copied,
+        studentId:target.id,
+        mergedFromStudentIds:[sourceId],
+        mergedSourceRecords:[snapshot],
+        updatedAt:serverTimestamp()
+      };
+
+      if(isCurrentYear){
+        data.classId=target.currentClassId||e.classId||'';
+        data.seat=target.currentSeat??e.seat??null;
+        data.displayName=targetName;
+        data.email=primaryEmail||target.email||e.email||'';
+        data.status=currentTargetEnrollmentStatus(target);
+        data.semester=currentSemester;
+      }
+
+      bSet(doc(db,'studentEnrollments',targetEnrollmentId),data,{merge:true});
+    }
+
+    bDelete(doc(db,'studentEnrollments',e.id));
+  }
+
+  // ⑥ identityRegistry + linked users
+  // 只允許最多一個 Google UID；有連動者優先成為 primary registry。
+  if(primaryReg){
+    const linkedUid=linkedUids[0]||primaryReg.linkedUid||null;
+    const primaryData={
+      ...primaryReg,
+      email:primaryEmail||primaryReg.id,
+      studentId:target.id,
+      displayName:targetName,
+      type:'student',
+      classId:targetClassId,
+      seat:Number.isFinite(targetSeat)?targetSeat:null,
+      active:targetActive,
+      linked:!!linkedUid,
+      linkedUid,
+      assignments:mergedAssignments,
+      mergedStudentIds:[...new Set([...(primaryReg.mergedStudentIds||[]),sourceId])],
+      updatedAt:serverTimestamp()
+    };
+    delete primaryData.id;
+
+    bSet(doc(db,'identityRegistry',primaryReg.id),primaryData,{merge:true});
+
+    for(const reg of allRegs.filter(r=>r.id!==primaryReg.id)){
+      bSet(doc(db,'identityRegistry',reg.id),{
+        studentId:target.id,
+        active:false,
+        mergedIntoStudentId:target.id,
+        mergedIntoEmail:primaryReg.id,
+        mergedAt:serverTimestamp(),
+        updatedAt:serverTimestamp()
+      },{merge:true});
+    }
+
+    if(linkedUid){
+      const oldUser=users.find(u=>String(u.uid||u.id||'')===String(linkedUid))||{};
+      const access=computeAccess(mergedAssignments,currentSemester);
+
+      bSet(doc(db,'users',linkedUid),{
+        username:primaryReg.username||primaryEmail||oldUser.username||'',
+        displayName:targetName,
+        type:oldUser.type==='admin'?'admin':'student',
+        email:primaryEmail||primaryReg.id,
+        classId:targetClassId,
+        seat:Number.isFinite(targetSeat)?targetSeat:null,
+        active:targetActive,
+        assignments:mergedAssignments,
+        ...access,
+        mustChangePassword:false,
+        authProvider:'google',
+        updatedAt:serverTimestamp()
+      },{merge:true});
+    }
+  }
+
+  // ⑦ 保留 target 主檔的權威狀態，只補 Email / 合併來源資訊。
+  const targetMergedFrom=[
+    ...new Set([...(Array.isArray(target.mergedFromStudentIds)?target.mergedFromStudentIds:[]),sourceId])
+  ];
+
+  bSet(doc(db,'studentDirectory',target.id),{
+    email:primaryEmail||target.email||src.email||'',
+    mergedFromStudentIds:targetMergedFrom,
+    updatedAt:serverTimestamp()
+  },{merge:true});
+
+  // source 不刪除，保留 merged 稽核標記。
+  bSet(doc(db,'studentDirectory',sourceId),{
+    active:false,
+    status:'merged',
+    mergedInto:target.id,
+    mergedAt:serverTimestamp(),
+    mergedByUid:me.uid,
+    updatedAt:serverTimestamp()
+  },{merge:true});
+
+  // Firestore writeBatch 上限 500；預留安全空間，超過就完全不執行。
+  if(writeCount>450){
+    return alert(
+      `⚠️ 合併已停止，沒有修改任何資料。\n\n`+
+      `這位學生關聯的文件太多（預計 ${writeCount} 筆寫入），超過單次安全合併上限。\n`+
+      `請先備份並分批人工處理，避免發生半套合併。`
+    );
+  }
+
+  if(!confirm(
+    `即將原子合併 ${writeCount} 筆關聯文件。\n\n`+
+    `保留 studentId：${target.id}\n`+
+    `來源 studentId：${sourceId}\n`+
+    `保留狀態：${mergeStatusText(target)}\n\n`+
+    `確定執行？`
+  ))return;
+
+  try{
+    await batch.commit();
+
+    await audit(
+      'merge_duplicate_student',
+      'studentDirectory',
+      sourceId,
+      `安全合併重複學生：${src.displayName}（${sourceId}）→ ${targetName}（保留 ${target.id}）；保留狀態 ${mergeStatusText(target)}；寫入 ${writeCount} 筆`
+    );
+
+    await refreshAll();
+    renderDirectory();
+
+    alert(
+      `✅ 重複學生已安全合併。\n\n`+
+      `保留：${target.id}\n`+
+      `來源：${sourceId} → 已標記「已合併」\n`+
+      `學生主檔狀態仍維持「${mergeStatusText(target)}」。\n\n`+
+      `作業、成績、鎖定資料、學籍、班級名單、任課班快照與 Google 身分關聯均已同步。`
+    );
+  }catch(e){
+    console.error(e);
+    alert(
+      `合併失敗：${e.message||e}\n\n`+
+      `此次合併使用 Firestore 原子批次；若 commit 失敗，批次內資料不會只成功一半。`
+    );
+  }
+}
 // 歷史資料
 function renderHistory(){
   const sems=[...new Set([...semesterHistory,...collections.map(x=>x.semester),...assessments.map(x=>x.semester)].filter(Boolean))].sort().reverse();
