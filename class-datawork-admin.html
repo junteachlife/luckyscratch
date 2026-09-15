@@ -108,7 +108,7 @@
   </aside>
   <div class="main-area">
     <header class="hero">
-      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260915-N</div></div>
+      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260915-O</div></div>
       <div class="hero-user"><div class="user-name">👨‍🏫 <span id="who"></span></div><div id="semesterBadge" class="semester-badge"></div><div class="header-actions"><button id="switchModeBtn" class="btn purple small">🎭 切換身分</button><a href="class-work.html" style="text-decoration:none"><button class="btn gray small">📋 回報頁</button></a><button id="logoutBtn" class="btn danger small">🚪 登出</button></div></div>
     </header>
     <div class="content"><div id="modeHost"></div><div id="appMsg"></div><section id="page-dashboard"></section><section id="page-roles" class="hidden"></section><section id="page-records" class="hidden"></section><section id="page-subjectClasses" class="hidden"></section><section id="page-accounts" class="hidden"></section><section id="page-classes" class="hidden"></section><section id="page-directory" class="hidden"></section><section id="page-teacherDirectory" class="hidden"></section><section id="page-history" class="hidden"></section><section id="page-upgrade" class="hidden"></section><section id="page-audit" class="hidden"></section><section id="page-adminPermissions" class="hidden"></section></div>
@@ -354,6 +354,366 @@ async function syncLinkedRegistry(reg){if(!reg?.linkedUid)return;const userRef=d
 async function saveRegistry(reg){const id=registryId(reg.email||reg.id);if(!id)throw new Error('Email 不可空白');const data={...reg,email:id,updatedAt:serverTimestamp()};delete data.id;await setDoc(doc(db,'identityRegistry',id),data,{merge:true});const idx=registries.findIndex(r=>r.id===id);if(idx>=0)registries[idx]={...registries[idx],...reg,id,email:id};else registries.push({...reg,id,email:id});await syncLinkedRegistry({...reg,id,email:id});return id}
 function semesterOptions(selected=currentSemester){const list=[...new Set([...semesterHistory,currentSemester,selected])].filter(Boolean).sort().reverse();return list.map(s=>`<option value="${esc(s)}" ${s===selected?'selected':''}>${esc(s)}</option>`).join('')}
 function computeAccess(assignments=[],semester=currentSemester){const viewKeys=[],collectionWriteKeys=[],scoreWriteKeys=[],classAccess=[];for(const a of assignments.filter(x=>x.semester===semester)){const k=scopeKey(a);if(!viewKeys.includes(k))viewKeys.push(k);if(a.canCollection&&!collectionWriteKeys.includes(k))collectionWriteKeys.push(k);if(a.canScores&&!scoreWriteKeys.includes(k))scoreWriteKeys.push(k);if(!classAccess.includes(a.classId))classAccess.push(a.classId)}return{viewKeys,collectionWriteKeys,scoreWriteKeys,classAccess}}
+
+const LEGACY_TEACHER_SYNC_VERSION='20260915-O';
+let legacyTeacherSyncRunning=false;
+
+function canonicalTeacherAssignmentFromManager(sm,existing=null){
+  return {
+    ...(existing||{}),
+    semester:String(sm.semester||currentSemester),
+    classId:String(sm.classId||''),
+    kind:'teacher',
+    scopeType:'subject',
+    scopeName:String(sm.subject||''),
+    canCollection:true,
+    canScores:true,
+    syncedFromSubjectManager:true
+  };
+}
+
+function managerMatchesTeacher(sm,{uid='',email=''}={}){
+  uid=String(uid||'');
+  email=registryId(email||'');
+  return !!sm && (
+    (uid && String(sm.managerUid||'')===uid) ||
+    (email && registryId(sm.managerEmail||'')===email)
+  );
+}
+
+function teacherIdentityBundle({uid='',email=''}={}){
+  uid=String(uid||'');
+  email=registryId(email||'');
+
+  const user=users.find(u=>
+    (uid && String(u.uid||u.id||'')===uid) ||
+    (email && registryId(u.email||'')===email)
+  )||null;
+
+  const reg=registries.find(r=>
+    r.type==='teacher' &&
+    (
+      (uid && String(r.linkedUid||'')===uid) ||
+      (email && r.id===email)
+    )
+  )||null;
+
+  return {
+    user,
+    reg,
+    uid:String(uid||reg?.linkedUid||user?.uid||user?.id||''),
+    email:registryId(email||reg?.email||reg?.id||user?.email||''),
+    name:reg?.displayName||user?.displayName||user?.username||''
+  };
+}
+
+async function syncTeacherAssignmentBundle(bundle,sm,{remove=false}={}){
+  const keyMatch=a=>teacherAssignmentMatchesManager(a,sm);
+  let changed=false;
+
+  // identityRegistry
+  if(bundle.reg || bundle.email){
+    const regId=bundle.reg?.id||bundle.email;
+    const oldReg=bundle.reg||{
+      id:regId,
+      email:regId,
+      displayName:bundle.name||sm.managerName||regId,
+      type:'teacher',
+      active:true,
+      linkedUid:bundle.uid||null,
+      linked:!!bundle.uid,
+      assignments:[]
+    };
+
+    const before=Array.isArray(oldReg.assignments)?oldReg.assignments:[];
+    let next;
+
+    if(remove){
+      next=before.filter(a=>!keyMatch(a));
+    }else{
+      const existing=before.find(keyMatch)||null;
+      next=mergeAssignments(before,[canonicalTeacherAssignmentFromManager(sm,existing)]);
+    }
+
+    if(JSON.stringify(before)!==JSON.stringify(next)){
+      await setDoc(doc(db,'identityRegistry',regId),{
+        assignments:next,
+        updatedAt:serverTimestamp()
+      },{merge:true});
+
+      const localIndex=registries.findIndex(r=>r.id===regId);
+      if(localIndex>=0)registries[localIndex]={...registries[localIndex],assignments:next};
+      else registries.push({...oldReg,id:regId,email:regId,assignments:next});
+      changed=true;
+    }
+  }
+
+  // users/{uid}
+  if(bundle.uid){
+    const ref=doc(db,'users',bundle.uid);
+    const snap=await getDoc(ref);
+
+    if(snap.exists()){
+      const ud=snap.data();
+      const before=Array.isArray(ud.assignments)?ud.assignments:[];
+      let next;
+
+      if(remove){
+        next=before.filter(a=>!keyMatch(a));
+      }else{
+        const existing=before.find(keyMatch)||null;
+        next=mergeAssignments(before,[canonicalTeacherAssignmentFromManager(sm,existing)]);
+      }
+
+      const access=computeAccess(next,currentSemester);
+      const beforeAccess={
+        viewKeys:Array.isArray(ud.viewKeys)?ud.viewKeys:[],
+        collectionWriteKeys:Array.isArray(ud.collectionWriteKeys)?ud.collectionWriteKeys:[],
+        scoreWriteKeys:Array.isArray(ud.scoreWriteKeys)?ud.scoreWriteKeys:[],
+        classAccess:Array.isArray(ud.classAccess)?ud.classAccess:[]
+      };
+
+      if(
+        JSON.stringify(before)!==JSON.stringify(next) ||
+        JSON.stringify(beforeAccess)!==JSON.stringify(access)
+      ){
+        await setDoc(ref,{
+          assignments:next,
+          ...access,
+          updatedAt:serverTimestamp()
+        },{merge:true});
+
+        const localIndex=users.findIndex(u=>String(u.uid||u.id||'')===bundle.uid);
+        if(localIndex>=0)users[localIndex]={...users[localIndex],assignments:next,...access};
+
+        if(String(me?.uid||'')===bundle.uid){
+          me.assignments=next;
+          Object.assign(me,access);
+        }
+        changed=true;
+      }
+    }
+  }
+
+  return changed;
+}
+
+async function ensureLegacyTeacherSystemSynchronized({force=false,silent=false}={}){
+  if(!hasGlobalPrivilege() || legacyTeacherSyncRunning){
+    return {skipped:true,createdManagers:0,syncedManagers:0,cleanedReleased:0,conflicts:[]};
+  }
+
+  const settingsRef=doc(db,'settings','system');
+  const settingsSnap=await getDoc(settingsRef);
+  const settingsData=settingsSnap.exists()?settingsSnap.data():{};
+
+  if(!force && settingsData.teacherAssignmentSyncVersion===LEGACY_TEACHER_SYNC_VERSION){
+    return {skipped:true,createdManagers:0,syncedManagers:0,cleanedReleased:0,conflicts:[]};
+  }
+
+  legacyTeacherSyncRunning=true;
+
+  let createdManagers=0;
+  let syncedManagers=0;
+  let cleanedReleased=0;
+  const conflicts=[];
+
+  try{
+    // --------------------------------------------------------
+    // A. 舊 assignments -> subjectClassManagers
+    //    讓還沒轉成新版任課班管理的舊資料一次補齊
+    // --------------------------------------------------------
+    const legacyOwners=[];
+
+    for(const reg of registries.filter(r=>r.type==='teacher')){
+      legacyOwners.push({
+        uid:String(reg.linkedUid||''),
+        email:registryId(reg.email||reg.id||''),
+        name:reg.displayName||reg.email||reg.id,
+        assignments:Array.isArray(reg.assignments)?reg.assignments:[]
+      });
+    }
+
+    for(const u of users.filter(u=>u.type==='teacher'||u.type==='admin')){
+      const uid=String(u.uid||u.id||'');
+      const email=registryId(u.email||'');
+      const exists=legacyOwners.some(x=>
+        (uid&&x.uid===uid) || (email&&x.email===email)
+      );
+
+      if(!exists){
+        legacyOwners.push({
+          uid,
+          email,
+          name:u.displayName||u.username||u.email||'老師',
+          assignments:Array.isArray(u.assignments)?u.assignments:[]
+        });
+      }else{
+        const owner=legacyOwners.find(x=>
+          (uid&&x.uid===uid) || (email&&x.email===email)
+        );
+        owner.assignments=mergeAssignments(owner.assignments,u.assignments||[]);
+        if(!owner.uid&&uid)owner.uid=uid;
+        if(!owner.email&&email)owner.email=email;
+      }
+    }
+
+    for(const owner of legacyOwners){
+      for(const a of owner.assignments.filter(a=>
+        a.kind==='teacher' &&
+        a.scopeType==='subject' &&
+        a.semester &&
+        a.classId &&
+        a.scopeName
+      )){
+        const id=subjectManagerId(a.semester,String(a.classId),a.scopeName);
+        let sm=subjectManagers.find(x=>x.id===id)||null;
+
+        // 已明確解除的新版任課班，以 released 為準，不因舊 assignment 復活。
+        if(sm?.status==='released')continue;
+
+        if(sm){
+          const same=managerMatchesTeacher(sm,owner);
+          if(!same){
+            conflicts.push({
+              semester:a.semester,
+              classId:String(a.classId),
+              subject:a.scopeName,
+              owner:owner.name,
+              current:sm.managerName||sm.managerEmail||'其他老師'
+            });
+          }
+          continue;
+        }
+
+        const data={
+          semester:a.semester,
+          classId:String(a.classId),
+          subject:a.scopeName,
+          managerUid:owner.uid||null,
+          managerEmail:owner.email||null,
+          managerName:owner.name||owner.email||'老師',
+          status:'active',
+          createdBy:me.uid,
+          importedFromLegacyAssignment:true,
+          createdAt:serverTimestamp(),
+          updatedAt:serverTimestamp()
+        };
+
+        await setDoc(doc(db,'subjectClassManagers',id),data,{merge:false});
+        await setDoc(doc(db,'subjectClassRosters',id),{
+          semester:a.semester,
+          classId:String(a.classId),
+          subject:a.scopeName,
+          managerUid:owner.uid||null,
+          managerEmail:owner.email||null,
+          studentIds:[],
+          students:[],
+          rosterSource:'sharedClass',
+          updatedAt:serverTimestamp()
+        },{merge:true});
+
+        sm={id,...data};
+        subjectManagers.push(sm);
+        createdManagers++;
+      }
+    }
+
+    // --------------------------------------------------------
+    // B. subjectClassManagers -> users / identityRegistry
+    //    這一步就是讓舊任課班取得新版完整新增作業/成績權限
+    // --------------------------------------------------------
+    for(const sm of subjectManagers){
+      if(!sm?.semester||!sm?.classId||!sm?.subject)continue;
+
+      const bundle=teacherIdentityBundle({
+        uid:sm.managerUid||'',
+        email:sm.managerEmail||''
+      });
+
+      // 若舊 manager 缺 UID / Email，但共用教師主檔已可找到，就補回 manager
+      const managerPatch={};
+      if(!sm.managerUid&&bundle.uid)managerPatch.managerUid=bundle.uid;
+      if(!sm.managerEmail&&bundle.email)managerPatch.managerEmail=bundle.email;
+      if(!sm.managerName&&bundle.name)managerPatch.managerName=bundle.name;
+
+      if(Object.keys(managerPatch).length){
+        await setDoc(doc(db,'subjectClassManagers',sm.id),{
+          ...managerPatch,
+          updatedAt:serverTimestamp()
+        },{merge:true});
+        Object.assign(sm,managerPatch);
+      }
+
+      const resolvedBundle=teacherIdentityBundle({
+        uid:sm.managerUid||bundle.uid||'',
+        email:sm.managerEmail||bundle.email||''
+      });
+
+      // 沒有 UID 也沒有 Email，無法安全判斷是哪位老師，不做猜測
+      if(!resolvedBundle.uid&&!resolvedBundle.email){
+        conflicts.push({
+          semester:sm.semester,
+          classId:String(sm.classId),
+          subject:sm.subject,
+          owner:sm.managerName||'未知老師',
+          current:'缺少 UID / Email，無法同步'
+        });
+        continue;
+      }
+
+      if(sm.status==='released'){
+        const changed=await syncTeacherAssignmentBundle(resolvedBundle,sm,{remove:true});
+        if(changed)cleanedReleased++;
+        continue;
+      }
+
+      const changed=await syncTeacherAssignmentBundle(resolvedBundle,sm,{remove:false});
+      if(changed)syncedManagers++;
+    }
+
+    // --------------------------------------------------------
+    // C. 設定一次性完成標記
+    // --------------------------------------------------------
+    await setDoc(settingsRef,{
+      teacherAssignmentSyncVersion:LEGACY_TEACHER_SYNC_VERSION,
+      teacherAssignmentSyncAt:serverTimestamp(),
+      teacherAssignmentSyncBy:me.uid,
+      teacherAssignmentSyncSummary:{
+        createdManagers,
+        syncedManagers,
+        cleanedReleased,
+        conflicts:conflicts.length
+      },
+      updatedAt:serverTimestamp()
+    },{merge:true});
+
+    await audit(
+      'legacy_teacher_assignment_sync',
+      'settings',
+      'system',
+      `舊任課系統一次同步：新增任課管理 ${createdManagers} 組；補齊新版任課權限 ${syncedManagers} 組；清除已解除殘留 ${cleanedReleased} 組；衝突 ${conflicts.length} 組`,
+      currentSemester
+    );
+
+    if(!silent){
+      let msg=`✅ 舊任課系統已同步為新版資料結構。\n\n`+
+        `舊任課補成新版任課班：${createdManagers} 組\n`+
+        `補齊「可新增作業／可新增小考」權限：${syncedManagers} 組\n`+
+        `清除已解除任課的舊殘留：${cleanedReleased} 組`;
+
+      if(conflicts.length){
+        msg+=`\n\n⚠️ 另有 ${conflicts.length} 組任課資料需要人工確認，系統沒有覆蓋不同老師的任課權限。`;
+      }
+      alert(msg);
+    }
+
+    return {skipped:false,createdManagers,syncedManagers,cleanedReleased,conflicts};
+  }finally{
+    legacyTeacherSyncRunning=false;
+  }
+}
+
 async function audit(action,targetType,targetId,detail,semester=currentSemester){await addDoc(collection(db,'auditLogs'),{actorUid:auth.currentUser.uid,actorName:me.displayName||me.username,semester,action,targetType,targetId,detail,createdAt:serverTimestamp()})}
 function activePage(){return $('.nav .active')?.dataset.page||'dashboard'}
 function legacy_isGlobalAdmin(){return !!me&&me.type==='admin'&&(!me.adminScope||me.adminScope==='global')}
@@ -2449,9 +2809,38 @@ async function refreshAll(){
 
     studentDirectory=[];studentEnrollments=[];upgradeBatches=[];classRosterHistory=[];
   }
+  // ★ 舊系統一次性升級：
+  // 最高管理員第一次使用此版本時，自動把舊任課資料同步成新版雙向資料來源。
+  // 完成後 settings/system 會記錄 teacherAssignmentSyncVersion，不會每次重跑。
+  if(globalPrivilege){
+    try{
+      const legacySync=await ensureLegacyTeacherSystemSynchronized({silent:true});
+      if(!legacySync.skipped && (
+        legacySync.createdManagers ||
+        legacySync.syncedManagers ||
+        legacySync.cleanedReleased ||
+        legacySync.conflicts.length
+      )){
+        setTimeout(()=>{
+          let msg=`✅ 舊任課資料已完成一次性同步。\n\n`+
+            `舊任課補成新版任課班：${legacySync.createdManagers} 組\n`+
+            `補齊作業／成績新增權限：${legacySync.syncedManagers} 組\n`+
+            `清除已解除任課殘留：${legacySync.cleanedReleased} 組`;
+          if(legacySync.conflicts.length){
+            msg+=`\n\n⚠️ ${legacySync.conflicts.length} 組資料存在不同老師衝突，未自動覆蓋。`;
+          }
+          alert(msg);
+        },150);
+      }
+    }catch(e){
+      console.error('legacy teacher sync failed',e);
+      setTimeout(()=>alert(`舊任課資料同步失敗：${e.message||e}`),150);
+    }
+  }
+
   // 舊版本只把 subjectClassManagers 標成 released，可能留下 users /
   // identityRegistry assignments，造成已解除的誤建班級仍出現在總覽。
-  // 每次 refresh 自動做一次安全清理。
+  // 每次 refresh 自動做一次目前登入者的安全清理。
   try{await cleanupReleasedAssignmentsForCurrentUser()}catch(e){console.warn('cleanup released assignments failed',e)}
   try{await claimPendingSubjectManagersForMe()}catch(e){console.warn(e)}
   configureAdminUI();
@@ -4934,6 +5323,7 @@ function renderAdminPermissions(){
       <div class="toolbar"><button id="saveSchoolClassConfigBtn" class="btn primary">💾 儲存班級結構</button></div>
     </div>
     <div class="card" style="margin-top:14px"><div class="section-title">🎭 我的多重身分</div><div class="notice success">你的 Google 帳號可以同時是「最高管理員＋導師＋任課老師」。這裡設定導師班，登入後即可用「切換身分」限制自己平常的工作範圍。</div><div class="toolbar"><label>我的導師班<select id="myHomeroomSelect">${schoolClassOptions(homeroomClassId())}</select></label><button id="saveMyHomeroomBtn" class="btn primary">💾 儲存我的導師班</button></div></div>
+    <div class="card" style="margin-top:14px"><div class="section-title">🔄 舊任課資料同步</div><div class="notice">此版本第一次由最高管理員載入時會自動把舊任課資料同步到新版：任課班、users、identityRegistry、作業權限與成績權限會使用同一份任課關係。正常情況只會自動執行一次；若日後要重新檢查舊資料，可手動再校正。</div><div class="toolbar"><button id="forceLegacyTeacherSyncBtn" class="btn gray">🔄 重新校正舊任課權限</button></div></div>
     <div class="card" style="margin-top:14px"><div class="section-title">🔐 授予班級管理員</div><div class="notice">其他導師先完成 Google UID 連動，再授予「導師班管理」；他仍可另外用任課老師模式自行建立班級 × 科目。</div><div class="toolbar"><label>老師<select id="adminTeacherSelect">${candidates.map(r=>`<option value="${esc(r.id)}">${esc(r.displayName||r.email)}｜${esc(r.email||r.id)}</option>`).join('')}</select></label><label>導師班<select id="adminClassSelect">${schoolClassOptions()}</select></label><button id="grantClassAdminBtn" class="btn primary" ${candidates.length?'':'disabled'}>🔐 授予班級管理員</button></div></div>
     <div class="card" style="margin-top:14px"><div class="section-title">👨‍🏫 目前班級管理員</div><div class="table-wrap"><table><thead><tr><th>姓名</th><th>Email</th><th>導師班</th><th>任課權限</th><th>操作</th></tr></thead><tbody>${admins.map(u=>{
       const teachingRows=teacherTeachingRowsForUser(u,currentSemester);
@@ -4953,6 +5343,22 @@ function renderAdminPermissions(){
     }).join('')||'<tr><td colspan="5">尚未授予其他班級管理員。</td></tr>'}</tbody></table></div></div>`;
   $('#saveSchoolClassConfigBtn')?.addEventListener('click',saveSchoolClassConfig);
   $('#saveMyHomeroomBtn').onclick=saveMyHomeroom;
+  $('#forceLegacyTeacherSyncBtn')?.addEventListener('click',async()=>{
+    if(!confirm('確定重新檢查並校正全部舊任課資料？\n\n系統只會補齊缺少的新版任課關聯與作業／成績權限，不會覆蓋不同老師已存在的任課班。'))return;
+    try{
+      const result=await ensureLegacyTeacherSystemSynchronized({force:true,silent:true});
+      await refreshAll();
+      renderAdminPermissions();
+      let msg=`✅ 舊任課資料校正完成。\n\n`+
+        `補成新版任課班：${result.createdManagers} 組\n`+
+        `補齊作業／成績權限：${result.syncedManagers} 組\n`+
+        `清除已解除殘留：${result.cleanedReleased} 組`;
+      if(result.conflicts.length)msg+=`\n\n⚠️ ${result.conflicts.length} 組不同老師衝突未自動覆蓋。`;
+      alert(msg);
+    }catch(e){
+      alert(`校正失敗：${e.message||e}`);
+    }
+  });
   $('#grantClassAdminBtn')?.addEventListener('click',grantClassAdmin);
   $$('.save-class-admin').forEach(b=>b.onclick=()=>changeClassAdminClass(b.dataset.uid));
   $$('.revoke-class-admin').forEach(b=>b.onclick=()=>revokeClassAdmin(b.dataset.uid));
