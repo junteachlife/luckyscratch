@@ -69,6 +69,10 @@
 .assistant-linked{font-weight:900;color:#117a45}.assistant-unlinked{font-weight:900;color:#b06b00}.assistant-none{font-weight:900;color:#777}
 @media(max-width:850px){.score-stats{grid-template-columns:repeat(3,1fr)}}
 
+
+.archive-admin-panel{margin:12px 0;padding:13px;border:2px solid #9b7ad1;border-radius:12px;background:linear-gradient(180deg,#f7f1ff,#fff)}
+.archive-admin-panel select{padding:7px 9px;border:1px solid #c8a979;border-radius:8px;background:#fff}.pill.purple{background:#eee7ff;color:#6941c6;border:1px solid #cbb8ff}
+
 </style>
 </head>
 <body>
@@ -108,7 +112,7 @@
   </aside>
   <div class="main-area">
     <header class="hero">
-      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260915-R</div></div>
+      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260915-S</div></div>
       <div class="hero-user"><div class="user-name">👨‍🏫 <span id="who"></span></div><div id="semesterBadge" class="semester-badge"></div><div class="header-actions"><button id="switchModeBtn" class="btn purple small">🎭 切換身分</button><a href="class-work.html" style="text-decoration:none"><button class="btn gray small">📋 回報頁</button></a><button id="logoutBtn" class="btn danger small">🚪 登出</button></div></div>
     </header>
     <div class="content"><div id="modeHost"></div><div id="appMsg"></div><section id="page-dashboard"></section><section id="page-roles" class="hidden"></section><section id="page-records" class="hidden"></section><section id="page-subjectClasses" class="hidden"></section><section id="page-accounts" class="hidden"></section><section id="page-classes" class="hidden"></section><section id="page-directory" class="hidden"></section><section id="page-teacherDirectory" class="hidden"></section><section id="page-history" class="hidden"></section><section id="page-upgrade" class="hidden"></section><section id="page-audit" class="hidden"></section><section id="page-adminPermissions" class="hidden"></section></div>
@@ -128,6 +132,8 @@ const seatFirebaseConfig={apiKey:"AIzaSyB2qXsbab4fh15C9YbCDWK208eJLLHgsKk",authD
 const seatApp=initializeApp(seatFirebaseConfig,'seatSyncReader'),seatDb=getDatabase(seatApp),seatAuth=getAuth(seatApp);
 let me=null,users=[],registries=[],classes=[],collections=[],assessments=[],currentSemester='115-1',semesterHistory=['115-1'],recordSemester='115-1';
 let workMode='homeroom',subjectManagers=[],subjectRosters=[],studentDirectory=[],studentEnrollments=[],upgradeBatches=[],classRosterHistory=[];
+let adminArchiveMode='current',adminArchiveFolder='exam1';
+const ARCHIVE_GROUPS=[['exam1','第一次段考'],['exam2','第二次段考'],['exam3','第三次段考']];
 let schoolClassConfig={
   7:['701','702','703','704','705','706'],
   8:['801','802','803','804','805','806'],
@@ -453,7 +459,18 @@ function fmtTs(v){try{return v?.toDate?v.toDate().toLocaleString('zh-TW'):'—'}
 async function syncLinkedRegistry(reg){if(!reg?.linkedUid)return;const userRef=doc(db,'users',reg.linkedUid),oldSnap=await getDoc(userRef),oldData=oldSnap.exists()?oldSnap.data():{},assignments=Array.isArray(reg.assignments)?reg.assignments:[],access=computeAccess(assignments,currentSemester),finalType=oldData.type==='admin'?'admin':(reg.type||'student');await setDoc(userRef,{username:reg.username||reg.email,displayName:reg.displayName||reg.email,type:finalType,email:reg.email||reg.id,classId:reg.classId||'',seat:reg.seat??null,active:reg.active!==false,assignments,...access,mustChangePassword:false,authProvider:'google',updatedAt:serverTimestamp()},{merge:true});}
 async function saveRegistry(reg){const id=registryId(reg.email||reg.id);if(!id)throw new Error('Email 不可空白');const data={...reg,email:id,updatedAt:serverTimestamp()};delete data.id;await setDoc(doc(db,'identityRegistry',id),data,{merge:true});const idx=registries.findIndex(r=>r.id===id);if(idx>=0)registries[idx]={...registries[idx],...reg,id,email:id};else registries.push({...reg,id,email:id});await syncLinkedRegistry({...reg,id,email:id});return id}
 function semesterOptions(selected=currentSemester){const list=[...new Set([...semesterHistory,currentSemester,selected])].filter(Boolean).sort().reverse();return list.map(s=>`<option value="${esc(s)}" ${s===selected?'selected':''}>${esc(s)}</option>`).join('')}
-function computeAccess(assignments=[],semester=currentSemester){const viewKeys=[],collectionWriteKeys=[],scoreWriteKeys=[],classAccess=[];for(const a of assignments.filter(x=>x.semester===semester)){const k=scopeKey(a);if(!viewKeys.includes(k))viewKeys.push(k);if(a.canCollection&&!collectionWriteKeys.includes(k))collectionWriteKeys.push(k);if(a.canScores&&!scoreWriteKeys.includes(k))scoreWriteKeys.push(k);if(!classAccess.includes(a.classId))classAccess.push(a.classId)}return{viewKeys,collectionWriteKeys,scoreWriteKeys,classAccess}}
+function computeAccess(assignments=[],semester=currentSemester){
+  const viewKeys=[],collectionWriteKeys=[],scoreWriteKeys=[],archiveWriteKeys=[],classAccess=[];
+  for(const a of assignments.filter(x=>x.semester===semester)){
+    const k=scopeKey(a);
+    if(!viewKeys.includes(k))viewKeys.push(k);
+    if(a.canCollection&&!collectionWriteKeys.includes(k))collectionWriteKeys.push(k);
+    if(a.canScores&&!scoreWriteKeys.includes(k))scoreWriteKeys.push(k);
+    if(a.kind==='teacher'&&!archiveWriteKeys.includes(k))archiveWriteKeys.push(k);
+    if(!classAccess.includes(a.classId))classAccess.push(a.classId)
+  }
+  return{viewKeys,collectionWriteKeys,scoreWriteKeys,archiveWriteKeys,classAccess}
+}
 
 const LEGACY_TEACHER_SYNC_VERSION='20260915-O';
 let legacyTeacherSyncRunning=false;
@@ -1085,26 +1102,121 @@ async function syncRolesFromSeat(){
 }
 
 
+function archiveGroupLabel(group){return (ARCHIVE_GROUPS.find(x=>x[0]===group)||[group,'未分類'])[1]}
+function adminArchiveVisibleRows(all){
+  return adminArchiveMode==='archived'
+    ?all.filter(x=>x.archived===true&&x.archiveGroup===adminArchiveFolder)
+    :all.filter(x=>x.archived!==true)
+}
+function adminArchiveManagerHtml(all){
+  const current=all.filter(x=>x.archived!==true);
+  const archived=all.filter(x=>x.archived===true);
+  const folders=ARCHIVE_GROUPS.map(([k,l])=>`<button class="btn ${adminArchiveFolder===k?'primary':'gray'} small admin-archive-folder" data-group="${k}">📁 ${l}（${archived.filter(x=>x.archiveGroup===k).length}）</button>`).join('');
+  const opts=ARCHIVE_GROUPS.map(([k,l])=>`<option value="${k}">${l}</option>`).join('');
+  return `<div class="archive-admin-panel">
+    <div class="section-title" style="font-size:17px">📦 段考資料夾</div>
+    <div class="sub">封存不刪除資料。導師可以查看自己班級的封存資料，但不能替其他科任課老師封存或解封存；任課老師請在 class-work.html 操作。最高管理員模式保留例外管理權。</div>
+    <div class="toolbar">
+      <button class="btn ${adminArchiveMode==='current'?'primary':'gray'} small admin-archive-mode" data-mode="current">📝 目前資料（${current.length}）</button>
+      <button class="btn ${adminArchiveMode==='archived'?'primary':'gray'} small admin-archive-mode" data-mode="archived">📦 已封存（${archived.length}）</button>
+    </div>
+    ${adminArchiveMode==='archived'?`<div class="toolbar">${folders}</div>`:''}
+    ${isGlobalAdmin()
+      ?(adminArchiveMode==='current'
+        ?`<div class="toolbar"><label>封存到 <select id="adminArchiveTarget">${opts}</select></label><button class="btn primary small" id="adminArchiveSelected">📦 封存已勾選</button></div>`
+        :`<div class="toolbar"><button class="btn warn small" id="adminUnarchiveSelected">↩️ 解封存已勾選</button><label>移動到 <select id="adminArchiveMoveTarget">${opts}</select></label><button class="btn purple small" id="adminMoveArchiveSelected">📂 移動已勾選</button></div>`)
+      :'<div class="notice">目前為查看模式；導師／後台任課視角不能在這裡改變封存狀態。</div>'}
+  </div>`
+}
+async function adminArchiveRecords(records,group){
+  if(!isGlobalAdmin())return alert('只有最高管理員模式可在後台代為封存。');
+  if(!records.length)return alert('請先勾選資料。');
+  if(!ARCHIVE_GROUPS.some(x=>x[0]===group))return alert('封存資料夾設定不正確。');
+  const bad=records.filter(x=>x.reviewStatus!=='confirmed');
+  if(bad.length)return alert(`有 ${bad.length} 筆資料尚未確認，請先完成確認後再封存。`);
+  if(records.length>450)return alert('一次最多處理 450 筆。');
+  const label=archiveGroupLabel(group);
+  if(!confirm(`最高管理員代為封存 ${records.length} 筆 →「${label}」？`))return;
+  const batch=writeBatch(db);
+  records.forEach(x=>batch.update(doc(db,x._type==='collection'?'collectionItems':'assessments',x.id),{
+    archived:true,archiveGroup:group,archivedAt:serverTimestamp(),archivedByUid:me.uid,archivedByName:me.displayName||me.username||'',
+    unarchivedAt:null,unarchivedByUid:null,unarchivedByName:null,updatedAt:serverTimestamp()
+  }));
+  try{
+    await batch.commit();
+    await audit('admin_archive_records','records',`${records.length} records`,`最高管理員代為封存 ${records.length} 筆 → ${label}`);
+    await refreshAll();renderRecords();alert(`✅ 已封存 ${records.length} 筆。`)
+  }catch(e){console.error(e);alert(`封存失敗：${e.message||e}`)}
+}
+async function adminUnarchiveRecords(records){
+  if(!isGlobalAdmin())return alert('只有最高管理員模式可在後台解封存。');
+  if(!records.length)return alert('請先勾選資料。');
+  if(records.length>450)return alert('一次最多處理 450 筆。');
+  if(!confirm(`確定由最高管理員解封存 ${records.length} 筆？`))return;
+  const batch=writeBatch(db);
+  records.forEach(x=>batch.update(doc(db,x._type==='collection'?'collectionItems':'assessments',x.id),{
+    archived:false,archiveGroup:null,unarchivedAt:serverTimestamp(),unarchivedByUid:me.uid,unarchivedByName:me.displayName||me.username||'',updatedAt:serverTimestamp()
+  }));
+  try{
+    await batch.commit();
+    await audit('admin_unarchive_records','records',`${records.length} records`,`最高管理員解封存 ${records.length} 筆`);
+    adminArchiveMode='current';
+    await refreshAll();renderRecords();alert('✅ 已解封存。')
+  }catch(e){console.error(e);alert(`解封存失敗：${e.message||e}`)}
+}
+async function adminMoveArchiveRecords(records,group){
+  if(!isGlobalAdmin())return alert('只有最高管理員模式可在後台移動封存資料。');
+  if(!records.length)return alert('請先勾選資料。');
+  if(!ARCHIVE_GROUPS.some(x=>x[0]===group))return alert('目標資料夾設定不正確。');
+  const moving=records.filter(x=>x.archiveGroup!==group);
+  if(!moving.length)return alert('勾選資料已在此資料夾。');
+  if(moving.length>450)return alert('一次最多處理 450 筆。');
+  const label=archiveGroupLabel(group);
+  if(!confirm(`確定移動 ${moving.length} 筆到「${label}」？`))return;
+  const batch=writeBatch(db);
+  moving.forEach(x=>batch.update(doc(db,x._type==='collection'?'collectionItems':'assessments',x.id),{
+    archived:true,archiveGroup:group,archiveMovedAt:serverTimestamp(),archiveMovedByUid:me.uid,archiveMovedByName:me.displayName||me.username||'',updatedAt:serverTimestamp()
+  }));
+  try{
+    await batch.commit();
+    await audit('admin_move_archive_records','records',`${moving.length} records`,`最高管理員移動 ${moving.length} 筆 → ${label}`);
+    adminArchiveFolder=group;
+    await refreshAll();renderRecords();alert('✅ 已移動封存資料。')
+  }catch(e){console.error(e);alert(`移動封存資料失敗：${e.message||e}`)}
+}
+function viewArchivedRecord(type,id){
+  const arr=type==='collection'?collections:assessments;
+  const x=arr.find(v=>v.id===id);if(!x)return;
+  const students=getRoster(x.classId);
+  let body=`<div class="item-head"><div><div class="section-title">📦 ${esc(x.itemName||x.name)}</div><div class="meta">${esc(x.semester||'')}｜${esc(x.classId)}｜${esc(x.scopeName)}｜${esc(x.date||'')}｜${esc(archiveGroupLabel(x.archiveGroup))}</div></div><button class="btn gray close-modal">關閉</button></div>`;
+  if(type==='collection'){
+    body+=`<div class="table-wrap"><table><thead><tr><th>座號</th><th>姓名</th><th>狀態</th></tr></thead><tbody>${students.map(s=>{
+      const sid=s.studentId||s.id||String(s.seat),v=(x.records||{})[sid]||'submitted',late=!!(x.lateSubmitted||{})[sid];
+      const label={submitted:'已繳',missing:'未繳',late:'補交',exempt:'免繳'}[v]||v;
+      return `<tr><td>${s.seat}</td><td>${esc(s.name)}</td><td>${esc(late&&v==='submitted'?'已繳（遲交）':label)}</td></tr>`
+    }).join('')}</tbody></table></div>`
+  }else{
+    body+=`<div class="table-wrap"><table><thead><tr><th>座號</th><th>姓名</th><th>成績</th><th>狀態</th></tr></thead><tbody>${students.map(s=>{
+      const sid=s.studentId||s.id||String(s.seat),r=(x.scores||{})[sid]||{};
+      const status={normal:'正常',absent:'缺考',makeup:'補考',exempt:'免試',not_entered:'未登記'}[r.status||'not_entered']||r.status||'未登記';
+      return `<tr><td>${s.seat}</td><td>${esc(s.name)}</td><td>${esc(r.score??'')}</td><td>${esc(status)}</td></tr>`
+    }).join('')}</tbody></table></div>`
+  }
+  showModal(body)
+}
+
 function recordCard(x){
   const title=x._type==='collection'?x.itemName:x.name;
   const typeLabel=x._type==='collection'?'作業繳交':'成績';
+  const archived=x.archived===true;
+  const badge=archived?`<span class="pill purple">📦 ${esc(archiveGroupLabel(x.archiveGroup))}</span>`:'';
   return `<div class="item record-export-row" data-record-id="${esc(x.id)}" data-record-type="${x._type}" data-subject="${esc(x.scopeName||'')}" data-class="${esc(x.classId||'')}">
-    <div class="record-select-wrap">
-      <input type="checkbox" class="export-record-check" data-type="${x._type}" data-id="${esc(x.id)}" aria-label="勾選 ${esc(title||'資料')}">
-      <div style="flex:1;min-width:0">
-        <div class="item-head">
-          <div>
-            <div><span class="record-type-badge ${x._type}">${typeLabel}</span><b>${esc(title)}</b></div>
-            <div class="meta">${esc(x.semester||'舊資料')}｜${esc(x.classId)}｜${esc(x.scopeName)}｜${esc(x.date||'')}｜建立：${esc(x.createdByName||'')}</div>
-          </div>
-          <div><span class="pill ${x.reviewStatus==='confirmed'?'good':'warn'}">${x.reviewStatus==='confirmed'?'已確認':'尚未確認'}</span>${x.locked?'<span class="pill bad">已鎖定</span>':''}</div>
-        </div>
-        <div class="toolbar">
-          <button class="btn gray small edit-record" data-type="${x._type}" data-id="${x.id}">查看/修改</button>
-          <button class="btn good small confirm-record" data-type="${x._type}" data-id="${x.id}">${x.reviewStatus==='confirmed'?'取消確認':'確認並鎖定'}</button>
-          <button class="btn danger small delete-record" data-type="${x._type}" data-id="${x.id}">刪除</button>
-        </div>
-      </div>
+    <div class="record-select-wrap"><input type="checkbox" class="export-record-check" data-type="${x._type}" data-id="${esc(x.id)}" aria-label="勾選 ${esc(title||'資料')}">
+      <div style="flex:1;min-width:0"><div class="item-head"><div><div><span class="record-type-badge ${x._type}">${typeLabel}</span><b>${esc(title)}</b></div><div class="meta">${esc(x.semester||'舊資料')}｜${esc(x.classId)}｜${esc(x.scopeName)}｜${esc(x.date||'')}｜建立：${esc(x.createdByName||'')}</div></div><div><span class="pill ${x.reviewStatus==='confirmed'?'good':'warn'}">${x.reviewStatus==='confirmed'?'已確認':'尚未確認'}</span>${x.locked?'<span class="pill bad">已鎖定</span>':''}${badge}</div></div>
+      <div class="toolbar">${archived
+        ?`<button class="btn gray small view-archived-record" data-type="${x._type}" data-id="${x.id}">查看封存內容</button>`
+        :`<button class="btn gray small edit-record" data-type="${x._type}" data-id="${x.id}">查看/修改</button><button class="btn good small confirm-record" data-type="${x._type}" data-id="${x.id}">${x.reviewStatus==='confirmed'?'取消確認':'確認並鎖定'}</button><button class="btn danger small delete-record" data-type="${x._type}" data-id="${x.id}">刪除</button>`}
+      </div></div>
     </div>
   </div>`
 }
@@ -1273,7 +1385,8 @@ function legacy_renderRecords(){
 function bindRecordButtons(){
   $$('.confirm-record').forEach(b=>b.onclick=()=>confirmRecord(b.dataset.type,b.dataset.id));
   $$('.delete-record').forEach(b=>b.onclick=()=>deleteRecord(b.dataset.type,b.dataset.id));
-  $$('.edit-record').forEach(b=>b.onclick=()=>editRecord(b.dataset.type,b.dataset.id))
+  $$('.edit-record').forEach(b=>b.onclick=()=>editRecord(b.dataset.type,b.dataset.id));
+  $$('.view-archived-record').forEach(b=>b.onclick=()=>viewArchivedRecord(b.dataset.type,b.dataset.id))
 }
 async function legacy_confirmRecord(type,id){const col=type==='collection'?'collectionItems':'assessments',arr=type==='collection'?collections:assessments,x=arr.find(y=>y.id===id),confirming=x.reviewStatus!=='confirmed';await updateDoc(doc(db,col,id),{reviewStatus:confirming?'confirmed':'pending',locked:confirming,confirmedBy:confirming?auth.currentUser.uid:null,confirmedAt:confirming?serverTimestamp():null,updatedAt:serverTimestamp()});await audit(confirming?'confirm':'unconfirm',type,id,`${confirming?'確認並鎖定':'取消確認'}：${x.itemName||x.name}`,x.semester||currentSemester);await refreshAll()}
 async function legacy_deleteRecord(type,id){const col=type==='collection'?'collectionItems':'assessments',arr=type==='collection'?collections:assessments,x=arr.find(y=>y.id===id);if(!confirm(`確定刪除「${x.itemName||x.name}」？`))return;await deleteDoc(doc(db,col,id));await audit('delete',type,id,`管理員刪除：${x.itemName||x.name}`,x.semester||currentSemester);await refreshAll()}
@@ -4526,8 +4639,9 @@ function renderRecords(){
     ])].sort();
   }
 
-  const countCollection=all.filter(x=>x._type==='collection').length;
-  const countAssessment=all.filter(x=>x._type==='assessment').length;
+  const displayRows=adminArchiveVisibleRows(all);
+  const countCollection=displayRows.filter(x=>x._type==='collection').length;
+  const countAssessment=displayRows.filter(x=>x._type==='assessment').length;
 
   const scopeNote=isGlobalAdmin()
     ?'全校可見'
@@ -4547,6 +4661,8 @@ function renderRecords(){
           :''
         }
       </div>
+
+      ${adminArchiveManagerHtml(all)}
 
       <div class="record-filter-row">
         <label>查看學期
@@ -4598,7 +4714,7 @@ function renderRecords(){
       </div>
 
       <div id="recordList" class="record-export-list">
-        ${all.map(recordCard).join('')||'<div class="sub">這個範圍目前尚無作業或成績資料；但已授權的任課班仍會保留在上方班級／科目選單。</div>'}
+        ${displayRows.map(recordCard).join('')||'<div class="sub">這個資料夾目前沒有符合的作業或成績資料。</div>'}
       </div>
     </div>`;
 
@@ -4691,7 +4807,7 @@ function renderRecords(){
 
   const apply=()=>{
     const visible=new Set(
-      filteredRecordRows(all).map(x=>`${x._type}|${x.id}`)
+      filteredRecordRows(displayRows).map(x=>`${x._type}|${x.id}`)
     );
 
     $$('.record-export-row').forEach(row=>{
@@ -4743,6 +4859,12 @@ function renderRecords(){
   $('#previewSelectedRecords').onclick=previewSelectedRecords;
   $('#downloadSelectedRecords').onclick=downloadSelectedRecordsExcel;
   $('#printSelectedRecords').onclick=printSelectedRecords;
+
+  $$('.admin-archive-mode').forEach(b=>b.onclick=()=>{adminArchiveMode=b.dataset.mode;renderRecords()});
+  $$('.admin-archive-folder').forEach(b=>b.onclick=()=>{adminArchiveMode='archived';adminArchiveFolder=b.dataset.group;renderRecords()});
+  $('#adminArchiveSelected')?.addEventListener('click',()=>adminArchiveRecords(selectedExportRecords(),$('#adminArchiveTarget')?.value||'exam1'));
+  $('#adminUnarchiveSelected')?.addEventListener('click',()=>adminUnarchiveRecords(selectedExportRecords()));
+  $('#adminMoveArchiveSelected')?.addEventListener('click',()=>adminMoveArchiveRecords(selectedExportRecords(),$('#adminArchiveMoveTarget')?.value||'exam1'));
 }
 async function confirmRecord(type,id){
   const col=type==='collection'?'collectionItems':'assessments',arr=type==='collection'?collections:assessments,x=arr.find(y=>y.id===id);if(!x||!canManageRecord(x))return alert('目前工作身分沒有這筆資料的管理權限。');
@@ -5962,18 +6084,24 @@ function renderHistory(){
   const allowed=[...collections.map(x=>({...x,_type:'collection'})),...assessments.map(x=>({...x,_type:'assessment'}))].filter(canViewRecord);
   const classIds=[...new Set(allowed.map(x=>x.classId).filter(Boolean))].sort();
   $('#page-history').innerHTML=`<div class="page-title">歷史資料查詢</div><div class="card">
-    <div class="notice">學年升級不會改寫舊資料。舊學期資料以原「學期＋班級＋科目」保留，歷史頁預設只讀，可預覽、列印與匯出。</div>
-    <div class="toolbar"><label>學期<select id="histSem"><option value="all">全部</option>${sems.map(s=>`<option>${esc(s)}</option>`).join('')}</select></label><label>班級<select id="histClass"><option value="all">全部</option>${classIds.map(s=>`<option>${esc(s)}</option>`).join('')}</select></label><label>科目<select id="histSubject"><option value="all">全部</option>${subjects.map(s=>`<option>${esc(s)}</option>`).join('')}</select></label><label>類型<select id="histType"><option value="all">全部</option><option value="collection">作業繳交</option><option value="assessment">成績</option></select></label><input id="histSearch" placeholder="搜尋項目"><button id="histExport" class="btn primary">📥 匯出目前結果</button></div>
+    <div class="notice">學年升級不會改寫舊資料。封存資料也仍完整保留，可依第一次／第二次／第三次段考篩選。</div>
+    <div class="toolbar"><label>學期<select id="histSem"><option value="all">全部</option>${sems.map(s=>`<option>${esc(s)}</option>`).join('')}</select></label><label>班級<select id="histClass"><option value="all">全部</option>${classIds.map(s=>`<option>${esc(s)}</option>`).join('')}</select></label><label>科目<select id="histSubject"><option value="all">全部</option>${subjects.map(s=>`<option>${esc(s)}</option>`).join('')}</select></label><label>類型<select id="histType"><option value="all">全部</option><option value="collection">作業繳交</option><option value="assessment">成績</option></select></label><label>封存分類<select id="histArchive"><option value="all">全部</option><option value="current">未封存</option><option value="exam1">第一次段考</option><option value="exam2">第二次段考</option><option value="exam3">第三次段考</option></select></label><input id="histSearch" placeholder="搜尋項目"><button id="histExport" class="btn primary">📥 匯出目前結果</button></div>
     <div id="histResult"></div></div>`;
   const draw=()=>{
-    const sem=$('#histSem').value,cl=$('#histClass').value,su=$('#histSubject').value,ty=$('#histType').value,q=$('#histSearch').value.trim().toLowerCase();
-    const rows=allowed.filter(x=>(sem==='all'||x.semester===sem)&&(cl==='all'||x.classId===cl)&&(su==='all'||x.scopeName===su)&&(ty==='all'||x._type===ty)&&`${x.classId} ${x.scopeName} ${x.itemName||x.name}`.toLowerCase().includes(q));
+    const sem=$('#histSem').value,cl=$('#histClass').value,su=$('#histSubject').value,ty=$('#histType').value,ar=$('#histArchive').value,q=$('#histSearch').value.trim().toLowerCase();
+    const rows=allowed.filter(x=>(sem==='all'||x.semester===sem)&&(cl==='all'||x.classId===cl)&&(su==='all'||x.scopeName===su)&&(ty==='all'||x._type===ty)&&(ar==='all'||(ar==='current'?x.archived!==true:(x.archived===true&&x.archiveGroup===ar)))&&`${x.classId} ${x.scopeName} ${x.itemName||x.name}`.toLowerCase().includes(q));
     window.__historyRows=rows;
-    $('#histResult').innerHTML=`<div class="meta" style="margin:10px 0">共 ${rows.length} 項</div><div class="record-export-list">${rows.map(x=>`<div class="record-card"><div class="item-head"><div><b>${esc(x.classId)}｜${esc(x.scopeName)}｜${esc(x.itemName||x.name)}</b><div class="meta">${esc(x.semester||'')}｜${esc(x.date||'')}｜${x._type==='collection'?'作業繳交':'成績'}</div></div></div></div>`).join('')||'<div class="sub">沒有符合資料。</div>'}</div>`;
+    $('#histResult').innerHTML=`<div class="meta" style="margin:10px 0">共 ${rows.length} 項</div><div class="record-export-list">${rows.map(x=>`<div class="record-card"><div class="item-head"><div><b>${esc(x.classId)}｜${esc(x.scopeName)}｜${esc(x.itemName||x.name)}</b><div class="meta">${esc(x.semester||'')}｜${esc(x.date||'')}｜${x._type==='collection'?'作業繳交':'成績'}${x.archived?`｜📦 ${esc(archiveGroupLabel(x.archiveGroup))}`:'｜未封存'}</div></div></div></div>`).join('')||'<div class="sub">沒有符合資料。</div>'}</div>`;
   };
-  ['histSem','histClass','histSubject','histType'].forEach(id=>$(`#${id}`).onchange=draw);$('#histSearch').oninput=draw;
-  $('#histExport').onclick=()=>{const old=window.__historyRows||[];if(!old.length)return alert('目前沒有可匯出的資料。');window.__historyTemp=old;alert('歷史資料已篩選完成。若要使用原本「勾選 Excel／列印」完整格式，可到「作業繳交／成績」選同一學期後匯出。')};
-  draw();
+  ['histSem','histClass','histSubject','histType','histArchive'].forEach(id=>$(`#${id}`).onchange=draw);
+  $('#histSearch').oninput=draw;
+  $('#histExport').onclick=()=>{
+    const old=window.__historyRows||[];
+    if(!old.length)return alert('目前沒有可匯出的資料。');
+    window.__historyTemp=old;
+    alert('歷史資料已篩選完成。若要使用原本「勾選 Excel／列印」完整格式，可到「作業繳交／成績」選同一學期後匯出。')
+  };
+  draw()
 }
 
 // 升級批次
