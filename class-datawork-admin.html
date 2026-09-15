@@ -108,7 +108,7 @@
   </aside>
   <div class="main-area">
     <header class="hero">
-      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260915-P</div></div>
+      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260915-Q</div></div>
       <div class="hero-user"><div class="user-name">👨‍🏫 <span id="who"></span></div><div id="semesterBadge" class="semester-badge"></div><div class="header-actions"><button id="switchModeBtn" class="btn purple small">🎭 切換身分</button><a href="class-work.html" style="text-decoration:none"><button class="btn gray small">📋 回報頁</button></a><button id="logoutBtn" class="btn danger small">🚪 登出</button></div></div>
     </header>
     <div class="content"><div id="modeHost"></div><div id="appMsg"></div><section id="page-dashboard"></section><section id="page-roles" class="hidden"></section><section id="page-records" class="hidden"></section><section id="page-subjectClasses" class="hidden"></section><section id="page-accounts" class="hidden"></section><section id="page-classes" class="hidden"></section><section id="page-directory" class="hidden"></section><section id="page-teacherDirectory" class="hidden"></section><section id="page-history" class="hidden"></section><section id="page-upgrade" class="hidden"></section><section id="page-audit" class="hidden"></section><section id="page-adminPermissions" class="hidden"></section></div>
@@ -182,6 +182,106 @@ function registryForRosterStudent(classId,student){
     Number(r.seat)===Number(student.seat) &&
     sameStudentName(r.displayName||'',student.name||'')
   )||null;
+}
+
+function resolveStudentDirectoryId(classId,student,reg=null){
+  const strongSid=stableStudentIdOf(student);
+  if(strongSid)return {sid:strongSid,ambiguous:false,source:'class'};
+
+  const regSid=String(reg?.studentId||'');
+  if(regSid.startsWith('stu_'))return {sid:regSid,ambiguous:false,source:'registry'};
+
+  const email=registryId(student?.email||reg?.email||reg?.id||'');
+  if(email){
+    const emailMatches=studentDirectory.filter(s=>registryId(s.email||'')===email);
+    if(emailMatches.length===1)return {sid:String(emailMatches[0].id),ambiguous:false,source:'email'};
+    if(emailMatches.length>1){
+      const exact=emailMatches.filter(s=>
+        String(s.currentClassId||'')===String(classId) &&
+        Number(s.currentSeat)===Number(student?.seat) &&
+        sameStudentName(s.displayName||'',student?.name||'')
+      );
+      if(exact.length===1)return {sid:String(exact[0].id),ambiguous:false,source:'email-exact'};
+      return {sid:'',ambiguous:true,source:'email-duplicate'};
+    }
+  }
+
+  const exactMatches=studentDirectory.filter(s=>
+    String(s.currentClassId||'')===String(classId) &&
+    Number(s.currentSeat)===Number(student?.seat) &&
+    sameStudentName(s.displayName||'',student?.name||'')
+  );
+  if(exactMatches.length===1)return {sid:String(exactMatches[0].id),ambiguous:false,source:'class-seat-name'};
+  if(exactMatches.length>1)return {sid:'',ambiguous:true,source:'class-seat-name-duplicate'};
+
+  return {sid:makeStableStudentId(),ambiguous:false,source:'new'};
+}
+
+async function syncStudentLifecycleState(classId,student,{active,status,enrollmentStatus}){
+  classId=String(classId);
+  const reg=registryForRosterStudent(classId,student);
+  const resolved=resolveStudentDirectoryId(classId,student,reg);
+
+  if(resolved.ambiguous){
+    throw new Error(
+      `學生主檔有重複資料，無法安全判斷要同步哪一筆：${student?.seat||''}號 ${student?.name||''}。\n`+
+      `請先到「全校學生主檔」使用「合併重複」處理後再試。`
+    );
+  }
+
+  const sid=resolved.sid;
+  const email=registryId(student?.email||reg?.email||reg?.id||'');
+  const nowIso=new Date().toISOString();
+
+  await setDoc(doc(db,'studentDirectory',sid),{
+    displayName:student?.name||reg?.displayName||'',
+    email,
+    currentClassId:classId,
+    currentSeat:Number(student?.seat),
+    grade:gradeFromClassId(classId),
+    status,
+    active,
+    transferredOutSemester:active?null:currentSemester,
+    transferredOutAt:active?null:nowIso,
+    updatedAt:serverTimestamp()
+  },{merge:true});
+
+  const sy=schoolYearFromSemester(currentSemester);
+  await setDoc(doc(db,'studentEnrollments',`${sy}__${sid}`),{
+    studentId:sid,
+    schoolYear:sy,
+    semester:currentSemester,
+    classId,
+    grade:gradeFromClassId(classId),
+    seat:Number(student?.seat),
+    displayName:student?.name||reg?.displayName||'',
+    email,
+    status:enrollmentStatus,
+    transferredOutSemester:active?null:currentSemester,
+    transferredOutAt:active?null:nowIso,
+    updatedAt:serverTimestamp()
+  },{merge:true});
+
+  if(reg){
+    await saveRegistry({
+      ...reg,
+      studentId:sid,
+      classId,
+      seat:Number(student?.seat),
+      displayName:student?.name||reg.displayName||'',
+      active
+    });
+  }
+
+  return sid;
+}
+
+function movePackedStudentKey(map,oldKey,newKey){
+  if(!map||!Object.prototype.hasOwnProperty.call(map,oldKey))return map||{};
+  const next={...map};
+  if(!Object.prototype.hasOwnProperty.call(next,newKey))next[newKey]=next[oldKey];
+  delete next[oldKey];
+  return next;
 }
 function classDocLocal(classId){return classes.find(c=>String(c.id)===String(classId))||null}
 
@@ -2386,12 +2486,28 @@ async function saveClassStudents(id,students,detail){
     if(msg.startsWith('LOCKED_ROSTER::'))return alert('🔒 名單已鎖定\n\n'+msg.split('LOCKED_ROSTER::')[1]);
     throw e;
   }
+
+  const sorted=[...students].sort((a,b)=>Number(a.seat)-Number(b.seat));
   await setDoc(doc(db,'classes',id),{
     classId:id,
-    students:[...students].sort((a,b)=>Number(a.seat)-Number(b.seat)),
+    students:sorted,
     updatedAt:serverTimestamp()
   },{merge:true});
-  const c=classDocLocal(id);if(c)c.students=students;
+
+  const c=classDocLocal(id);
+  if(c)c.students=sorted;
+
+  // classes 是正式共用名單來源；班級新增、轉出、恢復、修改後，
+  // 同步更新所有仍有效的任課班快照，避免 subjectClassRosters 殘留舊名單。
+  const managers=subjectManagers.filter(sm=>
+    sm.status!=='released' &&
+    String(sm.classId)===String(id)
+  );
+  for(const sm of managers){
+    try{await syncSubjectRosterFromSharedClass(sm,{silent:true})}
+    catch(e){console.warn('任課班名單同步失敗',sm.id,e)}
+  }
+
   await audit('class_students','class',id,detail);
   await refreshAll();
 }
@@ -2407,14 +2523,34 @@ async function transferOutStudent(id,seat,studentId=null){
     return alert(`🔒 ${student.seat}號 ${student.name} 已鎖定，不能直接標記轉出。\n如確實需要異動，請先由最高管理員解除班級名單鎖定。`);
   }
   if(!confirm(`確定將 ${seat}號 ${student.name} 標記為「已轉出」？\n\n舊收繳、成績與歷史紀錄都會保留，但目前在班名單不再顯示；若已連動 Google 帳號，也會停用系統存取。`))return;
-  const sid=stableStudentIdOf(student);
-  const students=c.students.map(s=>(sid&&stableStudentIdOf(s)===sid)||(!sid&&s===student)
-    ?{...s,active:false,transferredOutSemester:currentSemester,transferredOutAt:new Date().toISOString()}
-    :s);
-  const reg=registryForRosterStudent(id,student);
-  if(reg){reg.active=false;await saveRegistry(reg)}
-  await saveClassStudents(id,students,`學生轉出：${seat} ${student.name}`);
-  editClass(id);
+
+  try{
+    const sid=await syncStudentLifecycleState(id,student,{
+      active:false,
+      status:'transferred',
+      enrollmentStatus:'transferred'
+    });
+
+    const students=c.students.map(s=>
+      (stableStudentIdOf(s)&&stableStudentIdOf(s)===sid) ||
+      (!stableStudentIdOf(s)&&s===student)
+        ?{
+            ...s,
+            id:sid,
+            studentId:sid,
+            active:false,
+            transferredOutSemester:currentSemester,
+            transferredOutAt:new Date().toISOString()
+          }
+        :s
+    );
+
+    await saveClassStudents(id,students,`學生轉出：${seat} ${student.name}｜studentId ${sid}`);
+    editClass(id);
+  }catch(e){
+    console.error(e);
+    alert(`學生轉出同步失敗：${e.message||e}`);
+  }
 }
 async function restoreStudent(id,seat,studentId=null){
   const c=classDocLocal(id);
@@ -2428,14 +2564,34 @@ async function restoreStudent(id,seat,studentId=null){
   if((c.students||[]).some(s=>s.active!==false&&Number(s.seat)===Number(student.seat)&&stableStudentIdOf(s)!==stableStudentIdOf(student))){
     return alert(`${student.seat} 號目前已有另一位在班學生，請先調整座號後再恢復，避免身分混淆。`);
   }
-  const sid=stableStudentIdOf(student);
-  const students=c.students.map(s=>(sid&&stableStudentIdOf(s)===sid)||(!sid&&s===student)
-    ?{...s,active:true,transferredOutSemester:null,transferredOutAt:null}
-    :s);
-  const reg=registryForRosterStudent(id,student);
-  if(reg){reg.active=true;await saveRegistry(reg)}
-  await saveClassStudents(id,students,`恢復學生：${seat} ${student.name}`);
-  editClass(id);
+
+  try{
+    const sid=await syncStudentLifecycleState(id,student,{
+      active:true,
+      status:'enrolled',
+      enrollmentStatus:'active'
+    });
+
+    const students=c.students.map(s=>
+      (stableStudentIdOf(s)&&stableStudentIdOf(s)===sid) ||
+      (!stableStudentIdOf(s)&&s===student)
+        ?{
+            ...s,
+            id:sid,
+            studentId:sid,
+            active:true,
+            transferredOutSemester:null,
+            transferredOutAt:null
+          }
+        :s
+    );
+
+    await saveClassStudents(id,students,`恢復學生：${seat} ${student.name}｜studentId ${sid}`);
+    editClass(id);
+  }catch(e){
+    console.error(e);
+    alert(`恢復學生同步失敗：${e.message||e}`);
+  }
 }
 async function legacy_editStudentInClass(id,oldSeat){
   const c=classDocLocal(id),student=c?.students?.find(s=>Number(s.seat)===oldSeat);if(!student)return;const newSeat=Number(prompt('修改座號：',String(student.seat)));if(!Number.isInteger(newSeat)||newSeat<=0)return alert('座號格式不正確。');if(newSeat!==oldSeat&&(c.students||[]).some(s=>Number(s.seat)===newSeat))return alert(`${newSeat} 號已有人使用。`);const newName=(prompt('修改姓名：',student.name)||'').trim();if(!newName)return;
@@ -4600,42 +4756,214 @@ async function deleteRecord(type,id){
 // 全校學生主檔與舊名單遷移
 async function migrateLegacyStudentsToDirectory(){
   if(!isGlobalAdmin())return alert('只有最高管理員模式可執行。');
-  if(!confirm('這會把現有班級學生建立固定 studentId，並同步目前作業／成績的學生鍵值。\n\n舊資料不刪除，但此步驟屬於資料結構升級，請確認目前沒有其他老師同時輸入資料。\n\n確定開始？'))return;
+  if(!confirm(
+    '這會把現有班級名單同步到全校學生主檔，並校正在校／轉出狀態、固定 studentId、學籍歷程，以及舊作業／成績的學生鍵值。\n\n'+
+    '若偵測到無法安全判斷的重複學生主檔，系統只會警示，不會自動合併或刪除。\n\n'+
+    '請確認目前沒有其他老師同時輸入資料。\n\n確定開始？'
+  ))return;
+
   let changed=0;
+  let statusFixed=0;
+  let packedKeysMoved=0;
+  let rosterSnapshotsSynced=0;
+  const duplicateWarnings=[];
+
   for(const c of classes){
-    let classChanged=false;const students=[];
+    let classChanged=false;
+    const students=[];
+
     for(const old of (c.students||[])){
-      let sid=old.studentId||((String(old.id||'').startsWith('stu_'))?old.id:null);
-      const reg=registryByStudent(c.id,old.seat);
-      const email=registryId(old.email||reg?.email||'');
-      let sd=email?await findDirectoryByEmail(email):null;
-      if(!sid)sid=sd?.id||newStudentId();
-      if(!sd){
-        await setDoc(doc(db,'studentDirectory',sid),{displayName:old.name,email,currentClassId:c.id,currentSeat:Number(old.seat),grade:gradeFromClassId(c.id),status:old.active===false?'transferred':'enrolled',active:old.active!==false,createdByUid:me.uid,createdByName:me.displayName||'最高管理員',createdAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true});
+      const reg=registryForRosterStudent(c.id,old);
+      const email=registryId(old.email||reg?.email||reg?.id||'');
+      const resolved=resolveStudentDirectoryId(c.id,old,reg);
+
+      if(resolved.ambiguous){
+        duplicateWarnings.push(`${c.id}班 ${old.seat}號 ${old.name}`);
+        students.push(old);
+        continue;
       }
+
+      const sid=resolved.sid;
+      const shouldActive=old.active!==false;
+      const desiredDirectoryStatus=shouldActive?'enrolled':'transferred';
+      const desiredEnrollmentStatus=shouldActive?'active':'transferred';
+
+      const before=studentDirectory.find(s=>String(s.id)===String(sid))||null;
+      if(
+        !before ||
+        before.status!==desiredDirectoryStatus ||
+        before.active!==shouldActive ||
+        String(before.currentClassId||'')!==String(c.id) ||
+        Number(before.currentSeat)!==Number(old.seat) ||
+        !sameStudentName(before.displayName||'',old.name||'') ||
+        registryId(before.email||'')!==email
+      ){
+        statusFixed++;
+      }
+
+      await setDoc(doc(db,'studentDirectory',sid),{
+        displayName:old.name,
+        email,
+        currentClassId:String(c.id),
+        currentSeat:Number(old.seat),
+        grade:gradeFromClassId(c.id),
+        status:desiredDirectoryStatus,
+        active:shouldActive,
+        transferredOutSemester:shouldActive?null:(old.transferredOutSemester||currentSemester),
+        transferredOutAt:shouldActive?null:(old.transferredOutAt||new Date().toISOString()),
+        createdByUid:before?.createdByUid||me.uid,
+        createdByName:before?.createdByName||me.displayName||'最高管理員',
+        createdAt:before?.createdAt||serverTimestamp(),
+        updatedAt:serverTimestamp()
+      },{merge:true});
+
       const sy=schoolYearFromSemester(currentSemester);
-      await setDoc(doc(db,'studentEnrollments',`${sy}__${sid}`),{studentId:sid,schoolYear:sy,semester:currentSemester,classId:c.id,grade:gradeFromClassId(c.id),seat:Number(old.seat),displayName:old.name,email,status:old.active===false?'transferred':'active',updatedAt:serverTimestamp()},{merge:true});
+      await setDoc(doc(db,'studentEnrollments',`${sy}__${sid}`),{
+        studentId:sid,
+        schoolYear:sy,
+        semester:currentSemester,
+        classId:String(c.id),
+        grade:gradeFromClassId(c.id),
+        seat:Number(old.seat),
+        displayName:old.name,
+        email,
+        status:desiredEnrollmentStatus,
+        transferredOutSemester:shouldActive?null:(old.transferredOutSemester||currentSemester),
+        transferredOutAt:shouldActive?null:(old.transferredOutAt||new Date().toISOString()),
+        updatedAt:serverTimestamp()
+      },{merge:true});
+
+      if(reg){
+        const regChanged=
+          String(reg.studentId||'')!==String(sid) ||
+          reg.active!==shouldActive ||
+          String(reg.classId||'')!==String(c.id) ||
+          Number(reg.seat)!==Number(old.seat) ||
+          !sameStudentName(reg.displayName||'',old.name||'');
+
+        if(regChanged){
+          await saveRegistry({
+            ...reg,
+            studentId:sid,
+            classId:String(c.id),
+            seat:Number(old.seat),
+            displayName:old.name,
+            active:shouldActive
+          });
+        }
+      }
+
       const oldKey=old.id||String(old.seat);
-      students.push({...old,id:sid,studentId:sid,email});
-      if(oldKey!==sid){
+      const normalized={
+        ...old,
+        id:sid,
+        studentId:sid,
+        email,
+        active:shouldActive
+      };
+      students.push(normalized);
+
+      if(String(old.studentId||old.id||'')!==String(sid) || registryId(old.email||'')!==email){
+        classChanged=true;
+        changed++;
+      }
+
+      if(String(oldKey)!==String(sid)){
         for(const x of collections.filter(x=>String(x.classId)===String(c.id))){
-          if(x.records&&Object.prototype.hasOwnProperty.call(x.records,oldKey)&&!Object.prototype.hasOwnProperty.call(x.records,sid)){
-            const records={...x.records,[sid]:x.records[oldKey]};delete records[oldKey];await updateDoc(doc(db,'collectionItems',x.id),{records,updatedAt:serverTimestamp()});x.records=records;
-          }
+          const had=
+            (x.records&&Object.prototype.hasOwnProperty.call(x.records,oldKey)) ||
+            (x.lockedRecords&&Object.prototype.hasOwnProperty.call(x.lockedRecords,oldKey)) ||
+            (x.lateSubmitted&&Object.prototype.hasOwnProperty.call(x.lateSubmitted,oldKey));
+
+          if(!had)continue;
+
+          const records=movePackedStudentKey(x.records,oldKey,sid);
+          const lockedRecords=movePackedStudentKey(x.lockedRecords,oldKey,sid);
+          const lateSubmitted=movePackedStudentKey(x.lateSubmitted,oldKey,sid);
+
+          await updateDoc(doc(db,'collectionItems',x.id),{
+            records,
+            lockedRecords,
+            lateSubmitted,
+            updatedAt:serverTimestamp()
+          });
+
+          x.records=records;
+          x.lockedRecords=lockedRecords;
+          x.lateSubmitted=lateSubmitted;
+          packedKeysMoved++;
         }
+
         for(const x of assessments.filter(x=>String(x.classId)===String(c.id))){
-          if(x.scores&&Object.prototype.hasOwnProperty.call(x.scores,oldKey)&&!Object.prototype.hasOwnProperty.call(x.scores,sid)){
-            const scores={...x.scores,[sid]:x.scores[oldKey]};delete scores[oldKey];await updateDoc(doc(db,'assessments',x.id),{scores,updatedAt:serverTimestamp()});x.scores=scores;
-          }
+          const had=
+            (x.scores&&Object.prototype.hasOwnProperty.call(x.scores,oldKey)) ||
+            (x.scoreLocks&&Object.prototype.hasOwnProperty.call(x.scoreLocks,oldKey));
+
+          if(!had)continue;
+
+          const scores=movePackedStudentKey(x.scores,oldKey,sid);
+          const scoreLocks=movePackedStudentKey(x.scoreLocks,oldKey,sid);
+
+          await updateDoc(doc(db,'assessments',x.id),{
+            scores,
+            scoreLocks,
+            updatedAt:serverTimestamp()
+          });
+
+          x.scores=scores;
+          x.scoreLocks=scoreLocks;
+          packedKeysMoved++;
         }
-        if(reg){reg.studentId=sid;await saveRegistry(reg)}
-        classChanged=true;changed++;
       }
     }
-    if(classChanged)await setDoc(doc(db,'classes',c.id),{students,updatedAt:serverTimestamp()},{merge:true});
+
+    if(classChanged){
+      await setDoc(doc(db,'classes',c.id),{
+        students:[...students].sort((a,b)=>Number(a.seat)-Number(b.seat)),
+        updatedAt:serverTimestamp()
+      },{merge:true});
+      c.students=students;
+    }
+
+    const managers=subjectManagers.filter(sm=>
+      sm.status!=='released' &&
+      String(sm.classId)===String(c.id)
+    );
+    for(const sm of managers){
+      try{
+        await syncSubjectRosterFromSharedClass(sm,{silent:true});
+        rosterSnapshotsSynced++;
+      }catch(e){
+        console.warn('同步任課班快照失敗',sm.id,e);
+      }
+    }
   }
-  await audit('migrate_student_ids','studentDirectory','all',`建立／同步固定 studentId，共處理 ${changed} 筆既有班級學生`);
-  await refreshAll();renderDirectory();alert(`✅ 學生主檔同步完成，共 ${changed} 筆舊名單完成固定 studentId。`);
+
+  await audit(
+    'migrate_student_ids',
+    'studentDirectory',
+    'all',
+    `學生主檔同步：固定／修正 ${changed} 筆；狀態校正 ${statusFixed} 筆；舊作業／成績鍵值搬移 ${packedKeysMoved} 筆；任課班快照 ${rosterSnapshotsSynced} 組；重複警示 ${duplicateWarnings.length} 筆`
+  );
+
+  await refreshAll();
+  renderDirectory();
+
+  let msg=
+    `✅ 學生主檔同步完成。\n\n`+
+    `固定／修正 studentId：${changed} 筆\n`+
+    `在校／轉出狀態校正：${statusFixed} 筆\n`+
+    `舊作業／成績鍵值同步：${packedKeysMoved} 筆\n`+
+    `任課班名單快照同步：${rosterSnapshotsSynced} 組`;
+
+  if(duplicateWarnings.length){
+    msg+=`\n\n⚠️ 發現 ${duplicateWarnings.length} 筆重複學生主檔，系統沒有自動合併：\n`+
+      duplicateWarnings.slice(0,12).join('\n')+
+      (duplicateWarnings.length>12?`\n…另有 ${duplicateWarnings.length-12} 筆`:'')+
+      `\n\n請到「全校學生主檔」使用「合併重複」逐筆確認。`;
+  }
+
+  alert(msg);
 }
 function directoryStatusLabel(s){return s.status==='graduated'?'🎓 已畢業':s.status==='transferred'?'↗ 已轉出':s.active===false?'停用':'在校'}
 function renderDirectory(){
