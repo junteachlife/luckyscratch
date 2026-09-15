@@ -108,7 +108,7 @@
   </aside>
   <div class="main-area">
     <header class="hero">
-      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260915-O</div></div>
+      <div class="hero-sign"><div class="hero-title">☸️ 班級作業成績回報－管理後台</div><div class="hero-sub">Google 學校帳號連動・導師完整權限・班級資料全員共用｜v20260915-P</div></div>
       <div class="hero-user"><div class="user-name">👨‍🏫 <span id="who"></span></div><div id="semesterBadge" class="semester-badge"></div><div class="header-actions"><button id="switchModeBtn" class="btn purple small">🎭 切換身分</button><a href="class-work.html" style="text-decoration:none"><button class="btn gray small">📋 回報頁</button></a><button id="logoutBtn" class="btn danger small">🚪 登出</button></div></div>
     </header>
     <div class="content"><div id="modeHost"></div><div id="appMsg"></div><section id="page-dashboard"></section><section id="page-roles" class="hidden"></section><section id="page-records" class="hidden"></section><section id="page-subjectClasses" class="hidden"></section><section id="page-accounts" class="hidden"></section><section id="page-classes" class="hidden"></section><section id="page-directory" class="hidden"></section><section id="page-teacherDirectory" class="hidden"></section><section id="page-history" class="hidden"></section><section id="page-upgrade" class="hidden"></section><section id="page-audit" class="hidden"></section><section id="page-adminPermissions" class="hidden"></section></div>
@@ -1697,12 +1697,24 @@ async function saveStudentRegistryClass(){
     );
 
     delete studentRegistryDrafts[classId];
-    await refreshAll();
-    renderStudentRegistryList();
+
+    // 到這裡代表 Firebase 寫入已完成。
+    // 後續只是重新載入畫面；即使畫面重整出錯，也不能再誤顯示成「儲存失敗」。
+    let refreshWarning='';
+    try{
+      await refreshAll();
+      renderStudentRegistryList();
+    }catch(uiError){
+      console.error('student registry saved but UI refresh failed',uiError);
+      refreshWarning=String(uiError?.message||uiError||'未知錯誤');
+    }
 
     let msg=`✅ ${classId} 班共用名單已儲存。\n\n學生：${activeStudents.length} 人\nEmail：${emailSaved} 筆`;
     if(linkedKept)msg+=`\n既有 Google 連動：${linkedKept} 人已保留`;
     if(skippedEmailChanges)msg+=`\n\n⚠️ ${skippedEmailChanges} 位學生已完成 Google 連動，因此系統保留原 Email，未直接更換。`;
+    if(refreshWarning){
+      msg+=`\n\n⚠️ 資料已經儲存成功，但畫面重新整理時發生錯誤。請重新整理瀏覽器即可，不需要再次匯入。\n${refreshWarning}`;
+    }
     alert(msg);
 
   }catch(e){
@@ -1810,6 +1822,130 @@ function applyStudentRegistryPaste(){
   const suffix=errors.length?`\n\n另有 ${errors.length} 行格式不完整，未套用。`:'';
   alert(`✅ 已套用 ${clean.length} 筆資料到上方名單。\n請確認後再按「儲存這班 Email」。${suffix}`);
 }
+async function addTeacherRegistry(){
+  if(!isGlobalAdmin())return alert('只有最高管理員模式可以使用這個快速新增功能。');
+
+  const displayName=String($('#teacherName')?.value||'').trim();
+  const email=registryId($('#teacherEmail')?.value||'');
+
+  if(!displayName||!email)return alert('請填老師姓名與學校 Google Email。');
+
+  const existing=registries.find(r=>r.id===email);
+  if(existing?.type&&existing.type!=='teacher'){
+    return alert('這個 Email 已被其他身分使用，不能建立成教師主檔。');
+  }
+
+  const btn=$('#addTeacherRegistry');
+  try{
+    if(btn){btn.disabled=true;btn.textContent='儲存中…';}
+
+    await saveRegistry({
+      ...(existing||{}),
+      email,
+      displayName,
+      type:'teacher',
+      active:existing?.active!==false,
+      assignments:Array.isArray(existing?.assignments)?existing.assignments:[],
+      linked:!!existing?.linkedUid,
+      linkedUid:existing?.linkedUid||null
+    });
+
+    await audit(
+      'teacher_directory_upsert',
+      'identityRegistry',
+      email,
+      `帳號連動／任課：新增／更新教師主檔 ${displayName}`
+    );
+
+    await refreshAll();
+    alert(`✅ 教師主檔已儲存。\n\n${displayName}\n${email}`);
+  }catch(e){
+    console.error(e);
+    alert(`新增／更新教師失敗：${e.message||e}`);
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='➕ 新增任課教師';}
+  }
+}
+
+async function applyTeacherRegistryPaste(){
+  if(!isGlobalAdmin())return alert('只有最高管理員模式可以使用教師批次加入功能。');
+
+  const raw=String($('#teacherPaste')?.value||'').trim();
+  if(!raw)return alert('請先貼上教師資料。\n\n每行格式：姓名,Email');
+
+  const lines=raw.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+  const parsed=[];
+  const errors=[];
+
+  lines.forEach((line,idx)=>{
+    const p=line.split(/[,，\t]/).map(x=>x.trim());
+    const displayName=String(p[0]||'').trim();
+    const email=registryId(p[1]||'');
+
+    if(!displayName||!email){
+      errors.push(`第 ${idx+1} 行格式不完整：${line}`);
+      return;
+    }
+    parsed.push({displayName,email,lineNo:idx+1});
+  });
+
+  if(!parsed.length){
+    return alert('沒有可加入的教師資料。\n\n每行格式：姓名,Email');
+  }
+
+  const btn=$('#applyTeacherPaste');
+  let saved=0;
+  const skipped=[];
+
+  try{
+    if(btn){btn.disabled=true;btn.textContent='加入中…';}
+
+    for(const row of parsed){
+      const existing=registries.find(r=>r.id===row.email);
+
+      if(existing?.type&&existing.type!=='teacher'){
+        skipped.push(`第 ${row.lineNo} 行：${row.email} 已被其他身分使用`);
+        continue;
+      }
+
+      await saveRegistry({
+        ...(existing||{}),
+        email:row.email,
+        displayName:row.displayName,
+        type:'teacher',
+        active:existing?.active!==false,
+        assignments:Array.isArray(existing?.assignments)?existing.assignments:[],
+        linked:!!existing?.linkedUid,
+        linkedUid:existing?.linkedUid||null
+      });
+
+      saved++;
+    }
+
+    await audit(
+      'batch_teacher_registry',
+      'identityRegistry',
+      'teachers',
+      `帳號連動／任課：批次新增／更新教師 ${saved} 筆`
+    );
+
+    await refreshAll();
+
+    let msg=`✅ 任課教師主檔已處理完成。\n\n成功：${saved} 筆`;
+    if(errors.length)msg+=`\n格式不完整：${errors.length} 筆`;
+    if(skipped.length)msg+=`\n身分衝突未匯入：${skipped.length} 筆`;
+    if(errors.length||skipped.length){
+      msg+=`\n\n${[...errors,...skipped].join('\n')}`;
+    }
+    alert(msg);
+  }catch(e){
+    console.error(e);
+    alert(`批次加入教師失敗：${e.message||e}`);
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='📥 批次加入教師';}
+  }
+}
+
 async function addQuickTeacherAssignment(){
   const id=$('#quickTeacher')?.value;
   if(!id)return alert('請先選擇任課教師。');
