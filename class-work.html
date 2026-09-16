@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>班級作業成績回報系統</title>
-<!-- v20260915-S：任課老師段考資料夾封存 -->
+<!-- v20260916-U：任課老師段考資料夾封存 -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>">
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--ink:#172033;--muted:#667085;--line:#e4e7ec;--brand:#2563eb;--brand2:#1d4ed8;--good:#067647;--warn:#b54708;--bad:#b42318;--soft:#eff6ff;--purple:#6941c6}
@@ -245,7 +245,7 @@ import {getFirestore,doc,getDoc,setDoc,collection,addDoc,updateDoc,deleteDoc,que
 const firebaseConfig={apiKey:"AIzaSyB56F4wJ-IMUiBsqJ5P33HoDK642h7671U",authDomain:"class-datawork.firebaseapp.com",projectId:"class-datawork",storageBucket:"class-datawork.firebasestorage.app",messagingSenderId:"24186422479",appId:"1:24186422479:web:8dee260f34b2e506fd63ba"};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-let profile=null,currentAssignment=null,roster=[],unsubItems=null,unsubAssess=null,currentSemester='115-1',viewSemester='115-1',currentCollectionItems=[],currentAssessmentItems=[];
+let profile=null,currentAssignment=null,roster=[],unsubRoster=null,unsubItems=null,unsubAssess=null,currentSemester='115-1',viewSemester='115-1',currentCollectionItems=[],currentAssessmentItems=[];
 let archiveViewMode='current',archiveFolder='exam1';
 const ARCHIVE_GROUPS=[['exam1','第一次段考'],['exam2','第二次段考'],['exam3','第三次段考']];
 const statusOptions=[['submitted','已繳'],['missing','未繳'],['late','補交'],['exempt','免繳']];
@@ -296,7 +296,79 @@ function labelOf(list,value){return (list.find(x=>x[0]===value)||[value,value])[
 function weekRange(offset=0){const d=new Date();d.setHours(0,0,0,0);const day=d.getDay();const delta=day===0?-6:1-day;d.setDate(d.getDate()+delta+offset*7);const start=new Date(d),end=new Date(d);end.setDate(end.getDate()+6);const f=x=>`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;return{start:f(start),end:f(end)}}
 
 async function loadSystem(){const s=await getDoc(doc(db,'settings','system'));if(s.exists()&&s.data().currentSemester)currentSemester=s.data().currentSemester;viewSemester=currentSemester;updateSemesterLabel()}
-async function loadRoster(classId){const s=await getDoc(doc(db,'classes',classId));roster=s.exists()?(s.data().students||[]):[];return roster}
+
+/* ========================= 學生固定 ID／舊座號相容 =========================
+   classes.students 是目前正式班級名單來源：
+   - active === false 的轉出學生不再出現在 class-work 前台目前名單。
+   - 舊作業／成績可能仍以座號當 key；新資料以固定 studentId 為 key。
+   - 讀取時同時相容 studentId / id / seat；寫回時統一回固定 studentId。
+*/
+function studentCanonicalKey(s){
+  const sid=String(s?.studentId||'').trim();
+  if(sid)return sid;
+  const id=String(s?.id||'').trim();
+  if(id)return id;
+  return String(s?.seat??'').trim()
+}
+function studentKeyCandidates(s){
+  return [...new Set([
+    String(s?.studentId||'').trim(),
+    String(s?.id||'').trim(),
+    String(s?.seat??'').trim()
+  ].filter(Boolean))]
+}
+function studentMapValue(map,s,fallback=null){
+  const src=map||{};
+  for(const key of studentKeyCandidates(s)){
+    if(Object.prototype.hasOwnProperty.call(src,key))return src[key]
+  }
+  return fallback
+}
+function studentMapHas(map,s){
+  const src=map||{};
+  return studentKeyCandidates(s).some(key=>Object.prototype.hasOwnProperty.call(src,key))
+}
+function setStudentMapValue(map,s,value,{cleanupLegacy=true}={}){
+  const next=map||{};
+  const canonical=studentCanonicalKey(s);
+  if(cleanupLegacy){
+    studentKeyCandidates(s).forEach(key=>{
+      if(key!==canonical)delete next[key]
+    })
+  }
+  next[canonical]=value;
+  return next
+}
+function activeRosterFromClassData(data){
+  return (Array.isArray(data?.students)?data.students:[])
+    .filter(s=>s&&s.active!==false)
+    .sort((a,b)=>Number(a.seat)-Number(b.seat))
+}
+async function loadRoster(classId){
+  const s=await getDoc(doc(db,'classes',classId));
+  roster=s.exists()?activeRosterFromClassData(s.data()):[];
+  return roster
+}
+function stopRosterSync(){
+  if(unsubRoster){unsubRoster();unsubRoster=null}
+}
+function startRosterSync(classId){
+  stopRosterSync();
+  const watchedClass=String(classId);
+  unsubRoster=onSnapshot(doc(db,'classes',watchedClass),snap=>{
+    if(!currentAssignment||String(currentAssignment.classId)!==watchedClass)return;
+    roster=snap.exists()?activeRosterFromClassData(snap.data()):[];
+
+    // 導師後台若將學生轉出／恢復，class-work 不需重新登入：
+    // 目前名單、統計、列印、週成績與彙整即時依 classes.students.active 更新。
+    if(currentCollectionItems.length||$('#collectionPanel'))renderCollection(currentCollectionItems);
+    if(currentAssignment.scopeType==='subject')renderScores(currentAssessmentItems);
+    renderTeacherAggregatePanel()
+  },e=>{
+    console.warn('roster realtime sync',e);
+    msg($('#appMsg'),'班級名單即時同步失敗，請重新整理頁面。','error')
+  })
+}
 async function audit(action,targetType,targetId,detail){try{await addDoc(collection(db,'auditLogs'),{actorUid:auth.currentUser.uid,actorName:profile.displayName||profile.username,semester:currentAssignment?.semester||viewSemester||currentSemester,action,targetType,targetId,detail,createdAt:serverTimestamp()})}catch(e){console.warn('audit',e)}}
 
 const SCHOOL_DOMAINS={
@@ -421,6 +493,7 @@ function renderSemesterSwitch(){
     currentAssignment=null;
     if(unsubItems){unsubItems();unsubItems=null}
     if(unsubAssess){unsubAssess();unsubAssess=null}
+    stopRosterSync();
     updateSemesterLabel();
     renderRoles()
   };
@@ -539,7 +612,7 @@ $('#adminBackendBtn').onclick=()=>{location.href='class-datawork-admin.html'};
 onAuthStateChanged(auth,async user=>{
   if(!user){
     profile=null;currentAssignment=null;viewSemester=currentSemester;
-    if(unsubItems)unsubItems();if(unsubAssess)unsubAssess();
+    if(unsubItems)unsubItems();if(unsubAssess)unsubAssess();stopRosterSync();
     $('#loginView').classList.remove('hidden');$('#appView').classList.add('hidden');
     return
   }
@@ -578,6 +651,7 @@ function currentAssignments(){const sem=profile?.type==='student'?currentSemeste
 function renderRoles(){
   const shownSemester=profile?.type==='student'?currentSemester:viewSemester;
   if($('#rolesSectionTitle'))$('#rolesSectionTitle').textContent=isTeacherModeProfile()&&shownSemester!==currentSemester?`${shownSemester} 歷史任課（唯讀）`:(profile?.type==='admin'?`${shownSemester} 我的任課科目`:`${shownSemester} 我的職務`);
+  stopRosterSync();
   const list=currentAssignments(),box=$('#roleGrid');box.innerHTML='';$('#workspace').classList.add('hidden');currentAssignment=null;
   if(!list.length){const sem=profile?.type==='student'?currentSemester:viewSemester;const hint=profile?.type==='admin'?'目前尚未設定你的任課教師班級／科目。請到管理後台「任課教師設定」用同一個 Google Email 建立任課資料。':`目前尚未被指派 ${esc(sem)} 的任何職務或任課權限。<br>如你本學期應有權限但未看到，請聯絡導師確認。`;box.innerHTML=`<div class="empty"><b>${esc(profile.displayName||profile.username)}</b><br><br>${hint}</div>`;return}
   list.forEach((a,i)=>{const d=document.createElement('div');d.className=`card role-card ${a.kind==='teacher'?'teacher-role':''}`;d.innerHTML=`<div style="font-weight:900">${a.kind==='teacher'?'👨‍🏫 ':'🎯 '}${esc(assignmentLabel(a))}</div><div class="meta">${canCollection(a)?'📥 可登記作業繳交':'📥 作業繳交唯讀'}　${a.scopeType==='subject'?(canScores(a)?'📊 可登記成績':'📊 成績唯讀'):''}${canConfirm(a)?'　✅ 可確認資料':''}${canArchiveAssignment(a)?'　📦 可段考封存':''}${a.kind==='teacher'?'　📥 教師週成績 Excel':''}</div>`;d.onclick=()=>selectAssignment(i,d);box.appendChild(d)})
@@ -587,7 +661,10 @@ async function selectAssignment(i,el){
   const list=currentAssignments();$$('.role-card').forEach(x=>x.classList.remove('active'));el.classList.add('active');currentAssignment=list[i];currentCollectionItems=[];currentAssessmentItems=[];archiveViewMode='current';archiveFolder='exam1';$('#workspace').classList.remove('hidden');$('#workspaceTitle').textContent=assignmentLabel(currentAssignment);$('#workspacePerm').textContent=`${currentAssignment.semester||viewSemester}｜${isHistoricalReadOnly()?'歷史學期唯讀；':''}${canCollection(currentAssignment)?'可登記作業繳交':'作業繳交唯讀'}${currentAssignment.scopeType==='subject'?`；${canScores(currentAssignment)?'可登記小考成績':'成績唯讀'}`:''}${canConfirm(currentAssignment)?'；可確認資料':''}${canArchiveAssignment(currentAssignment)?'；可封存至第一次／第二次／第三次段考':''}${isTeacherAssignment(currentAssignment)?'；任課老師可列印、Excel 與週成績彙整':''}`;
   $('#scoresTab').classList.toggle('hidden',currentAssignment.scopeType!=='subject');if(currentAssignment.scopeType!=='subject'){$$('.tab').forEach(x=>x.classList.remove('active'));document.querySelector('[data-tab="collection"]').classList.add('active');$('#collectionPanel').classList.remove('hidden');$('#scoresPanel').classList.add('hidden')}
   renderTeacherAggregatePanel();
-  await loadRoster(currentAssignment.classId);startCollection();if(currentAssignment.scopeType==='subject')startScores();
+  await loadRoster(currentAssignment.classId);
+  startRosterSync(currentAssignment.classId);
+  startCollection();
+  if(currentAssignment.scopeType==='subject')startScores();
 }
 
 $$('.tab').forEach(b=>b.onclick=()=>{if(b.classList.contains('hidden'))return;$$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');const t=b.dataset.tab;$('#collectionPanel').classList.toggle('hidden',t!=='collection');$('#scoresPanel').classList.toggle('hidden',t!=='scores')});
@@ -754,7 +831,15 @@ async function moveArchivedRecords(kind,records,group){
 
 function startCollection(){if(unsubItems)unsubItems();const key=scopeKey(currentAssignment),q=query(collection(db,'collectionItems'),where('semester','==',viewSemester),where('scopeKey','==',key));unsubItems=onSnapshot(q,snap=>{const items=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.date||'').localeCompare(a.date||''));currentCollectionItems=items;renderCollection(items);renderTeacherAggregatePanel()},e=>msg($('#appMsg'),'讀取作業繳交資料失敗：'+esc(e.message),'error'))}
 
-function collectionCounts(it){const counts={submitted:0,missing:0,late:0,exempt:0,lateSubmitted:0};Object.entries(it.records||{}).forEach(([sid,v])=>{counts[v]=(counts[v]||0)+1;if(v==='submitted'&&(it.lateSubmitted||{})[sid])counts.lateSubmitted++});return counts}
+function collectionCounts(it){
+  const counts={submitted:0,missing:0,late:0,exempt:0,lateSubmitted:0};
+  roster.forEach(s=>{
+    const v=studentMapValue(it.records,s,'submitted');
+    counts[v]=(counts[v]||0)+1;
+    if(v==='submitted'&&!!studentMapValue(it.lateSubmitted,s,false))counts.lateSubmitted++
+  });
+  return counts
+}
 
 function renderCollection(items){
   const p=$('#collectionPanel');
@@ -782,26 +867,83 @@ function renderCollection(items){
   bindArchiveManager('collection',items)
 }
 
-async function createCollectionPrompt(){const name=prompt('作業繳交項目名稱：');if(!name)return;const due=prompt('截止日期（可留空，格式 YYYY-MM-DD）：','')||'',note=prompt('備註（可留空）：','')||'',a=currentAssignment,key=scopeKey(a),records={};roster.forEach(s=>records[s.id||String(s.seat)]='submitted');const ref=await addDoc(collection(db,'collectionItems'),{semester:a.semester||currentSemester,scopeKey:key,classId:a.classId,scopeType:a.scopeType,scopeName:a.scopeName,itemName:name.trim(),date:today(),dueDate:due.trim(),note:note.trim(),records,lateSubmitted:{},lockedRecords:{},createdBy:auth.currentUser.uid,createdByName:profile.displayName||profile.username,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),reviewStatus:'pending',locked:false,archived:false,archiveGroup:null});await audit('create','collection',ref.id,`新增作業繳交：${name}`)}
+async function createCollectionPrompt(){const name=prompt('作業繳交項目名稱：');if(!name)return;const due=prompt('截止日期（可留空，格式 YYYY-MM-DD）：','')||'',note=prompt('備註（可留空）：','')||'',a=currentAssignment,key=scopeKey(a),records={};roster.forEach(s=>records[studentCanonicalKey(s)]='submitted');const ref=await addDoc(collection(db,'collectionItems'),{semester:a.semester||currentSemester,scopeKey:key,classId:a.classId,scopeType:a.scopeType,scopeName:a.scopeName,itemName:name.trim(),date:today(),dueDate:due.trim(),note:note.trim(),records,lateSubmitted:{},lockedRecords:{},createdBy:auth.currentUser.uid,createdByName:profile.displayName||profile.username,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),reviewStatus:'pending',locked:false,archived:false,archiveGroup:null});await audit('create','collection',ref.id,`新增作業繳交：${name}`)}
 
 async function confirmCollection(it){
   const confirming=it.reviewStatus!=='confirmed';
   if(!confirm(confirming?`確定確認「${it.itemName}」？\n\n確認後：已繳與免繳會鎖定；未繳、補交仍可繼續修改。`:`確定取消確認「${it.itemName}」？`))return;
   const lockedRecords={};
-  if(confirming)Object.entries(it.records||{}).forEach(([sid,status])=>lockedRecords[sid]=(status==='submitted'||status==='exempt'));
-  await updateDoc(doc(db,'collectionItems',it.id),{reviewStatus:confirming?'confirmed':'pending',locked:false,lockedRecords:confirming?lockedRecords:{},confirmedBy:confirming?auth.currentUser.uid:null,confirmedByName:confirming?(profile.displayName||profile.username):null,confirmedAt:confirming?serverTimestamp():null,updatedAt:serverTimestamp()});
+  if(confirming){
+    roster.forEach(s=>{
+      const status=studentMapValue(it.records,s,'submitted');
+      if(status==='submitted'||status==='exempt')lockedRecords[studentCanonicalKey(s)]=true
+    })
+  }
+  await updateDoc(doc(db,'collectionItems',it.id),{
+    reviewStatus:confirming?'confirmed':'pending',
+    locked:false,
+    lockedRecords:confirming?lockedRecords:{},
+    confirmedBy:confirming?auth.currentUser.uid:null,
+    confirmedByName:confirming?(profile.displayName||profile.username):null,
+    confirmedAt:confirming?serverTimestamp():null,
+    updatedAt:serverTimestamp()
+  });
   await audit(confirming?'confirm':'unconfirm','collection',it.id,`${confirming?'確認':'取消確認'}作業繳交：${it.itemName}`)
 }
 
 function toggleCollectionEditor(it){
-  const box=$(`#col-${it.id}`);if(!box.classList.contains('hidden')){box.classList.add('hidden');box.innerHTML='';return}box.classList.remove('hidden');
+  const box=$(`#col-${it.id}`);
+  if(!box.classList.contains('hidden')){box.classList.add('hidden');box.innerHTML='';return}
+  box.classList.remove('hidden');
   const confirmed=it.reviewStatus==='confirmed',canWrite=canCollection(currentAssignment)&&it.archived!==true;
-  box.innerHTML=`${it.note?`<div class="notice">備註：${esc(it.note)}</div>`:''}<div class="toolbar">${canWrite?'<button class="btn gray small all-submitted">將可修改者設為已繳</button>':''}<span class="sub">確認後：已繳／免繳鎖定；未繳／補交仍可修正。</span></div><div class="roster">${roster.map(s=>{const id=s.id||String(s.seat),v=(it.records||{})[id]||'submitted',locked=confirmed&&!!(it.lockedRecords||{})[id],late=v==='submitted'&&!!(it.lateSubmitted||{})[id],editable=canWrite&&!locked;return `<div class="student ${locked?'locked':''}"><div class="name">${s.seat}. ${esc(s.name)}</div><select class="status col-status" data-student="${esc(id)}" data-old="${esc(v)}" ${editable?'':'disabled'}>${statusOptions.map(([x,l])=>`<option value="${x}" ${x===v?'selected':''}>${l}</option>`).join('')}</select>${late?'<div class="late-note">已繳交（遲交）</div>':''}${locked?'<div class="lock-note">🔒 已確認鎖定</div>':''}</div>`}).join('')}</div>${canWrite?'<div class="toolbar"><button class="btn primary save-col">儲存作業繳交狀態</button></div>':''}`;
+
+  box.innerHTML=`${it.note?`<div class="notice">備註：${esc(it.note)}</div>`:''}
+    <div class="toolbar">
+      ${canWrite?'<button class="btn gray small all-submitted">將可修改者設為已繳</button>':''}
+      <span class="sub">確認後：已繳／免繳鎖定；未繳／補交仍可修正。</span>
+    </div>
+    <div class="roster">${roster.map(s=>{
+      const id=studentCanonicalKey(s);
+      const v=studentMapValue(it.records,s,'submitted');
+      const locked=confirmed&&!!studentMapValue(it.lockedRecords,s,false);
+      const late=v==='submitted'&&!!studentMapValue(it.lateSubmitted,s,false);
+      const editable=canWrite&&!locked;
+      return `<div class="student ${locked?'locked':''}">
+        <div class="name">${s.seat}. ${esc(s.name)}</div>
+        <select class="status col-status" data-student="${esc(id)}" data-old="${esc(v)}" ${editable?'':'disabled'}>
+          ${statusOptions.map(([x,l])=>`<option value="${x}" ${x===v?'selected':''}>${l}</option>`).join('')}
+        </select>
+        ${late?'<div class="late-note">已繳交（遲交）</div>':''}
+        ${locked?'<div class="lock-note">🔒 已確認鎖定</div>':''}
+      </div>`
+    }).join('')}</div>
+    ${canWrite?'<div class="toolbar"><button class="btn primary save-col">儲存作業繳交狀態</button></div>':''}`;
+
   box.querySelector('.all-submitted')?.addEventListener('click',()=>box.querySelectorAll('.col-status:not(:disabled)').forEach(s=>s.value='submitted'));
+
   box.querySelector('.save-col')?.addEventListener('click',async()=>{
     const records={...(it.records||{})},lateSubmitted={...(it.lateSubmitted||{})},lockedRecords={...(it.lockedRecords||{})};
-    box.querySelectorAll('.col-status').forEach(sel=>{if(sel.disabled)return;const sid=sel.dataset.student,oldStatus=sel.dataset.old,newStatus=sel.value;records[sid]=newStatus;if(confirmed&&(oldStatus==='missing'||oldStatus==='late')&&newStatus==='submitted'){lateSubmitted[sid]=true;lockedRecords[sid]=true}else if(confirmed&&newStatus==='exempt'){lockedRecords[sid]=true}});
-    await updateDoc(doc(db,'collectionItems',it.id),{records,lateSubmitted,lockedRecords,updatedAt:serverTimestamp()});await audit('update','collection',it.id,`更新作業繳交：${it.itemName}`);alert('已儲存')
+
+    roster.forEach(s=>{
+      const id=studentCanonicalKey(s);
+      const sel=box.querySelector(`.col-status[data-student="${CSS.escape(id)}"]`);
+      if(!sel||sel.disabled)return;
+
+      const oldStatus=sel.dataset.old;
+      const newStatus=sel.value;
+      setStudentMapValue(records,s,newStatus);
+
+      if(confirmed&&(oldStatus==='missing'||oldStatus==='late')&&newStatus==='submitted'){
+        setStudentMapValue(lateSubmitted,s,true);
+        setStudentMapValue(lockedRecords,s,true)
+      }else if(confirmed&&newStatus==='exempt'){
+        setStudentMapValue(lockedRecords,s,true)
+      }
+    });
+
+    await updateDoc(doc(db,'collectionItems',it.id),{records,lateSubmitted,lockedRecords,updatedAt:serverTimestamp()});
+    await audit('update','collection',it.id,`更新作業繳交：${it.itemName}`);
+    alert('已儲存')
   })
 }
 
@@ -809,7 +951,17 @@ async function removeCollection(it){if(!confirm(`確定刪除「${it.itemName}�
 
 /* ========================= 成績 ========================= */
 function startScores(){if(unsubAssess)unsubAssess();const key=scopeKey(currentAssignment),q=query(collection(db,'assessments'),where('semester','==',viewSemester),where('scopeKey','==',key));unsubAssess=onSnapshot(q,snap=>{currentAssessmentItems=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.date||'').localeCompare(a.date||''));renderScores(currentAssessmentItems);renderTeacherAggregatePanel()},e=>msg($('#appMsg'),'讀取成績資料失敗：'+esc(e.message),'error'))}
-function calcStats(it){const vals=[];let absent=0,below=0;Object.values(it.scores||{}).forEach(r=>{if(r.status==='absent')absent++;if((r.status==='normal'||r.status==='makeup')&&hasScore(r)){const n=Number(r.score);vals.push(n);if(n<Number(it.passScore||0))below++}});return{avg:vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1):'-',high:vals.length?Math.max(...vals):'-',low:vals.length?Math.min(...vals):'-',below,absent,count:vals.length}}
+function calcStats(it){
+  const vals=[];let absent=0,below=0;
+  roster.forEach(s=>{
+    const r=studentMapValue(it.scores,s,{status:'not_entered',score:null})||{status:'not_entered',score:null};
+    if(r.status==='absent')absent++;
+    if((r.status==='normal'||r.status==='makeup')&&hasScore(r)){
+      const n=Number(r.score);vals.push(n);if(n<Number(it.passScore||0))below++
+    }
+  });
+  return{avg:vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1):'-',high:vals.length?Math.max(...vals):'-',low:vals.length?Math.min(...vals):'-',below,absent,count:vals.length}
+}
 
 function renderTeacherWeekTools(){
   if(!isTeacherAssignment(currentAssignment))return'';
@@ -845,26 +997,97 @@ function renderScores(items){
   bindArchiveManager('assessment',items)
 }
 
-async function createAssessmentPrompt(){const name=prompt('小考名稱：');if(!name)return;const max=Number(prompt('滿分：','100'));if(!Number.isFinite(max)||max<=0)return alert('滿分格式不正確');const pass=Number(prompt('及格分數：',String(Math.round(max*.6))));if(!Number.isFinite(pass))return alert('及格分數格式不正確');const a=currentAssignment,scores={};roster.forEach(s=>scores[s.id||String(s.seat)]={status:'not_entered',score:null});const ref=await addDoc(collection(db,'assessments'),{semester:a.semester||currentSemester,scopeKey:scopeKey(a),classId:a.classId,scopeType:a.scopeType,scopeName:a.scopeName,name:name.trim(),date:today(),maxScore:max,passScore:pass,note:'',scores,scoreLocks:{},createdBy:auth.currentUser.uid,createdByName:profile.displayName||profile.username,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),reviewStatus:'pending',locked:false,archived:false,archiveGroup:null});await audit('create','assessment',ref.id,`新增小考：${name}`)}
+async function createAssessmentPrompt(){const name=prompt('小考名稱：');if(!name)return;const max=Number(prompt('滿分：','100'));if(!Number.isFinite(max)||max<=0)return alert('滿分格式不正確');const pass=Number(prompt('及格分數：',String(Math.round(max*.6))));if(!Number.isFinite(pass))return alert('及格分數格式不正確');const a=currentAssignment,scores={};roster.forEach(s=>scores[studentCanonicalKey(s)]={status:'not_entered',score:null});const ref=await addDoc(collection(db,'assessments'),{semester:a.semester||currentSemester,scopeKey:scopeKey(a),classId:a.classId,scopeType:a.scopeType,scopeName:a.scopeName,name:name.trim(),date:today(),maxScore:max,passScore:pass,note:'',scores,scoreLocks:{},createdBy:auth.currentUser.uid,createdByName:profile.displayName||profile.username,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),reviewStatus:'pending',locked:false,archived:false,archiveGroup:null});await audit('create','assessment',ref.id,`新增小考：${name}`)}
 
 async function confirmAssessment(it){
   const confirming=it.reviewStatus!=='confirmed';
   if(!confirm(confirming?`確定確認「${it.name}」？\n\n確認後：已有成績會鎖定；尚未登記的學生仍可補登。若要修改已存在成績，請先按「解鎖」。`:`確定取消確認「${it.name}」？`))return;
-  const scoreLocks={};if(confirming)Object.entries(it.scores||{}).forEach(([sid,r])=>scoreLocks[sid]=hasScore(r));
-  await updateDoc(doc(db,'assessments',it.id),{reviewStatus:confirming?'confirmed':'pending',locked:false,scoreLocks:confirming?scoreLocks:{},confirmedBy:confirming?auth.currentUser.uid:null,confirmedByName:confirming?(profile.displayName||profile.username):null,confirmedAt:confirming?serverTimestamp():null,updatedAt:serverTimestamp()});
+  const scoreLocks={};
+  if(confirming){
+    roster.forEach(s=>{
+      const r=studentMapValue(it.scores,s,{status:'not_entered',score:null})||{status:'not_entered',score:null};
+      if(hasScore(r))scoreLocks[studentCanonicalKey(s)]=true
+    })
+  }
+  await updateDoc(doc(db,'assessments',it.id),{
+    reviewStatus:confirming?'confirmed':'pending',
+    locked:false,
+    scoreLocks:confirming?scoreLocks:{},
+    confirmedBy:confirming?auth.currentUser.uid:null,
+    confirmedByName:confirming?(profile.displayName||profile.username):null,
+    confirmedAt:confirming?serverTimestamp():null,
+    updatedAt:serverTimestamp()
+  });
   await audit(confirming?'confirm':'unconfirm','assessment',it.id,`${confirming?'確認':'取消確認'}成績：${it.name}`)
 }
 
 function toggleScoreEditor(it){
-  const box=$(`#score-${it.id}`);if(!box.classList.contains('hidden')){box.classList.add('hidden');box.innerHTML='';return}box.classList.remove('hidden');
+  const box=$(`#score-${it.id}`);
+  if(!box.classList.contains('hidden')){box.classList.add('hidden');box.innerHTML='';return}
+  box.classList.remove('hidden');
+
   const confirmed=it.reviewStatus==='confirmed',canWrite=canScores(currentAssignment)&&it.archived!==true;
-  box.innerHTML=`${confirmed?'<div class="notice">此成績已確認：有成績者鎖定；空白仍可補登。要更改已存在分數，請先解鎖該生。</div>':''}<div>${roster.map(s=>{const id=s.id||String(s.seat),r=(it.scores||{})[id]||{status:'not_entered',score:null},locked=confirmed&&!!(it.scoreLocks||{})[id],editable=canWrite&&!locked;return `<div class="score-row"><b>${s.seat}</b><span>${esc(s.name)}</span><input class="score-input" data-student="${esc(id)}" type="number" inputmode="decimal" min="0" max="${it.maxScore}" value="${r.score??''}" ${editable?'':'disabled'}><select class="score-status" data-student="${esc(id)}" ${editable?'':'disabled'}>${scoreStatusOptions.map(([x,l])=>`<option value="${x}" ${x===(r.status||'not_entered')?'selected':''}>${l}</option>`).join('')}</select>${locked&&canWrite?`<button class="btn warn small unlock-score" data-student="${esc(id)}">🔓 解鎖</button>`:(locked?'<span class="lock-note">🔒 已鎖</span>':'')}</div>`}).join('')}</div>${canWrite?'<div class="toolbar"><button class="btn primary save-score">儲存成績</button></div>':''}`;
-  const inputs=[...box.querySelectorAll('.score-input:not(:disabled)')];inputs.forEach((inp,i)=>inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&inputs[i+1]){e.preventDefault();inputs[i+1].focus();inputs[i+1].select()}}));
-  box.querySelectorAll('.unlock-score').forEach(btn=>btn.onclick=async()=>{const sid=btn.dataset.student;if(!confirm('確定解鎖這位學生的既有成績？'))return;const scoreLocks={...(it.scoreLocks||{}),[sid]:false};await updateDoc(doc(db,'assessments',it.id),{scoreLocks,updatedAt:serverTimestamp()});await audit('unlock_score','assessment',it.id,`解鎖成績：${it.name}｜座號 ${sid}`);it.scoreLocks=scoreLocks;toggleScoreEditor(it);toggleScoreEditor(it)});
+
+  box.innerHTML=`${confirmed?'<div class="notice">此成績已確認：有成績者鎖定；空白仍可補登。要更改已存在分數，請先解鎖該生。</div>':''}
+    <div>${roster.map(s=>{
+      const id=studentCanonicalKey(s);
+      const r=studentMapValue(it.scores,s,{status:'not_entered',score:null})||{status:'not_entered',score:null};
+      const locked=confirmed&&!!studentMapValue(it.scoreLocks,s,false);
+      const editable=canWrite&&!locked;
+      return `<div class="score-row">
+        <b>${s.seat}</b>
+        <span>${esc(s.name)}</span>
+        <input class="score-input" data-student="${esc(id)}" type="number" inputmode="decimal" min="0" max="${it.maxScore}" value="${r.score??''}" ${editable?'':'disabled'}>
+        <select class="score-status" data-student="${esc(id)}" ${editable?'':'disabled'}>
+          ${scoreStatusOptions.map(([x,l])=>`<option value="${x}" ${x===(r.status||'not_entered')?'selected':''}>${l}</option>`).join('')}
+        </select>
+        ${locked&&canWrite?`<button class="btn warn small unlock-score" data-student="${esc(id)}">🔓 解鎖</button>`:(locked?'<span class="lock-note">🔒 已鎖</span>':'')}
+      </div>`
+    }).join('')}</div>
+    ${canWrite?'<div class="toolbar"><button class="btn primary save-score">儲存成績</button></div>':''}`;
+
+  const inputs=[...box.querySelectorAll('.score-input:not(:disabled)')];
+  inputs.forEach((inp,i)=>inp.addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&inputs[i+1]){e.preventDefault();inputs[i+1].focus();inputs[i+1].select()}
+  }));
+
+  box.querySelectorAll('.unlock-score').forEach(btn=>btn.onclick=async()=>{
+    const key=btn.dataset.student;
+    const s=roster.find(x=>studentCanonicalKey(x)===key);
+    if(!s)return alert('找不到這位學生，請重新整理後再試。');
+    if(!confirm('確定解鎖這位學生的既有成績？'))return;
+
+    const scoreLocks={...(it.scoreLocks||{})};
+    setStudentMapValue(scoreLocks,s,false);
+
+    await updateDoc(doc(db,'assessments',it.id),{scoreLocks,updatedAt:serverTimestamp()});
+    await audit('unlock_score','assessment',it.id,`解鎖成績：${it.name}｜${s.seat}號 ${s.name}`);
+    it.scoreLocks=scoreLocks;
+    toggleScoreEditor(it);toggleScoreEditor(it)
+  });
+
   box.querySelector('.save-score')?.addEventListener('click',async()=>{
     const scores={...(it.scores||{})},scoreLocks={...(it.scoreLocks||{})};
-    try{for(const s of roster){const id=s.id||String(s.seat),inp=box.querySelector(`.score-input[data-student="${CSS.escape(id)}"]`),sel=box.querySelector(`.score-status[data-student="${CSS.escape(id)}"]`);if(!inp||inp.disabled)continue;let score=inp.value===''?null:Number(inp.value);if(score!==null&&(score<0||score>Number(it.maxScore)))throw new Error(`${s.name} 分數超出範圍`);let status=sel.value;if(score!==null&&status==='not_entered')status='normal';scores[id]={score,status};if(confirmed&&score!==null)scoreLocks[id]=true}
-      await updateDoc(doc(db,'assessments',it.id),{scores,scoreLocks,updatedAt:serverTimestamp()});await audit('update','assessment',it.id,`更新小考：${it.name}`);alert('已儲存')
+    try{
+      for(const s of roster){
+        const id=studentCanonicalKey(s);
+        const inp=box.querySelector(`.score-input[data-student="${CSS.escape(id)}"]`);
+        const sel=box.querySelector(`.score-status[data-student="${CSS.escape(id)}"]`);
+        if(!inp||inp.disabled)continue;
+
+        let score=inp.value===''?null:Number(inp.value);
+        if(score!==null&&(score<0||score>Number(it.maxScore)))throw new Error(`${s.name} 分數超出範圍`);
+
+        let status=sel.value;
+        if(score!==null&&status==='not_entered')status='normal';
+
+        setStudentMapValue(scores,s,{score,status});
+        if(confirmed&&score!==null)setStudentMapValue(scoreLocks,s,true)
+      }
+
+      await updateDoc(doc(db,'assessments',it.id),{scores,scoreLocks,updatedAt:serverTimestamp()});
+      await audit('update','assessment',it.id,`更新小考：${it.name}`);
+      alert('已儲存')
     }catch(e){alert(e.message)}
   })
 }
@@ -875,7 +1098,22 @@ async function removeAssessment(it){if(!confirm(`確定刪除「${it.name}」？
 function teacherWeekData(){
   const start=$('#teacherWeekStart')?.value||weekRange(0).start,end=$('#teacherWeekEnd')?.value||weekRange(0).end;
   const tests=currentAssessmentItems.filter(x=>(!start||x.date>=start)&&(!end||x.date<=end)).sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.name||'').localeCompare(b.name||''));
-  const rows=roster.map(s=>{const sid=s.id||String(s.seat);return{seat:s.seat,name:s.name,sid,values:tests.map(t=>{const r=(t.scores||{})[sid]||{};if(hasScore(r))return Number(r.score);if(r.status==='absent')return'缺考';if(r.status==='makeup')return'補考';if(r.status==='exempt')return'免試';return''})}});
+  const rows=roster.map(s=>{
+    const sid=studentCanonicalKey(s);
+    return{
+      seat:s.seat,
+      name:s.name,
+      sid,
+      values:tests.map(t=>{
+        const r=studentMapValue(t.scores,s,{})||{};
+        if(hasScore(r))return Number(r.score);
+        if(r.status==='absent')return'缺考';
+        if(r.status==='makeup')return'補考';
+        if(r.status==='exempt')return'免試';
+        return''
+      })
+    }
+  });
   return{start,end,tests,rows};
 }
 
@@ -935,20 +1173,32 @@ function renderTeacherAggregatePanel(){
 function selectedAggregateData(){
   const chosen=$$('#teacherAggregatePanel input.aggregate-choice:checked');
   const selectedCollections=[],selectedTests=[];
-  chosen.forEach(x=>{if(x.dataset.kind==='collection'){const it=currentCollectionItems.find(v=>v.id===x.value);if(it)selectedCollections.push(it)}else{const it=currentAssessmentItems.find(v=>v.id===x.value);if(it)selectedTests.push(it)}});
+  chosen.forEach(x=>{
+    if(x.dataset.kind==='collection'){
+      const it=currentCollectionItems.find(v=>v.id===x.value);if(it)selectedCollections.push(it)
+    }else{
+      const it=currentAssessmentItems.find(v=>v.id===x.value);if(it)selectedTests.push(it)
+    }
+  });
   selectedCollections.sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.itemName||'').localeCompare(b.itemName||''));
   selectedTests.sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.name||'').localeCompare(b.name||''));
-  const columns=[...selectedCollections.map(it=>({kind:'collection',item:it,label:`作業｜${it.itemName}`,date:it.date||''})),...selectedTests.map(it=>({kind:'assessment',item:it,label:`成績｜${it.name}`,date:it.date||''}))];
-  const rows=roster.map(s=>{const sid=s.id||String(s.seat),values=columns.map(c=>c.kind==='collection'?aggregateCollectionValue(c.item,sid):aggregateScoreValue(c.item,sid));return[s.seat,s.name,...values]});
+  const columns=[
+    ...selectedCollections.map(it=>({kind:'collection',item:it,label:`作業｜${it.itemName}`,date:it.date||''})),
+    ...selectedTests.map(it=>({kind:'assessment',item:it,label:`成績｜${it.name}`,date:it.date||''}))
+  ];
+  const rows=roster.map(s=>{
+    const values=columns.map(c=>c.kind==='collection'?aggregateCollectionValue(c.item,s):aggregateScoreValue(c.item,s));
+    return[s.seat,s.name,...values]
+  });
   return{selectedCollections,selectedTests,columns,rows};
 }
-function aggregateCollectionValue(it,sid){
-  const status=(it.records||{})[sid]||'submitted';
-  if(status==='submitted'&&(it.lateSubmitted||{})[sid])return'已繳（遲交）';
+function aggregateCollectionValue(it,s){
+  const status=studentMapValue(it.records,s,'submitted');
+  if(status==='submitted'&&!!studentMapValue(it.lateSubmitted,s,false))return'已繳（遲交）';
   return labelOf(statusOptions,status);
 }
-function aggregateScoreValue(it,sid){
-  const r=(it.scores||{})[sid]||{};
+function aggregateScoreValue(it,s){
+  const r=studentMapValue(it.scores,s,{})||{};
   if(hasScore(r)){const score=Number(r.score);if(r.status==='makeup')return`${score}（補考）`;return score}
   return labelOf(scoreStatusOptions,r.status||'not_entered');
 }
@@ -971,23 +1221,18 @@ async function exportAggregateExcel(){
 function printAggregateSummary(){const d=ensureAggregateSelected();if(!d)return;openPrint(aggregateTitle(),aggregateMeta(d),['座號','姓名',...d.columns.map(c=>c.label)],d.rows.map(r=>[r[0],esc(r[1]),...r.slice(2)]),true,true)}
 
 /* ========================= 單筆列印 / Excel ========================= */
-function collectionRows(it){return roster.map(s=>{const sid=s.id||String(s.seat),status=(it.records||{})[sid]||'submitted',late=status==='submitted'&&!!(it.lateSubmitted||{})[sid];return[s.seat,s.name,labelOf(statusOptions,status),late?'已繳交（遲交）':'']})}
-function printCollection(it){openPrint(`${it.classId}班｜${it.scopeName}｜${it.itemName}`,`日期：${it.date||''}${it.dueDate?`｜截止：${it.dueDate}`:''}`,['座號','姓名','狀態','備註'],collectionRows(it).map(r=>[r[0],esc(r[1]),r[2],r[3]]))}
-async function exportCollection(it){
-  try{
-    await ensureXLSX();const title=`${it.classId}班｜${it.scopeName}｜${it.itemName}`,meta=`學期：${it.semester||viewSemester}｜日期：${it.date||''}${it.dueDate?`｜截止：${it.dueDate}`:''}`;
-    const headers=['座號','姓名','狀態','備註'],rows=collectionRows(it),ws=makeTitledSheet(title,meta,headers,rows,[{wch:7},{wch:12},{wch:14},{wch:20}]),wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,ws,'作業繳交');XLSX.writeFile(wb,`${safeFileName(it.classId)}-${safeFileName(it.scopeName)}-${safeFileName(it.itemName)}.xlsx`)
-  }catch(e){alert('Excel 下載失敗：'+e.message)}
+function collectionRows(it){
+  return roster.map(s=>{
+    const status=studentMapValue(it.records,s,'submitted');
+    const late=status==='submitted'&&!!studentMapValue(it.lateSubmitted,s,false);
+    return[s.seat,s.name,labelOf(statusOptions,status),late?'已繳交（遲交）':'']
+  })
 }
-function assessmentRows(it){return roster.map(s=>{const sid=s.id||String(s.seat),r=(it.scores||{})[sid]||{};return[s.seat,s.name,hasScore(r)?Number(r.score):'',labelOf(scoreStatusOptions,r.status||'not_entered')]})}
-function printAssessment(it){openPrint(`${it.classId}班｜${it.scopeName}｜${it.name}`,`日期：${it.date||''}｜滿分：${it.maxScore}｜及格：${it.passScore}`,['座號','姓名','成績','狀態'],assessmentRows(it).map(r=>[r[0],esc(r[1]),r[2],r[3]]))}
-async function exportAssessment(it){
-  try{
-    await ensureXLSX();const title=`${it.classId}班｜${it.scopeName}｜${it.name}`,meta=`學期：${it.semester||viewSemester}｜日期：${it.date||''}｜滿分：${it.maxScore}｜及格：${it.passScore}`;
-    const headers=['座號','姓名','成績','狀態'],rows=assessmentRows(it),ws=makeTitledSheet(title,meta,headers,rows,[{wch:7},{wch:12},{wch:12},{wch:14}]),wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,ws,'成績');XLSX.writeFile(wb,`${safeFileName(it.classId)}-${safeFileName(it.scopeName)}-${safeFileName(it.name)}.xlsx`)
-  }catch(e){alert('Excel 下載失敗：'+e.message)}
+function assessmentRows(it){
+  return roster.map(s=>{
+    const r=studentMapValue(it.scores,s,{})||{};
+    return[s.seat,s.name,hasScore(r)?Number(r.score):'',labelOf(scoreStatusOptions,r.status||'not_entered')]
+  })
 }
 function openPrint(title,meta,headers,rows,landscape=false,fitOnePage=false){
   const w=window.open('','_blank');
