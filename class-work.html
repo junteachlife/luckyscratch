@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>班級作業成績回報系統</title>
-<!-- v20260916-U：任課老師段考資料夾封存 -->
+<!-- v20260917-V：任課老師段考資料夾封存 -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>">
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--ink:#172033;--muted:#667085;--line:#e4e7ec;--brand:#2563eb;--brand2:#1d4ed8;--good:#067647;--warn:#b54708;--bad:#b42318;--soft:#eff6ff;--purple:#6941c6}
@@ -239,11 +239,23 @@ summary{color:#6b4b2b!important}
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import {getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,signOut,onAuthStateChanged,updatePassword} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import {getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,signOut,onAuthStateChanged,updatePassword,setPersistence,browserSessionPersistence} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import {getFirestore,doc,getDoc,setDoc,collection,addDoc,updateDoc,deleteDoc,query,where,onSnapshot,serverTimestamp,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig={apiKey:"AIzaSyB56F4wJ-IMUiBsqJ5P33HoDK642h7671U",authDomain:"class-datawork.firebaseapp.com",projectId:"class-datawork",storageBucket:"class-datawork.firebasestorage.app",messagingSenderId:"24186422479",appId:"1:24186422479:web:8dee260f34b2e506fd63ba"};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+
+/*
+  公用電腦登入安全：
+  Firebase 登入狀態只保留在目前瀏覽器工作階段。
+  - 同一個瀏覽器工作階段重新整理頁面：仍可保持登入。
+  - 關閉整個瀏覽器／無痕視窗後：Firebase 登入狀態不再永久保留。
+  注意：Google 帳號本身是否仍保持登入由 Google 控制，因此登入時另外要求重新顯示帳號選擇器。
+*/
+const authPersistenceReady=setPersistence(auth,browserSessionPersistence).catch(err=>{
+  console.warn('Firebase session persistence 設定失敗',err)
+});
+
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 let profile=null,currentAssignment=null,roster=[],unsubRoster=null,unsubItems=null,unsubAssess=null,currentSemester='115-1',viewSemester='115-1',currentCollectionItems=[],currentAssessmentItems=[];
 let archiveViewMode='current',archiveFolder='exam1';
@@ -429,12 +441,14 @@ $('#googleLoginBtn').onclick=async()=>{
   const provider=new GoogleAuthProvider();
   provider.setCustomParameters({
     login_hint:fullEmail,
-    hd:domain
+    hd:domain,
+    prompt:'select_account'
   });
 
   const btn=$('#googleLoginBtn');
   btn.disabled=true;btn.textContent='Google 登入中…';
   try{
+    await authPersistenceReady;
     sessionStorage.setItem('classWorkPendingLoginRole',role);
     sessionStorage.setItem('classWorkPendingLoginDomain',domain);
     const result=await signInWithPopup(auth,provider);
