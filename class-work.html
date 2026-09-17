@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>班級作業成績回報系統</title>
-<!-- v20260917-V：任課老師段考資料夾封存 -->
+<!-- v20260917-W：任課老師段考資料夾封存 -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>">
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--ink:#172033;--muted:#667085;--line:#e4e7ec;--brand:#2563eb;--brand2:#1d4ed8;--good:#067647;--warn:#b54708;--bad:#b42318;--soft:#eff6ff;--purple:#6941c6}
@@ -869,11 +869,12 @@ function renderCollection(items){
     const c=collectionCounts(it),confirmed=it.reviewStatus==='confirmed',archived=it.archived===true;
     const pick=teacherArchive?`<input type="checkbox" class="archive-pick" data-id="${esc(it.id)}">`:'';
     const badge=isTeacherAssignment(currentAssignment)&&archived?`<span class="pill purple">📦 ${esc(archiveGroupLabel(it.archiveGroup))}</span>`:'';
-    html+=`<div class="item ${confirmed?'confirmed':''}"><div class="item-head"><div style="display:flex;gap:8px;align-items:flex-start">${pick}<div><b>${esc(it.itemName)}</b><div class="meta">${esc(it.semester||viewSemester)}｜${esc(it.date||'')}${it.dueDate?`｜截止 ${esc(it.dueDate)}`:''}｜建立：${esc(it.createdByName||'')}</div></div></div><div><span class="pill ${confirmed?'good':'warn'}">${confirmed?'已確認':'尚未確認'}</span>${badge}</div></div><div class="stats"><span class="stat">已繳 ${c.submitted}</span><span class="stat">未繳 ${c.missing}</span><span class="stat">補交 ${c.late}</span><span class="stat">免繳 ${c.exempt}</span>${c.lateSubmitted?`<span class="stat" style="color:#d92d20">遲交後已繳 ${c.lateSubmitted}</span>`:''}</div><div class="toolbar"><button class="btn gray small open-col" data-id="${it.id}">${archived?'查看':'查看／登記'}</button>${!archived&&canConfirm(currentAssignment)?`<button class="btn good small confirm-col" data-id="${it.id}">${confirmed?'取消確認':'確認'}</button>`:''}${isTeacherAssignment(currentAssignment)?`<button class="btn gray small print-col" data-id="${it.id}">🖨 列印</button><button class="btn gray small xlsx-col" data-id="${it.id}">📥 Excel</button>`:''}${!archived&&!confirmed&&canCollection(currentAssignment)?`<button class="btn danger small del-col" data-id="${it.id}">刪除</button>`:''}</div><div id="col-${it.id}" class="hidden"></div></div>`
+    html+=`<div class="item ${confirmed?'confirmed':''}"><div class="item-head"><div style="display:flex;gap:8px;align-items:flex-start">${pick}<div><b>${esc(it.itemName)}</b><div class="meta">${esc(it.semester||viewSemester)}｜${esc(it.date||'')}${it.dueDate?`｜截止 ${esc(it.dueDate)}`:''}｜建立：${esc(it.createdByName||'')}</div></div></div><div><span class="pill ${confirmed?'good':'warn'}">${confirmed?'已確認':'尚未確認'}</span>${badge}</div></div><div class="stats"><span class="stat">已繳 ${c.submitted}</span><span class="stat">未繳 ${c.missing}</span><span class="stat">補交 ${c.late}</span><span class="stat">免繳 ${c.exempt}</span>${c.lateSubmitted?`<span class="stat" style="color:#d92d20">遲交後已繳 ${c.lateSubmitted}</span>`:''}</div><div class="toolbar"><button class="btn gray small open-col" data-id="${it.id}">${archived?'查看':'查看／登記'}</button>${!archived&&canCollection(currentAssignment)?`<button class="btn gray small rename-col" data-id="${it.id}">✏️ 改名稱</button>`:''}${!archived&&canConfirm(currentAssignment)?`<button class="btn good small confirm-col" data-id="${it.id}">${confirmed?'取消確認':'確認'}</button>`:''}${isTeacherAssignment(currentAssignment)?`<button class="btn gray small print-col" data-id="${it.id}">🖨 列印</button><button class="btn gray small xlsx-col" data-id="${it.id}">📥 Excel</button>`:''}${!archived&&!confirmed&&canCollection(currentAssignment)?`<button class="btn danger small del-col" data-id="${it.id}">刪除</button>`:''}</div><div id="col-${it.id}" class="hidden"></div></div>`
   });
   p.innerHTML=html;
   $('#newCollectionBtn')?.addEventListener('click',createCollectionPrompt);
   p.querySelectorAll('.open-col').forEach(b=>b.onclick=()=>toggleCollectionEditor(items.find(x=>x.id===b.dataset.id)));
+  p.querySelectorAll('.rename-col').forEach(b=>b.onclick=()=>renameCollection(items.find(x=>x.id===b.dataset.id)));
   p.querySelectorAll('.confirm-col').forEach(b=>b.onclick=()=>confirmCollection(items.find(x=>x.id===b.dataset.id)));
   p.querySelectorAll('.del-col').forEach(b=>b.onclick=()=>removeCollection(items.find(x=>x.id===b.dataset.id)));
   p.querySelectorAll('.print-col').forEach(b=>b.onclick=()=>printCollection(items.find(x=>x.id===b.dataset.id)));
@@ -882,6 +883,28 @@ function renderCollection(items){
 }
 
 async function createCollectionPrompt(){const name=prompt('作業繳交項目名稱：');if(!name)return;const due=prompt('截止日期（可留空，格式 YYYY-MM-DD）：','')||'',note=prompt('備註（可留空）：','')||'',a=currentAssignment,key=scopeKey(a),records={};roster.forEach(s=>records[studentCanonicalKey(s)]='submitted');const ref=await addDoc(collection(db,'collectionItems'),{semester:a.semester||currentSemester,scopeKey:key,classId:a.classId,scopeType:a.scopeType,scopeName:a.scopeName,itemName:name.trim(),date:today(),dueDate:due.trim(),note:note.trim(),records,lateSubmitted:{},lockedRecords:{},createdBy:auth.currentUser.uid,createdByName:profile.displayName||profile.username,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),reviewStatus:'pending',locked:false,archived:false,archiveGroup:null});await audit('create','collection',ref.id,`新增作業繳交：${name}`)}
+
+async function renameCollection(it){
+  if(!it||it.archived===true)return alert('已封存資料請先解封存後再修改名稱。');
+  if(!canCollection(currentAssignment))return alert('你沒有修改這筆作業名稱的權限。');
+  const oldName=String(it.itemName||'').trim();
+  const input=prompt('修改作業／繳交項目名稱：',oldName);
+  if(input===null)return;
+  const newName=input.trim();
+  if(!newName)return alert('名稱不能空白。');
+  if(newName.length>80)return alert('名稱請控制在 80 個字以內。');
+  if(newName===oldName)return;
+  try{
+    await updateDoc(doc(db,'collectionItems',it.id),{
+      itemName:newName,
+      updatedAt:serverTimestamp()
+    });
+    await audit('rename','collection',it.id,`修改作業名稱：${oldName} → ${newName}`);
+  }catch(e){
+    console.error(e);
+    alert('修改作業名稱失敗：'+(e.message||e))
+  }
+}
 
 async function confirmCollection(it){
   const confirming=it.reviewStatus!=='confirmed';
@@ -996,11 +1019,12 @@ function renderScores(items){
     const st=calcStats(it),confirmed=it.reviewStatus==='confirmed',archived=it.archived===true;
     const pick=teacherArchive?`<input type="checkbox" class="archive-pick" data-id="${esc(it.id)}">`:'';
     const badge=isTeacherAssignment(currentAssignment)&&archived?`<span class="pill purple">📦 ${esc(archiveGroupLabel(it.archiveGroup))}</span>`:'';
-    html+=`<div class="item ${confirmed?'confirmed':''}"><div class="item-head"><div style="display:flex;gap:8px;align-items:flex-start">${pick}<div><b>${esc(it.name)}</b><div class="meta">${esc(it.semester||viewSemester)}｜${esc(it.date||'')}｜滿分 ${it.maxScore}｜及格 ${it.passScore}｜建立：${esc(it.createdByName||'')}</div></div></div><div><span class="pill ${confirmed?'good':'warn'}">${confirmed?'已確認':'尚未確認'}</span>${badge}</div></div><div class="stats"><span class="stat">平均 ${st.avg}</span><span class="stat">最高 ${st.high}</span><span class="stat">最低 ${st.low}</span><span class="stat">未達及格 ${st.below}</span><span class="stat">缺考 ${st.absent}</span></div><div class="toolbar"><button class="btn gray small open-score" data-id="${it.id}">${archived?'查看':'查看／登記'}</button>${!archived&&canConfirm(currentAssignment)?`<button class="btn good small confirm-score" data-id="${it.id}">${confirmed?'取消確認':'確認'}</button>`:''}${isTeacherAssignment(currentAssignment)?`<button class="btn gray small print-score" data-id="${it.id}">🖨 列印</button><button class="btn gray small xlsx-score" data-id="${it.id}">📥 Excel</button>`:''}${!archived&&!confirmed&&canScores(currentAssignment)?`<button class="btn danger small del-score" data-id="${it.id}">刪除</button>`:''}</div><div id="score-${it.id}" class="hidden"></div></div>`
+    html+=`<div class="item ${confirmed?'confirmed':''}"><div class="item-head"><div style="display:flex;gap:8px;align-items:flex-start">${pick}<div><b>${esc(it.name)}</b><div class="meta">${esc(it.semester||viewSemester)}｜${esc(it.date||'')}｜滿分 ${it.maxScore}｜及格 ${it.passScore}｜建立：${esc(it.createdByName||'')}</div></div></div><div><span class="pill ${confirmed?'good':'warn'}">${confirmed?'已確認':'尚未確認'}</span>${badge}</div></div><div class="stats"><span class="stat">平均 ${st.avg}</span><span class="stat">最高 ${st.high}</span><span class="stat">最低 ${st.low}</span><span class="stat">未達及格 ${st.below}</span><span class="stat">缺考 ${st.absent}</span></div><div class="toolbar"><button class="btn gray small open-score" data-id="${it.id}">${archived?'查看':'查看／登記'}</button>${!archived&&canScores(currentAssignment)?`<button class="btn gray small rename-score" data-id="${it.id}">✏️ 改名稱</button>`:''}${!archived&&canConfirm(currentAssignment)?`<button class="btn good small confirm-score" data-id="${it.id}">${confirmed?'取消確認':'確認'}</button>`:''}${isTeacherAssignment(currentAssignment)?`<button class="btn gray small print-score" data-id="${it.id}">🖨 列印</button><button class="btn gray small xlsx-score" data-id="${it.id}">📥 Excel</button>`:''}${!archived&&!confirmed&&canScores(currentAssignment)?`<button class="btn danger small del-score" data-id="${it.id}">刪除</button>`:''}</div><div id="score-${it.id}" class="hidden"></div></div>`
   });
   p.innerHTML=html;
   $('#newAssessBtn')?.addEventListener('click',createAssessmentPrompt);
   p.querySelectorAll('.open-score').forEach(b=>b.onclick=()=>toggleScoreEditor(items.find(x=>x.id===b.dataset.id)));
+  p.querySelectorAll('.rename-score').forEach(b=>b.onclick=()=>renameAssessment(items.find(x=>x.id===b.dataset.id)));
   p.querySelectorAll('.confirm-score').forEach(b=>b.onclick=()=>confirmAssessment(items.find(x=>x.id===b.dataset.id)));
   p.querySelectorAll('.del-score').forEach(b=>b.onclick=()=>removeAssessment(items.find(x=>x.id===b.dataset.id)));
   p.querySelectorAll('.print-score').forEach(b=>b.onclick=()=>printAssessment(items.find(x=>x.id===b.dataset.id)));
@@ -1012,6 +1036,28 @@ function renderScores(items){
 }
 
 async function createAssessmentPrompt(){const name=prompt('小考名稱：');if(!name)return;const max=Number(prompt('滿分：','100'));if(!Number.isFinite(max)||max<=0)return alert('滿分格式不正確');const pass=Number(prompt('及格分數：',String(Math.round(max*.6))));if(!Number.isFinite(pass))return alert('及格分數格式不正確');const a=currentAssignment,scores={};roster.forEach(s=>scores[studentCanonicalKey(s)]={status:'not_entered',score:null});const ref=await addDoc(collection(db,'assessments'),{semester:a.semester||currentSemester,scopeKey:scopeKey(a),classId:a.classId,scopeType:a.scopeType,scopeName:a.scopeName,name:name.trim(),date:today(),maxScore:max,passScore:pass,note:'',scores,scoreLocks:{},createdBy:auth.currentUser.uid,createdByName:profile.displayName||profile.username,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),reviewStatus:'pending',locked:false,archived:false,archiveGroup:null});await audit('create','assessment',ref.id,`新增小考：${name}`)}
+
+async function renameAssessment(it){
+  if(!it||it.archived===true)return alert('已封存資料請先解封存後再修改名稱。');
+  if(!canScores(currentAssignment))return alert('你沒有修改這筆小考名稱的權限。');
+  const oldName=String(it.name||'').trim();
+  const input=prompt('修改小考名稱：',oldName);
+  if(input===null)return;
+  const newName=input.trim();
+  if(!newName)return alert('名稱不能空白。');
+  if(newName.length>80)return alert('名稱請控制在 80 個字以內。');
+  if(newName===oldName)return;
+  try{
+    await updateDoc(doc(db,'assessments',it.id),{
+      name:newName,
+      updatedAt:serverTimestamp()
+    });
+    await audit('rename','assessment',it.id,`修改小考名稱：${oldName} → ${newName}`);
+  }catch(e){
+    console.error(e);
+    alert('修改小考名稱失敗：'+(e.message||e))
+  }
+}
 
 async function confirmAssessment(it){
   const confirming=it.reviewStatus!=='confirmed';
