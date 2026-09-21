@@ -1158,6 +1158,20 @@ ${currentDate} 的聯絡簿狀態標記為「請假／缺席」。
             const studentNoNum = Number(studentNoVal);
             const studentName = contactBookStudents[studentNoVal];
 
+            // 防呆：正式紀錄前，先再次確認目前選擇的學生
+            const studentConfirm = confirm(`👤 【確認夥伴】
+
+即將紀錄：
+${studentNoNum} 號 - ${studentName}
+
+日期：${currentDate}
+
+請確認是否為這位夥伴？`);
+            if (!studentConfirm) {
+                document.getElementById('contactBookStudentNo').focus();
+                return;
+            }
+
             // 防呆：未繳交模式送出前再次確認學生與日期
             if (isNotSubmittedMode) {
                 const finalConfirm = confirm(`⚠️ 【最後確認】
