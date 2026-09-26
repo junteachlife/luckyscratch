@@ -3525,6 +3525,141 @@
       return count;
     }
 
+
+    function normalizeStudentTargets(targetStudent) {
+      const values = [
+        scoreNumber(targetStudent?.level1),
+        scoreNumber(targetStudent?.level2),
+        scoreNumber(targetStudent?.level3)
+      ].filter(value => value !== null);
+
+      const unique =
+        [...new Set(values.map(value => Math.round(value)))]
+          .sort((a,b) => a - b);
+
+      if (!unique.length) {
+        return {
+          level1:null,
+          level2:null,
+          level3:null,
+          targetCount:0
+        };
+      }
+
+      if (unique.length === 1) {
+        return {
+          level1:unique[0],
+          level2:null,
+          level3:null,
+          targetCount:1
+        };
+      }
+
+      if (unique.length === 2) {
+        return {
+          level1:unique[0],
+          level2:null,
+          level3:unique[1],
+          targetCount:2
+        };
+      }
+
+      return {
+        level1:unique[0],
+        level2:unique[1],
+        level3:unique[2],
+        targetCount:3
+      };
+    }
+
+    function studentRewardPolicy(targetStudent) {
+      const normalized =
+        normalizeStudentTargets(targetStudent);
+
+      const count =
+        Number(targetStudent?.targetCount) ||
+        normalized.targetCount;
+
+      const initial =
+        normalized.level1;
+
+      if (count <= 0 || initial === null) {
+        return {
+          targetCount:0,
+          reward1:"",
+          reward2:"",
+          reward3:""
+        };
+      }
+
+      if (count === 1) {
+        return {
+          targetCount:1,
+          reward1:
+            targetStudent?.reward1 ||
+            "生活札記免寫卷 ×6",
+          reward2:"",
+          reward3:""
+        };
+      }
+
+      if (count === 2) {
+        return {
+          targetCount:2,
+          reward1:
+            targetStudent?.reward1 ||
+            "生活札記免寫卷 ×3",
+          reward2:"",
+          reward3:
+            targetStudent?.reward3 ||
+            "生活札記免寫卷 ×6"
+        };
+      }
+
+      if (initial >= 90) {
+        return {
+          targetCount:3,
+          reward1:
+            targetStudent?.reward1 ||
+            "生活札記免寫卷 ×2",
+          reward2:
+            targetStudent?.reward2 ||
+            "生活札記免寫卷 ×3",
+          reward3:
+            targetStudent?.reward3 ||
+            "生活札記免寫卷 ×5"
+        };
+      }
+
+      if (initial >= 80) {
+        return {
+          targetCount:3,
+          reward1:
+            targetStudent?.reward1 ||
+            "生活札記免寫卷 ×1",
+          reward2:
+            targetStudent?.reward2 ||
+            "生活札記免寫卷 ×2",
+          reward3:
+            targetStudent?.reward3 ||
+            "生活札記免寫卷 ×4"
+        };
+      }
+
+      return {
+        targetCount:3,
+        reward1:
+          targetStudent?.reward1 ||
+          "生活札記免寫卷 ×1",
+        reward2:
+          targetStudent?.reward2 ||
+          "生活札記免寫卷 ×2",
+        reward3:
+          targetStudent?.reward3 ||
+          "生活札記免寫卷 ×3"
+      };
+    }
+
     function evaluateTargetAchievement(targetMeta,targetStudent,result) {
       if (!result || !targetStudent) return null;
 
@@ -3532,12 +3667,24 @@
       if (actualAverage === null) return null;
 
       const rule = targetMeta.qualificationRule || "overall_plus_3subjects";
+      const normalized = normalizeStudentTargets(targetStudent);
+      const rewards = studentRewardPolicy(targetStudent);
 
-      const levels = [
-        {key:"level3",label:"最高目標",reward:targetMeta.reward3},
-        {key:"level2",label:"次級目標",reward:targetMeta.reward2},
-        {key:"level1",label:"初級目標",reward:targetMeta.reward1}
-      ];
+      const levels =
+        rewards.targetCount === 1
+          ? [
+              {key:"level1",label:"滿分／最高挑戰",reward:rewards.reward1}
+            ]
+          : rewards.targetCount === 2
+            ? [
+                {key:"level3",label:"最高目標",reward:rewards.reward3},
+                {key:"level1",label:"初級目標",reward:rewards.reward1}
+              ]
+            : [
+                {key:"level3",label:"最高目標",reward:rewards.reward3},
+                {key:"level2",label:"次級目標",reward:rewards.reward2},
+                {key:"level1",label:"初級目標",reward:rewards.reward1}
+              ];
 
       for (const level of levels) {
         const targetAverage = scoreNumber(targetStudent[level.key]);
@@ -3609,32 +3756,72 @@
         `<span class="target-confidence">分析可信度：${escapeHtml(confidence)}</span>
          <span class="target-progress-note">　有效歷次資料：${Number(targetStudent.validExamCount)||0} 次</span>`;
 
-      const levels = [
-        {
-          css:"primary",
-          icon:"🌱",
-          name:"初級目標",
-          score:targetStudent.level1,
-          reward:targetMeta.reward1 || "生活札記免寫卷 ×1",
-          note:"努力一下有機會達成，先把這個目標拿下。"
-        },
-        {
-          css:"secondary",
-          icon:"⭐",
-          name:"次級目標",
-          score:targetStudent.level2,
-          reward:targetMeta.reward2 || "生活札記免寫卷 ×2",
-          note:"需要幾科一起穩定進步，挑戰性更高。"
-        },
-        {
-          css:"highest",
-          icon:"🏆",
-          name:"最高目標",
-          score:targetStudent.level3,
-          reward:targetMeta.reward3 || "生活札記免寫卷 ×3",
-          note:"參考你的個人最佳與近期表現設定的高挑戰。"
-        }
-      ];
+      const normalizedTargets =
+        normalizeStudentTargets(targetStudent);
+
+      const rewards =
+        studentRewardPolicy(targetStudent);
+
+      let levels = [];
+
+      if (rewards.targetCount === 1) {
+        levels = [
+          {
+            css:"highest",
+            icon:"🏆",
+            name:"最高挑戰",
+            score:normalizedTargets.level1,
+            reward:rewards.reward1,
+            note:"目前分數已接近滿分，因此只保留一個最高挑戰。"
+          }
+        ];
+      } else if (rewards.targetCount === 2) {
+        levels = [
+          {
+            css:"primary",
+            icon:"🌱",
+            name:"初級目標",
+            score:normalizedTargets.level1,
+            reward:rewards.reward1,
+            note:"因目前分數已很高，這次只保留兩個不同的挑戰目標。"
+          },
+          {
+            css:"highest",
+            icon:"🏆",
+            name:"最高目標",
+            score:normalizedTargets.level3,
+            reward:rewards.reward3,
+            note:"挑戰更高分或滿分，達成可獲得最高級獎勵。"
+          }
+        ];
+      } else {
+        levels = [
+          {
+            css:"primary",
+            icon:"🌱",
+            name:"初級目標",
+            score:normalizedTargets.level1,
+            reward:rewards.reward1,
+            note:"努力一下有機會達成，先把這個目標拿下。"
+          },
+          {
+            css:"secondary",
+            icon:"⭐",
+            name:"次級目標",
+            score:normalizedTargets.level2,
+            reward:rewards.reward2,
+            note:"比初級再進一步，但仍控制在可以努力達成的範圍。"
+          },
+          {
+            css:"highest",
+            icon:"🏆",
+            name:"最高目標",
+            score:normalizedTargets.level3,
+            reward:rewards.reward3,
+            note:"參考你的歷次最高分設定的高挑戰。"
+          }
+        ];
+      }
 
       $("targetLevelGrid").innerHTML =
         levels.map(level => `
@@ -3648,23 +3835,86 @@
         `).join("");
 
       $("targetRuleBox").textContent =
-        targetRuleText(targetMeta.qualificationRule);
+        `${targetRuleText(targetMeta.qualificationRule)} 獎勵依你的初級目標分數自動套用；若因分數已很高只剩兩個目標，則採 3 張／6 張免寫卷。`;
 
-      $("targetSubjectBody").innerHTML =
-        SUBJECTS.map(subject => {
-          const data =
-            targetStudent.subjectTargets?.[subject.key] || {};
+      const targetCount = rewards.targetCount;
 
-          return `
-            <tr>
-              <td>${subject.icon} ${subject.name}</td>
-              <td>${formatScore(data.baseline)}</td>
-              <td>${formatScore(data.level1)}</td>
-              <td>${formatScore(data.level2)}</td>
-              <td>${formatScore(data.level3)}</td>
-            </tr>
-          `;
-        }).join("");
+      const table = $("targetSubjectBody").closest("table");
+      const headRow = table.querySelector("thead tr");
+
+      if (targetCount === 1) {
+        headRow.innerHTML = `
+          <th>科目</th>
+          <th>目前基準</th>
+          <th>🏆 最高挑戰</th>
+        `;
+
+        $("targetSubjectBody").innerHTML =
+          SUBJECTS.map(subject => {
+            const data =
+              targetStudent.subjectTargets?.[subject.key] || {};
+
+            const normalized =
+              normalizeStudentTargets(data);
+
+            return `
+              <tr>
+                <td>${subject.icon} ${subject.name}</td>
+                <td>${formatScore(data.baseline)}</td>
+                <td>${formatScore(normalized.level3 ?? normalized.level1)}</td>
+              </tr>
+            `;
+          }).join("");
+      } else if (targetCount === 2) {
+        headRow.innerHTML = `
+          <th>科目</th>
+          <th>目前基準</th>
+          <th>🌱 初級</th>
+          <th>🏆 最高</th>
+        `;
+
+        $("targetSubjectBody").innerHTML =
+          SUBJECTS.map(subject => {
+            const data =
+              targetStudent.subjectTargets?.[subject.key] || {};
+
+            const normalized =
+              normalizeStudentTargets(data);
+
+            return `
+              <tr>
+                <td>${subject.icon} ${subject.name}</td>
+                <td>${formatScore(data.baseline)}</td>
+                <td>${formatScore(normalized.level1)}</td>
+                <td>${formatScore(normalized.level3 ?? normalized.level1)}</td>
+              </tr>
+            `;
+          }).join("");
+      } else {
+        headRow.innerHTML = `
+          <th>科目</th>
+          <th>目前基準</th>
+          <th>🌱 初級</th>
+          <th>⭐ 次級</th>
+          <th>🏆 最高</th>
+        `;
+
+        $("targetSubjectBody").innerHTML =
+          SUBJECTS.map(subject => {
+            const data =
+              targetStudent.subjectTargets?.[subject.key] || {};
+
+            return `
+              <tr>
+                <td>${subject.icon} ${subject.name}</td>
+                <td>${formatScore(data.baseline)}</td>
+                <td>${formatScore(data.level1)}</td>
+                <td>${formatScore(data.level2)}</td>
+                <td>${formatScore(data.level3)}</td>
+              </tr>
+            `;
+          }).join("");
+      }
 
       const achievement =
         evaluateTargetAchievement(
