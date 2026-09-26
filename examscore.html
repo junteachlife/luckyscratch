@@ -553,7 +553,67 @@
       .brand-bubble { padding:13px 21px; }
       .subject-head { flex-direction:column; align-items:flex-start; }
     }
-  </style>
+  
+.exam-target-card{
+  padding:20px;
+  border-radius:20px;
+  background:linear-gradient(180deg,#fffaf1,#fff);
+  border:1px solid #eadfcf;
+  box-shadow:0 8px 24px rgba(110,86,54,.08)
+}
+.target-level-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  margin-top:14px
+}
+.target-level-card{
+  padding:16px;
+  border-radius:16px;
+  border:1px solid #eadfcf;
+  background:#fff
+}
+.target-level-card.primary{background:#f4fbf2}
+.target-level-card.secondary{background:#fff8e9}
+.target-level-card.highest{background:#fff0e7}
+.target-level-icon{font-size:24px}
+.target-level-name{font-weight:900;margin-top:5px}
+.target-level-score{font-size:30px;font-weight:1000;margin:8px 0 4px}
+.target-reward{font-size:13px;color:#7b654d;font-weight:800}
+.target-progress-note{font-size:13px;color:#6f7780;line-height:1.65}
+.target-subject-table{
+  margin-top:16px
+}
+.target-rule-box{
+  margin-top:14px;
+  padding:12px 14px;
+  border-radius:13px;
+  background:#eef7fb;
+  line-height:1.7;
+  font-size:14px
+}
+.target-confidence{
+  display:inline-flex;
+  padding:5px 9px;
+  border-radius:999px;
+  background:#eef3f8;
+  font-size:12px;
+  font-weight:900;
+  color:#596a7c
+}
+.target-result-banner{
+  margin-top:14px;
+  padding:14px 16px;
+  border-radius:14px;
+  background:#eef8f1;
+  border-left:5px solid #69a87d;
+  line-height:1.75
+}
+@media(max-width:700px){
+  .target-level-grid{grid-template-columns:1fr}
+}
+
+</style>
 </head>
 
 <body>
@@ -638,7 +698,35 @@
 
       <section class="card">
         <div class="section-title">📊 我的學習歷程摘要</div>
-        <div id="summary" class="summary"></div>
+        
+<section id="examTargetSection" class="card" style="display:none">
+  <div class="section-title">🎯 我的本次段考挑戰</div>
+  <div class="exam-target-card">
+    <div id="targetExamTitle" style="font-size:18px;font-weight:900"></div>
+    <div id="targetConfidenceText" style="margin-top:8px"></div>
+    <div id="targetLevelGrid" class="target-level-grid"></div>
+    <div id="targetRuleBox" class="target-rule-box"></div>
+
+    <div class="table-wrap target-subject-table">
+      <table>
+        <thead>
+          <tr>
+            <th>科目</th>
+            <th>目前基準</th>
+            <th>🌱 初級</th>
+            <th>⭐ 次級</th>
+            <th>🏆 最高</th>
+          </tr>
+        </thead>
+        <tbody id="targetSubjectBody"></tbody>
+      </table>
+    </div>
+
+    <div id="targetResultBanner" class="target-result-banner" style="display:none"></div>
+  </div>
+</section>
+
+<div id="summary" class="summary"></div>
       </section>
 
       <div class="chart-grid">
@@ -951,6 +1039,12 @@
         .replace(/'/g,"&#039;");
     }
 
+    function scoreNumber(value) {
+      if (value === null || value === undefined || value === "") return null;
+      const number = Number(value);
+      return Number.isFinite(number) ? number : null;
+    }
+
     function formatScore(value) {
       const n = Number(value);
       if (!Number.isFinite(n)) return "—";
@@ -1107,8 +1201,8 @@
     function getSequentialTrend(values) {
       const valid =
         values
-          .map(Number)
-          .filter(Number.isFinite)
+          .map(scoreNumber)
+          .filter(value => value !== null)
           .slice(-3);
 
       if (valid.length < 3) return "insufficient";
@@ -1143,8 +1237,8 @@
     function getTrendStats(values) {
       const valid =
         values
-          .map(Number)
-          .filter(Number.isFinite);
+          .map(scoreNumber)
+          .filter(value => value !== null);
 
       const last3 = valid.slice(-3);
       const latest = valid.at(-1);
@@ -3283,7 +3377,12 @@
         "學生";
 
       $("studentMeta").textContent =
-        `${latest.classCode || student.currentClass || ""} 班　${normalizeSeat(latest.seat || student.currentSeat)} 號　共 ${records.length} 次段考資料`;
+        `${latest.classCode || student.currentClass || ""} 班　${normalizeSeat(latest.seat || student.currentSeat)} 號　共 ${
+          records.filter(item =>
+            ["chinese","english","math","science","social","total","average"]
+              .some(key => scoreNumber(item.result?.[key]) !== null)
+          ).length
+        } 次有效段考成績`;
 
       if (nextExam) {
         $("nextStageTitle").textContent =
@@ -3303,17 +3402,17 @@
         records
           .map(
             item =>
-              Number(item.result.average)
+              scoreNumber(item.result.average)
           )
-          .filter(Number.isFinite);
+          .filter(value => value !== null);
 
       const ranks =
         records
           .map(
             item =>
-              Number(item.result.rank)
+              scoreNumber(item.result.rank)
           )
-          .filter(Number.isFinite);
+          .filter(value => value !== null);
 
       $("summary").innerHTML = `
         <div class="summary-card">
@@ -3397,6 +3496,269 @@
         top:0,
         behavior:"smooth"
       });
+    }
+
+
+    function targetCodeFromExam(exam) {
+      if (!exam) return "";
+      return `${Number(exam.schoolYear)}-${Number(exam.semester)}-exam${Number(exam.examNo)}`;
+    }
+
+    function targetRuleText(rule) {
+      return rule === "overall_only"
+        ? "達標方式：五科總平均達到該級目標即可。"
+        : "達標方式：五科總平均達到該級目標，且至少 3 科達到同級科目目標。";
+    }
+
+    function countReachedSubjects(result,subjectTargets,levelKey) {
+      let count = 0;
+
+      SUBJECTS.forEach(subject => {
+        const actual = scoreNumber(result?.[subject.key]);
+        const target = scoreNumber(subjectTargets?.[subject.key]?.[levelKey]);
+
+        if (actual !== null && target !== null && actual >= target) {
+          count += 1;
+        }
+      });
+
+      return count;
+    }
+
+    function evaluateTargetAchievement(targetMeta,targetStudent,result) {
+      if (!result || !targetStudent) return null;
+
+      const actualAverage = scoreNumber(result.average);
+      if (actualAverage === null) return null;
+
+      const rule = targetMeta.qualificationRule || "overall_plus_3subjects";
+
+      const levels = [
+        {key:"level3",label:"最高目標",reward:targetMeta.reward3},
+        {key:"level2",label:"次級目標",reward:targetMeta.reward2},
+        {key:"level1",label:"初級目標",reward:targetMeta.reward1}
+      ];
+
+      for (const level of levels) {
+        const targetAverage = scoreNumber(targetStudent[level.key]);
+        if (targetAverage === null) continue;
+
+        const reachedSubjects =
+          countReachedSubjects(
+            result,
+            targetStudent.subjectTargets || {},
+            level.key
+          );
+
+        const averageReached =
+          actualAverage >= targetAverage;
+
+        const subjectReached =
+          rule === "overall_only" ||
+          reachedSubjects >= 3;
+
+        if (averageReached && subjectReached) {
+          return {
+            ...level,
+            actualAverage,
+            targetAverage,
+            reachedSubjects
+          };
+        }
+      }
+
+      return {
+        key:"none",
+        label:"尚未達成三級目標",
+        reward:"",
+        actualAverage,
+        targetAverage:scoreNumber(targetStudent.level1),
+        reachedSubjects:countReachedSubjects(
+          result,
+          targetStudent.subjectTargets || {},
+          "level1"
+        )
+      };
+    }
+
+    function renderExamTarget(targetMeta,targetStudent,actualResult=null) {
+      if (!targetMeta || !targetStudent || !targetMeta.published) {
+        $("examTargetSection").style.display = "none";
+        return;
+      }
+
+      $("examTargetSection").style.display = "block";
+
+      $("targetExamTitle").textContent =
+        targetMeta.title ||
+        `${targetMeta.schoolYear}學年度${Number(targetMeta.semester)===1?"上":"下"}學期第${chineseExamNo(targetMeta.examNo)}次段考`;
+
+      const confidence =
+        targetStudent.confidence?.label ||
+        (
+          Number(targetStudent.validExamCount) >= 5
+            ? "高"
+            : Number(targetStudent.validExamCount) >= 3
+              ? "中"
+              : Number(targetStudent.validExamCount) >= 1
+                ? "較低"
+                : "資料不足"
+        );
+
+      $("targetConfidenceText").innerHTML =
+        `<span class="target-confidence">分析可信度：${escapeHtml(confidence)}</span>
+         <span class="target-progress-note">　有效歷次資料：${Number(targetStudent.validExamCount)||0} 次</span>`;
+
+      const levels = [
+        {
+          css:"primary",
+          icon:"🌱",
+          name:"初級目標",
+          score:targetStudent.level1,
+          reward:targetMeta.reward1 || "生活札記免寫卷 ×1",
+          note:"努力一下有機會達成，先把這個目標拿下。"
+        },
+        {
+          css:"secondary",
+          icon:"⭐",
+          name:"次級目標",
+          score:targetStudent.level2,
+          reward:targetMeta.reward2 || "生活札記免寫卷 ×2",
+          note:"需要幾科一起穩定進步，挑戰性更高。"
+        },
+        {
+          css:"highest",
+          icon:"🏆",
+          name:"最高目標",
+          score:targetStudent.level3,
+          reward:targetMeta.reward3 || "生活札記免寫卷 ×3",
+          note:"參考你的個人最佳與近期表現設定的高挑戰。"
+        }
+      ];
+
+      $("targetLevelGrid").innerHTML =
+        levels.map(level => `
+          <div class="target-level-card ${level.css}">
+            <div class="target-level-icon">${level.icon}</div>
+            <div class="target-level-name">${level.name}</div>
+            <div class="target-level-score">${formatScore(level.score)}</div>
+            <div class="target-reward">${escapeHtml(level.reward)}</div>
+            <div class="target-progress-note">${escapeHtml(level.note)}</div>
+          </div>
+        `).join("");
+
+      $("targetRuleBox").textContent =
+        targetRuleText(targetMeta.qualificationRule);
+
+      $("targetSubjectBody").innerHTML =
+        SUBJECTS.map(subject => {
+          const data =
+            targetStudent.subjectTargets?.[subject.key] || {};
+
+          return `
+            <tr>
+              <td>${subject.icon} ${subject.name}</td>
+              <td>${formatScore(data.baseline)}</td>
+              <td>${formatScore(data.level1)}</td>
+              <td>${formatScore(data.level2)}</td>
+              <td>${formatScore(data.level3)}</td>
+            </tr>
+          `;
+        }).join("");
+
+      const achievement =
+        evaluateTargetAchievement(
+          targetMeta,
+          targetStudent,
+          actualResult
+        );
+
+      if (achievement) {
+        $("targetResultBanner").style.display = "block";
+
+        if (achievement.key === "none") {
+          $("targetResultBanner").innerHTML =
+            `<strong>📌 本次目標結果：</strong>
+             實際平均 ${formatScore(achievement.actualAverage)}。
+             目前尚未達到初級目標 ${formatScore(achievement.targetAverage)}，
+             但這次結果仍會成為下一次目標設定的重要基準。`;
+        } else {
+          $("targetResultBanner").innerHTML =
+            `<strong>🎉 已達成${escapeHtml(achievement.label)}！</strong>
+             實際平均 ${formatScore(achievement.actualAverage)}，
+             目標 ${formatScore(achievement.targetAverage)}。
+             ${achievement.reward ? `可獲得：${escapeHtml(achievement.reward)}。` : ""}`;
+        }
+      } else {
+        $("targetResultBanner").style.display = "none";
+        $("targetResultBanner").textContent = "";
+      }
+    }
+
+    async function loadStudentExamTarget(studentKey,nextExam,records) {
+      $("examTargetSection").style.display = "none";
+
+      const tryCodes = [];
+
+      if (nextExam) {
+        tryCodes.push({
+          code:targetCodeFromExam(nextExam),
+          actualResult:null
+        });
+      }
+
+      const latestRecord = records?.at(-1);
+
+      if (latestRecord?.exam) {
+        const latestCode =
+          latestRecord.exam.examCode ||
+          targetCodeFromExam(latestRecord.exam);
+
+        if (!tryCodes.some(item => item.code === latestCode)) {
+          tryCodes.push({
+            code:latestCode,
+            actualResult:latestRecord.result
+          });
+        }
+      }
+
+      for (const item of tryCodes) {
+        const root =
+          await getDoc(
+            doc(
+              db,
+              "examTargets",
+              item.code
+            )
+          );
+
+        if (!root.exists()) continue;
+
+        const meta = root.data();
+
+        if (!meta.published) continue;
+
+        const studentTarget =
+          await getDoc(
+            doc(
+              db,
+              "examTargets",
+              item.code,
+              "students",
+              studentKey
+            )
+          );
+
+        if (!studentTarget.exists()) continue;
+
+        renderExamTarget(
+          meta,
+          studentTarget.data(),
+          item.actualResult
+        );
+
+        return;
+      }
     }
 
     async function queryStudent() {
@@ -3555,6 +3917,8 @@
           records,
           exams
         );
+
+        await loadStudentExamTarget(studentKey,determineNextExam(exams),records);
 
       } catch (error) {
         console.error(
