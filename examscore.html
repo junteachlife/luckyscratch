@@ -613,6 +613,50 @@
   .target-level-grid{grid-template-columns:1fr}
 }
 
+
+.exam-period-box{
+  margin-top:11px;
+  padding:14px 16px;
+  border-radius:14px;
+  background:#f2f7ff;
+  border-left:5px solid #6e92bd;
+  line-height:1.8
+}
+.resource-box{
+  margin-top:11px;
+  padding:14px 16px;
+  border-radius:14px;
+  background:#f7f4ff;
+  border-left:5px solid #9178bf;
+  line-height:1.8
+}
+.resource-list{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+  margin-top:10px
+}
+.resource-link{
+  display:block;
+  padding:11px 12px;
+  border-radius:12px;
+  background:#fff;
+  border:1px solid #e2daef;
+  text-decoration:none;
+  color:#655083;
+  font-weight:900;
+  line-height:1.5
+}
+.resource-link small{
+  display:block;
+  color:#8a8197;
+  font-weight:700;
+  margin-top:3px
+}
+@media(max-width:700px){
+  .resource-list{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 
@@ -813,6 +857,7 @@
 
     let averageChart = null;
     let rankChart = null;
+    const examScopeCache = new Map();
 
     const SUBJECTS = [
       { key:"chinese", avgKey:"chineseAvg", name:"國文", icon:"📖" },
@@ -999,24 +1044,126 @@
       }
     };
 
+    function scopeDocId(meta) {
+      if (!meta) return "";
+      return `${Number(meta.schoolYear)}-${Number(meta.semester)}-exam${Number(meta.examNo)}`;
+    }
+
+    function parseScopeResources(value) {
+      if (Array.isArray(value)) {
+        return value
+          .map(item => ({
+            focus:String(item?.focus || "全部").trim() || "全部",
+            name:String(item?.name || "").trim(),
+            url:String(item?.url || "").trim()
+          }))
+          .filter(item => item.name && item.url);
+      }
+
+      return [];
+    }
+
+    function normalizeScopeSubject(raw={}) {
+      return {
+        publisher:String(raw.publisher || "").trim(),
+        scope:String(raw.scope || "").trim(),
+        focus:Array.isArray(raw.focus)
+          ? raw.focus.map(item => String(item).trim()).filter(Boolean)
+          : [],
+        prereq:Array.isArray(raw.prereq)
+          ? raw.prereq.map(item => String(item).trim()).filter(Boolean)
+          : [],
+        teacherNote:String(raw.teacherNote || "").trim(),
+        resources:parseScopeResources(raw.resources || [])
+      };
+    }
+
+    async function loadExamScope(nextExam) {
+      if (!nextExam) return null;
+
+      const id = scopeDocId(nextExam);
+
+      if (examScopeCache.has(id)) {
+        return examScopeCache.get(id);
+      }
+
+      try {
+        const snap =
+          await getDoc(
+            doc(
+              db,
+              "examScopes",
+              id
+            )
+          );
+
+        if (snap.exists()) {
+          const data = snap.data();
+          examScopeCache.set(id,data);
+          return data;
+        }
+      } catch (error) {
+        console.warn(
+          "段考範圍 Firebase 載入失敗，改用內建範圍。",
+          error
+        );
+      }
+
+      return null;
+    }
+
     function getCurriculumContext(subjectKey,nextExam) {
+      if (!nextExam) return null;
+
+      const stored =
+        examScopeCache.get(
+          scopeDocId(nextExam)
+        );
+
       if (
-        !nextExam ||
+        stored?.subjects?.[subjectKey]
+      ) {
+        const data =
+          normalizeScopeSubject(
+            stored.subjects[subjectKey]
+          );
+
+        if (
+          data.scope ||
+          data.focus.length ||
+          data.publisher
+        ) {
+          return {
+            ...data,
+            source:"firebase"
+          };
+        }
+      }
+
+      if (
         Number(nextExam.grade) !== 8 ||
         Number(nextExam.semester) !== 1
       ) {
         return null;
       }
 
-      const subject = GRADE8_CURRICULUM[subjectKey];
+      const subject =
+        GRADE8_CURRICULUM[subjectKey];
+
       if (!subject) return null;
 
-      const exam = subject[Number(nextExam.examNo)];
+      const exam =
+        subject[Number(nextExam.examNo)];
+
       if (!exam) return null;
 
       return {
         publisher:subject.publisher,
-        ...exam
+        ...exam,
+        prereq:exam.prereq || [],
+        teacherNote:"",
+        resources:exam.resources || [],
+        source:"builtin"
       };
     }
 
@@ -2478,6 +2625,113 @@
       return score;
     }
 
+    function examPeriodStrategy(
+      analysis,
+      nextExam
+    ) {
+      const context =
+        getCurriculumContext(
+          analysis.key,
+          nextExam
+        );
+
+      const focus =
+        (context?.focus || [])
+          .slice(0,4);
+
+      const first =
+        focus[0] ||
+        "本次段考核心內容";
+
+      const second =
+        focus[1] ||
+        "第二個核心內容";
+
+      const weak =
+        isWeakProfile(
+          analysis.profile.id
+        );
+
+      const stages = [];
+
+      stages.push(
+        weak
+          ? `第一階段｜先備確認：先檢查和「${first}」直接相關的基礎；未達80%的項目先補，不必把整冊全部重學。`
+          : `第一階段｜快速檢核：先確認「${first}」與「${second}」基本題是否穩定；已達80%的內容不必重複大量練習。`
+      );
+
+      stages.push(
+        weak
+          ? `第二階段｜核心建立：依序處理 ${focus.length ? focus.join("、") : "本次考試重點"}，每個重點先做到基本題穩定，再進入混合題。`
+          : `第二階段｜核心強化：以 ${focus.length ? focus.join("、") : "本次考試重點"} 為主，增加整合、變化與限時練習。`
+      );
+
+      stages.push(
+        "第三階段｜錯題整合：把這段期間的錯題依「觀念／記憶／計算／題意／作答策略」分類，重複最多的錯因優先修正。"
+      );
+
+      stages.push(
+        "第四階段｜考前檢核：段考前完成一份涵蓋本次範圍的混合練習；最後只回頭處理仍未達標的內容。"
+      );
+
+      if (context?.teacherNote) {
+        stages.push(
+          `老師特別提醒：${context.teacherNote}`
+        );
+      }
+
+      return stages;
+    }
+
+    function renderLearningResources(
+      context
+    ) {
+      const resources =
+        (context?.resources || [])
+          .filter(
+            item =>
+              item?.name &&
+              item?.url
+          );
+
+      if (!resources.length) {
+        return "";
+      }
+
+      return `
+        <div class="resource-box">
+
+          <div class="box-title">
+            🔗 可以加強這次內容的學習資源
+          </div>
+
+          <div class="resource-list">
+
+            ${
+              resources.map(
+                item => `
+                  <a
+                    class="resource-link"
+                    href="${escapeHtml(item.url)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    ${escapeHtml(item.name)}
+                    <small>
+                      對應：
+                      ${escapeHtml(item.focus || "全部")}
+                    </small>
+                  </a>
+                `
+              ).join("")
+            }
+
+          </div>
+
+        </div>
+      `;
+    }
+
     function weeklyOperationalTasks(
       analysis,
       nextExam
@@ -3178,6 +3432,28 @@
                     </ol>
 
                   </div>
+
+                  <div class="exam-period-box">
+
+                    <div class="box-title">
+                      🧭 這一次段考期間可以怎麼準備
+                    </div>
+
+                    <ol class="action-list">
+                      ${
+                        examPeriodStrategy(
+                          analysis,
+                          nextExam
+                        ).map(
+                          item =>
+                            `<li>${escapeHtml(item)}</li>`
+                        ).join("")
+                      }
+                    </ol>
+
+                  </div>
+
+                  ${renderLearningResources(context)}
 
                   <div class="operation-box">
 
@@ -4162,13 +4438,20 @@
           $("loginMessage")
         );
 
+        const nextExam =
+          determineNextExam(exams);
+
+        await loadExamScope(
+          nextExam
+        );
+
         renderResult(
           student,
           records,
           exams
         );
 
-        await loadStudentExamTarget(studentKey,determineNextExam(exams),records);
+        await loadStudentExamTarget(studentKey,nextExam,records);
 
       } catch (error) {
         console.error(
