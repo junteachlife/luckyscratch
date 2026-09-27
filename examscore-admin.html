@@ -891,6 +891,12 @@ tbody tr:hover td:nth-child(1),tbody tr:hover td:nth-child(2) {
   .target-top-grid{grid-template-columns:1fr}
 }
 
+.scope-mini-help{margin-top:6px;color:#7b8491;font-size:12px;line-height:1.6}
+.exam-period-box{margin-top:11px;padding:14px 16px;border-radius:14px;background:#f2f7ff;border-left:5px solid #6e92bd;line-height:1.8}
+.resource-box{margin-top:11px;padding:14px 16px;border-radius:14px;background:#f7f4ff;border-left:5px solid #9178bf;line-height:1.8}
+.resource-list{display:grid;gap:9px;margin-top:10px}
+.resource-link{display:block;padding:10px 12px;border-radius:11px;background:#fff;border:1px solid #e2daef;text-decoration:none;color:#655083;font-weight:900}
+.resource-link small{display:block;color:#8a8197;font-weight:700;margin-top:3px}
 </style>
 </head>
 <body>
@@ -1000,6 +1006,11 @@ tbody tr:hover td:nth-child(1),tbody tr:hover td:nth-child(2) {
 <div class="field"><label>重點項目（一行一項）</label><textarea id="scopeFocus-chinese" placeholder="請一行輸入一個重點"></textarea></div>
 <div class="field"><label>先備能力／需要先檢核（一行一項，可空白）</label><textarea id="scopePrereq-chinese"></textarea></div>
 <div class="field"><label>教師補充提醒（可空白）</label><textarea id="scopeNote-chinese"></textarea></div>
+<div class="field">
+  <label>學習資源（一行一筆：對應重點｜資源名稱｜網址）</label>
+  <textarea id="scopeResources-chinese" placeholder="例如：乘法公式｜生活有解．心中有數｜https://junteachlife.github.io/mathteach/"></textarea>
+  <div class="scope-mini-help">可輸入多筆。若沒有特定對應重點，可把第一欄寫成「全部」。</div>
+</div>
 </div>
 
 <div class="scope-editor-card">
@@ -1009,6 +1020,11 @@ tbody tr:hover td:nth-child(1),tbody tr:hover td:nth-child(2) {
 <div class="field"><label>重點項目（一行一項）</label><textarea id="scopeFocus-english" placeholder="請一行輸入一個重點"></textarea></div>
 <div class="field"><label>先備能力／需要先檢核（一行一項，可空白）</label><textarea id="scopePrereq-english"></textarea></div>
 <div class="field"><label>教師補充提醒（可空白）</label><textarea id="scopeNote-english"></textarea></div>
+<div class="field">
+  <label>學習資源（一行一筆：對應重點｜資源名稱｜網址）</label>
+  <textarea id="scopeResources-english" placeholder="例如：乘法公式｜生活有解．心中有數｜https://junteachlife.github.io/mathteach/"></textarea>
+  <div class="scope-mini-help">可輸入多筆。若沒有特定對應重點，可把第一欄寫成「全部」。</div>
+</div>
 </div>
 
 <div class="scope-editor-card">
@@ -1018,6 +1034,11 @@ tbody tr:hover td:nth-child(1),tbody tr:hover td:nth-child(2) {
 <div class="field"><label>重點項目（一行一項）</label><textarea id="scopeFocus-math" placeholder="請一行輸入一個重點"></textarea></div>
 <div class="field"><label>先備能力／需要先檢核（一行一項，可空白）</label><textarea id="scopePrereq-math"></textarea></div>
 <div class="field"><label>教師補充提醒（可空白）</label><textarea id="scopeNote-math"></textarea></div>
+<div class="field">
+  <label>學習資源（一行一筆：對應重點｜資源名稱｜網址）</label>
+  <textarea id="scopeResources-math" placeholder="例如：乘法公式｜生活有解．心中有數｜https://junteachlife.github.io/mathteach/"></textarea>
+  <div class="scope-mini-help">可輸入多筆。若沒有特定對應重點，可把第一欄寫成「全部」。</div>
+</div>
 </div>
 
 <div class="scope-editor-card">
@@ -1027,6 +1048,11 @@ tbody tr:hover td:nth-child(1),tbody tr:hover td:nth-child(2) {
 <div class="field"><label>重點項目（一行一項）</label><textarea id="scopeFocus-science" placeholder="請一行輸入一個重點"></textarea></div>
 <div class="field"><label>先備能力／需要先檢核（一行一項，可空白）</label><textarea id="scopePrereq-science"></textarea></div>
 <div class="field"><label>教師補充提醒（可空白）</label><textarea id="scopeNote-science"></textarea></div>
+<div class="field">
+  <label>學習資源（一行一筆：對應重點｜資源名稱｜網址）</label>
+  <textarea id="scopeResources-science" placeholder="例如：乘法公式｜生活有解．心中有數｜https://junteachlife.github.io/mathteach/"></textarea>
+  <div class="scope-mini-help">可輸入多筆。若沒有特定對應重點，可把第一欄寫成「全部」。</div>
+</div>
 </div>
 
 <div class="scope-editor-card">
@@ -1036,6 +1062,11 @@ tbody tr:hover td:nth-child(1),tbody tr:hover td:nth-child(2) {
 <div class="field"><label>重點項目（一行一項）</label><textarea id="scopeFocus-social" placeholder="請一行輸入一個重點"></textarea></div>
 <div class="field"><label>先備能力／需要先檢核（一行一項，可空白）</label><textarea id="scopePrereq-social"></textarea></div>
 <div class="field"><label>教師補充提醒（可空白）</label><textarea id="scopeNote-social"></textarea></div>
+<div class="field">
+  <label>學習資源（一行一筆：對應重點｜資源名稱｜網址）</label>
+  <textarea id="scopeResources-social" placeholder="例如：乘法公式｜生活有解．心中有數｜https://junteachlife.github.io/mathteach/"></textarea>
+  <div class="scope-mini-help">可輸入多筆。若沒有特定對應重點，可把第一欄寫成「全部」。</div>
+</div>
 </div>
 </div>
 </section>
@@ -1488,13 +1519,56 @@ function scopeDocId(meta){
 function linesToArray(v){
   return String(v||"").split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
 }
+function parseScopeResources(value){
+  if(Array.isArray(value)){
+    return value
+      .map(item=>({
+        focus:String(item?.focus||"全部").trim()||"全部",
+        name:String(item?.name||"").trim(),
+        url:String(item?.url||"").trim()
+      }))
+      .filter(item=>item.name&&item.url);
+  }
+
+  return String(value||"")
+    .split(/\r?\n/)
+    .map(line=>line.trim())
+    .filter(Boolean)
+    .map(line=>{
+      const parts=line.split(/[｜|]/).map(x=>x.trim());
+      if(parts.length>=3){
+        return {
+          focus:parts[0]||"全部",
+          name:parts[1]||"",
+          url:parts.slice(2).join("|").trim()
+        };
+      }
+      if(parts.length===2){
+        return {
+          focus:"全部",
+          name:parts[0]||"",
+          url:parts[1]||""
+        };
+      }
+      return null;
+    })
+    .filter(item=>item&&item.name&&item.url);
+}
+
+function formatScopeResources(resources){
+  return (resources||[])
+    .map(item=>`${item.focus||"全部"}｜${item.name||""}｜${item.url||""}`)
+    .join("\n");
+}
+
 function normalizeScopeSubject(raw={}){
   return {
     publisher:String(raw.publisher||"").trim(),
     scope:String(raw.scope||"").trim(),
     focus:Array.isArray(raw.focus)?raw.focus.map(x=>String(x).trim()).filter(Boolean):linesToArray(raw.focus),
     prereq:Array.isArray(raw.prereq)?raw.prereq.map(x=>String(x).trim()).filter(Boolean):linesToArray(raw.prereq),
-    teacherNote:String(raw.teacherNote||"").trim()
+    teacherNote:String(raw.teacherNote||"").trim(),
+    resources:parseScopeResources(raw.resources||[])
   };
 }
 async function loadExamScopeCache(force=false){
@@ -1525,7 +1599,7 @@ function getCurriculumContext(subjectKey,nextExam){
   if(!subject)return null;
   const exam=subject[Number(nextExam.examNo)];
   if(!exam)return null;
-  return {publisher:subject.publisher,...exam,prereq:exam.prereq||[],teacherNote:"",source:"builtin"};
+  return {publisher:subject.publisher,...exam,prereq:exam.prereq||[],teacherNote:"",resources:exam.resources||[],source:"builtin"};
 }
 function genericScopeActions(a,nextExam){
   const c=getCurriculumContext(a.key,nextExam);
@@ -1842,7 +1916,7 @@ function fillScopeEditor(meta,stored){
     }else if(Number(meta.grade)===8&&Number(meta.semester)===1){
       const bs=GRADE8_CURRICULUM[s.key],be=bs?.[Number(meta.examNo)];
       if(bs&&be){
-        data={publisher:bs.publisher,scope:be.scope||"",focus:be.focus||[],prereq:be.prereq||[],teacherNote:""};
+        data={publisher:bs.publisher,scope:be.scope||"",focus:be.focus||[],prereq:be.prereq||[],teacherNote:"",resources:be.resources||[]};
         source="內建預設";
       }
     }
@@ -1852,6 +1926,7 @@ function fillScopeEditor(meta,stored){
     $(`scopeFocus-${s.key}`).value=(data.focus||[]).join("\n");
     $(`scopePrereq-${s.key}`).value=(data.prereq||[]).join("\n");
     $(`scopeNote-${s.key}`).value=data.teacherNote||"";
+    $(`scopeResources-${s.key}`).value=formatScopeResources(data.resources||[]);
     $(`scopeBadge-${s.key}`).textContent=source;
   });
 }
@@ -1886,6 +1961,7 @@ function loadBuiltinScopeIntoEditor(){
       $(`scopeFocus-${s.key}`).value="";
       $(`scopePrereq-${s.key}`).value="";
       $(`scopeNote-${s.key}`).value="";
+      $(`scopeResources-${s.key}`).value="";
       $(`scopeBadge-${s.key}`).textContent="請自行輸入";
     });
     showMessage($("scopeMessage"),"目前只有八年級上學期有內建預設；其他年級或學期請直接輸入並儲存。","info");
@@ -1908,7 +1984,8 @@ function collectScopeSubjects(){
       scope:$(`scopeRange-${s.key}`).value.trim(),
       focus:linesToArray($(`scopeFocus-${s.key}`).value),
       prereq:linesToArray($(`scopePrereq-${s.key}`).value),
-      teacherNote:$(`scopeNote-${s.key}`).value.trim()
+      teacherNote:$(`scopeNote-${s.key}`).value.trim(),
+      resources:parseScopeResources($(`scopeResources-${s.key}`).value)
     };
   });
   return subjects;
@@ -3311,6 +3388,59 @@ function priorityScore(a){
   return score;
 }
 
+function examPeriodStrategy(a,nextExam){
+  const c=getCurriculumContext(a.key,nextExam);
+  const focus=(c?.focus||[]).slice(0,4);
+  const primary=focus[0]||"本次段考核心內容";
+  const secondary=focus[1]||"第二個核心內容";
+  const weak=isWeakProfile(a.profile.id);
+
+  const stages=[];
+
+  stages.push(
+    weak
+      ? `第一階段｜先備確認：先檢查與「${primary}」直接相關的基礎；未達80%的項目先補，不把整冊全部重學。`
+      : `第一階段｜快速檢核：先確認「${primary}」與「${secondary}」基本題是否穩定；已達80%的內容不重複刷題。`
+  );
+
+  stages.push(
+    weak
+      ? `第二階段｜核心建立：依序處理 ${focus.length?focus.join("、"):"本次考試重點"}，每個重點先做到基本題穩定，再進混合題。`
+      : `第二階段｜核心強化：以 ${focus.length?focus.join("、"):"本次考試重點"} 為主，增加整合、變化與限時練習。`
+  );
+
+  stages.push(
+    `第三階段｜錯題整合：把這段期間的錯題依「觀念／記憶／計算／題意／作答策略」分類，重複最多的錯因優先處理。`
+  );
+
+  stages.push(
+    `第四階段｜考前檢核：段考前完成一份涵蓋本次範圍的混合練習；只回頭處理仍未達標的內容，不重新從頭複習全部章節。`
+  );
+
+  if(c?.teacherNote){
+    stages.push(`教師特別提醒：${c.teacherNote}`);
+  }
+
+  return stages;
+}
+
+function renderLearningResources(context){
+  const resources=(context?.resources||[]).filter(item=>item?.name&&item?.url);
+  if(!resources.length)return "";
+
+  return `<div class="resource-box">
+    <div class="box-title">🔗 對應學習資源</div>
+    <div class="resource-list">
+      ${resources.map(item=>`
+        <a class="resource-link" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">
+          ${escapeHtml(item.name)}
+          <small>對應：${escapeHtml(item.focus||"全部")}</small>
+        </a>
+      `).join("")}
+    </div>
+  </div>`;
+}
+
 function weeklyOperationalTasks(a,nextExam){
   const c=getCurriculumContext(a.key,nextExam);
   const examNo=Number(nextExam?.examNo||1);
@@ -3456,6 +3586,8 @@ function personalizedCheckpoints(a,nextExam){
           ${ctx?`<div class="scope-box"><div class="box-title">📚 ${escapeHtml(ctx.publisher||'教材')}｜本次實際段考範圍 <span style="font-size:12px;color:#7b8491">（${ctx.source==='firebase'?'教師後端設定':'內建預設'}）</span></div><strong>${escapeHtml(ctx.scope||'')}</strong><br><span style="color:#6b6475">重點：${(ctx.focus||[]).map(escapeHtml).join('、')}</span>${ctx.teacherNote?`<br><span style="color:#8a6344">教師提醒：${escapeHtml(ctx.teacherNote)}</span>`:''}</div>`:''}
           <div class="teacher-box"><div class="box-title">🧑‍🏫 ${a.name}老師的判讀</div>${escapeHtml(teacherDiagnosis(a,nextExam))}</div>
           <div class="action-box"><div class="box-title">🎯 依本次範圍的個人化學習處方</div><div style="font-weight:800;margin-bottom:8px">建議練習比例：基礎 ${ratio.foundation}% ／ 錯題修正 ${ratio.correction}% ／ 變化進階 ${ratio.challenge}%</div><ol class="action-list">${rx.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ol></div>
+          <div class="exam-period-box"><div class="box-title">🧭 本次段考期間準備策略</div><ol class="action-list">${examPeriodStrategy(a,nextExam).map(x=>`<li>${escapeHtml(x)}</li>`).join("")}</ol></div>
+          ${renderLearningResources(ctx)}
           <div class="operation-box"><div class="box-title">📝 本週直接操作清單</div>${operation.tasks.map((x,i)=>`<div class="operation-task"><input type="checkbox" id="task-${a.key}-${i}"><label for="task-${a.key}-${i}">${escapeHtml(x)}</label></div>`).join('')}<div class="operation-standard">🏁 本週完成標準：${escapeHtml(operation.standard)}</div></div>
           <div class="checkpoint-box"><div class="box-title">✅ 個人達標檢核</div><ol class="action-list">${checks.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ol></div>
           <div class="week-box"><div class="box-title">📅 ${nextExam?nextExam.shortTitle:'下一次段考'}前四週個人計畫</div><ol class="action-list">${plan.map((x,i)=>`<li><strong>第 ${i+1} 週：</strong>${escapeHtml(x)}</li>`).join('')}</ol></div>
