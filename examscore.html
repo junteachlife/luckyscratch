@@ -776,6 +776,76 @@
   .subject-acc-header>.priority-badge{grid-column:1/-1;justify-self:start}
 }
 
+
+.radar-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1.15fr) minmax(260px,.85fr);
+  gap:18px;
+  align-items:center
+}
+.radar-chart-box{
+  position:relative;
+  min-height:340px
+}
+.radar-chart-box canvas{
+  width:100%!important;
+  height:340px!important
+}
+.radar-side{
+  display:grid;
+  gap:12px
+}
+.radar-explain,
+.radar-summary{
+  padding:14px 16px;
+  border-radius:15px;
+  line-height:1.8
+}
+.radar-explain{
+  background:#f4f8fc;
+  border-left:5px solid #7295b8
+}
+.radar-summary{
+  background:#fff8ea;
+  border-left:5px solid #e1aa4f
+}
+.radar-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:7px 0;
+  border-bottom:1px dashed rgba(0,0,0,.08)
+}
+.radar-row:last-child{border-bottom:0}
+.radar-value{
+  font-weight:950;
+  font-variant-numeric:tabular-nums
+}
+.radar-tag{
+  display:inline-flex;
+  align-items:center;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900
+}
+.radar-tag.advantage{background:#eaf7ee;color:#4b7e59}
+.radar-tag.stable{background:#eef4fb;color:#54728d}
+.radar-tag.watch{background:#fff6df;color:#916820}
+.radar-tag.weak{background:#fff0ee;color:#a14e49}
+.radar-priority-note{
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px solid rgba(0,0,0,.08);
+  line-height:1.75
+}
+@media(max-width:780px){
+  .radar-layout{grid-template-columns:1fr}
+  .radar-chart-box{min-height:300px}
+  .radar-chart-box canvas{height:300px!important}
+}
+
 </style>
 </head>
 
@@ -850,7 +920,7 @@
           <div id="studentMeta" class="student-meta"></div>
         </div>
 
-        <button id="logoutBtn" class="btn secondary-btn">重新查詢</button>
+        <button id="logoutBtn" class="btn secondary-btn">登出帳號</button>
       </div>
 
       <div class="next-stage">
@@ -922,7 +992,25 @@
         </div>
       </section>
 
-      <section class="card">
+      
+      <section class="card" id="strengthRadarSection">
+        <div class="section-title">📊 五科優弱勢圖</div>
+        <div class="radar-layout">
+          <div class="radar-chart-box">
+            <canvas id="strengthRadarChart"></canvas>
+          </div>
+          <div class="radar-side">
+            <div class="radar-explain">
+              <strong>判定方式</strong><br>
+              每科目前實力值＝「最近三次加權成績 × 70% ＋ 歷次平均 × 30%」。<br>
+              最近三次權重為：最近一次 50%、前一次 30%、前二次 20%。
+            </div>
+            <div id="radarSummary" class="radar-summary"></div>
+          </div>
+        </div>
+      </section>
+
+<section class="card">
         <div class="section-title">🧭 下一階段五科學習建議</div>
 
         <div class="help">
@@ -976,6 +1064,7 @@
 
     let averageChart = null;
     let rankChart = null;
+    let strengthRadarChart = null;
     const examScopeCache = new Map();
 
 
@@ -3677,6 +3766,275 @@
       ];
     }
 
+
+    function recentWeightedScore(scores) {
+      const valid =
+        (scores || [])
+          .map(scoreNumber)
+          .filter(value => value !== null);
+
+      if (!valid.length) return null;
+
+      if (valid.length === 1) {
+        return valid[0];
+      }
+
+      if (valid.length === 2) {
+        return (
+          valid.at(-1) * .6 +
+          valid.at(-2) * .4
+        );
+      }
+
+      return (
+        valid.at(-1) * .5 +
+        valid.at(-2) * .3 +
+        valid.at(-3) * .2
+      );
+    }
+
+    function currentSubjectBaseline(analysis) {
+      const valid =
+        (analysis?.scores || [])
+          .map(scoreNumber)
+          .filter(value => value !== null);
+
+      if (!valid.length) return null;
+
+      const recent =
+        recentWeightedScore(valid);
+
+      const historical =
+        valid.reduce(
+          (sum,value) => sum + value,
+          0
+        ) / valid.length;
+
+      return Math.max(
+        0,
+        Math.min(
+          100,
+          recent * .7 +
+          historical * .3
+        )
+      );
+    }
+
+    function radarLevel(value) {
+      if (value === null) {
+        return {
+          className:"watch",
+          label:"資料不足"
+        };
+      }
+
+      if (value >= 85) {
+        return {
+          className:"advantage",
+          label:"優勢科"
+        };
+      }
+
+      if (value >= 70) {
+        return {
+          className:"stable",
+          label:"穩定科"
+        };
+      }
+
+      if (value >= 60) {
+        return {
+          className:"watch",
+          label:"待加強"
+        };
+      }
+
+      return {
+        className:"weak",
+        label:"弱勢科"
+      };
+    }
+
+    function renderStrengthRadar(analyses) {
+      const orderedKeys =
+        ["chinese","english","math","science","social"];
+
+      const ordered =
+        orderedKeys
+          .map(
+            key =>
+              analyses.find(
+                analysis =>
+                  analysis.key === key
+              )
+          )
+          .filter(Boolean);
+
+      if (!ordered.length) {
+        $("strengthRadarSection").style.display =
+          "none";
+        return;
+      }
+
+      $("strengthRadarSection").style.display =
+        "block";
+
+      const values =
+        ordered.map(
+          analysis =>
+            currentSubjectBaseline(
+              analysis
+            )
+        );
+
+      if (strengthRadarChart) {
+        strengthRadarChart.destroy();
+      }
+
+      strengthRadarChart =
+        new Chart(
+          $("strengthRadarChart"),
+          {
+            type:"radar",
+
+            data:{
+              labels:
+                ordered.map(
+                  analysis =>
+                    analysis.name
+                ),
+
+              datasets:[
+                {
+                  label:"目前實力值",
+                  data:
+                    values.map(
+                      value =>
+                        value === null
+                          ? 0
+                          : Number(
+                              value.toFixed(1)
+                            )
+                    ),
+                  borderWidth:2,
+                  pointRadius:4,
+                  pointHoverRadius:6,
+                  fill:true
+                }
+              ]
+            },
+
+            options:{
+              responsive:true,
+              maintainAspectRatio:false,
+
+              plugins:{
+                legend:{
+                  display:true,
+                  position:"bottom"
+                },
+
+                tooltip:{
+                  callbacks:{
+                    label(context){
+                      return `目前實力值：${context.formattedValue}`;
+                    }
+                  }
+                }
+              },
+
+              scales:{
+                r:{
+                  min:0,
+                  max:100,
+                  beginAtZero:true,
+
+                  ticks:{
+                    stepSize:20,
+                    backdropColor:"transparent"
+                  },
+
+                  pointLabels:{
+                    font:{
+                      size:14,
+                      weight:"bold"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        );
+
+      const priorityMap =
+        assignSubjectPriorities(
+          analyses
+        );
+
+      const sortedPriority =
+        [...ordered]
+          .sort(
+            (a,b) =>
+              (
+                priorityMap.get(a.key)?.rank ||
+                99
+              ) -
+              (
+                priorityMap.get(b.key)?.rank ||
+                99
+              )
+          );
+
+      $("radarSummary").innerHTML =
+        ordered.map(
+          (analysis,index) => {
+            const value =
+              values[index];
+
+            const level =
+              radarLevel(value);
+
+            return `
+              <div class="radar-row">
+                <span>
+                  ${analysis.icon}
+                  ${escapeHtml(analysis.name)}
+                </span>
+
+                <span>
+                  <span class="radar-tag ${level.className}">
+                    ${escapeHtml(level.label)}
+                  </span>
+                  <span class="radar-value">
+                    ${value === null ? "—" : value.toFixed(1)}
+                  </span>
+                </span>
+              </div>
+            `;
+          }
+        ).join("") +
+        `
+          <div class="radar-priority-note">
+            <strong>本次優先順序：</strong><br>
+            ${
+              sortedPriority
+                .slice(0,2)
+                .map(
+                  (analysis,index) => {
+                    const priority =
+                      priorityMap.get(
+                        analysis.key
+                      );
+
+                    return `${index + 1}. ${analysis.name}（${priority?.label || "維持穩定"}）`;
+                  }
+                )
+                .join("<br>")
+            }
+          </div>
+        `;
+    }
+
     function renderCharts(records) {
       const labels =
         records.map(item => shortExamName(item.exam));
@@ -4761,6 +5119,10 @@
           nextExam
         );
 
+      renderStrengthRadar(
+        analyses
+      );
+
       renderAnalyses(
         analyses,
         nextExam
@@ -5511,6 +5873,11 @@
 
       $("idLast5").value =
         "";
+
+      if (strengthRadarChart) {
+        strengthRadarChart.destroy();
+        strengthRadarChart = null;
+      }
 
       clearMessage(
         $("loginMessage")
