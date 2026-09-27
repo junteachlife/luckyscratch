@@ -657,6 +657,125 @@
   .resource-list{grid-template-columns:1fr}
 }
 
+
+.subject-priority-summary{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:10px 0 14px
+}
+.priority-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:7px 10px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:900
+}
+.priority-pill.high{background:#fff0ee;color:#a14e49}
+.priority-pill.mid{background:#fff6df;color:#9a6d27}
+.priority-pill.keep{background:#eef8f1;color:#4f7d5a}
+.subject-accordion{
+  display:grid;
+  gap:10px;
+  margin-top:12px
+}
+.subject-acc-item{
+  border:1px solid #e2ddd5;
+  border-radius:16px;
+  background:#fff;
+  overflow:hidden
+}
+.subject-acc-header{
+  width:100%;
+  border:0;
+  background:#fff;
+  padding:14px 16px;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:10px;
+  text-align:left;
+  cursor:pointer
+}
+.subject-acc-header:hover{background:#fbfaf7}
+.subject-acc-main{min-width:0}
+.subject-acc-name{
+  font-size:17px;
+  font-weight:950;
+  display:flex;
+  align-items:center;
+  gap:7px
+}
+.subject-acc-meta{
+  margin-top:5px;
+  font-size:12px;
+  color:#7b8491;
+  line-height:1.5
+}
+.subject-acc-arrow{
+  font-size:18px;
+  transition:transform .18s ease
+}
+.subject-acc-item.open .subject-acc-arrow{transform:rotate(180deg)}
+.subject-acc-content{
+  display:none;
+  padding:0 16px 16px;
+  border-top:1px solid #eee8df
+}
+.subject-acc-item.open .subject-acc-content{display:block}
+.priority-badge{
+  display:inline-flex;
+  align-items:center;
+  padding:5px 8px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900
+}
+.priority-badge.high{background:#fff0ee;color:#a14e49}
+.priority-badge.mid{background:#fff6df;color:#9a6d27}
+.priority-badge.keep{background:#eef8f1;color:#4f7d5a}
+.priority-note{
+  margin-top:12px;
+  padding:12px 14px;
+  border-radius:14px;
+  background:#fff8ea;
+  border-left:5px solid #e2aa4f;
+  line-height:1.75
+}
+.detail-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:12px
+}
+.detail-box{
+  padding:13px 14px;
+  border-radius:14px;
+  background:#f8f7f4;
+  line-height:1.75
+}
+.detail-box h4{
+  margin:0 0 7px;
+  font-size:14px
+}
+.detail-box ul{
+  margin:0;
+  padding-left:20px
+}
+.study-share{
+  margin-top:8px;
+  font-size:12px;
+  font-weight:900;
+  color:#68727d
+}
+@media(max-width:700px){
+  .detail-grid{grid-template-columns:1fr}
+  .subject-acc-header{grid-template-columns:1fr auto}
+  .subject-acc-header>.priority-badge{grid-column:1/-1;justify-self:start}
+}
+
 </style>
 </head>
 
@@ -858,6 +977,440 @@
     let averageChart = null;
     let rankChart = null;
     const examScopeCache = new Map();
+
+
+    // ============================================================
+    // 八上段考細部提醒資料庫
+    // 教師後端有設定時優先使用 Firebase；缺少細部內容時才用這裡補足。
+    // ============================================================
+    const GRADE8_DETAIL_BANK = {
+      chinese: {
+        1: {
+          coreTopics: [
+            "〈田園之秋選〉：景物描寫順序、視覺／聽覺摹寫、作者情感",
+            "〈古詩選〉：詩意、意象、情感、關鍵字句與基本詩體辨識",
+            "〈下雨天，真好〉：敘事線索、人物回憶、狀聲詞與疊字效果",
+            "語法（上）詞類：名詞、動詞、形容詞、副詞、代詞等辨識"
+          ],
+          commonMistakes: [
+            "只背課文內容，忽略景物描寫如何表現作者情感",
+            "古詩只背白話翻譯，題目換成意象或情境就無法判斷",
+            "看到熟悉的字就直接判詞性，忽略同一字在不同句子裡詞性可能改變",
+            "閱讀題憑印象作答，沒有回原文找支持答案的關鍵句"
+          ],
+          questionTraps: [
+            "修辭題常把譬喻、擬人、摹寫放在相近選項中混淆",
+            "詞性題要看該字在句中的功能，不能只背固定答案",
+            "古詩常考『哪一字最能表現情感』，要連前後句一起判斷",
+            "題目問寫作作用時，不等於只問字面意思"
+          ],
+          finalChecks: [
+            "能否說出三篇課文各自的主旨與主要寫作特色",
+            "看到陌生句子時，能否依句中功能判斷詞性",
+            "古詩能否從關鍵字判斷情感與畫面，而不是只背翻譯",
+            "閱讀題作答前是否會回原文找證據"
+          ]
+        },
+        2: {
+          coreTopics: [
+            "〈愛蓮說〉：托物言志、蓮的象徵、君子品格、文言語詞",
+            "〈生命中的碎珠〉：題旨、敘事與感悟的連結",
+            "〈鳥〉：描寫方式、情感轉折、作者觀點",
+            "語法（下）句子：句型、句子結構與成分判斷"
+          ],
+          commonMistakes: [
+            "把愛蓮只理解成喜歡植物，忽略蓮所象徵的人格",
+            "文言文只背單句翻譯，沒有理解上下文與作者立場",
+            "句型判斷只看關鍵詞，不看整句結構",
+            "閱讀題混淆作者描述的事實與作者的感受"
+          ],
+          questionTraps: [
+            "文言題常用同字異義或語意相近選項干擾",
+            "問象徵時要回答蓮所代表的品格，不是只描述外觀",
+            "句型題先找句子主幹，再判斷修飾成分",
+            "情感轉折題要注意前後語氣是否改變"
+          ],
+          finalChecks: [
+            "能否把〈愛蓮說〉的蓮花特徵對應到君子品格",
+            "文言重要字詞能否放回原句翻譯",
+            "能否找出句子主幹並判斷句型",
+            "三課主旨與作者情感能否區分"
+          ]
+        },
+        3: {
+          coreTopics: [
+            "〈張釋之執法〉：人物形象、依法執法、文言字詞與事件因果",
+            "〈找尋失落的水源〉：說明脈絡、環境議題、論述重點",
+            "〈一棵開花的樹〉：意象、象徵、情感與詩句層次",
+            "〈畫的哀傷〉：敘事轉折、人物情感與主旨"
+          ],
+          commonMistakes: [
+            "只記人物事件，沒有理解事件反映出的價值與品格",
+            "現代文閱讀忽略段落功能，主旨判斷只抓到局部",
+            "新詩把意象直接當字面，不看象徵與情感",
+            "人物情緒轉折沒有對應到事件原因"
+          ],
+          questionTraps: [
+            "文言人物評價題要用事件證據支持，不能只憑印象",
+            "說明文常考段落安排與舉例目的",
+            "詩歌題常用相近情感詞干擾，要看語氣與意象",
+            "問『最能表現主旨』通常要找能統整全文的內容"
+          ],
+          finalChecks: [
+            "四課主旨、人物、意象與事件是否能清楚區分",
+            "文言文是否能抓主詞與事件因果",
+            "閱讀題是否會先看題目再回文定位",
+            "能否用一句話說出每課核心"
+          ]
+        }
+      },
+
+      english: {
+        1: {
+          coreTopics: [
+            "Unit 1：天氣與季節字彙、How is the weather? / What is the weather like?",
+            "Unit 1：天氣描述句型與名詞／形容詞變化",
+            "Unit 2：校園與社交情境字彙",
+            "Unit 2：before / after / when 與所有格代名詞"
+          ],
+          commonMistakes: [
+            "How is the weather? 與 What is the weather like? 結構混用",
+            "rain / rainy、sun / sunny 等名詞與形容詞混淆",
+            "my + 名詞，但 mine 後面不能再接名詞",
+            "before / after / when 後接完整子句時漏掉主詞或動詞"
+          ],
+          questionTraps: [
+            "同一字的不同詞性常放在選項中干擾",
+            "所有格形容詞與所有格代名詞一起考時，先看後面有沒有名詞",
+            "時間連接詞題不要只照中文順序，要看兩個子句的語意",
+            "閱讀題常用同義改寫，不一定直接出現原文用字"
+          ],
+          finalChecks: [
+            "能否不看中文寫出兩種問天氣句型",
+            "能否分清 my/mine、your/yours、their/theirs",
+            "before/after/when 後面的子句是否完整",
+            "Unit 1～2 高頻字彙能否看到英文直接反應意思"
+          ]
+        },
+        2: {
+          coreTopics: [
+            "過去進行式與過去簡單式",
+            "時間表達與事件先後",
+            "職業與生涯相關字彙",
+            "不定詞／動名詞作受詞、動名詞作主詞、虛主詞 it"
+          ],
+          commonMistakes: [
+            "看到 yesterday 就一律選過去式，忽略動作當時是否正在進行",
+            "was/were + V-ing 的 be 動詞與主詞不一致",
+            "to V 與 V-ing 只靠中文判斷，忽略動詞搭配",
+            "It is + adj. + to V 結構漏掉 to"
+          ],
+          questionTraps: [
+            "when/while 常拿來測過去進行式與過去式搭配",
+            "閱讀題中的職業字彙可能用工作內容描述，不直接寫職稱",
+            "虛主詞 it 題目常把真正主詞放在句尾",
+            "時態題先找時間線索，再判斷動作是否持續"
+          ],
+          finalChecks: [
+            "能否說明何時用 was/were + V-ing",
+            "常見動詞後接 to V / V-ing 是否熟悉",
+            "It is...to V 是否能完整造句",
+            "能否依上下文判斷事件先後"
+          ]
+        },
+        3: {
+          coreTopics: [
+            "旅遊、交通、方向與問路",
+            "購物情境與價格表達",
+            "未來式",
+            "cost / spend / pay 與 take / spend 的時間句型"
+          ],
+          commonMistakes: [
+            "cost / spend / pay 主詞與介系詞搭配混淆",
+            "It takes + 人 + 時間 + to V 結構不完整",
+            "will 與 be going to 句型混用",
+            "方向題只看單字，沒有確認地圖起點與面向"
+          ],
+          questionTraps: [
+            "價錢題會混合不同付費動詞句型",
+            "交通時間題常同時考 take/spend 與介系詞",
+            "問路題先確認人物目前位置與方向",
+            "未來式選項常以現在進行式或一般現在式混淆"
+          ],
+          finalChecks: [
+            "cost/spend/pay 三種句型能否互相改寫",
+            "take/spend 表時間能否互換",
+            "問路常用語能否看懂並畫出方向",
+            "未來式肯定、否定、問句是否完整"
+          ]
+        }
+      },
+
+      math: {
+        1: {
+          coreTopics: [
+            "1-1 乘法公式：平方和、平方差、完全平方公式",
+            "1-2 多項式加減：同類項、升降冪排列、直式加減",
+            "1-3 多項式乘除：分配律、直式乘法、直式除法",
+            "2-1 平方根：平方根定義、正負平方根、根號意義"
+          ],
+          commonMistakes: [
+            "多項式直式減法時，第二個多項式沒有整排變號",
+            "多項式缺項時沒有補 0，造成直式上下錯位",
+            "(a-b)² 的中間項誤寫成 +2ab，或把 (a+b)² 誤寫成 a²+b²",
+            "多項式乘法漏乘某一項，尤其負號前後容易出錯",
+            "把『a 的平方根』和『√a』混為一談"
+          ],
+          questionTraps: [
+            "題目不一定直接長成公式，要先整理成可辨認的型式",
+            "多項式除法每一步相減都要再次注意整排變號",
+            "缺 x² 或 x 項時要先補 0 再做直式",
+            "√(a²)=|a|，不知道 a 正負時不能直接寫成 a",
+            "例如 (2x-3)²，係數 2 也要一起平方"
+          ],
+          finalChecks: [
+            "看到多項式減法能否先把第二式每一項變號再合併",
+            "直式題能否先按降冪排列並補齊缺項",
+            "乘法公式能否正向展開，也能反向辨認",
+            "多項式乘除每一步是否會檢查負號與漏項",
+            "平方根題能否分清平方根與算術平方根"
+          ]
+        },
+        2: {
+          coreTopics: [
+            "2-2 起的根式運算與平方根性質",
+            "根式化簡與同類方根",
+            "因式分解的公因式與公式法",
+            "3-2 範圍內因式分解與應用"
+          ],
+          commonMistakes: [
+            "根式加減時把不同根號直接相加",
+            "根式化簡沒有先找完全平方因數",
+            "因式分解漏掉公因式",
+            "平方差與完全平方公式辨認錯誤"
+          ],
+          questionTraps: [
+            "√a + √b 通常不能直接合併成 √(a+b)",
+            "能提出公因式時通常先提出，再判斷能否繼續分解",
+            "看到 x²±2ax+a² 要判斷是否為完全平方",
+            "因式分解完成後可用展開回去驗算"
+          ],
+          finalChecks: [
+            "根式是否化到最簡",
+            "因式分解是否已完全",
+            "公式辨認是否包含係數與正負號",
+            "能否用展開驗算分解結果"
+          ]
+        },
+        3: {
+          coreTopics: [
+            "第4章核心概念與代表題型",
+            "第5章核心概念與代表題型",
+            "資料／圖形資訊判讀",
+            "跨步驟整合題"
+          ],
+          commonMistakes: [
+            "只會套公式，忽略題目單位與資料意義",
+            "看圖時把視覺外觀當成已知條件",
+            "計算完成沒有檢查答案是否符合情境"
+          ],
+          questionTraps: [
+            "圖表題先看標題、橫軸、縱軸與單位",
+            "幾何／圖形題以題目標示條件為準，不以目測判斷",
+            "多步驟題常把前一小題結果當成下一題條件"
+          ],
+          finalChecks: [
+            "能否先讀懂資料或圖形再計算",
+            "已知條件是否會標記在圖上",
+            "最後能否回頭判斷答案合理性"
+          ]
+        }
+      },
+
+      science: {
+        1: {
+          coreTopics: [
+            "第1～2單元的重要概念與因果關係",
+            "實驗目的、操作步驟與變因",
+            "表格、圖形與數據判讀",
+            "基本計算的公式、單位與代入"
+          ],
+          commonMistakes: [
+            "把自變因、應變因、控制變因混淆",
+            "只背實驗結論，不知道為什麼要控制其他條件",
+            "看到圖表直接看數字，沒有先看橫軸、縱軸與單位",
+            "計算公式正確但單位沒有先統一"
+          ],
+          questionTraps: [
+            "題目問『為了公平比較』通常是在找控制變因",
+            "題目只改一個條件時，要重新判斷哪個變因被改動",
+            "圖表趨勢不一定等於因果，還要看實驗設計",
+            "實驗結果與實驗目的不是同一件事"
+          ],
+          finalChecks: [
+            "能否用自己的話說出實驗目的與控制條件",
+            "圖表題能否先讀軸與單位再回答",
+            "計算題是否會先寫公式、統一單位、最後補單位",
+            "重要概念能否用『原因→結果』說明"
+          ]
+        },
+        2: {
+          coreTopics: [
+            "第3～4單元核心概念",
+            "實驗變因與數據判讀",
+            "公式與單位換算",
+            "現象與機制的解釋"
+          ],
+          commonMistakes: [
+            "公式中的量彼此代錯",
+            "單位換算後忘了調整數值",
+            "把觀察到的現象直接當成原因",
+            "實驗題忽略控制條件"
+          ],
+          questionTraps: [
+            "同一題可能同時考概念、圖表與計算",
+            "題目給很多數據不代表全部都要使用",
+            "選項只改一個關鍵詞時要特別檢查定義"
+          ],
+          finalChecks: [
+            "重要公式能否說出每個符號代表什麼",
+            "能否分清實驗現象、推論與結論",
+            "圖表題是否能先找趨勢再解釋"
+          ]
+        },
+        3: {
+          coreTopics: [
+            "第5～6單元核心概念",
+            "實驗與生活情境應用",
+            "圖表、數據與綜合判讀",
+            "跨單元整合題"
+          ],
+          commonMistakes: [
+            "只背單一概念，遇到跨單元題就無法連結",
+            "圖表題忽略單位與比例",
+            "把生活經驗當成科學證據"
+          ],
+          questionTraps: [
+            "跨單元題常先給情境，再問概念或實驗判斷",
+            "選項可能只有一個條件不同，要逐字比對",
+            "實驗題先找操縱條件與觀察結果"
+          ],
+          finalChecks: [
+            "每單元能否整理成概念圖",
+            "能否用一到兩句話解釋實驗結果",
+            "能否把公式、圖表與概念放在同一題處理"
+          ]
+        }
+      },
+
+      social: {
+        1: {
+          coreTopics: [
+            "地理1～2：地圖／區位／自然與人文環境",
+            "歷史1～2：時間順序、事件背景、人物與制度",
+            "公民1～2：基本概念、權利義務與生活案例"
+          ],
+          commonMistakes: [
+            "地理只背地名，沒有連結地形、氣候、產業或人口",
+            "歷史把原因、經過、結果混在一起",
+            "人物、制度與事件時代配錯",
+            "公民只背名詞，遇到生活情境就不會套用"
+          ],
+          questionTraps: [
+            "地圖題先看方向、圖例、比例尺與圖名，不要直接猜",
+            "氣候／統計圖先看橫縱軸與單位，再判斷趨勢",
+            "歷史題出現『最主要』『直接原因』『長期影響』時要分清層次",
+            "公民題先抓題幹關鍵字，再對照相近概念的差異"
+          ],
+          finalChecks: [
+            "地理能否把位置→環境→產業／人口串起來",
+            "歷史能否畫出事件時間軸並標原因與影響",
+            "公民能否用生活例子解釋名詞",
+            "看到圖表或史料時是否會先找真正要問的概念"
+          ]
+        },
+        2: {
+          coreTopics: [
+            "地理3～4：區域特徵與人地互動",
+            "歷史3～4：事件演變、制度與影響",
+            "公民3～4：制度、權利義務與案例應用"
+          ],
+          commonMistakes: [
+            "地理特徵背得零散，無法比較兩個區域",
+            "歷史只記年份，不清楚前因後果",
+            "公民遇到案例無法判斷屬於哪個制度"
+          ],
+          questionTraps: [
+            "比較題先列相同點與不同點",
+            "史料題不一定直接寫出課本名詞，要從內容反推",
+            "公民案例題先找當事人身分、行為與權利義務"
+          ],
+          finalChecks: [
+            "地理是否能用表格比較區域",
+            "歷史是否能按時間順序說明事件",
+            "公民是否能從案例回推概念"
+          ]
+        },
+        3: {
+          coreTopics: [
+            "地理5～6：區域發展、環境與人口／產業",
+            "歷史5～6：事件整合與長期影響",
+            "公民5～6：制度比較與生活應用"
+          ],
+          commonMistakes: [
+            "只看單一資料，忽略地理題常要跨圖表整合",
+            "歷史前後期事件混淆",
+            "公民相近制度名稱混用"
+          ],
+          questionTraps: [
+            "地理題常用兩張以上圖表要求綜合判斷",
+            "歷史題問影響時不一定只限同一時期",
+            "公民題先判斷是在問規範、權利、責任或制度"
+          ],
+          finalChecks: [
+            "能否跨地理圖表做比較",
+            "能否把歷史事件放進完整時間線",
+            "能否用關鍵字區分相似公民概念"
+          ]
+        }
+      }
+    };
+
+    function mergeDetailedContext(subjectKey,nextExam,context) {
+      if (!context || !nextExam) return context;
+
+      if (
+        Number(nextExam.grade) !== 8 ||
+        Number(nextExam.semester) !== 1
+      ) {
+        return context;
+      }
+
+      const detail =
+        GRADE8_DETAIL_BANK?.[subjectKey]?.[Number(nextExam.examNo)];
+
+      if (!detail) return context;
+
+      return {
+        ...context,
+        coreTopics:
+          context.coreTopics?.length
+            ? context.coreTopics
+            : (detail.coreTopics || []),
+        commonMistakes:
+          context.commonMistakes?.length
+            ? context.commonMistakes
+            : (detail.commonMistakes || []),
+        questionTraps:
+          context.questionTraps?.length
+            ? context.questionTraps
+            : (detail.questionTraps || []),
+        finalChecks:
+          context.finalChecks?.length
+            ? context.finalChecks
+            : (detail.finalChecks || [])
+      };
+    }
 
     const SUBJECTS = [
       { key:"chinese", avgKey:"chineseAvg", name:"國文", icon:"📖" },
@@ -1074,6 +1627,18 @@
           ? raw.prereq.map(item => String(item).trim()).filter(Boolean)
           : [],
         teacherNote:String(raw.teacherNote || "").trim(),
+        coreTopics:Array.isArray(raw.coreTopics)
+          ? raw.coreTopics.map(item => String(item).trim()).filter(Boolean)
+          : [],
+        commonMistakes:Array.isArray(raw.commonMistakes)
+          ? raw.commonMistakes.map(item => String(item).trim()).filter(Boolean)
+          : [],
+        questionTraps:Array.isArray(raw.questionTraps)
+          ? raw.questionTraps.map(item => String(item).trim()).filter(Boolean)
+          : [],
+        finalChecks:Array.isArray(raw.finalChecks)
+          ? raw.finalChecks.map(item => String(item).trim()).filter(Boolean)
+          : [],
         resources:parseScopeResources(raw.resources || [])
       };
     }
@@ -1133,10 +1698,14 @@
           data.focus.length ||
           data.publisher
         ) {
-          return {
-            ...data,
-            source:"firebase"
-          };
+          return mergeDetailedContext(
+            subjectKey,
+            nextExam,
+            {
+              ...data,
+              source:"firebase"
+            }
+          );
         }
       }
 
@@ -1157,14 +1726,22 @@
 
       if (!exam) return null;
 
-      return {
-        publisher:subject.publisher,
-        ...exam,
-        prereq:exam.prereq || [],
-        teacherNote:"",
-        resources:exam.resources || [],
-        source:"builtin"
-      };
+      return mergeDetailedContext(
+        subjectKey,
+        nextExam,
+        {
+          publisher:subject.publisher,
+          ...exam,
+          prereq:exam.prereq || [],
+          teacherNote:"",
+          coreTopics:exam.coreTopics || exam.focus || [],
+          commonMistakes:exam.commonMistakes || [],
+          questionTraps:exam.questionTraps || [],
+          finalChecks:exam.finalChecks || [],
+          resources:exam.resources || [],
+          source:"builtin"
+        }
+      );
     }
 
     function showMessage(element,text,type="info") {
@@ -1749,22 +2326,22 @@
           records.forEach(
             record => {
               const score =
-                Number(
+                scoreNumber(
                   record.result[subject.key]
                 );
 
               const classAverage =
-                Number(
+                scoreNumber(
                   record.exam[subject.avgKey]
                 );
 
-              if (Number.isFinite(score)) {
+              if (score !== null) {
                 scores.push(score);
               }
 
               if (
-                Number.isFinite(score) &&
-                Number.isFinite(classAverage)
+                score !== null &&
+                classAverage !== null
               ) {
                 classDiffs.push(
                   score - classAverage
@@ -3234,315 +3811,746 @@
     }
 
 
+
+    function subjectPriorityScore(analysis) {
+      const latest =
+        scoreNumber(analysis.latest);
+
+      let score = 0;
+
+      // 目前成績是最主要依據。
+      if (latest !== null) {
+        if (latest < 60) score += 44;
+        else if (latest < 70) score += 32;
+        else if (latest < 80) score += 20;
+        else if (latest < 90) score += 8;
+      }
+
+      // 長期低於班平均，增加優先程度。
+      if (analysis.classDiff < 0) {
+        score +=
+          Math.min(
+            20,
+            Math.abs(analysis.classDiff) * 1.35
+          );
+      }
+
+      // 最近一次低於自己的常態，視為需要檢查，但權重低於實際弱科。
+      if (analysis.latestVsSelf < 0) {
+        score +=
+          Math.min(
+            10,
+            Math.abs(analysis.latestVsSelf)
+          );
+      }
+
+      // 波動大代表需要穩定度。
+      if (analysis.volatility >= 10) {
+        score += 6;
+      }
+
+      if (
+        analysis.profile &&
+        isWeakProfile(analysis.profile.id)
+      ) {
+        score += 8;
+      }
+
+      return score;
+    }
+
+    function assignSubjectPriorities(analyses) {
+      const ranked =
+        [...analyses]
+          .map(analysis => ({
+            analysis,
+            score:subjectPriorityScore(analysis)
+          }))
+          .sort((a,b) => b.score - a.score);
+
+      const result = new Map();
+
+      ranked.forEach((item,index) => {
+        let level = "keep";
+        let label = "維持穩定";
+
+        if (
+          index === 0 &&
+          item.score >= 22
+        ) {
+          level = "high";
+          label = "本次優先補強";
+        } else if (
+          (
+            index === 1 &&
+            item.score >= 16
+          ) ||
+          item.score >= 34
+        ) {
+          level = "mid";
+          label = "本次次要加強";
+        }
+
+        result.set(
+          item.analysis.key,
+          {
+            level,
+            label,
+            rank:index + 1,
+            score:item.score
+          }
+        );
+      });
+
+      return result;
+    }
+
+    function studyTimeShares(analyses,priorityMap) {
+      const weights =
+        analyses.map(analysis => {
+          const priority =
+            priorityMap.get(analysis.key);
+
+          let weight =
+            priority?.level === "high"
+              ? 3.4
+              : priority?.level === "mid"
+                ? 2.2
+                : 1;
+
+          const latest =
+            scoreNumber(analysis.latest);
+
+          if (
+            latest !== null &&
+            latest < 60
+          ) {
+            weight += .7;
+          }
+
+          return {
+            key:analysis.key,
+            weight
+          };
+        });
+
+      const total =
+        weights.reduce(
+          (sum,item) => sum + item.weight,
+          0
+        ) || 1;
+
+      const result = new Map();
+
+      weights.forEach(item => {
+        result.set(
+          item.key,
+          Math.round(
+            item.weight / total * 100
+          )
+        );
+      });
+
+      return result;
+    }
+
+    function priorityIcon(level) {
+      if (level === "high") return "🔴";
+      if (level === "mid") return "🟠";
+      return "🟢";
+    }
+
+    function individualizedPriorityNote(
+      analysis,
+      priority,
+      nextExam
+    ) {
+      const context =
+        getCurriculumContext(
+          analysis.key,
+          nextExam
+        );
+
+      const focus =
+        context?.coreTopics?.[0] ||
+        context?.focus?.[0] ||
+        "本次段考核心內容";
+
+      const latest =
+        scoreNumber(analysis.latest);
+
+      const average =
+        scoreNumber(analysis.average);
+
+      const best =
+        analysis.scores?.length
+          ? Math.max(...analysis.scores)
+          : null;
+
+      if (priority.level === "high") {
+        const parts = [
+          "這一科是你本次段考最需要優先處理的科目。"
+        ];
+
+        if (
+          latest !== null &&
+          average !== null
+        ) {
+          parts.push(
+            latest < average
+              ? "最近一次也低於自己的歷次平均，先找固定失分原因，不要把所有單元平均分配時間。"
+              : "雖然最近沒有明顯低於自己的常態，但和其他科相比，這一科仍最值得投入時間。"
+          );
+        }
+
+        parts.push(
+          `先從「${focus}」開始，把基本與易錯題型穩住，再進混合題。`
+        );
+
+        if (
+          best !== null &&
+          latest !== null &&
+          best - latest >= 8
+        ) {
+          parts.push(
+            `你曾經比目前高約 ${Math.round(best-latest)} 分，代表這一科仍有可恢復的空間。`
+          );
+        }
+
+        return parts.join("");
+      }
+
+      if (priority.level === "mid") {
+        return `這一科是本次第二優先。先確認「${focus}」與常見易錯點，再做整合題；投入時間可以少於第一優先科。`;
+      }
+
+      return `這一科目前以維持穩定為主。確認「${focus}」與高頻易錯點後，做一次考前混合檢核即可，不必大量重做已熟悉的基本題。`;
+    }
+
+    function detailLimit(priority) {
+      if (priority.level === "high") return 5;
+      if (priority.level === "mid") return 4;
+      return 2;
+    }
+
+    function renderDetailList(title,icon,items,limit) {
+      const list =
+        (items || [])
+          .slice(0,limit);
+
+      if (!list.length) return "";
+
+      return `
+        <div class="detail-box">
+          <h4>${icon} ${escapeHtml(title)}</h4>
+          <ul>
+            ${
+              list.map(
+                item =>
+                  `<li>${escapeHtml(item)}</li>`
+              ).join("")
+            }
+          </ul>
+        </div>
+      `;
+    }
+
     function renderAnalyses(
       analyses,
       nextExam
     ) {
-      $("subjectList").innerHTML =
-        analyses.map(
-          analysis => {
-            const prescription =
-              subjectPrescription(
-                analysis,
-                nextExam
-              );
+      const priorityMap =
+        assignSubjectPriorities(analyses);
 
-            const plan =
-              fourWeekPlan(
-                analysis,
-                nextExam
-              );
+      const timeShares =
+        studyTimeShares(
+          analyses,
+          priorityMap
+        );
 
-            const ratio =
-              practiceRatio(
-                analysis
-              );
+      const sorted =
+        [...analyses]
+          .sort(
+            (a,b) =>
+              (
+                priorityMap.get(a.key)?.rank ||
+                99
+              ) -
+              (
+                priorityMap.get(b.key)?.rank ||
+                99
+              )
+          );
 
-            const context =
-              getCurriculumContext(
-                analysis.key,
-                nextExam
-              );
+      const summary =
+        sorted.map(analysis => {
+          const priority =
+            priorityMap.get(analysis.key);
 
-            const checks =
-              personalizedCheckpoints(
-                analysis,
-                nextExam
-              );
+          return `
+            <span class="priority-pill ${priority.level}">
+              ${priorityIcon(priority.level)}
+              ${escapeHtml(analysis.name)}
+              ・${escapeHtml(priority.label)}
+            </span>
+          `;
+        }).join("");
 
-            const operation =
-              weeklyOperationalTasks(
-                analysis,
-                nextExam
-              );
+      const shareSummary =
+        sorted.map(analysis => {
+          const share =
+            timeShares.get(analysis.key) || 0;
 
-            const traits =
-              analysis.traits.slice(0,5);
+          return `${analysis.name} ${share}%`;
+        }).join("｜");
 
-            return `
-              <article class="subject-card">
+      $("subjectList").innerHTML = `
+        <div class="subject-priority-summary">
+          ${summary}
+        </div>
 
-                <div class="subject-head">
+        <div class="priority-note">
+          <strong>⏱ 段考準備時間分配建議：</strong>
+          ${escapeHtml(shareSummary)}
+          <div class="study-share">
+            這是依目前五科相對狀況分配，不代表每天一定要照比例；主要目的是把較多時間留給明顯弱科。
+          </div>
+        </div>
 
-                  <div class="subject-name">
-                    ${analysis.icon}
-                    ${analysis.name}
-                  </div>
+        <div class="subject-accordion">
 
-                  <div class="status-badge">
-                    ${escapeHtml(analysis.profile.name)}
-                  </div>
+          ${
+            sorted.map(
+              (analysis,index) => {
+                const priority =
+                  priorityMap.get(
+                    analysis.key
+                  );
 
-                </div>
+                const prescription =
+                  subjectPrescription(
+                    analysis,
+                    nextExam
+                  );
 
-                <div class="subject-body">
+                const plan =
+                  fourWeekPlan(
+                    analysis,
+                    nextExam
+                  );
 
-                  <div class="subject-data">
+                const ratio =
+                  practiceRatio(
+                    analysis
+                  );
 
-                    <div class="data-box">
-                      <div class="data-label">最近一次</div>
-                      <div class="data-value">
-                        ${formatScore(analysis.latest)}
+                const context =
+                  getCurriculumContext(
+                    analysis.key,
+                    nextExam
+                  );
+
+                const checks =
+                  personalizedCheckpoints(
+                    analysis,
+                    nextExam
+                  );
+
+                const operation =
+                  weeklyOperationalTasks(
+                    analysis,
+                    nextExam
+                  );
+
+                const traits =
+                  analysis.traits.slice(0,5);
+
+                const limit =
+                  detailLimit(priority);
+
+                return `
+                  <article
+                    class="subject-acc-item ${
+                      index === 0
+                        ? "open"
+                        : ""
+                    }"
+                    data-subject="${analysis.key}"
+                  >
+
+                    <button
+                      type="button"
+                      class="subject-acc-header"
+                      aria-expanded="${
+                        index === 0
+                          ? "true"
+                          : "false"
+                      }"
+                    >
+
+                      <span class="priority-badge ${priority.level}">
+                        ${priorityIcon(priority.level)}
+                        ${escapeHtml(priority.label)}
+                      </span>
+
+                      <span class="subject-acc-main">
+
+                        <span class="subject-acc-name">
+                          ${analysis.icon}
+                          ${escapeHtml(analysis.name)}
+                        </span>
+
+                        <span class="subject-acc-meta">
+                          最近一次 ${formatScore(analysis.latest)}
+                          ｜歷次平均 ${formatScore(analysis.average)}
+                          ｜建議投入約 ${timeShares.get(analysis.key) || 0}%
+                        </span>
+
+                      </span>
+
+                      <span class="subject-acc-arrow">⌄</span>
+
+                    </button>
+
+                    <div class="subject-acc-content">
+
+                      <div class="priority-note">
+                        <strong>🎯 為什麼這科排在這裡？</strong><br>
+                        ${escapeHtml(
+                          individualizedPriorityNote(
+                            analysis,
+                            priority,
+                            nextExam
+                          )
+                        )}
                       </div>
-                    </div>
 
-                    <div class="data-box">
-                      <div class="data-label">歷次平均</div>
-                      <div class="data-value">
-                        ${formatScore(analysis.average)}
+                      <div class="subject-data">
+
+                        <div class="data-box">
+                          <div class="data-label">最近一次</div>
+                          <div class="data-value">
+                            ${formatScore(analysis.latest)}
+                          </div>
+                        </div>
+
+                        <div class="data-box">
+                          <div class="data-label">歷次平均</div>
+                          <div class="data-value">
+                            ${formatScore(analysis.average)}
+                          </div>
+                        </div>
+
+                        <div class="data-box">
+                          <div class="data-label">近三次變化</div>
+                          <div class="data-value ${
+                            analysis.recentTrend > 0
+                              ? "positive"
+                              : analysis.recentTrend < 0
+                                ? "negative"
+                                : ""
+                          }">
+                            ${signed(analysis.recentTrend)}
+                          </div>
+                        </div>
+
+                        <div class="data-box">
+                          <div class="data-label">相較班平均</div>
+                          <div class="data-value ${
+                            analysis.classDiff > 0
+                              ? "positive"
+                              : analysis.classDiff < 0
+                                ? "negative"
+                                : ""
+                          }">
+                            ${signed(analysis.classDiff)}
+                          </div>
+                        </div>
+
                       </div>
-                    </div>
 
-                    <div class="data-box">
-                      <div class="data-label">近三次變化</div>
+                      ${
+                        traits.length
+                          ? `
+                            <div class="trait-row">
+                              ${
+                                traits.map(
+                                  trait =>
+                                    `<span class="trait-chip">${escapeHtml(trait.label)}</span>`
+                                ).join("")
+                              }
+                            </div>
+                          `
+                          : ""
+                      }
 
-                      <div class="data-value ${
-                        analysis.recentTrend > 0
-                          ? "positive"
-                          : analysis.recentTrend < 0
-                            ? "negative"
-                            : ""
-                      }">
-                        ${signed(analysis.recentTrend)}
+                      ${
+                        context
+                          ? `
+                            <div class="scope-box">
+
+                              <div class="box-title">
+                                📚 ${escapeHtml(context.publisher)}｜下一次實際段考範圍
+                              </div>
+
+                              <strong>
+                                ${escapeHtml(context.scope)}
+                              </strong>
+
+                              <br>
+
+                              <span style="color:#6b6475">
+                                重點：
+                                ${
+                                  (context.focus || [])
+                                    .map(escapeHtml)
+                                    .join("、")
+                                }
+                              </span>
+
+                            </div>
+                          `
+                          : ""
+                      }
+
+                      ${
+                        context
+                          ? `
+                            <div class="detail-grid">
+
+                              ${renderDetailList(
+                                "本次必抓核心",
+                                "📌",
+                                context.coreTopics || context.focus,
+                                limit
+                              )}
+
+                              ${renderDetailList(
+                                "高頻易錯點",
+                                "⚠️",
+                                context.commonMistakes,
+                                limit
+                              )}
+
+                              ${renderDetailList(
+                                "題目陷阱／判斷提醒",
+                                "🧠",
+                                context.questionTraps,
+                                limit
+                              )}
+
+                              ${renderDetailList(
+                                "考前最後檢查",
+                                "✅",
+                                context.finalChecks,
+                                limit
+                              )}
+
+                            </div>
+                          `
+                          : ""
+                      }
+
+                      <div class="analysis-box">
+                        <div class="box-title">
+                          🔎 目前學習狀況
+                        </div>
+
+                        ${escapeHtml(
+                          familyDiagnosis(
+                            analysis,
+                            nextExam
+                          )
+                        )}
                       </div>
-                    </div>
 
-                    <div class="data-box">
-                      <div class="data-label">相較班平均</div>
+                      <div class="action-box">
 
-                      <div class="data-value ${
-                        analysis.classDiff > 0
-                          ? "positive"
-                          : analysis.classDiff < 0
-                            ? "negative"
-                            : ""
-                      }">
-                        ${signed(analysis.classDiff)}
-                      </div>
-                    </div>
+                        <div class="box-title">
+                          🎯 依下一次段考範圍的個人化建議
+                        </div>
 
-                  </div>
+                        <div style="font-weight:800;margin-bottom:8px">
+                          建議練習比例：
+                          基礎 ${ratio.foundation}%
+                          ／ 錯題修正 ${ratio.correction}%
+                          ／ 變化進階 ${ratio.challenge}%
+                        </div>
 
-                  ${
-                    traits.length
-                      ? `
-                        <div class="trait-row">
+                        <ol class="action-list">
                           ${
-                            traits.map(
-                              trait =>
-                                `<span class="trait-chip">${escapeHtml(trait.label)}</span>`
+                            prescription.map(
+                              item =>
+                                `<li>${escapeHtml(item)}</li>`
                             ).join("")
                           }
+                        </ol>
+
+                      </div>
+
+                      <div class="exam-period-box">
+
+                        <div class="box-title">
+                          🧭 這一次段考期間可以怎麼準備
                         </div>
-                      `
-                      : ""
-                  }
 
-                  ${
-                    context
-                      ? `
-                        <div class="scope-box">
+                        <ol class="action-list">
+                          ${
+                            examPeriodStrategy(
+                              analysis,
+                              nextExam
+                            ).map(
+                              item =>
+                                `<li>${escapeHtml(item)}</li>`
+                            ).join("")
+                          }
+                        </ol>
 
-                          <div class="box-title">
-                            📚 ${escapeHtml(context.publisher)}｜下一次實際段考範圍
-                          </div>
+                      </div>
 
-                          <strong>
-                            ${escapeHtml(context.scope)}
-                          </strong>
+                      ${renderLearningResources(context)}
 
-                          <br>
+                      <div class="operation-box">
 
-                          <span style="color:#6b6475">
-                            重點：
-                            ${
-                              context.focus
-                                .map(escapeHtml)
-                                .join("、")
-                            }
-                          </span>
-
+                        <div class="box-title">
+                          📝 本週直接操作清單
                         </div>
-                      `
-                      : ""
-                  }
 
-                  <div class="analysis-box">
+                        ${
+                          operation.tasks.map(
+                            (item,taskIndex) => `
+                              <div class="operation-task">
 
-                    <div class="box-title">
-                      🔎 目前學習狀況
+                                <input
+                                  type="checkbox"
+                                  id="task-${analysis.key}-${taskIndex}"
+                                >
+
+                                <label
+                                  for="task-${analysis.key}-${taskIndex}"
+                                >
+                                  ${escapeHtml(item)}
+                                </label>
+
+                              </div>
+                            `
+                          ).join("")
+                        }
+
+                        <div class="operation-standard">
+                          🏁 本週完成標準：
+                          ${escapeHtml(operation.standard)}
+                        </div>
+
+                      </div>
+
+                      <div class="checkpoint-box">
+
+                        <div class="box-title">
+                          ✅ 我怎麼知道自己真的進步了？
+                        </div>
+
+                        <ol class="action-list">
+                          ${
+                            checks.map(
+                              item =>
+                                `<li>${escapeHtml(item)}</li>`
+                            ).join("")
+                          }
+                        </ol>
+
+                      </div>
+
+                      <div class="week-box">
+
+                        <div class="box-title">
+                          📅 ${
+                            nextExam
+                              ? nextExam.shortTitle
+                              : "下一次段考"
+                          }前四週安排
+                        </div>
+
+                        <ol class="action-list">
+                          ${
+                            plan.map(
+                              (item,weekIndex) => `
+                                <li>
+                                  <strong>
+                                    第 ${weekIndex + 1} 週：
+                                  </strong>
+                                  ${escapeHtml(item)}
+                                </li>
+                              `
+                            ).join("")
+                          }
+                        </ol>
+
+                      </div>
+
                     </div>
 
-                    ${escapeHtml(
-                      familyDiagnosis(
-                        analysis,
-                        nextExam
-                      )
-                    )}
-
-                  </div>
-
-                  <div class="action-box">
-
-                    <div class="box-title">
-                      🎯 依下一次段考範圍的個人化建議
-                    </div>
-
-                    <div style="font-weight:800;margin-bottom:8px">
-
-                      建議練習比例：
-
-                      基礎 ${ratio.foundation}%
-
-                      ／ 錯題修正 ${ratio.correction}%
-
-                      ／ 變化進階 ${ratio.challenge}%
-
-                    </div>
-
-                    <ol class="action-list">
-
-                      ${
-                        prescription.map(
-                          item =>
-                            `<li>${escapeHtml(item)}</li>`
-                        ).join("")
-                      }
-
-                    </ol>
-
-                  </div>
-
-                  <div class="exam-period-box">
-
-                    <div class="box-title">
-                      🧭 這一次段考期間可以怎麼準備
-                    </div>
-
-                    <ol class="action-list">
-                      ${
-                        examPeriodStrategy(
-                          analysis,
-                          nextExam
-                        ).map(
-                          item =>
-                            `<li>${escapeHtml(item)}</li>`
-                        ).join("")
-                      }
-                    </ol>
-
-                  </div>
-
-                  ${renderLearningResources(context)}
-
-                  <div class="operation-box">
-
-                    <div class="box-title">
-                      📝 本週直接操作清單
-                    </div>
-
-                    ${
-                      operation.tasks.map(
-                        (item,index) => `
-                          <div class="operation-task">
-
-                            <input
-                              type="checkbox"
-                              id="task-${analysis.key}-${index}"
-                            >
-
-                            <label
-                              for="task-${analysis.key}-${index}"
-                            >
-                              ${escapeHtml(item)}
-                            </label>
-
-                          </div>
-                        `
-                      ).join("")
-                    }
-
-                    <div class="operation-standard">
-                      🏁 本週完成標準：
-                      ${escapeHtml(operation.standard)}
-                    </div>
-
-                  </div>
-
-                  <div class="checkpoint-box">
-
-                    <div class="box-title">
-                      ✅ 我怎麼知道自己真的進步了？
-                    </div>
-
-                    <ol class="action-list">
-
-                      ${
-                        checks.map(
-                          item =>
-                            `<li>${escapeHtml(item)}</li>`
-                        ).join("")
-                      }
-
-                    </ol>
-
-                  </div>
-
-                  <div class="week-box">
-
-                    <div class="box-title">
-                      📅 ${
-                        nextExam
-                          ? nextExam.shortTitle
-                          : "下一次段考"
-                      }前四週安排
-                    </div>
-
-                    <ol class="action-list">
-
-                      ${
-                        plan.map(
-                          (item,index) => `
-                            <li>
-                              <strong>
-                                第 ${index + 1} 週：
-                              </strong>
-                              ${escapeHtml(item)}
-                            </li>
-                          `
-                        ).join("")
-                      }
-
-                    </ol>
-
-                  </div>
-
-                </div>
-
-              </article>
-            `;
+                  </article>
+                `;
+              }
+            ).join("")
           }
-        ).join("");
+
+        </div>
+      `;
+
+      const headers =
+        $("subjectList")
+          .querySelectorAll(
+            ".subject-acc-header"
+          );
+
+      headers.forEach(header => {
+        header.addEventListener(
+          "click",
+          () => {
+            const current =
+              header.closest(
+                ".subject-acc-item"
+              );
+
+            const wasOpen =
+              current.classList.contains(
+                "open"
+              );
+
+            $("subjectList")
+              .querySelectorAll(
+                ".subject-acc-item"
+              )
+              .forEach(item => {
+                item.classList.remove(
+                  "open"
+                );
+
+                item
+                  .querySelector(
+                    ".subject-acc-header"
+                  )
+                  ?.setAttribute(
+                    "aria-expanded",
+                    "false"
+                  );
+              });
+
+            if (!wasOpen) {
+              current.classList.add(
+                "open"
+              );
+
+              header.setAttribute(
+                "aria-expanded",
+                "true"
+              );
+            }
+          }
+        );
+      });
     }
 
 
