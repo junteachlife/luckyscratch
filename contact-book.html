@@ -347,6 +347,118 @@
             align-items: center;
         }
 
+        /* ===== 週／月統計表排序 ===== */
+        .stats-sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+        .stats-sortable:hover {
+            background-color: rgba(244, 208, 111, 0.18) !important;
+        }
+        .sort-indicator {
+            display: inline-block;
+            min-width: 1em;
+            font-size: 0.8em;
+        }
+
+        /* ===== 每月航行統計報告列印設定 ===== */
+        @media print {
+            body.print-monthly {
+                background: #ffffff !important;
+                color: #000000 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                min-height: auto !important;
+            }
+            body.print-monthly #loginOverlay { display: none !important; }
+            body.print-monthly #mainSystemContainer {
+                display: block !important;
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            body.print-monthly #mainSystemContainer > * { display: none !important; }
+            body.print-monthly #monthlyReportCard {
+                display: block !important;
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+            }
+            body.print-monthly #monthlyReportCard .d-flex.justify-content-between.align-items-center.mb-3 { margin-bottom: 4px !important; }
+            body.print-monthly #monthlyReportCard h4 {
+                color: #000000 !important;
+                text-shadow: none !important;
+                font-size: 14.5pt !important;
+                margin: 0 !important;
+            }
+            body.print-monthly #monthlyReportCard .print-hide { display: none !important; }
+            body.print-monthly #monthlyReportCard .print-only {
+                display: block !important;
+                color: #000000 !important;
+                font-size: 14.5pt !important;
+                font-weight: bold !important;
+                margin: 2px 0 5px 0 !important;
+            }
+            body.print-monthly #monthlyReportCard .table-responsive { overflow: visible !important; }
+            body.print-monthly #monthlyStatsTable {
+                width: 100% !important;
+                table-layout: fixed !important;
+                border-collapse: collapse !important;
+                margin: 0 !important;
+                color: #000000 !important;
+            }
+            body.print-monthly #monthlyStatsTable th,
+            body.print-monthly #monthlyStatsTable td {
+                position: static !important;
+                left: auto !important;
+                min-width: 0 !important;
+                width: auto !important;
+                padding: 0.25px 0.5px !important;
+                border: 1px solid #555 !important;
+                font-size: 14.5pt !important;
+                line-height: 0.95 !important;
+                color: #000000 !important;
+                background: #ffffff !important;
+                box-shadow: none !important;
+                white-space: normal !important;
+            }
+            body.print-monthly #monthlyStatsTable th {
+                font-weight: 700 !important;
+                white-space: normal !important;
+                word-break: keep-all !important;
+                overflow-wrap: anywhere !important;
+            }
+            body.print-monthly #monthlyStatsTable th:first-child,
+            body.print-monthly #monthlyStatsTable td:first-child { width: 4.5% !important; }
+            body.print-monthly #monthlyStatsTable th:nth-child(2),
+            body.print-monthly #monthlyStatsTable td:nth-child(2) {
+                width: 10.5% !important;
+                text-align: left !important;
+            }
+            body.print-monthly #monthlyStatsTable .badge {
+                background: transparent !important;
+                color: #000000 !important;
+                border: none !important;
+                padding: 0 !important;
+                font-size: 14.5pt !important;
+                font-weight: 700 !important;
+            }
+            body.print-monthly #monthlyStatsTable .text-muted,
+            body.print-monthly #monthlyStatsTable .text-danger,
+            body.print-monthly #monthlyStatsTable .text-warning,
+            body.print-monthly #monthlyStatsTable .text-success { color: #000000 !important; }
+            body.print-monthly #monthlyStatsTable tr {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+        }
+
         /* ===== 每週航行統計報告列印設定 ===== */
         .print-only {
             display: none;
@@ -805,19 +917,19 @@
                 <table class="table table-hover align-middle sticky-audit-table" id="weeklyStatsTable">
                     <thead class="table-light">
                         <tr style="font-size: 0.95rem;">
-                            <th>座號</th>
+                            <th class="stats-sortable" data-sort-key="studentNo">座號 <span class="sort-indicator"></span></th>
                             <th class="text-start">夥伴姓名</th>
-                            <th>🌟 完美</th>
-                            <th>完全未交</th>
-                            <th>遲交</th>
-                            <th>缺席</th>
-                            <th>1.日期未填</th>
-                            <th>2.作業未交</th>
-                            <th>3.中文未完</th>
-                            <th>4.摘要未完</th>
-                            <th>5.時間異常</th>
-                            <th>6.札記未寫</th>
-                            <th>7.家長未簽</th>
+                            <th class="stats-sortable" data-sort-key="perfect">🌟 完美 <span class="sort-indicator"></span></th>
+                            <th class="stats-sortable" data-sort-key="unsubmitted">完全未交 <span class="sort-indicator"></span></th>
+                            <th class="stats-sortable" data-sort-key="late">遲交 <span class="sort-indicator"></span></th>
+                            <th class="stats-sortable" data-sort-key="absent">缺席 <span class="sort-indicator"></span></th>
+                            <th class="stats-sortable" data-sort-key="dateNo">1.日期未填 <span class="sort-indicator"></span></th>
+                            <th class="stats-sortable" data-sort-key="examNo">2.作業未交 <span class="sort-indicator"></span></th>
+                            <th class="stats-sortable" data-sort-key="engNo">3.中文未完 <span class="sort-indicator"></span></th>
+                            <th class="stats-sortable" data-sort-key="sumNo">4.摘要未完 <span class="sort-indicator"></span></th>
+                            <th class="stats-sortable" data-sort-key="timeNo">5.時間異常 <span class="sort-indicator"></span></th>
+                            <th class="stats-sortable" data-sort-key="lifeNo">6.札記未寫 <span class="sort-indicator"></span></th>
+                            <th class="stats-sortable" data-sort-key="signNo">7.家長未簽 <span class="sort-indicator"></span></th>
                         </tr>
                     </thead>
                     <tbody id="weeklyReportTableBody">
@@ -831,29 +943,31 @@
         <div class="card p-3 p-md-4" id="monthlyReportCard" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="mb-0">🗓️ 每月航行統計報告（全班 1~28 號總表）</h4>
-                <div>
+                <div class="d-flex gap-2 align-items-center print-hide">
                     <select class="form-select form-select-sm d-inline-block w-auto" id="monthSelect" style="font-size: 0.9rem;">
                         <!-- 動態產生月份選項 -->
                     </select>
+                    <button type="button" class="btn btn-outline-warning btn-sm fw-bold" id="printMonthlyBtn">🖨️ 列印</button>
                 </div>
             </div>
+            <div class="print-only" id="monthlyPrintPeriod"></div>
             <div class="table-responsive sticky-audit-scroll">
                 <table class="table table-hover align-middle sticky-audit-table" id="monthlyStatsTable">
                     <thead class="table-light">
                         <tr style="font-size: 0.95rem;">
-                            <th>座號</th>
+                            <th class="stats-sortable" data-sort-key="studentNo">座號 <span class="sort-indicator"></span></th>
                             <th class="text-start">夥伴姓名</th>
-                            <th>🌟 完美</th>
-                            <th>完全未交</th>
-                            <th>遲交</th>
-                            <th>缺席</th>
-                            <th>1.日期未填</th>
-                            <th>2.作業未交</th>
-                            <th>3.中文未完</th>
-                            <th>4.摘要未完</th>
-                            <th>5.時間異常</th>
-                            <th>6.札記未寫</th>
-                            <th>7.家長未簽</th>
+                            <th class="stats-sortable" data-sort-key="perfect">🌟 完美 <span class="sort-indicator"></span></th>
+                            <th class="stats-sortable" data-sort-key="unsubmitted">完全未交 <span class="sort-indicator"></span></th>
+                            <th class="stats-sortable" data-sort-key="late">遲交 <span class="sort-indicator"></span></th>
+                            <th class="stats-sortable" data-sort-key="absent">缺席 <span class="sort-indicator"></span></th>
+                            <th class="stats-sortable" data-sort-key="dateNo">1.日期未填 <span class="sort-indicator"></span></th>
+                            <th class="stats-sortable" data-sort-key="examNo">2.作業未交 <span class="sort-indicator"></span></th>
+                            <th class="stats-sortable" data-sort-key="engNo">3.中文未完 <span class="sort-indicator"></span></th>
+                            <th class="stats-sortable" data-sort-key="sumNo">4.摘要未完 <span class="sort-indicator"></span></th>
+                            <th class="stats-sortable" data-sort-key="timeNo">5.時間異常 <span class="sort-indicator"></span></th>
+                            <th class="stats-sortable" data-sort-key="lifeNo">6.札記未寫 <span class="sort-indicator"></span></th>
+                            <th class="stats-sortable" data-sort-key="signNo">7.家長未簽 <span class="sort-indicator"></span></th>
                         </tr>
                     </thead>
                     <tbody id="monthlyReportTableBody">
@@ -1732,6 +1846,50 @@ ${currentDate} 登記為「請假／缺席」嗎？`);
         }
 
         let globalAllRecords = [];
+
+        // 統計表排序狀態：預設依座號由小到大
+        let weeklySortState = { key: 'studentNo', direction: 'asc' };
+        let monthlySortState = { key: 'studentNo', direction: 'asc' };
+
+        function updateSortIndicators(tableId, state) {
+            document.querySelectorAll(`#${tableId} thead .stats-sortable`).forEach(th => {
+                const indicator = th.querySelector('.sort-indicator');
+                if (!indicator) return;
+                indicator.textContent = th.dataset.sortKey === state.key
+                    ? (state.direction === 'asc' ? '▲' : '▼')
+                    : '';
+            });
+        }
+
+        function sortStatsRows(rows, state) {
+            return [...rows].sort((a, b) => {
+                const aVal = Number(a[state.key] ?? 0);
+                const bVal = Number(b[state.key] ?? 0);
+                if (aVal !== bVal) {
+                    return state.direction === 'asc' ? aVal - bVal : bVal - aVal;
+                }
+                return a.studentNo - b.studentNo;
+            });
+        }
+
+        function handleStatsHeaderSort(tableId, type) {
+            document.querySelectorAll(`#${tableId} thead .stats-sortable`).forEach(th => {
+                th.addEventListener('click', function() {
+                    const key = this.dataset.sortKey;
+                    const state = type === 'weekly' ? weeklySortState : monthlySortState;
+
+                    if (state.key === key) {
+                        state.direction = state.direction === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        state.key = key;
+                        state.direction = key === 'studentNo' ? 'asc' : 'desc';
+                    }
+
+                    if (type === 'weekly') renderWeeklyTable();
+                    else renderMonthlyTable();
+                });
+            });
+        }
         function setupWeeklyReport(records) {
             globalAllRecords = records;
             const weekSelect = document.getElementById('weekSelect');
@@ -1831,6 +1989,32 @@ ${currentDate} 登記為「請假／缺席」嗎？`);
             window.print();
         });
 
+        // 每月航行統計報告列印
+        document.getElementById('printMonthlyBtn').addEventListener('click', function() {
+            const monthSelect = document.getElementById('monthSelect');
+            const monthlyReportCard = document.getElementById('monthlyReportCard');
+            const printPeriod = document.getElementById('monthlyPrintPeriod');
+
+            const selectedText = monthSelect.options[monthSelect.selectedIndex]
+                ? monthSelect.options[monthSelect.selectedIndex].textContent
+                : '';
+
+            printPeriod.textContent = selectedText;
+
+            const previousDisplay = monthlyReportCard.style.display;
+            monthlyReportCard.style.display = 'block';
+            document.body.classList.add('print-monthly');
+
+            const cleanup = () => {
+                document.body.classList.remove('print-monthly');
+                monthlyReportCard.style.display = previousDisplay;
+                window.removeEventListener('afterprint', cleanup);
+            };
+
+            window.addEventListener('afterprint', cleanup);
+            window.print();
+        });
+
 
         // 渲染每週統計表格
         function renderWeeklyTable() {
@@ -1839,23 +2023,11 @@ ${currentDate} 登記為「請假／缺席」嗎？`);
             tbody.innerHTML = '';
 
             let weekRecords = globalAllRecords.filter(r => r.date && getWeekRangeString(r.date) === selectedWeek);
+            let rows = [];
 
             for (let i = 1; i <= 28; i++) {
                 let sRecords = weekRecords.filter(r => r.studentNo === i);
-                
-                let stats = {
-                    perfect: 0,
-                    unsubmitted: 0,
-                    late: 0,
-                    absent: 0,
-                    dateNo: 0,
-                    examNo: 0,
-                    engNo: 0,
-                    sumNo: 0,
-                    timeNo: 0,
-                    lifeNo: 0,
-                    signNo: 0
-                };
+                let stats = { perfect:0, unsubmitted:0, late:0, absent:0, dateNo:0, examNo:0, engNo:0, sumNo:0, timeNo:0, lifeNo:0, signNo:0 };
 
                 sRecords.forEach(r => {
                     let isAbsent = (r.submissionStatus === "缺席");
@@ -1869,21 +2041,12 @@ ${currentDate} 登記為「請假／缺席」嗎？`);
                     let isLifeOk = (!r.lifeNote || r.lifeNote === "完成" || r.lifeNote === "已寫");
                     let isSignOk = (!r.parentSign || r.parentSign === "已簽" || r.parentSign === "已簽名");
 
-                    if (isSubmitted && !isLate && isDateOk && isExamOk && isEngOk && isSumOk && isTimeOk && isLifeOk && isSignOk) {
-                        stats.perfect++;
-                    }
+                    if (isSubmitted && !isLate && isDateOk && isExamOk && isEngOk && isSumOk && isTimeOk && isLifeOk && isSignOk) stats.perfect++;
+                    if (r.submissionStatus === "缺席") stats.absent++;
+                    else if (r.submissionStatus === "未繳交") stats.unsubmitted++;
+                    else if (r.wasLate === true) stats.late++;
 
-                    if (r.submissionStatus === "缺席") {
-                        stats.absent++;
-                    } else if (r.submissionStatus === "未繳交") {
-                        stats.unsubmitted++;
-                    } else if (r.wasLate === true) {
-                        stats.late++;
-                    }
-
-                    // 缺席日的 1~7 檢核不列入缺漏統計
                     if (isAbsent) return;
-
                     if (r.dateCheck && r.dateCheck.includes("未")) stats.dateNo++;
                     if (r.examHw && (r.examHw.includes("未") || r.examHw.includes("異常"))) stats.examNo++;
                     if (r.englishCopy && r.englishCopy.includes("未")) stats.engNo++;
@@ -1893,34 +2056,37 @@ ${currentDate} 登記為「請假／缺席」嗎？`);
                     if (r.parentSign && (r.parentSign === "未簽" || r.parentSign === "未簽名")) stats.signNo++;
                 });
 
-                function cellBadge(count, isPerfect = false, isLateBadge = false) {
-                    if (count > 0) {
-                        let badgeColor = isPerfect
-                            ? "bg-warning text-dark"
-                            : (isLateBadge ? "bg-warning text-dark" : "bg-danger");
-                        return `<span class="badge ${badgeColor}">${count} 次</span>`;
-                    }
-                    return `<span class="text-muted">0</span>`;
-                }
+                rows.push({ studentNo:i, studentName:contactBookStudents[i], ...stats });
+            }
 
+            function cellBadge(count, isPerfect=false, isLateBadge=false) {
+                if (count > 0) {
+                    let badgeColor = isPerfect ? "bg-warning text-dark" : (isLateBadge ? "bg-warning text-dark" : "bg-danger");
+                    return `<span class="badge ${badgeColor}">${count} 次</span>`;
+                }
+                return `<span class="text-muted">0</span>`;
+            }
+
+            sortStatsRows(rows, weeklySortState).forEach(row => {
                 let tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><strong>${i}</strong></td>
-                    <td class="text-start"><strong>${contactBookStudents[i]}</strong></td>
-                    <td>${cellBadge(stats.perfect, true)}</td>
-                    <td>${cellBadge(stats.unsubmitted)}</td>
-                    <td>${cellBadge(stats.late, false, true)}</td>
-                    <td>${cellBadge(stats.absent, false, true)}</td>
-                    <td>${cellBadge(stats.dateNo)}</td>
-                    <td>${cellBadge(stats.examNo)}</td>
-                    <td>${cellBadge(stats.engNo)}</td>
-                    <td>${cellBadge(stats.sumNo)}</td>
-                    <td>${cellBadge(stats.timeNo)}</td>
-                    <td>${cellBadge(stats.lifeNo)}</td>
-                    <td>${cellBadge(stats.signNo)}</td>
-                `;
+                    <td><strong>${row.studentNo}</strong></td>
+                    <td class="text-start"><strong>${row.studentName}</strong></td>
+                    <td>${cellBadge(row.perfect, true)}</td>
+                    <td>${cellBadge(row.unsubmitted)}</td>
+                    <td>${cellBadge(row.late, false, true)}</td>
+                    <td>${cellBadge(row.absent, false, true)}</td>
+                    <td>${cellBadge(row.dateNo)}</td>
+                    <td>${cellBadge(row.examNo)}</td>
+                    <td>${cellBadge(row.engNo)}</td>
+                    <td>${cellBadge(row.sumNo)}</td>
+                    <td>${cellBadge(row.timeNo)}</td>
+                    <td>${cellBadge(row.lifeNo)}</td>
+                    <td>${cellBadge(row.signNo)}</td>`;
                 tbody.appendChild(tr);
-            }
+            });
+
+            updateSortIndicators('weeklyStatsTable', weeklySortState);
         }
 
         // 渲染每月統計表格（統計規則與每週統計完全相同）
@@ -1929,26 +2095,12 @@ ${currentDate} 登記為「請假／缺席」嗎？`);
             const tbody = document.getElementById('monthlyReportTableBody');
             tbody.innerHTML = '';
 
-            let monthRecords = globalAllRecords.filter(r =>
-                r.date && getMonthKey(r.date) === selectedMonth
-            );
+            let monthRecords = globalAllRecords.filter(r => r.date && getMonthKey(r.date) === selectedMonth);
+            let rows = [];
 
             for (let i = 1; i <= 28; i++) {
                 let sRecords = monthRecords.filter(r => r.studentNo === i);
-
-                let stats = {
-                    perfect: 0,
-                    unsubmitted: 0,
-                    late: 0,
-                    absent: 0,
-                    dateNo: 0,
-                    examNo: 0,
-                    engNo: 0,
-                    sumNo: 0,
-                    timeNo: 0,
-                    lifeNo: 0,
-                    signNo: 0
-                };
+                let stats = { perfect:0, unsubmitted:0, late:0, absent:0, dateNo:0, examNo:0, engNo:0, sumNo:0, timeNo:0, lifeNo:0, signNo:0 };
 
                 sRecords.forEach(r => {
                     let isAbsent = (r.submissionStatus === "缺席");
@@ -1962,20 +2114,12 @@ ${currentDate} 登記為「請假／缺席」嗎？`);
                     let isLifeOk = (!r.lifeNote || r.lifeNote === "完成" || r.lifeNote === "已寫");
                     let isSignOk = (!r.parentSign || r.parentSign === "已簽" || r.parentSign === "已簽名");
 
-                    if (isSubmitted && !isLate && isDateOk && isExamOk && isEngOk && isSumOk && isTimeOk && isLifeOk && isSignOk) {
-                        stats.perfect++;
-                    }
-
-                    if (r.submissionStatus === "缺席") {
-                        stats.absent++;
-                    } else if (r.submissionStatus === "未繳交") {
-                        stats.unsubmitted++;
-                    } else if (r.wasLate === true) {
-                        stats.late++;
-                    }
+                    if (isSubmitted && !isLate && isDateOk && isExamOk && isEngOk && isSumOk && isTimeOk && isLifeOk && isSignOk) stats.perfect++;
+                    if (r.submissionStatus === "缺席") stats.absent++;
+                    else if (r.submissionStatus === "未繳交") stats.unsubmitted++;
+                    else if (r.wasLate === true) stats.late++;
 
                     if (isAbsent) return;
-
                     if (r.dateCheck && r.dateCheck.includes("未")) stats.dateNo++;
                     if (r.examHw && (r.examHw.includes("未") || r.examHw.includes("異常"))) stats.examNo++;
                     if (r.englishCopy && r.englishCopy.includes("未")) stats.engNo++;
@@ -1985,38 +2129,45 @@ ${currentDate} 登記為「請假／缺席」嗎？`);
                     if (r.parentSign && (r.parentSign === "未簽" || r.parentSign === "未簽名")) stats.signNo++;
                 });
 
-                function monthlyCellBadge(count, isPerfect = false, isLateBadge = false) {
-                    if (count > 0) {
-                        let badgeColor = isPerfect
-                            ? "bg-warning text-dark"
-                            : (isLateBadge ? "bg-warning text-dark" : "bg-danger");
-                        return `<span class="badge ${badgeColor}">${count} 次</span>`;
-                    }
-                    return `<span class="text-muted">0</span>`;
-                }
+                rows.push({ studentNo:i, studentName:contactBookStudents[i], ...stats });
+            }
 
+            function monthlyCellBadge(count, isPerfect=false, isLateBadge=false) {
+                if (count > 0) {
+                    let badgeColor = isPerfect ? "bg-warning text-dark" : (isLateBadge ? "bg-warning text-dark" : "bg-danger");
+                    return `<span class="badge ${badgeColor}">${count} 次</span>`;
+                }
+                return `<span class="text-muted">0</span>`;
+            }
+
+            sortStatsRows(rows, monthlySortState).forEach(row => {
                 let tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><strong>${i}</strong></td>
-                    <td class="text-start"><strong>${contactBookStudents[i]}</strong></td>
-                    <td>${monthlyCellBadge(stats.perfect, true)}</td>
-                    <td>${monthlyCellBadge(stats.unsubmitted)}</td>
-                    <td>${monthlyCellBadge(stats.late, false, true)}</td>
-                    <td>${monthlyCellBadge(stats.absent, false, true)}</td>
-                    <td>${monthlyCellBadge(stats.dateNo)}</td>
-                    <td>${monthlyCellBadge(stats.examNo)}</td>
-                    <td>${monthlyCellBadge(stats.engNo)}</td>
-                    <td>${monthlyCellBadge(stats.sumNo)}</td>
-                    <td>${monthlyCellBadge(stats.timeNo)}</td>
-                    <td>${monthlyCellBadge(stats.lifeNo)}</td>
-                    <td>${monthlyCellBadge(stats.signNo)}</td>
-                `;
+                    <td><strong>${row.studentNo}</strong></td>
+                    <td class="text-start"><strong>${row.studentName}</strong></td>
+                    <td>${monthlyCellBadge(row.perfect, true)}</td>
+                    <td>${monthlyCellBadge(row.unsubmitted)}</td>
+                    <td>${monthlyCellBadge(row.late, false, true)}</td>
+                    <td>${monthlyCellBadge(row.absent, false, true)}</td>
+                    <td>${monthlyCellBadge(row.dateNo)}</td>
+                    <td>${monthlyCellBadge(row.examNo)}</td>
+                    <td>${monthlyCellBadge(row.engNo)}</td>
+                    <td>${monthlyCellBadge(row.sumNo)}</td>
+                    <td>${monthlyCellBadge(row.timeNo)}</td>
+                    <td>${monthlyCellBadge(row.lifeNo)}</td>
+                    <td>${monthlyCellBadge(row.signNo)}</td>`;
                 tbody.appendChild(tr);
-            }
+            });
+
+            updateSortIndicators('monthlyStatsTable', monthlySortState);
         }
 
         document.getElementById('contactBookRefreshBtn').addEventListener('click', loadAllData);
         document.getElementById('missingRecordsRefreshBtn').addEventListener('click', loadAllData);
+
+        // 啟用週／月統計表頭點擊排序
+        handleStatsHeaderSort('weeklyStatsTable', 'weekly');
+        handleStatsHeaderSort('monthlyStatsTable', 'monthly');
     </script>
 </body>
 </html>
