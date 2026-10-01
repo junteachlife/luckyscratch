@@ -129,6 +129,52 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
   .roster-import-panel{display:none!important}
 }
 
+
+
+/* ===== 批次列印 ===== */
+.batch-print-panel{
+  display:none;margin-top:12px;padding:13px;border:2px dashed #8b6a38;
+  border-radius:14px;background:rgba(255,250,232,.82)
+}
+.batch-print-panel.show{display:block}
+.batch-print-head{
+  display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap
+}
+.batch-print-title{font-weight:900;color:#6e2b22}
+.batch-print-list{
+  display:grid;gap:7px;margin-top:10px;max-height:250px;overflow:auto
+}
+.batch-print-row{
+  display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:9px;align-items:center;
+  padding:9px 10px;border:1px solid #d5b982;border-radius:10px;background:#fffaf0
+}
+.batch-print-row input[type="checkbox"]{width:18px;height:18px;accent-color:#1d5875}
+.batch-print-name{font-weight:900;min-width:0;overflow-wrap:anywhere}
+.batch-print-meta{font-size:12px;color:#765f42;white-space:nowrap}
+.batch-print-empty{text-align:center;padding:14px;color:#735f46;font-weight:800}
+
+/* ===== class-datawork 第二 Firebase 同步 ===== */
+.cross-sync-box{
+  margin-top:12px;padding:12px;border:2px solid #78a8c0;border-radius:14px;
+  background:linear-gradient(180deg,#eefaff,#f8fdff)
+}
+.cross-sync-title{font-weight:900;color:#175b7b;margin-bottom:5px}
+.cross-sync-status{
+  margin-top:8px;padding:9px 10px;border-radius:10px;background:#e8f2f7;
+  color:#365d70;font-size:13px;font-weight:900;line-height:1.6
+}
+.cross-sync-status.ok{background:#dcf4e9;color:#166643}
+.cross-sync-status.warn{background:#fff0d8;color:#9a570f}
+.cross-sync-status.error{background:#fde7e3;color:#922e24}
+
+@media(max-width:760px){
+  .batch-print-row{grid-template-columns:24px minmax(0,1fr)}
+  .batch-print-meta{grid-column:2;white-space:normal}
+}
+@media print{
+  .batch-print-panel,.cross-sync-box{display:none!important}
+}
+
 @media(max-width:760px){
   .app{width:96vw;margin-top:10px}.hero{padding:18px 12px}.emblem{width:58px;height:58px;font-size:30px}h1{font-size:30px}
   .class-switch{grid-template-columns:1fr}.form-grid,.history-row,.archive-row{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}
@@ -312,6 +358,7 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
         <button class="btn-blue" id="copyUnpaidBtn">📋 複製未繳名單</button>
         <button class="btn-light" id="exportBtn">📤 匯出 CSV</button>
         <button class="btn-light" id="printBtn">🖨️ 列印</button>
+        <button class="btn-light" id="toggleBatchPrintBtn">☑️ 批次列印</button>
       </div>
 
       <div class="history-row">
@@ -323,6 +370,24 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
         <button class="btn-light" id="deleteBtn">🗑️ 刪除目前紀錄</button>
         <button class="btn-gold" id="archiveBtn">📦 封存目前紀錄</button>
         <button class="btn-light" id="toggleArchiveBtn">🗄️ 查看封存</button>
+      </div>
+
+
+      <div class="batch-print-panel" id="batchPrintPanel">
+        <div class="batch-print-head">
+          <div>
+            <div class="batch-print-title">☑️ 批次彙整列印</div>
+            <div class="archive-note">勾選多筆收繳紀錄後，會以「座號＋姓名＋多個收繳項目」彙整在同一份列印文件中。</div>
+          </div>
+          <div class="toolbar" style="margin:0">
+            <button class="btn-light" id="selectAllBatchPrintBtn">☑ 全選</button>
+            <button class="btn-light" id="clearBatchPrintBtn">□ 清除</button>
+            <button class="btn-blue" id="printBatchSelectedBtn">🖨️ 列印勾選項目</button>
+          </div>
+        </div>
+        <div class="batch-print-list" id="batchPrintList">
+          <div class="batch-print-empty">登入並同步後，這裡會顯示目前班級的歷史收繳紀錄。</div>
+        </div>
       </div>
 
       <div class="archive-panel" id="archivePanel">
@@ -385,6 +450,20 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
     <div class="roster-import-status" id="rosterImportStatus">
       Excel 欄位可使用：班級、座號、姓名、Email。匯入後會儲存到 Firebase，之後登入自動載入。
     </div>
+
+    <div class="cross-sync-box">
+      <div class="cross-sync-title">🔗 共用「班級作業成績回報系統」學生 Email</div>
+      <div class="archive-note">
+        正式來源：class-datawork Firebase 的 classes／identityRegistry。同步後會把目前班級名單與 Email 複製一份到本系統 Firebase，
+        日後即使第二個 Firebase 暫時無法連線，本收繳系統仍可正常使用。
+      </div>
+      <div class="toolbar" style="margin-bottom:0">
+        <button class="btn-blue" id="linkClassDataworkBtn">🔗 連結班級作業系統</button>
+        <button class="btn-primary" id="syncClassDataworkBtn">🔄 同步目前班級 Email</button>
+      </div>
+      <div class="cross-sync-status" id="classDataworkSyncStatus">尚未檢查 class-datawork 登入狀態。</div>
+    </div>
+
   </section>
 
   <section class="panel">
@@ -434,10 +513,10 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 import {
   getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc,
-  query, orderBy, serverTimestamp
+  query, where, orderBy, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -452,6 +531,24 @@ const firebaseConfig = {
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
+
+/* ===== 第二 Firebase：班級作業成績回報系統（只作學生主檔／Email 同步來源） ===== */
+const classDataworkFirebaseConfig={
+  apiKey:"AIzaSyB56F4wJ-IMUiBsqJ5P33HoDK642h7671U",
+  authDomain:"class-datawork.firebaseapp.com",
+  projectId:"class-datawork",
+  storageBucket:"class-datawork.firebasestorage.app",
+  messagingSenderId:"24186422479",
+  appId:"1:24186422479:web:8dee260f34b2e506fd63ba"
+};
+
+const classDataworkApp=initializeApp(classDataworkFirebaseConfig,"classDataworkSync");
+const classDataworkAuth=getAuth(classDataworkApp);
+const classDataworkDb=getFirestore(classDataworkApp);
+const classDataworkGoogleProvider=new GoogleAuthProvider();
+classDataworkGoogleProvider.setCustomParameters({prompt:"select_account"});
+let classDataworkUser=null;
+
 
 /* ===== 四個任課班內建備援名單；Firebase 匯入名單會優先使用 ===== */
 const CLASS_CONFIG={
@@ -569,6 +666,7 @@ function normalizeSeat(value){
 
 function normalizeStudent(student){
   return {
+    studentId:String(student?.studentId||"").trim(),
     seat:normalizeSeat(student?.seat),
     name:String(student?.name ?? "").trim(),
     email:normalizeEmail(student?.email)
@@ -819,6 +917,198 @@ async function importRosterFile(file){
   }
 }
 
+
+
+/* ==========================================================
+   class-datawork Firebase → 本系統 Firebase
+   主檔來源：classes/{classId} + identityRegistry
+========================================================== */
+
+function normalizeCrossSystemStudentName(name){
+  const n=String(name||"").trim();
+  return n==="趙安瑜" ? "趙安褕" : n;
+}
+
+function setClassDataworkStatus(type,text){
+  const el=$("classDataworkSyncStatus");
+  if(!el)return;
+  el.className="cross-sync-status"+(type?` ${type}`:"");
+  el.textContent=text;
+}
+
+async function ensureClassDataworkLogin(){
+  if(classDataworkAuth.currentUser){
+    classDataworkUser=classDataworkAuth.currentUser;
+    setClassDataworkStatus("ok",`✅ 已連結 class-datawork：${classDataworkUser.email||"Google 帳號"}`);
+    return classDataworkUser;
+  }
+
+  try{
+    setClassDataworkStatus("warn","正在開啟 Google 登入視窗…");
+    const cred=await signInWithPopup(classDataworkAuth,classDataworkGoogleProvider);
+    classDataworkUser=cred.user;
+    setClassDataworkStatus("ok",`✅ 已連結 class-datawork：${classDataworkUser.email||"Google 帳號"}`);
+    return classDataworkUser;
+  }catch(err){
+    console.error("class-datawork Google 登入失敗",err);
+    const msg=err?.code==="auth/popup-blocked"
+      ?"瀏覽器阻擋 Google 登入視窗，請允許此網站開啟彈出式視窗後再試。"
+      :err?.code==="auth/popup-closed-by-user"
+        ?"已取消 Google 登入。"
+        :`Google 登入失敗：${err?.code||err?.message||"未知錯誤"}`;
+    setClassDataworkStatus("error",msg);
+    throw err;
+  }
+}
+
+async function readClassDataworkRoster(classId){
+  const classSnap=await getDoc(doc(classDataworkDb,"classes",String(classId)));
+  if(!classSnap.exists()){
+    throw new Error(`class-datawork 找不到 classes/${classId} 正式班級主檔。`);
+  }
+
+  const classData=classSnap.data()||{};
+  const classStudents=Array.isArray(classData.students)
+    ? classData.students
+        .filter(s=>s && s.active!==false && Number(s.seat)>0 && String(s.name||"").trim())
+        .sort((a,b)=>Number(a.seat)-Number(b.seat))
+    : [];
+
+  if(!classStudents.length){
+    throw new Error(`${classId} 班在 class-datawork 中沒有目前在班學生。`);
+  }
+
+  const regSnap=await getDocs(query(
+    collection(classDataworkDb,"identityRegistry"),
+    where("classId","==",String(classId))
+  ));
+
+  const regs=regSnap.docs
+    .map(d=>({id:d.id,...d.data()}))
+    .filter(r=>r.type==="student" && r.active!==false);
+
+  const byStudentId=new Map();
+  const byEmail=new Map();
+  const bySeatName=new Map();
+
+  regs.forEach(r=>{
+    const sid=String(r.studentId||"").trim();
+    const email=normalizeEmail(r.email||r.id);
+    const seat=Number(r.seat);
+    const name=normalizeCrossSystemStudentName(r.displayName||"");
+
+    if(sid)byStudentId.set(sid,r);
+    if(email)byEmail.set(email.toLowerCase(),r);
+    if(Number.isFinite(seat)&&name)bySeatName.set(`${seat}|${name}`,r);
+  });
+
+  return classStudents.map(s=>{
+    const studentId=String(s.studentId||s.id||"").trim();
+    const seat=Number(s.seat);
+    const name=normalizeCrossSystemStudentName(s.name||"");
+    const classEmail=normalizeEmail(s.email);
+
+    const reg=
+      (studentId && byStudentId.get(studentId)) ||
+      (classEmail && byEmail.get(classEmail.toLowerCase())) ||
+      bySeatName.get(`${seat}|${name}`) ||
+      null;
+
+    return {
+      studentId,
+      seat,
+      name,
+      email:normalizeEmail(reg?.email||reg?.id||classEmail)
+    };
+  });
+}
+
+function buildCrossSystemSyncSummary(sourceList){
+  const oldList=students();
+  const oldBySeat=new Map(oldList.map(s=>[Number(s.seat),s]));
+  const sourceBySeat=new Map(sourceList.map(s=>[Number(s.seat),s]));
+  const changes=[];
+
+  sourceList.forEach(s=>{
+    const old=oldBySeat.get(Number(s.seat));
+    if(!old){
+      changes.push(`${s.seat}號 ${s.name}：新增`);
+      return;
+    }
+    if(normalizeCrossSystemStudentName(old.name)!==normalizeCrossSystemStudentName(s.name)){
+      changes.push(`${s.seat}號：${old.name} → ${s.name}`);
+    }else if(normalizeEmail(old.email)!==normalizeEmail(s.email)){
+      changes.push(`${s.seat}號 ${s.name}：Email 更新`);
+    }
+  });
+
+  oldList.forEach(s=>{
+    if(!sourceBySeat.has(Number(s.seat))){
+      changes.push(`${s.seat}號 ${s.name}：class-datawork 目前不在班`);
+    }
+  });
+
+  return changes;
+}
+
+async function syncRosterFromClassDatawork(){
+  if(!currentUser){
+    showToast("請先登入本收繳系統");
+    return;
+  }
+
+  const btn=$("syncClassDataworkBtn");
+  try{
+    if(btn){btn.disabled=true;btn.textContent="同步中…";}
+    await ensureClassDataworkLogin();
+
+    setClassDataworkStatus("warn",`正在讀取 class-datawork 的 ${currentClassId} 班正式名單與 Email…`);
+    const imported=await readClassDataworkRoster(currentClassId);
+    const changes=buildCrossSystemSyncSummary(imported);
+    const emailCount=imported.filter(s=>normalizeEmail(s.email)).length;
+
+    const preview=changes.length
+      ? `\n\n本次偵測到 ${changes.length} 項差異：\n${changes.slice(0,12).join("\n")}${changes.length>12?`\n…另有 ${changes.length-12} 項`:""}`
+      : "\n\n目前座號、姓名與 Email 沒有差異，仍可重新同步確認。";
+
+    if(!confirm(
+      `確定從「班級作業成績回報系統」同步 ${currentClassId} 班？\n\n`+
+      `學生：${imported.length} 人\n`+
+      `已有 Email：${emailCount} 人\n`+
+      `缺 Email：${imported.length-emailCount} 人\n\n`+
+      `同步後會以 class-datawork 正式班級主檔為準，並把副本儲存到本系統 Firebase。`+
+      preview
+    ))return;
+
+    const oldState=studentState;
+    await saveRosterToCloud(currentClassId,imported);
+
+    studentState=createBlankState();
+    students().forEach(s=>{
+      if(oldState?.[s.seat]){
+        studentState[s.seat]={...studentState[s.seat],...oldState[s.seat]};
+      }
+    });
+
+    renderClassButtons();
+    render();
+    updateRosterInfo("class-datawork 同步名單");
+    setRosterImportStatus("ok",`已從 class-datawork 同步 ${currentClassId}：${imported.length} 人／Email ${emailCount} 人。`);
+    setClassDataworkStatus("ok",`✅ ${currentClassId} 同步完成｜學生 ${imported.length} 人｜Email ${emailCount} 人｜缺 ${imported.length-emailCount} 人`);
+    showToast(`${currentClassId} 學生 Email 已同步`);
+  }catch(err){
+    console.error("跨 Firebase 同步失敗",err);
+    const raw=String(err?.code||err?.message||"未知錯誤");
+    const friendly=raw.includes("permission-denied")
+      ? "class-datawork Firebase 權限不足。請確認目前 Google 帳號有讀取該班 classes／identityRegistry 的權限。"
+      : raw;
+    setClassDataworkStatus("error",`同步失敗：${friendly}`);
+    showToast("學生 Email 同步失敗");
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent="🔄 同步目前班級 Email";}
+  }
+}
+
 function downloadCurrentRosterTemplate(){
   if(!window.XLSX){
     showToast("Excel 套件尚未載入，請重新整理後再試");
@@ -900,7 +1190,7 @@ async function switchClass(newClassId){
     await loadRosterFromCloud(currentClassId,false);
   }
 
-  currentId=null;historyRecords=[];archivedRecords=[];filter="all";studentState=createBlankState();
+  currentId=null;historyRecords=[];archivedRecords=[];batchPrintSelectedIds.clear();filter="all";studentState=createBlankState();
   $("itemName").value="";$("receiveDate").value=todayISO();$("dueDate").value="";
   $("searchInput").value="";$("historySelect").innerHTML='<option value="">— 選擇歷史收繳紀錄 —</option>';$("archiveSelect").innerHTML='<option value="">— 尚無封存紀錄 —</option>';
   setActiveFilter();renderClassButtons();render();
@@ -972,6 +1262,171 @@ function updateStats(){
   $("countAll").textContent=list.length;$("countPaid").textContent=paid;$("countUnpaid").textContent=unpaid;
   $("countLate").textContent=late;$("countExempt").textContent=exempt;$("progress").style.width=pct+"%";
   $("progressText").textContent=`完成率 ${pct}%（${completed}/${list.length}）`;
+}
+
+
+
+/* ==========================================================
+   批次彙整列印
+========================================================== */
+
+let batchPrintSelectedIds=new Set();
+
+function toggleBatchPrintPanel(){
+  const panel=$("batchPrintPanel");
+  const show=!panel.classList.contains("show");
+  panel.classList.toggle("show",show);
+  $("toggleBatchPrintBtn").textContent=show?"☑️ 收起批次列印":"☑️ 批次列印";
+  if(show)renderBatchPrintList();
+}
+
+function renderBatchPrintList(){
+  const wrap=$("batchPrintList");
+  if(!wrap)return;
+
+  const validIds=new Set(historyRecords.map(r=>r.id));
+  batchPrintSelectedIds=new Set([...batchPrintSelectedIds].filter(id=>validIds.has(id)));
+
+  wrap.innerHTML="";
+  if(!historyRecords.length){
+    wrap.innerHTML='<div class="batch-print-empty">目前班級尚無可批次列印的歷史收繳紀錄。</div>';
+    return;
+  }
+
+  historyRecords.forEach(rec=>{
+    const row=document.createElement("label");
+    row.className="batch-print-row";
+    row.innerHTML=`
+      <input type="checkbox" class="batch-print-check" value="${escapeHTML(rec.id)}" ${batchPrintSelectedIds.has(rec.id)?"checked":""}>
+      <span class="batch-print-name">${escapeHTML(rec.itemName||"未命名項目")}</span>
+      <span class="batch-print-meta">截止 ${escapeHTML(formatDate(rec.dueDate))}</span>
+    `;
+    wrap.appendChild(row);
+  });
+
+  wrap.querySelectorAll(".batch-print-check").forEach(chk=>{
+    chk.addEventListener("change",()=>{
+      if(chk.checked)batchPrintSelectedIds.add(chk.value);
+      else batchPrintSelectedIds.delete(chk.value);
+    });
+  });
+}
+
+function selectAllBatchPrint(){
+  batchPrintSelectedIds=new Set(historyRecords.map(r=>r.id));
+  renderBatchPrintList();
+}
+
+function clearBatchPrint(){
+  batchPrintSelectedIds.clear();
+  renderBatchPrintList();
+}
+
+function batchRecordStatus(rec,seat){
+  const saved=rec?.students?.[seat]||rec?.students?.[String(seat)]||{};
+  return saved.status||"unpaid";
+}
+
+function batchRecordStats(rec){
+  const counts={paid:0,unpaid:0,late:0,exempt:0};
+  students().forEach(s=>{
+    const st=batchRecordStatus(rec,s.seat);
+    if(Object.prototype.hasOwnProperty.call(counts,st))counts[st]++;
+    else counts.unpaid++;
+  });
+  return counts;
+}
+
+function chunkArray(arr,size){
+  const out=[];
+  for(let i=0;i<arr.length;i+=size)out.push(arr.slice(i,i+size));
+  return out;
+}
+
+function printBatchSelectedRecords(){
+  const selected=historyRecords.filter(r=>batchPrintSelectedIds.has(r.id));
+
+  if(!selected.length){
+    showToast("請先勾選要批次列印的收繳紀錄");
+    return;
+  }
+
+  const w=window.open("","_blank");
+  if(!w){
+    alert("瀏覽器阻擋了列印視窗，請允許彈出式視窗後再試。");
+    return;
+  }
+
+  // 每張 A4 橫式最多放 7 個收繳項目，超過就自動切下一頁，
+  // 仍屬同一份列印工作。
+  const groups=chunkArray(selected,7);
+
+  const sections=groups.map((records,pageIndex)=>{
+    const headers=records.map(rec=>{
+      const c=batchRecordStats(rec);
+      return `<th class="item-head-print">
+        <div>${escapeHTML(rec.itemName||"未命名項目")}</div>
+        <small>已${c.paid}｜未${c.unpaid}｜補${c.late}｜免${c.exempt}</small>
+      </th>`;
+    }).join("");
+
+    const rows=students().map(s=>`
+      <tr>
+        <td class="seat-print">${s.seat}</td>
+        <td class="name-print">${escapeHTML(s.name)}</td>
+        ${records.map(rec=>{
+          const st=batchRecordStatus(rec,s.seat);
+          const label=STATUS_LABEL[st]||"未繳交";
+          return `<td class="status-print ${escapeHTML(st)}">${escapeHTML(label)}</td>`;
+        }).join("")}
+      </tr>
+    `).join("");
+
+    return `<section class="batch-sheet">
+      <div class="batch-title">${escapeHTML(currentClass().name)}班｜收繳紀錄彙整</div>
+      <div class="batch-sub">共勾選 ${selected.length} 項${groups.length>1?`｜第 ${pageIndex+1}/${groups.length} 頁`:""}</div>
+      <table>
+        <thead>
+          <tr><th class="seat-print">座號</th><th class="name-print">姓名</th>${headers}</tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </section>`;
+  }).join("");
+
+  w.document.write(`<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>${escapeHTML(currentClass().name)}班－批次收繳彙整</title>
+<style>
+@page{size:A4 landscape;margin:5mm}
+*{box-sizing:border-box}
+body{font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif;margin:0;color:#111}
+.batch-sheet{page-break-after:always}
+.batch-sheet:last-child{page-break-after:auto}
+.batch-title{text-align:center;font-size:14pt;font-weight:900;margin:0 0 1mm}
+.batch-sub{text-align:center;font-size:8.5pt;margin:0 0 2mm;color:#444}
+table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:8.2pt}
+thead{display:table-header-group}
+tr{break-inside:avoid;page-break-inside:avoid}
+th,td{border:1px solid #777;padding:1.25mm .8mm;text-align:center;vertical-align:middle;line-height:1.12}
+th{background:#eee;font-weight:900}
+th small{display:block;font-size:6.8pt;font-weight:700;margin-top:.5mm;white-space:nowrap}
+.seat-print{width:6%}
+.name-print{width:12%;font-weight:900}
+.item-head-print{overflow-wrap:anywhere}
+.status-print.paid{background:#eef8f2}
+.status-print.unpaid{background:#fff0ee;font-weight:900}
+.status-print.late{background:#fff7e7}
+.status-print.exempt{background:#f2f2f2}
+</style>
+</head>
+<body>${sections}
+<script>window.onload=()=>window.print()<\/script>
+</body>
+</html>`);
+  w.document.close();
 }
 
 function updatePrintSummary(){
@@ -1056,6 +1511,7 @@ async function refreshHistory(showMessage=false){
     if([...sel.options].some(o=>o.value===old))sel.value=old;
 
     refreshArchiveSelect();
+    renderBatchPrintList();
     setSync("ok","☁️ 已同步");
     if(showMessage)showToast(`已重新讀取 ${currentClass().name} Firebase 資料`);
   }catch(err){
@@ -1248,6 +1704,18 @@ $("copyUnpaidBtn").addEventListener("click",copyUnpaid);
 $("exportBtn").addEventListener("click",exportCSV);
 $("printBtn").addEventListener("click",()=>{updatePrintSummary();window.print();});
 
+$("toggleBatchPrintBtn").addEventListener("click",toggleBatchPrintPanel);
+$("selectAllBatchPrintBtn").addEventListener("click",selectAllBatchPrint);
+$("clearBatchPrintBtn").addEventListener("click",clearBatchPrint);
+$("printBatchSelectedBtn").addEventListener("click",printBatchSelectedRecords);
+
+$("linkClassDataworkBtn").addEventListener("click",async()=>{
+  try{await ensureClassDataworkLogin();}
+  catch(e){}
+});
+$("syncClassDataworkBtn").addEventListener("click",syncRosterFromClassDatawork);
+
+
 $("importRosterBtn").addEventListener("click",()=>{
   if(!currentUser){showToast("請先登入");return;}
   $("rosterFileInput").click();
@@ -1267,6 +1735,17 @@ $("receiveDate").addEventListener("change",scheduleAutosave);
 $("historySelect").addEventListener("change",()=>{if($("historySelect").value)loadRecord();});
 document.querySelectorAll(".filter-btn").forEach(btn=>btn.addEventListener("click",()=>{filter=btn.dataset.filter;setActiveFilter();render();}));
 
+
+
+onAuthStateChanged(classDataworkAuth,user=>{
+  classDataworkUser=user||null;
+  if(user){
+    setClassDataworkStatus("ok",`✅ 已連結 class-datawork：${user.email||"Google 帳號"}`);
+  }else{
+    setClassDataworkStatus("","尚未連結 class-datawork。需要同步學生 Email 時再按「連結班級作業系統」。");
+  }
+});
+
 onAuthStateChanged(auth,async user=>{
   currentUser=user;
   if(user){
@@ -1285,6 +1764,7 @@ onAuthStateChanged(auth,async user=>{
 $("receiveDate").value=todayISO();
 renderClassButtons();
 render();
+renderBatchPrintList();
 </script>
 </body>
 </html>
