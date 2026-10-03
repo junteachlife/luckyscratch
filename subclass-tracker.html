@@ -180,7 +180,7 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
 /* ===== 歷史紀錄資料夾／排序 ===== */
 .history-tools{
   display:grid;
-  grid-template-columns:minmax(150px,1fr) minmax(170px,1fr) minmax(190px,1.2fr) auto;
+  grid-template-columns:minmax(150px,1fr) minmax(170px,1fr) minmax(190px,1.2fr) minmax(220px,auto);
   gap:8px;
   align-items:end;
   margin-top:12px;
@@ -470,7 +470,10 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
           <label for="moveFolderSelect">📂 目前紀錄移到</label>
           <select id="moveFolderSelect"></select>
         </div>
-        <button class="btn-gold" id="addFolderBtn">＋ 新增資料夾</button>
+        <div class="toolbar" style="margin:0">
+          <button class="btn-gold" id="addFolderBtn">＋ 新增資料夾</button>
+          <button class="btn-light" id="renameFolderBtn">✏️ 重新命名選定資料夾</button>
+        </div>
       </div>
 
 
@@ -827,7 +830,7 @@ function updateFolderSelectors(){
   const currentFolder=recordSel?.value||"未分類";
   const moveFolder=moveSel?.value||currentFolder;
 
-  const options=folderList.map(f=>`<option value="${escapeHTML(f)}">${escapeHTML(f)}</option>`).join("");
+  const options=folderList.map(f=>`<option value="${escapeHTML(f)}">📁 ${escapeHTML(f)}</option>`).join("");
 
   if(recordSel){
     recordSel.innerHTML=options;
@@ -839,7 +842,7 @@ function updateFolderSelectors(){
   }
   if(filterSel){
     const old=historyFolderFilter;
-    filterSel.innerHTML='<option value="all">全部資料夾</option>'+options;
+    filterSel.innerHTML='<option value="all">🗂️ 全部資料夾</option>'+options;
     filterSel.value=old==="all"||folderList.includes(old)?old:"all";
   }
 }
@@ -874,6 +877,88 @@ async function moveCurrentRecordFolder(){
   }catch(err){
     console.error(err);
     showToast(`移動失敗：${err.code||err.message||"未知錯誤"}`);
+  }
+}
+
+
+async function renameSelectedFolder(){
+  if(!currentUser){showToast("請先登入");return;}
+
+  const oldName=normalizeFolderName($("moveFolderSelect")?.value||"未分類");
+
+  if(oldName==="未分類"){
+    alert("「未分類」是系統保留資料夾，不能重新命名。\n\n請先選擇其他資料夾後再重新命名。");
+    return;
+  }
+
+  const raw=prompt(`重新命名資料夾\n\n目前名稱：${oldName}\n\n請輸入新名稱：`,oldName);
+  if(raw===null)return;
+
+  const newName=normalizeFolderName(raw);
+  if(!newName || newName==="未分類"){
+    alert("請輸入其他資料夾名稱。");
+    return;
+  }
+  if(newName===oldName){
+    showToast("資料夾名稱沒有變更");
+    return;
+  }
+  if(folderList.includes(newName)){
+    alert(`已經有「${newName}」資料夾。\n\n請使用不同名稱，避免資料夾重複。`);
+    return;
+  }
+
+  const affected=[...historyRecords,...archivedRecords]
+    .filter(r=>normalizeFolderName(r.folder)===oldName);
+
+  if(!confirm(
+    `確定將資料夾重新命名？\n\n`+
+    `「${oldName}」 → 「${newName}」\n\n`+
+    `目前共有 ${affected.length} 筆歷史／封存紀錄會一起更新。`
+  ))return;
+
+  try{
+    setSync("saving","☁️ 重新命名資料夾中…");
+
+    for(const rec of affected){
+      await setDoc(recordRef(rec.id),{
+        folder:newName,
+        updatedAt:serverTimestamp()
+      },{merge:true});
+    }
+
+    folderList=folderList.map(f=>f===oldName?newName:f);
+    await saveFolderSettings();
+
+    historyRecords=historyRecords.map(r=>
+      normalizeFolderName(r.folder)===oldName ? {...r,folder:newName} : r
+    );
+    archivedRecords=archivedRecords.map(r=>
+      normalizeFolderName(r.folder)===oldName ? {...r,folder:newName} : r
+    );
+
+    if(historyFolderFilter===oldName)historyFolderFilter=newName;
+
+    updateFolderSelectors();
+    $("moveFolderSelect").value=newName;
+
+    if($("recordFolder").value===oldName || currentId && affected.some(r=>r.id===currentId)){
+      $("recordFolder").value=newName;
+    }
+
+    $("historyFolderFilter").value=
+      historyFolderFilter==="all" ? "all" : newName;
+
+    renderHistorySelect();
+    refreshArchiveSelect();
+
+    setSync("ok","☁️ 已同步");
+    showToast(`資料夾已改名為「${newName}」`);
+  }catch(err){
+    console.error(err);
+    setSync("error","⚠️ 重新命名失敗");
+    alert(`資料夾重新命名失敗：${err.code||err.message||"未知錯誤"}`);
+    await refreshHistory(false);
   }
 }
 
@@ -914,7 +999,7 @@ function renderHistorySelect(){
   list.forEach(r=>{
     const op=document.createElement("option");
     op.value=r.id;
-    op.textContent=`📁 ${normalizeFolderName(r.folder)}｜${r.itemName||"未命名"}｜截止 ${formatDate(r.dueDate)}`;
+    op.textContent=`📄 ${r.itemName||"未命名"}｜📁 ${normalizeFolderName(r.folder)}｜截止 ${formatDate(r.dueDate)}`;
     sel.appendChild(op);
   });
   if([...sel.options].some(o=>o.value===old))sel.value=old;
@@ -1583,8 +1668,8 @@ function renderBatchPrintList(){
     row.className="batch-print-row";
     row.innerHTML=`
       <input type="checkbox" class="batch-print-check" value="${escapeHTML(rec.id)}" ${batchPrintSelectedIds.has(rec.id)?"checked":""}>
-      <span class="batch-print-name">${escapeHTML(rec.itemName||"未命名項目")}</span>
-      <span class="batch-print-meta">截止 ${escapeHTML(formatDate(rec.dueDate))}</span>
+      <span class="batch-print-name">📄 ${escapeHTML(rec.itemName||"未命名項目")}</span>
+      <span class="batch-print-meta">📁 ${escapeHTML(normalizeFolderName(rec.folder))}｜截止 ${escapeHTML(formatDate(rec.dueDate))}</span>
     `;
     wrap.appendChild(row);
   });
@@ -1808,7 +1893,7 @@ function refreshArchiveSelect(){
   sel.innerHTML='<option value="">— 尚無封存紀錄 —</option>';
   archivedRecords.forEach(r=>{
     const op=document.createElement("option");op.value=r.id;
-    op.textContent=`${r.itemName||"未命名"}｜截止 ${formatDate(r.dueDate)}`;
+    op.textContent=`📦 ${r.itemName||"未命名"}｜📁 ${normalizeFolderName(r.folder)}｜截止 ${formatDate(r.dueDate)}`;
     sel.appendChild(op);
   });
   if([...sel.options].some(o=>o.value===old))sel.value=old;
@@ -2105,6 +2190,7 @@ $("newRecordBtn").addEventListener("click",()=>newRecord(true));
 $("loadBtn").addEventListener("click",loadRecord);
 $("moveFolderBtn").addEventListener("click",moveCurrentRecordFolder);
 $("addFolderBtn").addEventListener("click",addFolder);
+$("renameFolderBtn").addEventListener("click",renameSelectedFolder);
 $("historyFolderFilter").addEventListener("change",e=>{
   historyFolderFilter=e.target.value;
   renderHistorySelect();
