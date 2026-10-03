@@ -835,11 +835,6 @@ function recordRef(id){
   return doc(db,"users",currentUser.uid,"subjectClassTrackers",currentClassId,"records",id);
 }
 
-function folderSettingsRef(){
-  if(!currentUser)throw new Error("尚未登入");
-  return doc(db,"users",currentUser.uid,"subjectClassTrackers",currentClassId,"records","__folder_settings__");
-}
-
 function normalizeFolderName(v){
   return String(v||"").trim() || "未分類";
 }
@@ -864,33 +859,67 @@ function mergeFolderList(extra=[]){
     .filter(name=>name!=="未分類"&&folderList.includes(name));
 }
 
-async function loadFolderSettings(){
-  if(!currentUser)return;
+function folderStorageKey(){
+  return `subjectTrackerFolders:${currentUser?.uid||"guest"}:${currentClassId}`;
+}
+
+function readLocalFolderSettings(){
   try{
-    const snap=await getDoc(folderSettingsRef());
-    if(snap.exists()){
-      const data=snap.data()||{};
-      if(Array.isArray(data.folders))mergeFolderList(data.folders);
-      if(Array.isArray(data.archivedFolders))archivedFolderNames=uniqueFolderNames(data.archivedFolders);
-    }
-  }catch(err){
-    // 資料夾設定失敗不應該讓整個收繳系統顯示「同步失敗」。
-    console.warn("讀取資料夾設定失敗，改用目前紀錄推導資料夾",err);
+    const raw=localStorage.getItem(folderStorageKey());
+    if(!raw)return {};
+    const data=JSON.parse(raw);
+    return data&&typeof data==="object"?data:{};
+  }catch{
+    return {};
   }
-  mergeFolderList([]);
+}
+
+function writeLocalFolderSettings(){
+  try{
+    localStorage.setItem(folderStorageKey(),JSON.stringify({
+      folders:folderList,
+      archivedFolders:archivedFolderNames
+    }));
+    return true;
+  }catch(err){
+    console.warn("儲存本機資料夾設定失敗",err);
+    return false;
+  }
+}
+
+async function loadFolderSettings(){
+  const local=readLocalFolderSettings();
+
+  if(Array.isArray(local.folders)){
+    mergeFolderList(local.folders);
+  }
+  if(Array.isArray(local.archivedFolders)){
+    archivedFolderNames=uniqueFolderNames(local.archivedFolders);
+  }
+
+  // 雲端紀錄本身若有 folderArchived=true，也視為該資料夾已封存。
+  const cloudArchived=[...historyRecords,...archivedRecords]
+    .filter(r=>r.folderArchived===true)
+    .map(r=>normalizeFolderName(r.folder));
+
+  archivedFolderNames=uniqueFolderNames([
+    ...archivedFolderNames,
+    ...cloudArchived
+  ]).filter(name=>name!=="未分類");
+
+  mergeFolderList(
+    [...historyRecords,...archivedRecords]
+      .map(r=>normalizeFolderName(r.folder))
+  );
+
   updateFolderSelectors();
   refreshArchivedFolderSelect();
 }
 
 async function saveFolderSettings(){
-  if(!currentUser)return;
-  await setDoc(folderSettingsRef(),{
-    _systemType:"folderSettings",
-    classId:currentClassId,
-    folders:folderList,
-    archivedFolders:archivedFolderNames,
-    updatedAt:serverTimestamp()
-  },{merge:true});
+  // 不再額外寫 Firestore 特殊設定文件，避免規則不允許而導致同步失敗。
+  writeLocalFolderSettings();
+  return true;
 }
 
 function updateFolderSelectors(){
@@ -983,7 +1012,7 @@ async function addFolder(){
     return;
   }
   folderList.push(name);
-  await saveFolderSettings();
+  writeLocalFolderSettings();
   updateFolderSelectors();
   $("recordFolder").value=name;
   $("moveFolderSelect").value=name;
@@ -1052,7 +1081,8 @@ async function renameSelectedFolder(){
     }
 
     folderList=folderList.map(f=>f===oldName?newName:f);
-    await saveFolderSettings();
+    archivedFolderNames=archivedFolderNames.map(name=>name===oldName?newName:name);
+    writeLocalFolderSettings();
 
     historyRecords=historyRecords.map(r=>
       normalizeFolderName(r.folder)===oldName ? {...r,folder:newName} : r
@@ -1114,13 +1144,21 @@ async function archiveSelectedFolder(){
 
   try{
     setSync("saving","☁️ 封存資料夾中…");
+
+    // 直接寫回正常收繳紀錄，沿用既有可正常同步的 records 權限。
+    for(const rec of rows){
+      await setDoc(recordRef(rec.id),{
+        folderArchived:true,
+        updatedAt:serverTimestamp()
+      },{merge:true});
+    }
+
     archivedFolderNames=uniqueFolderNames([...archivedFolderNames,folder]);
-    await saveFolderSettings();
+    writeLocalFolderSettings();
 
     if(historyFolderFilter===folder)historyFolderFilter="all";
 
-    updateFolderSelectors();
-    renderHistorySelect();
+    await refreshHistory(false);
     setSync("ok","☁️ 已同步");
     showToast(`資料夾「${folder}」已封存`);
   }catch(err){
@@ -1180,11 +1218,21 @@ async function unarchiveSelectedFolder(){
 
   try{
     setSync("saving","☁️ 取消封存資料夾中…");
-    archivedFolderNames=archivedFolderNames.filter(name=>name!==folder);
-    await saveFolderSettings();
 
-    updateFolderSelectors();
-    renderHistorySelect();
+    const rows=[...historyRecords,...archivedRecords]
+      .filter(r=>normalizeFolderName(r.folder)===folder);
+
+    for(const rec of rows){
+      await setDoc(recordRef(rec.id),{
+        folderArchived:false,
+        updatedAt:serverTimestamp()
+      },{merge:true});
+    }
+
+    archivedFolderNames=archivedFolderNames.filter(name=>name!==folder);
+    writeLocalFolderSettings();
+
+    await refreshHistory(false);
     setSync("ok","☁️ 已同步");
     showToast(`資料夾「${folder}」已恢復`);
   }catch(err){
@@ -1237,6 +1285,7 @@ async function deleteSelectedFolder(){
     for(const rec of affected){
       await setDoc(recordRef(rec.id),{
         folder:"未分類",
+        folderArchived:false,
         updatedAt:serverTimestamp()
       },{merge:true});
     }
@@ -1248,7 +1297,8 @@ async function deleteSelectedFolder(){
       folderList.unshift("未分類");
     }
 
-    await saveFolderSettings();
+    archivedFolderNames=archivedFolderNames.filter(name=>name!==folder);
+    writeLocalFolderSettings();
 
     // 更新本機資料
     historyRecords=historyRecords.map(r=>
@@ -1290,9 +1340,10 @@ async function deleteSelectedFolder(){
   }catch(err){
     console.error(err);
     setSync("error","⚠️ 刪除失敗");
+    const reason=err.code||err.message||"未知錯誤";
     alert(
-      `刪除資料夾失敗：${err.code||err.message||"未知錯誤"}\n\n`+
-      "系統會重新讀取 Firebase，避免畫面與雲端狀態不一致。"
+      `刪除資料夾失敗：${reason}\n\n`+
+      "這次沒有刪除任何收繳資料。畫面會重新讀取目前雲端紀錄。"
     );
     await refreshHistory(false);
   }
@@ -1310,7 +1361,7 @@ function tsMillis(v){
 function visibleHistoryRecords(){
   let list=historyRecords.filter(r=>{
     const f=normalizeFolderName(r.folder);
-    if(isFolderArchived(f))return false;
+    if(r.folderArchived===true || isFolderArchived(f))return false;
     return historyFolderFilter==="all"||f===historyFolderFilter;
   });
 
@@ -2215,6 +2266,16 @@ async function refreshHistory(showMessage=false){
     archivedRecords=allRecords.filter(r=>r.archived===true);
 
     mergeFolderList(allRecords.map(r=>normalizeFolderName(r.folder)));
+
+    const archivedFromRecords=allRecords
+      .filter(r=>r.folderArchived===true)
+      .map(r=>normalizeFolderName(r.folder));
+
+    archivedFolderNames=uniqueFolderNames([
+      ...archivedFolderNames,
+      ...archivedFromRecords
+    ]).filter(name=>name!=="未分類");
+
     await loadFolderSettings();
     updateFolderSelectors();
     renderHistorySelect();
