@@ -802,7 +802,7 @@ let currentClassId=localStorage.getItem("subjectTrackerCurrentClass")||"904";
 if(!CLASS_CONFIG[currentClassId]) currentClassId="904";
 let currentId=null, filter="all", historyRecords=[], archivedRecords=[], autosaveTimer=null, classSwitchSerial=0;
 let historyFolderFilter="all", historySortMode="updatedDesc";
-let folderList=["未分類","平時作業","第一次段考","第二次段考","第三次段考","考卷訂正","其他"];
+let folderList=["未分類"];
 let archivedFolderNames=[];
 let studentState=createBlankState();
 
@@ -852,8 +852,9 @@ function activeFolderList(){
 }
 
 function mergeFolderList(extra=[]){
-  const defaults=["未分類","平時作業","第一次段考","第二次段考","第三次段考","考卷訂正","其他"];
-  folderList=uniqueFolderNames([...defaults,...folderList,...extra]);
+  // 不再建立任何預設資料夾。
+  // 除了系統必要的「未分類」之外，所有資料夾都由老師自行新增。
+  folderList=uniqueFolderNames(["未分類",...folderList,...extra]);
   if(!folderList.includes("未分類"))folderList.unshift("未分類");
   archivedFolderNames=uniqueFolderNames(archivedFolderNames)
     .filter(name=>name!=="未分類"&&folderList.includes(name));
@@ -1941,7 +1942,7 @@ async function switchClass(newClassId){
     await loadRosterFromCloud(currentClassId,false);
   }
 
-  folderList=["未分類","平時作業","第一次段考","第二次段考","第三次段考","考卷訂正","其他"];
+  folderList=["未分類"];
   archivedFolderNames=[];
   historyFolderFilter="all";historySortMode="updatedDesc";
   if(currentUser)await loadFolderSettings();
