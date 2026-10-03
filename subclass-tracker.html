@@ -63,19 +63,6 @@ button:hover{filter:brightness(1.05);transform:translateY(-1px)} button:active{t
 .archive-panel.show{display:block}
 .archive-row{display:grid;grid-template-columns:minmax(240px,1fr) auto auto;gap:8px;align-items:end}
 .archive-note{margin-top:7px;font-size:12px;font-weight:800;color:#6a5539}
-.folder-archive-panel{
-  display:none;margin-top:12px;padding:12px;border:2px dashed #7f6aa5;border-radius:14px;
-  background:rgba(248,244,255,.86)
-}
-.folder-archive-panel.show{display:block}
-.folder-archive-list{display:grid;gap:7px;margin-top:10px}
-.folder-archive-item{
-  display:flex;justify-content:space-between;gap:10px;align-items:center;
-  padding:9px 10px;border:1px solid #d7c7ed;border-radius:10px;background:#fff
-}
-.folder-archive-item b{color:#5f4388}
-.folder-hierarchy-note{font-size:12px;font-weight:800;color:#6c5b48;margin-top:6px}
-
 .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:16px}
 .stat{border:2px solid rgba(71,51,29,.35);border-radius:16px;padding:12px;text-align:center;background:#fff9e9}
 .stat b{display:block;font-size:28px;line-height:1.05}.stat span{font-size:13px;font-weight:800;color:#64543e}
@@ -193,7 +180,7 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
 /* ===== 歷史紀錄資料夾／排序 ===== */
 .history-tools{
   display:grid;
-  grid-template-columns:minmax(145px,1fr) minmax(165px,1fr) minmax(170px,1.1fr) minmax(170px,1.1fr) minmax(250px,auto);
+  grid-template-columns:minmax(150px,1fr) minmax(170px,1fr) minmax(190px,1.2fr) minmax(220px,auto);
   gap:8px;
   align-items:end;
   margin-top:12px;
@@ -211,6 +198,32 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
 }
 @media(max-width:560px){
   .history-tools{grid-template-columns:1fr}
+}
+
+/* ===== 封存資料夾（單層、簡化版） ===== */
+.folder-archive-panel{
+  display:none;
+  margin-top:10px;
+  padding:12px;
+  border:2px dashed #8b6a96;
+  border-radius:14px;
+  background:rgba(249,245,255,.88);
+}
+.folder-archive-panel.show{display:block}
+.folder-archive-row{
+  display:grid;
+  grid-template-columns:minmax(220px,1fr) auto auto;
+  gap:8px;
+  align-items:end;
+}
+.folder-archive-info{
+  margin-top:8px;
+  font-size:12px;
+  font-weight:800;
+  color:#665478;
+}
+@media(max-width:760px){
+  .folder-archive-row{grid-template-columns:1fr}
 }
 
 /* ===== Email 未繳通知 ===== */
@@ -483,33 +496,30 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
           <label for="moveFolderSelect">📂 目前紀錄移到</label>
           <select id="moveFolderSelect"></select>
         </div>
-        <div>
-          <label for="folderParentSelect">📂 移到上層資料夾</label>
-          <select id="folderParentSelect"></select>
-        </div>
         <div class="toolbar" style="margin:0">
           <button class="btn-gold" id="addFolderBtn">＋ 新增資料夾</button>
           <button class="btn-light" id="renameFolderBtn">✏️ 重新命名</button>
-          <button class="btn-blue" id="moveSelectedFolderBtn">📂 移動資料夾</button>
           <button class="btn-dark" id="archiveFolderBtn">🗄️ 封存資料夾</button>
           <button class="btn-light" id="toggleFolderArchiveBtn">📚 查看封存資料夾</button>
           <button class="btn-primary" id="deleteFolderBtn">🗑️ 刪除資料夾</button>
         </div>
       </div>
-      <div class="folder-hierarchy-note">📁 一般資料夾｜📂 有上層／子層關係｜🗄️ 已封存資料夾｜📄 一般收繳紀錄｜📦 已封存收繳紀錄</div>
 
       <div class="folder-archive-panel" id="folderArchivePanel">
         <div class="section-title" style="margin-bottom:8px">🗄️ 已封存資料夾</div>
-        <div class="archive-row">
+        <div class="folder-archive-row">
           <div>
-            <label for="archivedFolderSelect">選擇封存資料夾</label>
-            <select id="archivedFolderSelect"><option value="">— 尚無封存資料夾 —</option></select>
+            <label for="archivedFolderSelect">封存資料夾</label>
+            <select id="archivedFolderSelect">
+              <option value="">— 尚無封存資料夾 —</option>
+            </select>
           </div>
-          <button class="btn-dark" id="viewArchivedFolderBtn">📖 查看資料夾內容</button>
-          <button class="btn-light" id="unarchiveFolderBtn">↩ 取消封存資料夾</button>
+          <button class="btn-dark" id="showArchivedFolderRecordsBtn">📖 查看內容</button>
+          <button class="btn-light" id="unarchiveFolderBtn">↩ 取消封存</button>
         </div>
-        <div class="archive-note">封存資料夾只會把資料夾從一般資料夾清單收起，不會刪除裡面的收繳紀錄，也不會改變單筆紀錄本身的封存狀態。</div>
-        <div class="folder-archive-list" id="archivedFolderContent"></div>
+        <div class="folder-archive-info" id="folderArchiveInfo">
+          封存資料夾只會把資料夾從一般清單收起，裡面的收繳紀錄不會刪除，也不會改變單筆紀錄原本的封存狀態。
+        </div>
       </div>
 
 
@@ -793,9 +803,7 @@ if(!CLASS_CONFIG[currentClassId]) currentClassId="904";
 let currentId=null, filter="all", historyRecords=[], archivedRecords=[], autosaveTimer=null, classSwitchSerial=0;
 let historyFolderFilter="all", historySortMode="updatedDesc";
 let folderList=["未分類","平時作業","第一次段考","第二次段考","第三次段考","考卷訂正","其他"];
-let folderParents={};
 let archivedFolderNames=[];
-let archivedFolderViewing="";
 let studentState=createBlankState();
 
 const $=id=>document.getElementById(id);
@@ -827,9 +835,9 @@ function recordRef(id){
   return doc(db,"users",currentUser.uid,"subjectClassTrackers",currentClassId,"records",id);
 }
 
-function trackerClassMetaRef(){
+function folderSettingsRef(){
   if(!currentUser)throw new Error("尚未登入");
-  return doc(db,"users",currentUser.uid,"subjectClassTrackers",currentClassId);
+  return doc(db,"users",currentUser.uid,"subjectClassTrackers",currentClassId,"records","__folder_settings__");
 }
 
 function normalizeFolderName(v){
@@ -845,199 +853,140 @@ function isFolderArchived(name){
 }
 
 function activeFolderList(){
-  return folderList.filter(f=>!isFolderArchived(f));
-}
-
-function folderChildren(parent){
-  return folderList.filter(f=>
-    f!=="未分類" &&
-    normalizeFolderName(folderParents[f]||"")===(parent?normalizeFolderName(parent):"")
-  );
-}
-
-function folderDescendants(name){
-  const out=[];
-  const walk=parent=>{
-    folderChildren(parent).forEach(child=>{
-      if(out.includes(child))return;
-      out.push(child);
-      walk(child);
-    });
-  };
-  walk(normalizeFolderName(name));
-  return out;
-}
-
-function folderPath(name){
-  name=normalizeFolderName(name);
-  if(name==="未分類")return "未分類";
-  const parts=[name];
-  const seen=new Set([name]);
-  let parent=normalizeFolderName(folderParents[name]||"");
-  while(parent && parent!=="未分類" && folderList.includes(parent) && !seen.has(parent)){
-    parts.unshift(parent);
-    seen.add(parent);
-    parent=normalizeFolderName(folderParents[parent]||"");
-  }
-  return parts.join(" / ");
-}
-
-function folderDisplayIcon(name){
-  name=normalizeFolderName(name);
-  const hasChildren=folderChildren(name).length>0;
-  if(isFolderArchived(name))return "🗄️";
-  return hasChildren||folderParents[name] ? "📂" : "📁";
-}
-
-function folderRecordNamesForFilter(name){
-  name=normalizeFolderName(name);
-  return new Set([name,...folderDescendants(name)]);
+  return folderList.filter(name=>!isFolderArchived(name));
 }
 
 function mergeFolderList(extra=[]){
   const defaults=["未分類","平時作業","第一次段考","第二次段考","第三次段考","考卷訂正","其他"];
   folderList=uniqueFolderNames([...defaults,...folderList,...extra]);
-
   if(!folderList.includes("未分類"))folderList.unshift("未分類");
-
-  // 清理不存在或非法的父層設定
-  const cleaned={};
-  for(const [child,parentRaw] of Object.entries(folderParents||{})){
-    const c=normalizeFolderName(child);
-    const p=normalizeFolderName(parentRaw);
-    if(c==="未分類"||!folderList.includes(c))continue;
-    if(!p||p==="未分類"||p===c||!folderList.includes(p))continue;
-    cleaned[c]=p;
-  }
-  folderParents=cleaned;
   archivedFolderNames=uniqueFolderNames(archivedFolderNames)
-    .filter(f=>f!=="未分類"&&folderList.includes(f));
+    .filter(name=>name!=="未分類"&&folderList.includes(name));
 }
 
 async function loadFolderSettings(){
   if(!currentUser)return;
   try{
-    const snap=await getDoc(trackerClassMetaRef());
-    const data=snap.exists()?snap.data():{};
-    if(Array.isArray(data.folders))folderList=uniqueFolderNames([...folderList,...data.folders]);
-    if(data.folderParents&&typeof data.folderParents==="object")folderParents={...data.folderParents};
-    if(Array.isArray(data.archivedFolders))archivedFolderNames=uniqueFolderNames(data.archivedFolders);
-    mergeFolderList([]);
+    const snap=await getDoc(folderSettingsRef());
+    if(snap.exists()){
+      const data=snap.data()||{};
+      if(Array.isArray(data.folders))mergeFolderList(data.folders);
+      if(Array.isArray(data.archivedFolders))archivedFolderNames=uniqueFolderNames(data.archivedFolders);
+    }
   }catch(err){
-    console.warn("讀取資料夾設定失敗",err);
+    // 資料夾設定失敗不應該讓整個收繳系統顯示「同步失敗」。
+    console.warn("讀取資料夾設定失敗，改用目前紀錄推導資料夾",err);
   }
+  mergeFolderList([]);
   updateFolderSelectors();
   refreshArchivedFolderSelect();
 }
 
 async function saveFolderSettings(){
   if(!currentUser)return;
-  await setDoc(trackerClassMetaRef(),{
+  await setDoc(folderSettingsRef(),{
+    _systemType:"folderSettings",
     classId:currentClassId,
     folders:folderList,
-    folderParents,
     archivedFolders:archivedFolderNames,
-    folderUpdatedAt:serverTimestamp()
+    updatedAt:serverTimestamp()
   },{merge:true});
-}
-
-function folderOptionHtml(name,{includeArchived=false}={}){
-  if(!includeArchived&&isFolderArchived(name))return "";
-  const icon=folderDisplayIcon(name);
-  const label=folderPath(name);
-  return `<option value="${escapeHTML(name)}">${icon} ${escapeHTML(label)}</option>`;
 }
 
 function updateFolderSelectors(){
   const recordSel=$("recordFolder");
   const moveSel=$("moveFolderSelect");
   const filterSel=$("historyFolderFilter");
-  const parentSel=$("folderParentSelect");
 
+  const active=activeFolderList();
   const currentFolder=normalizeFolderName(recordSel?.value||"未分類");
   const moveFolder=normalizeFolderName(moveSel?.value||currentFolder);
-  const active=activeFolderList();
 
-  const options=active.map(f=>folderOptionHtml(f)).join("");
+  const options=active
+    .map(f=>`<option value="${escapeHTML(f)}">📁 ${escapeHTML(f)}</option>`)
+    .join("");
 
   if(recordSel){
     recordSel.innerHTML=options;
     recordSel.value=active.includes(currentFolder)?currentFolder:"未分類";
   }
+
   if(moveSel){
     moveSel.innerHTML=options;
-    moveSel.value=active.includes(moveFolder)?moveFolder:(recordSel?.value||"未分類");
+    moveSel.value=active.includes(moveFolder)
+      ?moveFolder
+      :(recordSel?.value||"未分類");
   }
+
   if(filterSel){
     const old=historyFolderFilter;
-    filterSel.innerHTML='<option value="all">🗂️ 全部一般資料夾</option>'+options;
+    filterSel.innerHTML='<option value="all">🗂️ 全部資料夾</option>'+options;
     filterSel.value=old==="all"||active.includes(old)?old:"all";
     historyFolderFilter=filterSel.value;
   }
 
-  updateFolderParentChoices();
   refreshArchivedFolderSelect();
-}
-
-function updateFolderParentChoices(){
-  const sel=$("folderParentSelect");
-  if(!sel)return;
-
-  const selected=normalizeFolderName($("moveFolderSelect")?.value||"未分類");
-  const descendants=new Set(folderDescendants(selected));
-  const currentParent=folderParents[selected]||"";
-
-  let html='<option value="">— 最上層 —</option>';
-  activeFolderList()
-    .filter(f=>f!=="未分類"&&f!==selected&&!descendants.has(f))
-    .forEach(f=>{
-      html+=`<option value="${escapeHTML(f)}">${folderDisplayIcon(f)} ${escapeHTML(folderPath(f))}</option>`;
-    });
-
-  sel.innerHTML=html;
-  sel.value=currentParent&&[...sel.options].some(o=>o.value===currentParent)?currentParent:"";
 }
 
 function refreshArchivedFolderSelect(){
   const sel=$("archivedFolderSelect");
   if(!sel)return;
+
   const old=sel.value;
   sel.innerHTML='<option value="">— 尚無封存資料夾 —</option>';
+
   archivedFolderNames
     .slice()
-    .sort((a,b)=>folderPath(a).localeCompare(folderPath(b),"zh-Hant"))
+    .sort((a,b)=>a.localeCompare(b,"zh-Hant"))
     .forEach(name=>{
       const op=document.createElement("option");
       op.value=name;
-      op.textContent=`🗄️ ${folderPath(name)}`;
+      op.textContent=`🗄️ ${name}`;
       sel.appendChild(op);
     });
+
   if([...sel.options].some(o=>o.value===old))sel.value=old;
+  updateFolderArchiveInfo();
 }
 
-async function addFolder(){
-  const raw=prompt("請輸入新資料夾名稱：\n例如：隨堂練習、第一次段考、補充教材");
-  if(raw===null)return;
-  const name=normalizeFolderName(raw);
-  if(name==="未分類" && !String(raw||"").trim())return;
+function archivedFolderRecords(folder){
+  folder=normalizeFolderName(folder);
+  return [...historyRecords,...archivedRecords]
+    .filter(r=>normalizeFolderName(r.folder)===folder);
+}
 
-  if(folderList.includes(name)){
-    showToast("這個資料夾已存在");
-    if(!isFolderArchived(name)){
-      $("recordFolder").value=name;
-      $("moveFolderSelect").value=name;
-      updateFolderParentChoices();
-    }
+function updateFolderArchiveInfo(){
+  const info=$("folderArchiveInfo");
+  if(!info)return;
+  const folder=$("archivedFolderSelect")?.value||"";
+
+  if(!folder){
+    info.textContent="封存資料夾只會把資料夾從一般清單收起，裡面的收繳紀錄不會刪除，也不會改變單筆紀錄原本的封存狀態。";
     return;
   }
 
+  const rows=archivedFolderRecords(folder);
+  const normal=rows.filter(r=>r.archived!==true).length;
+  const archived=rows.filter(r=>r.archived===true).length;
+  info.textContent=`「${folder}」共有 ${rows.length} 筆資料：📄 一般紀錄 ${normal} 筆｜📦 已封存紀錄 ${archived} 筆。`;
+}
+
+async function addFolder(){
+  const raw=prompt("請輸入新資料夾名稱：\\n例如：隨堂練習、第一次段考、補充教材");
+  if(raw===null)return;
+  const name=normalizeFolderName(raw);
+  if(name==="未分類" && !String(raw||"").trim())return;
+  if(folderList.includes(name)){
+    showToast("這個資料夾已存在");
+    $("recordFolder").value=name;
+    $("moveFolderSelect").value=name;
+    return;
+  }
   folderList.push(name);
-  folderParents[name]="";
   await saveFolderSettings();
   updateFolderSelectors();
   $("recordFolder").value=name;
   $("moveFolderSelect").value=name;
-  updateFolderParentChoices();
   showToast(`已新增資料夾：${name}`);
 }
 
@@ -1048,60 +997,13 @@ async function moveCurrentRecordFolder(){
   try{
     await setDoc(recordRef(currentId),{folder,updatedAt:serverTimestamp()},{merge:true});
     await refreshHistory(false);
-    showToast(`目前紀錄已移到「${folderPath(folder)}」`);
+    showToast(`已移到「${folder}」`);
   }catch(err){
     console.error(err);
     showToast(`移動失敗：${err.code||err.message||"未知錯誤"}`);
   }
 }
 
-async function moveSelectedFolder(){
-  if(!currentUser){showToast("請先登入");return;}
-
-  const folder=normalizeFolderName($("moveFolderSelect")?.value||"未分類");
-  if(folder==="未分類"){
-    alert("「未分類」是系統保留資料夾，不能移動。");
-    return;
-  }
-  if(isFolderArchived(folder)){
-    alert("已封存資料夾請先取消封存，再進行移動。");
-    return;
-  }
-
-  const parent=normalizeFolderName($("folderParentSelect")?.value||"");
-  const newParent=parent==="未分類"?"":parent;
-
-  if(newParent===folder || folderDescendants(folder).includes(newParent)){
-    alert("不能把資料夾移到自己或自己的子資料夾裡。");
-    return;
-  }
-
-  const oldParent=folderParents[folder]||"";
-  if(oldParent===newParent){
-    showToast("資料夾位置沒有變更");
-    return;
-  }
-
-  const fromText=oldParent?folderPath(oldParent):"最上層";
-  const toText=newParent?folderPath(newParent):"最上層";
-  if(!confirm(`確定移動資料夾？\n\n📂 ${folderPath(folder)}\n\n從：${fromText}\n移到：${toText}\n\n裡面的收繳紀錄不會被刪除或改變。`))return;
-
-  try{
-    if(newParent)folderParents[folder]=newParent;
-    else delete folderParents[folder];
-
-    await saveFolderSettings();
-    updateFolderSelectors();
-    $("moveFolderSelect").value=folder;
-    updateFolderParentChoices();
-    renderHistorySelect();
-    showToast(`資料夾已移動到「${toText}」`);
-  }catch(err){
-    console.error(err);
-    alert(`移動資料夾失敗：${err.code||err.message||"未知錯誤"}`);
-    await loadFolderSettings();
-  }
-}
 
 async function renameSelectedFolder(){
   if(!currentUser){showToast("請先登入");return;}
@@ -1135,7 +1037,7 @@ async function renameSelectedFolder(){
 
   if(!confirm(
     `確定將資料夾重新命名？\n\n`+
-    `「${folderPath(oldName)}」 → 「${newName}」\n\n`+
+    `「${oldName}」 → 「${newName}」\n\n`+
     `目前共有 ${affected.length} 筆歷史／封存紀錄會一起更新。`
   ))return;
 
@@ -1150,17 +1052,6 @@ async function renameSelectedFolder(){
     }
 
     folderList=folderList.map(f=>f===oldName?newName:f);
-
-    const oldParent=folderParents[oldName]||"";
-    delete folderParents[oldName];
-    if(oldParent)folderParents[newName]=oldParent;
-
-    for(const child of Object.keys(folderParents)){
-      if(folderParents[child]===oldName)folderParents[child]=newName;
-    }
-
-    archivedFolderNames=archivedFolderNames.map(f=>f===oldName?newName:f);
-
     await saveFolderSettings();
 
     historyRecords=historyRecords.map(r=>
@@ -1176,13 +1067,12 @@ async function renameSelectedFolder(){
     $("moveFolderSelect").value=newName;
 
     if($("recordFolder").value===oldName || currentId && affected.some(r=>r.id===currentId)){
-      $("recordFolder").value=isFolderArchived(newName)?"未分類":newName;
+      $("recordFolder").value=newName;
     }
 
     $("historyFolderFilter").value=
       historyFolderFilter==="all" ? "all" : newName;
 
-    updateFolderParentChoices();
     renderHistorySelect();
     refreshArchiveSelect();
 
@@ -1196,42 +1086,47 @@ async function renameSelectedFolder(){
   }
 }
 
+
+
 async function archiveSelectedFolder(){
   if(!currentUser){showToast("請先登入");return;}
+
   const folder=normalizeFolderName($("moveFolderSelect")?.value||"未分類");
 
   if(folder==="未分類"){
     alert("「未分類」是系統保留資料夾，不能封存。");
     return;
   }
+
   if(isFolderArchived(folder)){
     showToast("這個資料夾已經封存");
     return;
   }
 
-  const descendants=folderDescendants(folder).filter(f=>!isFolderArchived(f));
-  const targets=[folder,...descendants];
-  const records=[...historyRecords,...archivedRecords].filter(r=>targets.includes(normalizeFolderName(r.folder)));
+  const rows=[...historyRecords,...archivedRecords]
+    .filter(r=>normalizeFolderName(r.folder)===folder);
 
   if(!confirm(
-    `確定封存資料夾「${folderPath(folder)}」？\n\n`+
-    `子資料夾：${descendants.length} 個\n`+
-    `裡面的收繳紀錄：${records.length} 筆\n\n`+
-    `封存只會把資料夾從一般清單收起；收繳資料本身不會刪除，也不會改變單筆資料的封存狀態。`
+    `確定封存資料夾「${folder}」嗎？\n\n`+
+    `裡面共有 ${rows.length} 筆收繳紀錄。\n\n`+
+    `封存後只會從一般資料夾清單收起；資料本身不會刪除。`
   ))return;
 
-  archivedFolderNames=uniqueFolderNames([...archivedFolderNames,...targets]);
-
   try{
+    setSync("saving","☁️ 封存資料夾中…");
+    archivedFolderNames=uniqueFolderNames([...archivedFolderNames,folder]);
     await saveFolderSettings();
-    if(targets.includes(historyFolderFilter))historyFolderFilter="all";
+
+    if(historyFolderFilter===folder)historyFolderFilter="all";
+
     updateFolderSelectors();
     renderHistorySelect();
-    refreshArchivedFolderSelect();
-    showToast(`已封存資料夾「${folder}」`);
+    setSync("ok","☁️ 已同步");
+    showToast(`資料夾「${folder}」已封存`);
   }catch(err){
     console.error(err);
-    alert(`封存資料夾失敗：${err.code||err.message||"未知錯誤"}`);
+    setSync("error","⚠️ 資料夾封存失敗");
+    alert(`資料夾封存失敗：${err.code||err.message||"未知錯誤"}`);
   }
 }
 
@@ -1239,91 +1134,62 @@ function toggleFolderArchivePanel(){
   const panel=$("folderArchivePanel");
   const show=!panel.classList.contains("show");
   panel.classList.toggle("show",show);
-  $("toggleFolderArchiveBtn").textContent=show?"📚 收起封存資料夾":"📚 查看封存資料夾";
+  $("toggleFolderArchiveBtn").textContent=show
+    ?"📚 收起封存資料夾"
+    :"📚 查看封存資料夾";
+
   if(show){
     refreshArchivedFolderSelect();
-    renderArchivedFolderContent();
+    updateFolderArchiveInfo();
   }
 }
 
-function renderArchivedFolderContent(){
-  const host=$("archivedFolderContent");
-  if(!host)return;
-  const folder=$("archivedFolderSelect")?.value||archivedFolderViewing||"";
-
+function showArchivedFolderRecords(){
+  const folder=$("archivedFolderSelect")?.value||"";
   if(!folder){
-    host.innerHTML='<div class="archive-note">請先選擇一個封存資料夾。</div>';
+    showToast("請先選擇封存資料夾");
     return;
   }
 
-  archivedFolderViewing=folder;
-  const targets=new Set([folder,...folderDescendants(folder)]);
-  const rows=[...historyRecords,...archivedRecords]
-    .filter(r=>targets.has(normalizeFolderName(r.folder)))
+  const rows=archivedFolderRecords(folder)
     .sort((a,b)=>toMillis(b.updatedAt)-toMillis(a.updatedAt));
 
-  host.innerHTML=rows.length
-    ? rows.map(r=>`<div class="folder-archive-item">
-        <div>
-          <b>${r.archived===true?"📦":"📄"} ${escapeHTML(r.itemName||"未命名")}</b>
-          <div class="archive-note">${folderDisplayIcon(normalizeFolderName(r.folder))} ${escapeHTML(folderPath(normalizeFolderName(r.folder)))}｜截止 ${escapeHTML(formatDate(r.dueDate))}</div>
-        </div>
-        <button class="btn-light small-view-archived-folder-record" data-id="${escapeHTML(r.id)}" data-archived="${r.archived===true?"1":"0"}">查看</button>
-      </div>`).join("")
-    : '<div class="archive-note">這個封存資料夾目前沒有收繳紀錄。</div>';
+  if(!rows.length){
+    alert(`「${folder}」目前沒有收繳紀錄。`);
+    return;
+  }
 
-  host.querySelectorAll(".small-view-archived-folder-record").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      const id=btn.dataset.id;
-      if(btn.dataset.archived==="1"){
-        $("archiveSelect").value=id;
-        loadArchivedRecord();
-      }else{
-        const rec=historyRecords.find(r=>r.id===id);
-        if(!rec)return;
-        currentId=rec.id;
-        $("itemName").value=rec.itemName||"";
-        $("receiveDate").value=rec.receiveDate||"";
-        $("dueDate").value=rec.dueDate||"";
-        studentState=createBlankState();
-        students().forEach(s=>{
-          const saved=rec.students?.[s.seat]||rec.students?.[String(s.seat)];
-          if(saved)studentState[s.seat]={...studentState[s.seat],...saved};
-        });
-        render();
-        showToast(`已載入封存資料夾中的紀錄：${rec.itemName||"未命名"}`);
-      }
-    });
-  });
+  const text=rows.map(r=>{
+    const icon=r.archived===true?"📦":"📄";
+    return `${icon} ${r.itemName||"未命名"}｜截止 ${formatDate(r.dueDate)}`;
+  }).join("\n");
+
+  alert(`🗄️ ${folder}\n\n${text}`);
 }
 
 async function unarchiveSelectedFolder(){
+  if(!currentUser){showToast("請先登入");return;}
+
   const folder=normalizeFolderName($("archivedFolderSelect")?.value||"");
   if(!folder||folder==="未分類"){
-    alert("請先選擇一個封存資料夾。");
+    alert("請先選擇一個已封存資料夾。");
     return;
   }
 
-  const descendants=folderDescendants(folder);
-  const targets=[folder,...descendants];
-
-  if(!confirm(
-    `確定取消封存「${folderPath(folder)}」？\n\n`+
-    `此資料夾及其 ${descendants.length} 個子資料夾會回到一般資料夾清單。`
-  ))return;
-
-  archivedFolderNames=archivedFolderNames.filter(f=>!targets.includes(f));
+  if(!confirm(`確定取消封存資料夾「${folder}」嗎？\n\n取消後會重新出現在一般資料夾清單。`))return;
 
   try{
+    setSync("saving","☁️ 取消封存資料夾中…");
+    archivedFolderNames=archivedFolderNames.filter(name=>name!==folder);
     await saveFolderSettings();
-    archivedFolderViewing="";
+
     updateFolderSelectors();
-    refreshArchivedFolderSelect();
-    renderArchivedFolderContent();
     renderHistorySelect();
-    showToast(`已取消封存資料夾「${folder}」`);
+    setSync("ok","☁️ 已同步");
+    showToast(`資料夾「${folder}」已恢復`);
   }catch(err){
     console.error(err);
+    setSync("error","⚠️ 操作失敗");
     alert(`取消封存資料夾失敗：${err.code||err.message||"未知錯誤"}`);
   }
 }
@@ -1346,16 +1212,6 @@ async function deleteSelectedFolder(){
     return;
   }
 
-  const descendants=folderDescendants(folder);
-  if(descendants.length){
-    alert(
-      `這個資料夾底下還有 ${descendants.length} 個子資料夾：\n\n`+
-      descendants.map(x=>`• ${folderPath(x)}`).join("\n")+
-      `\n\n為避免誤刪資料夾結構，請先移動或刪除子資料夾，再刪除目前資料夾。`
-    );
-    return;
-  }
-
   const normalRecords=historyRecords.filter(
     r=>normalizeFolderName(r.folder)===folder
   );
@@ -1365,7 +1221,7 @@ async function deleteSelectedFolder(){
   const affected=[...normalRecords,...archived];
 
   const message=
-    `確定要刪除資料夾「${folderPath(folder)}」嗎？\n\n`+
+    `確定要刪除資料夾「${folder}」嗎？\n\n`+
     `📄 一般收繳紀錄：${normalRecords.length} 筆\n`+
     `📦 已封存紀錄：${archived.length} 筆\n\n`+
     `⚠️ 收繳資料本身不會被刪除。\n`+
@@ -1377,6 +1233,7 @@ async function deleteSelectedFolder(){
   try{
     setSync("saving","☁️ 刪除資料夾中…");
 
+    // 先把所有使用此資料夾的紀錄搬到「未分類」
     for(const rec of affected){
       await setDoc(recordRef(rec.id),{
         folder:"未分類",
@@ -1384,12 +1241,8 @@ async function deleteSelectedFolder(){
       },{merge:true});
     }
 
+    // 再從資料夾設定中移除
     folderList=folderList.filter(f=>f!==folder);
-    delete folderParents[folder];
-    for(const child of Object.keys(folderParents)){
-      if(folderParents[child]===folder)delete folderParents[child];
-    }
-    archivedFolderNames=archivedFolderNames.filter(f=>f!==folder);
 
     if(!folderList.includes("未分類")){
       folderList.unshift("未分類");
@@ -1397,6 +1250,7 @@ async function deleteSelectedFolder(){
 
     await saveFolderSettings();
 
+    // 更新本機資料
     historyRecords=historyRecords.map(r=>
       normalizeFolderName(r.folder)===folder
         ? {...r,folder:"未分類"}
@@ -1409,10 +1263,12 @@ async function deleteSelectedFolder(){
         : r
     );
 
+    // 若目前篩選正好是被刪除的資料夾，切回全部
     if(historyFolderFilter===folder){
       historyFolderFilter="all";
     }
 
+    // 若目前載入的紀錄也在該資料夾，畫面改成未分類
     const currentWasAffected=
       !!currentId && affected.some(r=>r.id===currentId);
 
@@ -1442,32 +1298,31 @@ async function deleteSelectedFolder(){
   }
 }
 
-function toMillis(v){
-  if(!v)return 0;
-  if(typeof v.toMillis==="function")return v.toMillis();
-  if(typeof v.seconds==="number")return v.seconds*1000;
-  const n=Date.parse(v);
-  return Number.isFinite(n)?n:0;
+function tsMillis(v){
+  try{
+    if(v?.toMillis)return v.toMillis();
+    if(v?.seconds)return v.seconds*1000;
+    const t=Date.parse(v||"");
+    return Number.isFinite(t)?t:0;
+  }catch{return 0}
 }
 
-function sortedHistoryRecords(){
-  const activeSet=new Set(activeFolderList());
+function visibleHistoryRecords(){
   let list=historyRecords.filter(r=>{
     const f=normalizeFolderName(r.folder);
-    if(!activeSet.has(f))return false;
-    if(historyFolderFilter==="all")return true;
-    return folderRecordNamesForFilter(historyFolderFilter).has(f);
+    if(isFolderArchived(f))return false;
+    return historyFolderFilter==="all"||f===historyFolderFilter;
   });
 
-  list=list.slice().sort((a,b)=>{
-    if(historySortMode==="createdAsc")return toMillis(a.createdAt)-toMillis(b.createdAt);
-    if(historySortMode==="createdDesc")return toMillis(b.createdAt)-toMillis(a.createdAt);
-    if(historySortMode==="dueAsc")return String(a.dueDate||"9999-12-31").localeCompare(String(b.dueDate||"9999-12-31"));
+  const cmpName=(a,b)=>String(a.itemName||"").localeCompare(String(b.itemName||""),"zh-Hant");
+  list=[...list].sort((a,b)=>{
+    if(historySortMode==="createdDesc")return tsMillis(b.createdAt)-tsMillis(a.createdAt);
+    if(historySortMode==="createdAsc")return tsMillis(a.createdAt)-tsMillis(b.createdAt);
+    if(historySortMode==="dueAsc")return String(a.dueDate||"9999-99-99").localeCompare(String(b.dueDate||"9999-99-99"));
     if(historySortMode==="dueDesc")return String(b.dueDate||"").localeCompare(String(a.dueDate||""));
-    if(historySortMode==="nameAsc")return String(a.itemName||"").localeCompare(String(b.itemName||""),"zh-Hant");
-    return toMillis(b.updatedAt)-toMillis(a.updatedAt);
+    if(historySortMode==="nameAsc")return cmpName(a,b);
+    return tsMillis(b.updatedAt)-tsMillis(a.updatedAt);
   });
-
   return list;
 }
 
@@ -1475,18 +1330,21 @@ function renderHistorySelect(){
   const sel=$("historySelect");
   if(!sel)return;
   const old=sel.value;
-  const list=sortedHistoryRecords();
+  const list=visibleHistoryRecords();
+
   sel.innerHTML='<option value="">— 選擇歷史收繳紀錄 —</option>';
   list.forEach(r=>{
-    const f=normalizeFolderName(r.folder);
     const op=document.createElement("option");
     op.value=r.id;
-    op.textContent=`📄 ${r.itemName||"未命名"}｜${folderDisplayIcon(f)} ${folderPath(f)}｜截止 ${formatDate(r.dueDate)}`;
+    op.textContent=`📄 ${r.itemName||"未命名"}｜📁 ${normalizeFolderName(r.folder)}｜截止 ${formatDate(r.dueDate)}`;
     sel.appendChild(op);
   });
   if([...sel.options].some(o=>o.value===old))sel.value=old;
+
   renderBatchPrintList();
 }
+
+
 
 /* ==========================================================
    學生名單／Email：Excel → Firebase → 自動載入
@@ -2033,7 +1891,7 @@ async function switchClass(newClassId){
   }
 
   folderList=["未分類","平時作業","第一次段考","第二次段考","第三次段考","考卷訂正","其他"];
-  folderParents={};archivedFolderNames=[];archivedFolderViewing="";
+  archivedFolderNames=[];
   historyFolderFilter="all";historySortMode="updatedDesc";
   if(currentUser)await loadFolderSettings();
 
@@ -2149,7 +2007,7 @@ function renderBatchPrintList(){
     row.innerHTML=`
       <input type="checkbox" class="batch-print-check" value="${escapeHTML(rec.id)}" ${batchPrintSelectedIds.has(rec.id)?"checked":""}>
       <span class="batch-print-name">📄 ${escapeHTML(rec.itemName||"未命名項目")}</span>
-      <span class="batch-print-meta">${folderDisplayIcon(normalizeFolderName(rec.folder))} ${escapeHTML(folderPath(normalizeFolderName(rec.folder)))}｜截止 ${escapeHTML(formatDate(rec.dueDate))}</span>
+      <span class="batch-print-meta">📁 ${escapeHTML(normalizeFolderName(rec.folder))}｜截止 ${escapeHTML(formatDate(rec.dueDate))}</span>
     `;
     wrap.appendChild(row);
   });
@@ -2350,13 +2208,15 @@ async function refreshHistory(showMessage=false){
     const q=query(recordsCollection(),orderBy("updatedAt","desc")),snap=await getDocs(q);
     if(requestedClassId!==currentClassId)return;
 
-    const allRecords=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const allRecords=snap.docs
+      .map(d=>({id:d.id,...d.data()}))
+      .filter(r=>r.id!=="__folder_settings__" && r._systemType!=="folderSettings");
     historyRecords=allRecords.filter(r=>r.archived!==true);
     archivedRecords=allRecords.filter(r=>r.archived===true);
 
     mergeFolderList(allRecords.map(r=>normalizeFolderName(r.folder)));
+    await loadFolderSettings();
     updateFolderSelectors();
-    refreshArchivedFolderSelect();
     renderHistorySelect();
 
     refreshArchiveSelect();
@@ -2374,7 +2234,7 @@ function refreshArchiveSelect(){
   sel.innerHTML='<option value="">— 尚無封存紀錄 —</option>';
   archivedRecords.forEach(r=>{
     const op=document.createElement("option");op.value=r.id;
-    const f=normalizeFolderName(r.folder);op.textContent=`📦 ${r.itemName||"未命名"}｜${folderDisplayIcon(f)} ${folderPath(f)}｜截止 ${formatDate(r.dueDate)}`;
+    op.textContent=`📦 ${r.itemName||"未命名"}｜📁 ${normalizeFolderName(r.folder)}｜截止 ${formatDate(r.dueDate)}`;
     sel.appendChild(op);
   });
   if([...sel.options].some(o=>o.value===old))sel.value=old;
@@ -2385,7 +2245,10 @@ function loadRecord(){
   const rec=historyRecords.find(r=>r.id===id);if(!rec){showToast("找不到這筆紀錄，請重新同步");return;}
   currentId=rec.id;$("itemName").value=rec.itemName||"";$("receiveDate").value=rec.receiveDate||"";$("dueDate").value=rec.dueDate||"";
   const recFolder=normalizeFolderName(rec.folder);mergeFolderList([recFolder]);updateFolderSelectors();
-  if(!isFolderArchived(recFolder)){$("recordFolder").value=recFolder;$("moveFolderSelect").value=recFolder;}
+  if(!isFolderArchived(recFolder)){
+    $("recordFolder").value=recFolder;
+    $("moveFolderSelect").value=recFolder;
+  }
   studentState=createBlankState();
   students().forEach(s=>{
     const saved=rec.students?.[s.seat]||rec.students?.[String(s.seat)];
@@ -2439,7 +2302,10 @@ function loadArchivedRecord(){
   $("receiveDate").value=rec.receiveDate||"";
   $("dueDate").value=rec.dueDate||"";
   const recFolder=normalizeFolderName(rec.folder);mergeFolderList([recFolder]);updateFolderSelectors();
-  if(!isFolderArchived(recFolder)){$("recordFolder").value=recFolder;$("moveFolderSelect").value=recFolder;}
+  if(!isFolderArchived(recFolder)){
+    $("recordFolder").value=recFolder;
+    $("moveFolderSelect").value=recFolder;
+  }
   studentState=createBlankState();
   students().forEach(s=>{
     const saved=rec.students?.[s.seat]||rec.students?.[String(s.seat)];
@@ -2673,12 +2539,11 @@ $("moveFolderBtn").addEventListener("click",moveCurrentRecordFolder);
 $("addFolderBtn").addEventListener("click",addFolder);
 $("renameFolderBtn").addEventListener("click",renameSelectedFolder);
 $("deleteFolderBtn").addEventListener("click",deleteSelectedFolder);
-$("moveSelectedFolderBtn").addEventListener("click",moveSelectedFolder);
 $("archiveFolderBtn").addEventListener("click",archiveSelectedFolder);
 $("toggleFolderArchiveBtn").addEventListener("click",toggleFolderArchivePanel);
-$("viewArchivedFolderBtn").addEventListener("click",renderArchivedFolderContent);
+$("archivedFolderSelect").addEventListener("change",updateFolderArchiveInfo);
+$("showArchivedFolderRecordsBtn").addEventListener("click",showArchivedFolderRecords);
 $("unarchiveFolderBtn").addEventListener("click",unarchiveSelectedFolder);
-$("archivedFolderSelect").addEventListener("change",renderArchivedFolderContent);
 $("historyFolderFilter").addEventListener("change",e=>{
   historyFolderFilter=e.target.value;
   renderHistorySelect();
@@ -2692,8 +2557,7 @@ $("recordFolder").addEventListener("change",()=>{
   scheduleAutosave();
 });
 $("moveFolderSelect").addEventListener("change",()=>{
-  if(currentId && !isFolderArchived($("moveFolderSelect").value))$("recordFolder").value=$("moveFolderSelect").value;
-  updateFolderParentChoices();
+  if(currentId)$("recordFolder").value=$("moveFolderSelect").value;
 });
 $("deleteBtn").addEventListener("click",deleteRecord);
 $("archiveBtn").addEventListener("click",archiveCurrentRecord);
