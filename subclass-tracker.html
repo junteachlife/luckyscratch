@@ -58,7 +58,7 @@ button{border:0;border-radius:12px;padding:10px 14px;font-weight:900;cursor:poin
 button:hover{filter:brightness(1.05);transform:translateY(-1px)} button:active{transform:translateY(2px);box-shadow:none}
 .btn-primary{background:var(--red);color:#fff}.btn-blue{background:var(--blue);color:#fff}.btn-gold{background:var(--gold);color:#2d241b}
 .btn-dark{background:#3f352a;color:#fff}.btn-light{background:#fff7df;color:#493721;border:1px solid #ac8952}
-.history-row{display:grid;grid-template-columns:minmax(240px,1fr) auto auto auto auto;gap:8px;margin-top:12px;align-items:end}
+.history-row{display:grid;grid-template-columns:minmax(240px,1fr) repeat(5,auto);gap:8px;margin-top:12px;align-items:end}
 .archive-panel{display:none;margin-top:10px;padding:12px;border:2px dashed #8b6a38;border-radius:14px;background:rgba(255,250,232,.78)}
 .archive-panel.show{display:block}
 .archive-row{display:grid;grid-template-columns:minmax(240px,1fr) auto auto;gap:8px;align-items:end}
@@ -173,6 +173,77 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
 }
 @media print{
   .batch-print-panel,.cross-sync-box{display:none!important}
+}
+
+
+
+/* ===== 歷史紀錄資料夾／排序 ===== */
+.history-tools{
+  display:grid;
+  grid-template-columns:minmax(150px,1fr) minmax(170px,1fr) minmax(190px,1.2fr) auto;
+  gap:8px;
+  align-items:end;
+  margin-top:12px;
+  padding:12px;
+  border:2px dashed #9b7746;
+  border-radius:14px;
+  background:rgba(255,250,232,.72);
+}
+.folder-badge{
+  display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;
+  background:#f3e6c4;color:#6b4a24;font-size:12px;font-weight:900
+}
+@media(max-width:900px){
+  .history-tools{grid-template-columns:1fr 1fr}
+}
+@media(max-width:560px){
+  .history-tools{grid-template-columns:1fr}
+}
+
+/* ===== Email 未繳通知 ===== */
+.mail-modal{
+  position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;
+  padding:16px;background:rgba(25,28,31,.58);backdrop-filter:blur(3px)
+}
+.mail-modal.show{display:flex}
+.mail-card{
+  width:min(760px,96vw);max-height:92vh;overflow:auto;
+  background:linear-gradient(180deg,#fff8df,#f1d9a2);
+  border:4px solid #5d4328;border-radius:20px;padding:18px;box-shadow:0 18px 50px rgba(0,0,0,.32)
+}
+.mail-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.mail-title{font-size:21px;font-weight:900;color:#6e2b22}
+.mail-close{background:#3f352a;color:#fff}
+.mail-summary{
+  margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff9e9;
+  border:2px solid #d2b477;font-weight:900;line-height:1.6
+}
+.mail-warning{
+  margin-top:8px;padding:9px 11px;border-radius:10px;background:#fff0d8;
+  color:#9a570f;font-size:13px;font-weight:900;line-height:1.6
+}
+.mail-list{display:grid;gap:7px;margin-top:10px;max-height:245px;overflow:auto}
+.mail-row{
+  display:grid;grid-template-columns:24px 70px minmax(110px,1fr) minmax(190px,1.5fr);
+  gap:8px;align-items:center;padding:9px 10px;border:1px solid #d8c092;border-radius:10px;background:#fffdf4
+}
+.mail-row input[type="checkbox"]{width:18px;height:18px;accent-color:#1d5875}
+.mail-row.no-email{opacity:.68}
+.mail-compose{margin-top:12px}
+.mail-compose textarea{
+  width:100%;min-height:145px;resize:vertical;border:2px solid #8b6a38;background:#fffaf0;
+  color:#2d241b;border-radius:12px;padding:11px 12px;outline:none;line-height:1.6
+}
+.mail-compose input{
+  width:100%;border:2px solid #8b6a38;background:#fffaf0;color:#2d241b;
+  border-radius:12px;padding:11px 12px;outline:none
+}
+@media(max-width:680px){
+  .mail-row{grid-template-columns:24px 62px 1fr}
+  .mail-row .mail-email{grid-column:2/-1;font-size:12px;overflow-wrap:anywhere}
+}
+@media print{
+  .history-tools,.mail-modal{display:none!important}
 }
 
 @media(max-width:760px){
@@ -337,7 +408,7 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
 
     <div class="panel" style="margin-top:18px;box-shadow:none">
       <div class="section-title">🧭 收繳任務設定</div>
-      <div class="form-grid">
+      <div class="form-grid" style="grid-template-columns:2fr 1fr 1fr 1.2fr">
         <div>
           <label for="itemName">收繳項目名稱</label>
           <input id="itemName" type="text" placeholder="例如：第一課作業、學習單、考卷訂正…" />
@@ -350,12 +421,17 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
           <label for="dueDate">截止日期</label>
           <input id="dueDate" type="date" />
         </div>
+        <div>
+          <label for="recordFolder">資料夾分類</label>
+          <select id="recordFolder"></select>
+        </div>
       </div>
 
       <div class="toolbar">
         <button class="btn-primary" id="saveRecordBtn">💾 建立／儲存此項目</button>
         <button class="btn-gold" id="newRecordBtn">🗺️ 新增收繳項目</button>
         <button class="btn-blue" id="copyUnpaidBtn">📋 複製未繳名單</button>
+        <button class="btn-primary" id="emailUnpaidBtn">📧 未繳 Email 通知</button>
         <button class="btn-light" id="exportBtn">📤 匯出 CSV</button>
         <button class="btn-light" id="printBtn">🖨️ 列印</button>
         <button class="btn-light" id="toggleBatchPrintBtn">☑️ 批次列印</button>
@@ -367,9 +443,34 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
           <select id="historySelect"><option value="">— 選擇歷史收繳紀錄 —</option></select>
         </div>
         <button class="btn-dark" id="loadBtn">📖 載入紀錄</button>
+        <button class="btn-blue" id="moveFolderBtn">📂 移動資料夾</button>
         <button class="btn-light" id="deleteBtn">🗑️ 刪除目前紀錄</button>
         <button class="btn-gold" id="archiveBtn">📦 封存目前紀錄</button>
         <button class="btn-light" id="toggleArchiveBtn">🗄️ 查看封存</button>
+      </div>
+
+
+      <div class="history-tools">
+        <div>
+          <label for="historyFolderFilter">📁 資料夾</label>
+          <select id="historyFolderFilter"></select>
+        </div>
+        <div>
+          <label for="historySort">↕️ 排序方式</label>
+          <select id="historySort">
+            <option value="updatedDesc">最近更新在前</option>
+            <option value="createdDesc">最新建立在前</option>
+            <option value="createdAsc">最早建立在前</option>
+            <option value="dueAsc">截止日期近 → 遠</option>
+            <option value="dueDesc">截止日期遠 → 近</option>
+            <option value="nameAsc">項目名稱 A → Z</option>
+          </select>
+        </div>
+        <div>
+          <label for="moveFolderSelect">📂 目前紀錄移到</label>
+          <select id="moveFolderSelect"></select>
+        </div>
+        <button class="btn-gold" id="addFolderBtn">＋ 新增資料夾</button>
       </div>
 
 
@@ -508,6 +609,43 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
   <div class="footer-note">☁️ 904、906、802、804 的收繳資料使用 Firebase Firestore 雲端獨立儲存。</div>
 </div>
 
+
+<div class="mail-modal" id="mailModal">
+  <div class="mail-card">
+    <div class="mail-head">
+      <div>
+        <div class="mail-title">📧 未繳 Email 通知</div>
+        <div class="archive-note">系統只會整理收件人與內容，最後仍由你在 Gmail 畫面確認後按「寄送」。</div>
+      </div>
+      <button class="mail-close" id="closeMailModalBtn">✖ 關閉</button>
+    </div>
+
+    <div class="mail-summary" id="mailSummary"></div>
+    <div class="mail-warning" id="mailWarning" hidden></div>
+
+    <div class="toolbar">
+      <button class="btn-light" id="selectAllMailBtn">☑ 全選有 Email</button>
+      <button class="btn-light" id="clearMailBtn">□ 清除選取</button>
+    </div>
+
+    <div class="mail-list" id="mailRecipientList"></div>
+
+    <div class="mail-compose">
+      <label for="mailSubject">主旨</label>
+      <input id="mailSubject" type="text" />
+      <label for="mailBody" style="margin-top:10px">通知內容</label>
+      <textarea id="mailBody"></textarea>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn-primary" id="openGmailBtn">✉️ 開啟 Gmail</button>
+      <button class="btn-blue" id="copyBccBtn">📋 複製 BCC Email</button>
+      <button class="btn-light" id="copyMailBodyBtn">📋 複製通知內容</button>
+    </div>
+  </div>
+</div>
+
+
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -614,6 +752,8 @@ let currentUser=null;
 let currentClassId=localStorage.getItem("subjectTrackerCurrentClass")||"904";
 if(!CLASS_CONFIG[currentClassId]) currentClassId="904";
 let currentId=null, filter="all", historyRecords=[], archivedRecords=[], autosaveTimer=null, classSwitchSerial=0;
+let historyFolderFilter="all", historySortMode="updatedDesc";
+let folderList=["未分類","平時作業","第一次段考","第二次段考","第三次段考","考卷訂正","其他"];
 let studentState=createBlankState();
 
 const $=id=>document.getElementById(id);
@@ -633,7 +773,7 @@ function escapeHTML(str=""){return String(str).replace(/[&<>'"]/g,ch=>({"&":"&am
 function showToast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>t.classList.remove("show"),2200);}
 function setSync(state,text){const b=$("syncBadge");b.className="sync-badge"+(state?` ${state}`:"");b.textContent=text;}
 function isOverdue(status){const due=$("dueDate").value;return !!due&&todayISO()>due&&status==="unpaid";}
-function currentMeta(){return {classId:currentClassId,className:currentClass().name,itemName:$("itemName").value.trim(),receiveDate:$("receiveDate").value,dueDate:$("dueDate").value};}
+function currentMeta(){return {classId:currentClassId,className:currentClass().name,itemName:$("itemName").value.trim(),receiveDate:$("receiveDate").value,dueDate:$("dueDate").value,folder:$("recordFolder")?.value||"未分類"};}
 
 /* Firestore：四班分開存放 */
 function recordsCollection(){
@@ -644,6 +784,144 @@ function recordRef(id){
   if(!currentUser)throw new Error("尚未登入");
   return doc(db,"users",currentUser.uid,"subjectClassTrackers",currentClassId,"records",id);
 }
+
+function trackerClassMetaRef(){
+  if(!currentUser)throw new Error("尚未登入");
+  return doc(db,"users",currentUser.uid,"subjectClassTrackers",currentClassId);
+}
+
+function normalizeFolderName(v){
+  return String(v||"").trim() || "未分類";
+}
+
+function mergeFolderList(extra=[]){
+  const defaults=["未分類","平時作業","第一次段考","第二次段考","第三次段考","考卷訂正","其他"];
+  folderList=[...new Set([...defaults,...folderList,...extra].map(normalizeFolderName).filter(Boolean))];
+}
+
+async function loadFolderSettings(){
+  if(!currentUser)return;
+  try{
+    const snap=await getDoc(trackerClassMetaRef());
+    const data=snap.exists()?snap.data():{};
+    if(Array.isArray(data.folders))mergeFolderList(data.folders);
+  }catch(err){
+    console.warn("讀取資料夾設定失敗",err);
+  }
+  updateFolderSelectors();
+}
+
+async function saveFolderSettings(){
+  if(!currentUser)return;
+  await setDoc(trackerClassMetaRef(),{
+    classId:currentClassId,
+    folders:folderList,
+    folderUpdatedAt:serverTimestamp()
+  },{merge:true});
+}
+
+function updateFolderSelectors(){
+  const recordSel=$("recordFolder");
+  const moveSel=$("moveFolderSelect");
+  const filterSel=$("historyFolderFilter");
+  const currentFolder=recordSel?.value||"未分類";
+  const moveFolder=moveSel?.value||currentFolder;
+
+  const options=folderList.map(f=>`<option value="${escapeHTML(f)}">${escapeHTML(f)}</option>`).join("");
+
+  if(recordSel){
+    recordSel.innerHTML=options;
+    recordSel.value=folderList.includes(currentFolder)?currentFolder:"未分類";
+  }
+  if(moveSel){
+    moveSel.innerHTML=options;
+    moveSel.value=folderList.includes(moveFolder)?moveFolder:(recordSel?.value||"未分類");
+  }
+  if(filterSel){
+    const old=historyFolderFilter;
+    filterSel.innerHTML='<option value="all">全部資料夾</option>'+options;
+    filterSel.value=old==="all"||folderList.includes(old)?old:"all";
+  }
+}
+
+async function addFolder(){
+  const raw=prompt("請輸入新資料夾名稱：\\n例如：隨堂練習、第一次段考、補充教材");
+  if(raw===null)return;
+  const name=normalizeFolderName(raw);
+  if(name==="未分類" && !String(raw||"").trim())return;
+  if(folderList.includes(name)){
+    showToast("這個資料夾已存在");
+    $("recordFolder").value=name;
+    $("moveFolderSelect").value=name;
+    return;
+  }
+  folderList.push(name);
+  await saveFolderSettings();
+  updateFolderSelectors();
+  $("recordFolder").value=name;
+  $("moveFolderSelect").value=name;
+  showToast(`已新增資料夾：${name}`);
+}
+
+async function moveCurrentRecordFolder(){
+  if(!currentId){showToast("請先載入一筆歷史紀錄");return;}
+  const folder=$("moveFolderSelect").value||"未分類";
+  $("recordFolder").value=folder;
+  try{
+    await setDoc(recordRef(currentId),{folder,updatedAt:serverTimestamp()},{merge:true});
+    await refreshHistory(false);
+    showToast(`已移到「${folder}」`);
+  }catch(err){
+    console.error(err);
+    showToast(`移動失敗：${err.code||err.message||"未知錯誤"}`);
+  }
+}
+
+function tsMillis(v){
+  try{
+    if(v?.toMillis)return v.toMillis();
+    if(v?.seconds)return v.seconds*1000;
+    const t=Date.parse(v||"");
+    return Number.isFinite(t)?t:0;
+  }catch{return 0}
+}
+
+function visibleHistoryRecords(){
+  let list=historyRecords.filter(r=>{
+    const f=normalizeFolderName(r.folder);
+    return historyFolderFilter==="all"||f===historyFolderFilter;
+  });
+
+  const cmpName=(a,b)=>String(a.itemName||"").localeCompare(String(b.itemName||""),"zh-Hant");
+  list=[...list].sort((a,b)=>{
+    if(historySortMode==="createdDesc")return tsMillis(b.createdAt)-tsMillis(a.createdAt);
+    if(historySortMode==="createdAsc")return tsMillis(a.createdAt)-tsMillis(b.createdAt);
+    if(historySortMode==="dueAsc")return String(a.dueDate||"9999-99-99").localeCompare(String(b.dueDate||"9999-99-99"));
+    if(historySortMode==="dueDesc")return String(b.dueDate||"").localeCompare(String(a.dueDate||""));
+    if(historySortMode==="nameAsc")return cmpName(a,b);
+    return tsMillis(b.updatedAt)-tsMillis(a.updatedAt);
+  });
+  return list;
+}
+
+function renderHistorySelect(){
+  const sel=$("historySelect");
+  if(!sel)return;
+  const old=sel.value;
+  const list=visibleHistoryRecords();
+
+  sel.innerHTML='<option value="">— 選擇歷史收繳紀錄 —</option>';
+  list.forEach(r=>{
+    const op=document.createElement("option");
+    op.value=r.id;
+    op.textContent=`📁 ${normalizeFolderName(r.folder)}｜${r.itemName||"未命名"}｜截止 ${formatDate(r.dueDate)}`;
+    sel.appendChild(op);
+  });
+  if([...sel.options].some(o=>o.value===old))sel.value=old;
+
+  renderBatchPrintList();
+}
+
 
 
 /* ==========================================================
@@ -1190,8 +1468,14 @@ async function switchClass(newClassId){
     await loadRosterFromCloud(currentClassId,false);
   }
 
+  folderList=["未分類","平時作業","第一次段考","第二次段考","第三次段考","考卷訂正","其他"];
+  historyFolderFilter="all";historySortMode="updatedDesc";
+  if(currentUser)await loadFolderSettings();
+
   currentId=null;historyRecords=[];archivedRecords=[];batchPrintSelectedIds.clear();filter="all";studentState=createBlankState();
   $("itemName").value="";$("receiveDate").value=todayISO();$("dueDate").value="";
+  updateFolderSelectors();$("recordFolder").value="未分類";$("moveFolderSelect").value="未分類";
+  $("historyFolderFilter").value="all";$("historySort").value="updatedDesc";
   $("searchInput").value="";$("historySelect").innerHTML='<option value="">— 選擇歷史收繳紀錄 —</option>';$("archiveSelect").innerHTML='<option value="">— 尚無封存紀錄 —</option>';
   setActiveFilter();renderClassButtons();render();
 
@@ -1284,16 +1568,17 @@ function renderBatchPrintList(){
   const wrap=$("batchPrintList");
   if(!wrap)return;
 
+  const batchSource=visibleHistoryRecords();
   const validIds=new Set(historyRecords.map(r=>r.id));
   batchPrintSelectedIds=new Set([...batchPrintSelectedIds].filter(id=>validIds.has(id)));
 
   wrap.innerHTML="";
-  if(!historyRecords.length){
+  if(!batchSource.length){
     wrap.innerHTML='<div class="batch-print-empty">目前班級尚無可批次列印的歷史收繳紀錄。</div>';
     return;
   }
 
-  historyRecords.forEach(rec=>{
+  batchSource.forEach(rec=>{
     const row=document.createElement("label");
     row.className="batch-print-row";
     row.innerHTML=`
@@ -1313,7 +1598,7 @@ function renderBatchPrintList(){
 }
 
 function selectAllBatchPrint(){
-  batchPrintSelectedIds=new Set(historyRecords.map(r=>r.id));
+  batchPrintSelectedIds=new Set(visibleHistoryRecords().map(r=>r.id));
   renderBatchPrintList();
 }
 
@@ -1485,6 +1770,8 @@ async function saveRecord(){
 function newRecord(showMessage=true){
   currentId=null;studentState=createBlankState();
   $("itemName").value="";$("receiveDate").value=todayISO();$("dueDate").value="";$("historySelect").value="";
+  if($("recordFolder"))$("recordFolder").value="未分類";
+  if($("moveFolderSelect"))$("moveFolderSelect").value="未分類";
   filter="all";setActiveFilter();$("searchInput").value="";render();
   if(currentUser)setSync("ok","☁️ 已連線");
   if(showMessage)showToast(`已開啟 ${currentClass().name} 新的收繳項目`);
@@ -1502,16 +1789,11 @@ async function refreshHistory(showMessage=false){
     historyRecords=allRecords.filter(r=>r.archived!==true);
     archivedRecords=allRecords.filter(r=>r.archived===true);
 
-    const sel=$("historySelect"),old=sel.value;
-    sel.innerHTML='<option value="">— 選擇歷史收繳紀錄 —</option>';
-    historyRecords.forEach(r=>{
-      const op=document.createElement("option");op.value=r.id;
-      op.textContent=`${r.itemName||"未命名"}｜截止 ${formatDate(r.dueDate)}`;sel.appendChild(op);
-    });
-    if([...sel.options].some(o=>o.value===old))sel.value=old;
+    mergeFolderList(allRecords.map(r=>normalizeFolderName(r.folder)));
+    updateFolderSelectors();
+    renderHistorySelect();
 
     refreshArchiveSelect();
-    renderBatchPrintList();
     setSync("ok","☁️ 已同步");
     if(showMessage)showToast(`已重新讀取 ${currentClass().name} Firebase 資料`);
   }catch(err){
@@ -1536,6 +1818,8 @@ function loadRecord(){
   const id=$("historySelect").value;if(!id){showToast("請先選擇一筆歷史紀錄");return;}
   const rec=historyRecords.find(r=>r.id===id);if(!rec){showToast("找不到這筆紀錄，請重新同步");return;}
   currentId=rec.id;$("itemName").value=rec.itemName||"";$("receiveDate").value=rec.receiveDate||"";$("dueDate").value=rec.dueDate||"";
+  const recFolder=normalizeFolderName(rec.folder);mergeFolderList([recFolder]);updateFolderSelectors();
+  $("recordFolder").value=recFolder;$("moveFolderSelect").value=recFolder;
   studentState=createBlankState();
   students().forEach(s=>{
     const saved=rec.students?.[s.seat]||rec.students?.[String(s.seat)];
@@ -1588,6 +1872,8 @@ function loadArchivedRecord(){
   $("itemName").value=rec.itemName||"";
   $("receiveDate").value=rec.receiveDate||"";
   $("dueDate").value=rec.dueDate||"";
+  const recFolder=normalizeFolderName(rec.folder);mergeFolderList([recFolder]);updateFolderSelectors();
+  $("recordFolder").value=recFolder;$("moveFolderSelect").value=recFolder;
   studentState=createBlankState();
   students().forEach(s=>{
     const saved=rec.students?.[s.seat]||rec.students?.[String(s.seat)];
@@ -1651,6 +1937,129 @@ async function copyUnpaid(){
   catch(e){prompt("請複製以下內容：",text);}
 }
 
+
+
+/* ==========================================================
+   未繳 Email 通知（免費 Gmail 開啟方案）
+========================================================== */
+
+function unpaidStudentsWithEmailInfo(){
+  return unpaidList().map(s=>({
+    ...s,
+    email:normalizeEmail(s.email)
+  }));
+}
+
+function defaultMailSubject(){
+  const item=$("itemName").value.trim()||"本次作業";
+  return `${currentClass().name}班－${item}未繳提醒`;
+}
+
+function defaultMailBody(){
+  const item=$("itemName").value.trim()||"本次作業";
+  const due=$("dueDate").value ? formatDate($("dueDate").value) : "未設定";
+  return `同學您好：
+
+目前「${item}」仍顯示為未繳交。
+
+截止日期：${due}
+
+請確認是否已完成，並記得盡快繳交。
+如果已經繳交但系統尚未更新，可以再向老師確認。
+
+謝謝。
+任課老師`;
+}
+
+function openMailModal(){
+  if(!$("itemName").value.trim()){
+    showToast("請先建立或載入一筆收繳項目");
+    return;
+  }
+
+  const unpaid=unpaidStudentsWithEmailInfo();
+  if(!unpaid.length){
+    showToast("目前全班皆已完成繳交，不需要寄未繳通知");
+    return;
+  }
+
+  const hasEmail=unpaid.filter(s=>s.email);
+  const noEmail=unpaid.filter(s=>!s.email);
+
+  $("mailSummary").textContent=
+    `${currentClass().name}班｜未繳 ${unpaid.length} 人｜有 Email ${hasEmail.length} 人｜缺 Email ${noEmail.length} 人`;
+
+  if(noEmail.length){
+    $("mailWarning").hidden=false;
+    $("mailWarning").textContent=
+      `⚠️ 以下學生沒有 Email，本次無法透過 Gmail 通知：${noEmail.map(s=>`${s.seat}號 ${s.name}`).join("、")}`;
+  }else{
+    $("mailWarning").hidden=true;
+    $("mailWarning").textContent="";
+  }
+
+  $("mailRecipientList").innerHTML=unpaid.map(s=>`
+    <label class="mail-row ${s.email?"":"no-email"}">
+      <input type="checkbox" class="mail-recipient-check" data-email="${escapeHTML(s.email)}" ${s.email?"checked":"disabled"}>
+      <span><b>${s.seat}號</b></span>
+      <span>${escapeHTML(s.name)}</span>
+      <span class="mail-email">${s.email?escapeHTML(s.email):"⚠️ 尚未設定 Email"}</span>
+    </label>
+  `).join("");
+
+  $("mailSubject").value=defaultMailSubject();
+  $("mailBody").value=defaultMailBody();
+  $("mailModal").classList.add("show");
+}
+
+function closeMailModal(){
+  $("mailModal").classList.remove("show");
+}
+
+function selectedMailEmails(){
+  return [...document.querySelectorAll(".mail-recipient-check:checked")]
+    .map(x=>normalizeEmail(x.dataset.email))
+    .filter(Boolean);
+}
+
+function selectAllMailRecipients(){
+  document.querySelectorAll(".mail-recipient-check:not(:disabled)").forEach(x=>x.checked=true);
+}
+
+function clearMailRecipients(){
+  document.querySelectorAll(".mail-recipient-check").forEach(x=>x.checked=false);
+}
+
+async function copyTextSafe(text,successMsg){
+  try{
+    await navigator.clipboard.writeText(text);
+    showToast(successMsg);
+  }catch{
+    prompt("請手動複製以下內容：",text);
+  }
+}
+
+function openGmailCompose(){
+  const emails=selectedMailEmails();
+  if(!emails.length){
+    showToast("請至少勾選一位有 Email 的未繳學生");
+    return;
+  }
+
+  const subject=$("mailSubject").value.trim();
+  const body=$("mailBody").value;
+  const url=
+    "https://mail.google.com/mail/?view=cm&fs=1"+
+    "&bcc="+encodeURIComponent(emails.join(","))+
+    "&su="+encodeURIComponent(subject)+
+    "&body="+encodeURIComponent(body);
+
+  const w=window.open(url,"_blank");
+  if(!w){
+    alert("瀏覽器阻擋 Gmail 視窗，請允許彈出式視窗後再試。");
+  }
+}
+
 function csvEscape(v){return '"'+String(v??"").replaceAll('"','""')+'"';}
 function exportCSV(){
   const item=$("itemName").value.trim()||"班級收繳紀錄";
@@ -1694,6 +2103,23 @@ $("refreshCloudBtn").addEventListener("click",()=>refreshCurrentClassData(true))
 $("saveRecordBtn").addEventListener("click",saveRecord);
 $("newRecordBtn").addEventListener("click",()=>newRecord(true));
 $("loadBtn").addEventListener("click",loadRecord);
+$("moveFolderBtn").addEventListener("click",moveCurrentRecordFolder);
+$("addFolderBtn").addEventListener("click",addFolder);
+$("historyFolderFilter").addEventListener("change",e=>{
+  historyFolderFilter=e.target.value;
+  renderHistorySelect();
+});
+$("historySort").addEventListener("change",e=>{
+  historySortMode=e.target.value;
+  renderHistorySelect();
+});
+$("recordFolder").addEventListener("change",()=>{
+  $("moveFolderSelect").value=$("recordFolder").value;
+  scheduleAutosave();
+});
+$("moveFolderSelect").addEventListener("change",()=>{
+  if(currentId)$("recordFolder").value=$("moveFolderSelect").value;
+});
 $("deleteBtn").addEventListener("click",deleteRecord);
 $("archiveBtn").addEventListener("click",archiveCurrentRecord);
 $("toggleArchiveBtn").addEventListener("click",toggleArchivePanel);
@@ -1701,8 +2127,24 @@ $("loadArchiveBtn").addEventListener("click",loadArchivedRecord);
 $("unarchiveBtn").addEventListener("click",unarchiveCurrentRecord);
 $("archiveSelect").addEventListener("change",()=>{if($("archiveSelect").value)loadArchivedRecord();});
 $("copyUnpaidBtn").addEventListener("click",copyUnpaid);
+$("emailUnpaidBtn").addEventListener("click",openMailModal);
 $("exportBtn").addEventListener("click",exportCSV);
 $("printBtn").addEventListener("click",()=>{updatePrintSummary();window.print();});
+
+
+$("closeMailModalBtn").addEventListener("click",closeMailModal);
+$("mailModal").addEventListener("click",e=>{if(e.target===$("mailModal"))closeMailModal();});
+$("selectAllMailBtn").addEventListener("click",selectAllMailRecipients);
+$("clearMailBtn").addEventListener("click",clearMailRecipients);
+$("openGmailBtn").addEventListener("click",openGmailCompose);
+$("copyBccBtn").addEventListener("click",()=>{
+  const emails=selectedMailEmails();
+  if(!emails.length)return showToast("目前沒有勾選收件人");
+  copyTextSafe(emails.join(","),"BCC Email 已複製");
+});
+$("copyMailBodyBtn").addEventListener("click",()=>{
+  copyTextSafe($("mailBody").value,"通知內容已複製");
+});
 
 $("toggleBatchPrintBtn").addEventListener("click",toggleBatchPrintPanel);
 $("selectAllBatchPrintBtn").addEventListener("click",selectAllBatchPrint);
@@ -1752,6 +2194,8 @@ onAuthStateChanged(auth,async user=>{
     $("loginScreen").classList.add("hidden");$("accountEmail").textContent=`👤 ${user.email||"已登入"}`;
     setSync("saving","☁️ 連線中…");$("receiveDate").value=$("receiveDate").value||todayISO();
     await loadAllRostersFromCloud();
+    await loadFolderSettings();
+    updateFolderSelectors();
     studentState=createBlankState();renderClassButtons();render();await refreshHistory(false);
     updateRosterInfo();
   }else{
@@ -1762,6 +2206,7 @@ onAuthStateChanged(auth,async user=>{
 });
 
 $("receiveDate").value=todayISO();
+updateFolderSelectors();
 renderClassButtons();
 render();
 renderBatchPrintList();
