@@ -473,6 +473,7 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
         <div class="toolbar" style="margin:0">
           <button class="btn-gold" id="addFolderBtn">＋ 新增資料夾</button>
           <button class="btn-light" id="renameFolderBtn">✏️ 重新命名選定資料夾</button>
+          <button class="btn-primary" id="deleteFolderBtn">🗑️ 刪除選定資料夾</button>
         </div>
       </div>
 
@@ -958,6 +959,111 @@ async function renameSelectedFolder(){
     console.error(err);
     setSync("error","⚠️ 重新命名失敗");
     alert(`資料夾重新命名失敗：${err.code||err.message||"未知錯誤"}`);
+    await refreshHistory(false);
+  }
+}
+
+
+async function deleteSelectedFolder(){
+  if(!currentUser){showToast("請先登入");return;}
+
+  const folder=normalizeFolderName($("moveFolderSelect")?.value||"未分類");
+
+  if(folder==="未分類"){
+    alert(
+      "「未分類」是系統保留資料夾，不能刪除。\n\n"+
+      "當其他資料夾被刪除時，裡面的收繳紀錄會自動移到「未分類」。"
+    );
+    return;
+  }
+
+  if(!folderList.includes(folder)){
+    alert("找不到這個資料夾，請重新同步後再試。");
+    return;
+  }
+
+  const normalRecords=historyRecords.filter(
+    r=>normalizeFolderName(r.folder)===folder
+  );
+  const archived=archivedRecords.filter(
+    r=>normalizeFolderName(r.folder)===folder
+  );
+  const affected=[...normalRecords,...archived];
+
+  const message=
+    `確定要刪除資料夾「${folder}」嗎？\n\n`+
+    `📄 一般收繳紀錄：${normalRecords.length} 筆\n`+
+    `📦 已封存紀錄：${archived.length} 筆\n\n`+
+    `⚠️ 收繳資料本身不會被刪除。\n`+
+    `這 ${affected.length} 筆資料會全部移到「未分類」。\n\n`+
+    `確定繼續？`;
+
+  if(!confirm(message))return;
+
+  try{
+    setSync("saving","☁️ 刪除資料夾中…");
+
+    // 先把所有使用此資料夾的紀錄搬到「未分類」
+    for(const rec of affected){
+      await setDoc(recordRef(rec.id),{
+        folder:"未分類",
+        updatedAt:serverTimestamp()
+      },{merge:true});
+    }
+
+    // 再從資料夾設定中移除
+    folderList=folderList.filter(f=>f!==folder);
+
+    if(!folderList.includes("未分類")){
+      folderList.unshift("未分類");
+    }
+
+    await saveFolderSettings();
+
+    // 更新本機資料
+    historyRecords=historyRecords.map(r=>
+      normalizeFolderName(r.folder)===folder
+        ? {...r,folder:"未分類"}
+        : r
+    );
+
+    archivedRecords=archivedRecords.map(r=>
+      normalizeFolderName(r.folder)===folder
+        ? {...r,folder:"未分類"}
+        : r
+    );
+
+    // 若目前篩選正好是被刪除的資料夾，切回全部
+    if(historyFolderFilter===folder){
+      historyFolderFilter="all";
+    }
+
+    // 若目前載入的紀錄也在該資料夾，畫面改成未分類
+    const currentWasAffected=
+      !!currentId && affected.some(r=>r.id===currentId);
+
+    updateFolderSelectors();
+
+    $("moveFolderSelect").value="未分類";
+    if(currentWasAffected || $("recordFolder").value===folder){
+      $("recordFolder").value="未分類";
+    }
+
+    $("historyFolderFilter").value=
+      historyFolderFilter==="all" ? "all" : historyFolderFilter;
+
+    renderHistorySelect();
+    refreshArchiveSelect();
+
+    setSync("ok","☁️ 已同步");
+    showToast(`資料夾「${folder}」已刪除，資料已移到「未分類」`);
+  }catch(err){
+    console.error(err);
+    setSync("error","⚠️ 刪除失敗");
+    alert(
+      `刪除資料夾失敗：${err.code||err.message||"未知錯誤"}\n\n`+
+      "系統會重新讀取 Firebase，避免畫面與雲端狀態不一致。"
+    );
     await refreshHistory(false);
   }
 }
@@ -2191,6 +2297,7 @@ $("loadBtn").addEventListener("click",loadRecord);
 $("moveFolderBtn").addEventListener("click",moveCurrentRecordFolder);
 $("addFolderBtn").addEventListener("click",addFolder);
 $("renameFolderBtn").addEventListener("click",renameSelectedFolder);
+$("deleteFolderBtn").addEventListener("click",deleteSelectedFolder);
 $("historyFolderFilter").addEventListener("change",e=>{
   historyFolderFilter=e.target.value;
   renderHistorySelect();
