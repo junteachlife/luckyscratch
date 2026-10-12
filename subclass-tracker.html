@@ -735,7 +735,7 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
     <div class="export-head">
       <div>
         <div class="export-title">☑️ 勾選要匯出的收繳項目</div>
-        <div class="archive-note">只會匯出你勾選的項目；每格只顯示繳交狀態。</div>
+        <div class="archive-note">依資料夾與項目名稱排序；匯出的 Excel 每格只顯示繳交狀態，「已繳交」會以粗體紅字標示。</div>
       </div>
       <button class="btn-dark" id="closeExportModalBtn">✖ 關閉</button>
     </div>
@@ -750,7 +750,7 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
     <div class="export-list" id="exportRecordList"></div>
 
     <div class="toolbar">
-      <button class="btn-primary" id="exportSelectedBtn">📤 匯出已勾選項目</button>
+      <button class="btn-primary" id="exportSelectedBtn">📤 匯出已勾選項目 Excel</button>
     </div>
   </div>
 </div>
@@ -759,6 +759,7 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
@@ -2656,6 +2657,32 @@ function allExportableRecords(){
     });
 }
 
+
+function exportNameOrderRecords(){
+  return [...historyRecords,...archivedRecords]
+    .filter(r=>r && r.id && r.id!=="__folder_settings__" && r._systemType!=="folderSettings")
+    .sort((a,b)=>{
+      const folderA=normalizeFolderName(a.folder);
+      const folderB=normalizeFolderName(b.folder);
+
+      // 先依資料夾名稱，再依你設定的項目名稱自然排序。
+      const folderCmp=folderA.localeCompare(folderB,"zh-Hant",{
+        numeric:true,
+        sensitivity:"base"
+      });
+      if(folderCmp!==0)return folderCmp;
+
+      const nameCmp=String(a.itemName||"").localeCompare(
+        String(b.itemName||""),
+        "zh-Hant",
+        {numeric:true,sensitivity:"base"}
+      );
+      if(nameCmp!==0)return nameCmp;
+
+      return recordTimeValue(a).localeCompare(recordTimeValue(b));
+    });
+}
+
 function buildStatusExportRows(records){
   const usedTitles=new Set();
   const recordColumns=records.map(rec=>({
@@ -2709,14 +2736,14 @@ function openExportModal(){
     return;
   }
 
-  const records=allExportableRecords();
+  const records=exportNameOrderRecords();
   if(!records.length){
     alert(`${currentClass().name}班目前沒有可匯出的收繳紀錄。`);
     return;
   }
 
   $("exportSummary").textContent=
-    `${currentClass().name}班｜共 ${records.length} 筆收繳紀錄｜請勾選要匯出的項目`;
+    `${currentClass().name}班｜共 ${records.length} 筆收繳紀錄｜已依資料夾與項目名稱排序`;
 
   $("exportRecordList").innerHTML=records.map(rec=>{
     const folder=normalizeFolderName(rec.folder);
@@ -2747,14 +2774,123 @@ function clearAllExportRecords(){
 }
 
 function selectedExportRecords(){
-  const ids=new Set(
-    [...document.querySelectorAll(".export-record-check:checked")]
-      .map(x=>x.dataset.id)
+  const recordMap=new Map(
+    [...historyRecords,...archivedRecords]
+      .filter(r=>r && r.id)
+      .map(r=>[String(r.id),r])
   );
-  return allExportableRecords().filter(r=>ids.has(r.id));
+
+  // 依照勾選視窗目前由上到下的順序匯出，
+  // 因此畫面看到的順序就是 Excel 欄位順序。
+  return [...document.querySelectorAll(".export-record-check:checked")]
+    .map(x=>recordMap.get(String(x.dataset.id)))
+    .filter(Boolean);
 }
 
-function exportSelectedRecords(){
+
+async function downloadSelectedStatusExcel(records,fileName){
+  if(!records.length){
+    alert("沒有可匯出的收繳項目。");
+    return;
+  }
+
+  if(!window.ExcelJS){
+    alert("Excel 元件載入失敗，請重新整理頁面後再試。");
+    return;
+  }
+
+  const workbook=new ExcelJS.Workbook();
+  workbook.creator="任課班收繳登記";
+  workbook.created=new Date();
+
+  const ws=workbook.addWorksheet(`${currentClass().name}收繳狀態`,{
+    views:[{state:"frozen",xSplit:2,ySplit:1}]
+  });
+
+  const usedTitles=new Set();
+  const columns=records.map(rec=>({
+    rec,
+    title:exportColumnTitle(rec,usedTitles)
+  }));
+
+  ws.columns=[
+    {header:"座號",key:"seat",width:8},
+    {header:"姓名",key:"name",width:14},
+    ...columns.map((x,i)=>({
+      header:x.title,
+      key:`status_${i}`,
+      width:Math.max(14,Math.min(28,x.title.length+4))
+    }))
+  ];
+
+  // 表頭
+  const header=ws.getRow(1);
+  header.font={bold:true};
+  header.alignment={horizontal:"center",vertical:"middle",wrapText:true};
+  header.height=30;
+
+  students()
+    .slice()
+    .sort((a,b)=>Number(a.seat)-Number(b.seat))
+    .forEach(s=>{
+      const rowData={
+        seat:s.seat,
+        name:s.name
+      };
+
+      columns.forEach(({rec},i)=>{
+        const saved=rec.students?.[s.seat] ?? rec.students?.[String(s.seat)];
+        const status=saved?.status || "unpaid";
+        rowData[`status_${i}`]=STATUS_LABEL[status] || status || "未繳交";
+      });
+
+      const row=ws.addRow(rowData);
+      row.alignment={horizontal:"center",vertical:"middle",wrapText:true};
+
+      // 「已繳交」：粗體紅字；其他狀態維持一般字樣。
+      columns.forEach((_,i)=>{
+        const cell=row.getCell(i+3);
+        if(String(cell.value||"")==="已繳交"){
+          cell.font={
+            bold:true,
+            color:{argb:"FFFF0000"}
+          };
+        }
+      });
+    });
+
+  // 座號、姓名欄稍微強化可讀性
+  ws.getColumn(1).alignment={horizontal:"center"};
+  ws.getColumn(2).alignment={horizontal:"center"};
+
+  // 自動加格線
+  ws.eachRow({includeEmpty:true},row=>{
+    row.eachCell({includeEmpty:true},cell=>{
+      cell.border={
+        top:{style:"thin"},
+        left:{style:"thin"},
+        bottom:{style:"thin"},
+        right:{style:"thin"}
+      };
+    });
+  });
+
+  const buffer=await workbook.xlsx.writeBuffer();
+  const blob=new Blob(
+    [buffer],
+    {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}
+  );
+
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+async function exportSelectedRecords(){
   const records=selectedExportRecords();
 
   if(!records.length){
@@ -2762,12 +2898,25 @@ function exportSelectedRecords(){
     return;
   }
 
-  downloadStatusCSV(
-    records,
-    `${currentClass().name}_勾選收繳狀態.csv`
-  );
+  const btn=$("exportSelectedBtn");
+  const oldText=btn.textContent;
+  btn.disabled=true;
+  btn.textContent="⏳ 產生 Excel 中…";
 
-  showToast(`已匯出 ${currentClass().name}班：${records.length} 個勾選項目`);
+  try{
+    await downloadSelectedStatusExcel(
+      records,
+      `${currentClass().name}_勾選收繳狀態.xlsx`
+    );
+
+    showToast(`已匯出 ${currentClass().name}班：${records.length} 個勾選項目`);
+  }catch(err){
+    console.error(err);
+    alert(`Excel 匯出失敗：${err.message||err}`);
+  }finally{
+    btn.disabled=false;
+    btn.textContent=oldText;
+  }
 }
 
 async function exportCSV(){
