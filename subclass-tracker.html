@@ -272,6 +272,39 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
   .history-tools,.mail-modal{display:none!important}
 }
 
+/* ===== 勾選項目匯出 ===== */
+.export-modal{
+  position:fixed;inset:0;z-index:320;display:none;align-items:center;justify-content:center;
+  padding:16px;background:rgba(25,28,31,.58);backdrop-filter:blur(3px)
+}
+.export-modal.show{display:flex}
+.export-card{
+  width:min(820px,96vw);max-height:92vh;overflow:auto;
+  background:linear-gradient(180deg,#fff9e8,#f2dfb3);
+  border:4px solid #5d4328;border-radius:20px;padding:18px;box-shadow:0 18px 50px rgba(0,0,0,.32)
+}
+.export-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.export-title{font-size:21px;font-weight:900;color:#6e2b22}
+.export-summary{
+  margin-top:10px;padding:10px 12px;border-radius:12px;background:#fffaf0;
+  border:2px solid #d2b477;font-weight:900;line-height:1.6
+}
+.export-list{display:grid;gap:7px;margin-top:10px;max-height:420px;overflow:auto}
+.export-row{
+  display:grid;grid-template-columns:28px minmax(180px,1fr) minmax(120px,.8fr);
+  gap:8px;align-items:center;padding:9px 10px;border:1px solid #d8c092;border-radius:10px;background:#fffdf4
+}
+.export-row input[type="checkbox"]{width:18px;height:18px;accent-color:#1d5875}
+.export-item-name{font-weight:900}
+.export-item-meta{font-size:12px;color:#6e5d45}
+@media(max-width:620px){
+  .export-row{grid-template-columns:28px 1fr}
+  .export-item-meta{grid-column:2/-1}
+}
+@media print{
+  .export-modal{display:none!important}
+}
+
 @media(max-width:760px){
   .app{width:96vw;margin-top:10px}.hero{padding:18px 12px}.emblem{width:58px;height:58px;font-size:30px}h1{font-size:30px}
   .class-switch{grid-template-columns:1fr}.form-grid,.history-row,.archive-row{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}
@@ -458,7 +491,8 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
         <button class="btn-gold" id="newRecordBtn">🗺️ 新增收繳項目</button>
         <button class="btn-blue" id="copyUnpaidBtn">📋 複製未繳名單</button>
         <button class="btn-primary" id="emailUnpaidBtn">📧 未繳 Email 通知</button>
-        <button class="btn-light" id="exportBtn">📤 匯出 CSV</button>
+        <button class="btn-light" id="exportBtn">📊 全部匯出</button>
+        <button class="btn-blue" id="selectExportBtn">☑️ 勾選項目匯出</button>
         <button class="btn-light" id="printBtn">🖨️ 列印</button>
         <button class="btn-light" id="toggleBatchPrintBtn">☑️ 批次列印</button>
       </div>
@@ -690,6 +724,33 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
       <button class="btn-primary" id="openGmailBtn">✉️ 開啟 Gmail</button>
       <button class="btn-blue" id="copyBccBtn">📋 複製 BCC Email</button>
       <button class="btn-light" id="copyMailBodyBtn">📋 複製通知內容</button>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="export-modal" id="exportModal">
+  <div class="export-card">
+    <div class="export-head">
+      <div>
+        <div class="export-title">☑️ 勾選要匯出的收繳項目</div>
+        <div class="archive-note">只會匯出你勾選的項目；每格只顯示繳交狀態。</div>
+      </div>
+      <button class="btn-dark" id="closeExportModalBtn">✖ 關閉</button>
+    </div>
+
+    <div class="export-summary" id="exportSummary"></div>
+
+    <div class="toolbar">
+      <button class="btn-light" id="selectAllExportBtn">☑ 全選</button>
+      <button class="btn-light" id="clearAllExportBtn">□ 全不選</button>
+    </div>
+
+    <div class="export-list" id="exportRecordList"></div>
+
+    <div class="toolbar">
+      <button class="btn-primary" id="exportSelectedBtn">📤 匯出已勾選項目</button>
     </div>
   </div>
 </div>
@@ -2555,21 +2616,193 @@ function openGmailCompose(){
 }
 
 function csvEscape(v){return '"'+String(v??"").replaceAll('"','""')+'"';}
-function exportCSV(){
-  const item=$("itemName").value.trim()||"班級收繳紀錄";
-  const rows=[
-    ["班級",currentClass().name],["收繳項目",item],["開始收繳日期",$("receiveDate").value],["截止日期",$("dueDate").value],[],
-    ["座號","姓名","狀態","是否逾期","備註"]
-  ];
-  students().forEach(s=>{
-    const st=studentState[s.seat]||{status:"unpaid",note:""};
-    rows.push([s.seat,s.name,STATUS_LABEL[st.status],isOverdue(st.status)?"是":"否",st.note]);
-  });
+function recordTimeValue(rec){
+  if(rec?.receiveDate)return String(rec.receiveDate);
+  if(rec?.dueDate)return String(rec.dueDate);
+  try{
+    if(rec?.createdAt?.toDate)return rec.createdAt.toDate().toISOString();
+    if(rec?.createdAt?.seconds)return new Date(rec.createdAt.seconds*1000).toISOString();
+  }catch{}
+  return "";
+}
+
+function exportColumnTitle(rec,usedTitles){
+  const folder=normalizeFolderName(rec.folder);
+  const item=String(rec.itemName||"未命名項目").trim()||"未命名項目";
+
+  // 欄名只保留必要辨識資訊，不放日期、備註、逾期等資料。
+  let base=folder&&folder!=="未分類" ? `${folder}｜${item}` : item;
+  let title=base;
+  let n=2;
+
+  // 若同一班有同名項目，自動加序號，避免 Excel 欄位看不出是哪一筆。
+  while(usedTitles.has(title)){
+    title=`${base}（${n}）`;
+    n++;
+  }
+  usedTitles.add(title);
+  return title;
+}
+
+
+function allExportableRecords(){
+  return [...historyRecords,...archivedRecords]
+    .filter(r=>r && r.id && r.id!=="__folder_settings__" && r._systemType!=="folderSettings")
+    .sort((a,b)=>{
+      const ta=recordTimeValue(a);
+      const tb=recordTimeValue(b);
+      if(ta!==tb)return ta.localeCompare(tb);
+      return String(a.itemName||"").localeCompare(String(b.itemName||""),"zh-Hant");
+    });
+}
+
+function buildStatusExportRows(records){
+  const usedTitles=new Set();
+  const recordColumns=records.map(rec=>({
+    rec,
+    title:exportColumnTitle(rec,usedTitles)
+  }));
+
+  const rows=[];
+  rows.push(["班級",currentClass().name]);
+  rows.push(["匯出內容","全班收繳狀態"]);
+  rows.push([]);
+  rows.push(["座號","姓名",...recordColumns.map(x=>x.title)]);
+
+  students()
+    .slice()
+    .sort((a,b)=>Number(a.seat)-Number(b.seat))
+    .forEach(s=>{
+      const statusCells=recordColumns.map(({rec})=>{
+        const saved=rec.students?.[s.seat] ?? rec.students?.[String(s.seat)];
+        const status=saved?.status || "unpaid";
+        return STATUS_LABEL[status] || status || "未繳交";
+      });
+
+      rows.push([s.seat,s.name,...statusCells]);
+    });
+
+  return rows;
+}
+
+function downloadStatusCSV(records,fileName){
+  if(!records.length){
+    alert("沒有可匯出的收繳項目。");
+    return;
+  }
+
+  const rows=buildStatusExportRows(records);
   const csv="\uFEFF"+rows.map(r=>r.map(csvEscape).join(",")).join("\r\n");
-  const blob=new Blob([csv],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
-  a.download=`${currentClass().name}_${item.replace(/[\\/:*?"<>|]/g,"_")}_收繳紀錄.csv`;
-  a.click();URL.revokeObjectURL(a.href);
+  a.download=fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+function openExportModal(){
+  if(!currentUser){
+    showToast("請先登入");
+    return;
+  }
+
+  const records=allExportableRecords();
+  if(!records.length){
+    alert(`${currentClass().name}班目前沒有可匯出的收繳紀錄。`);
+    return;
+  }
+
+  $("exportSummary").textContent=
+    `${currentClass().name}班｜共 ${records.length} 筆收繳紀錄｜請勾選要匯出的項目`;
+
+  $("exportRecordList").innerHTML=records.map(rec=>{
+    const folder=normalizeFolderName(rec.folder);
+    const icon=rec.archived===true?"📦":"📄";
+    const folderText=folder&&folder!=="未分類"?`📁 ${folder}`:"未分類";
+    return `
+      <label class="export-row">
+        <input type="checkbox" class="export-record-check" data-id="${escapeHTML(rec.id)}" checked>
+        <span class="export-item-name">${icon} ${escapeHTML(rec.itemName||"未命名項目")}</span>
+        <span class="export-item-meta">${escapeHTML(folderText)}｜截止 ${escapeHTML(formatDate(rec.dueDate))}</span>
+      </label>
+    `;
+  }).join("");
+
+  $("exportModal").classList.add("show");
+}
+
+function closeExportModal(){
+  $("exportModal").classList.remove("show");
+}
+
+function selectAllExportRecords(){
+  document.querySelectorAll(".export-record-check").forEach(x=>x.checked=true);
+}
+
+function clearAllExportRecords(){
+  document.querySelectorAll(".export-record-check").forEach(x=>x.checked=false);
+}
+
+function selectedExportRecords(){
+  const ids=new Set(
+    [...document.querySelectorAll(".export-record-check:checked")]
+      .map(x=>x.dataset.id)
+  );
+  return allExportableRecords().filter(r=>ids.has(r.id));
+}
+
+function exportSelectedRecords(){
+  const records=selectedExportRecords();
+
+  if(!records.length){
+    showToast("請至少勾選一個收繳項目");
+    return;
+  }
+
+  downloadStatusCSV(
+    records,
+    `${currentClass().name}_勾選收繳狀態.csv`
+  );
+
+  showToast(`已匯出 ${currentClass().name}班：${records.length} 個勾選項目`);
+}
+
+async function exportCSV(){
+  if(!currentUser){
+    showToast("請先登入");
+    return;
+  }
+
+  const btn=$("exportBtn");
+  const oldText=btn.textContent;
+  btn.disabled=true;
+  btn.textContent="⏳ 整理資料中…";
+
+  try{
+    await refreshHistory(false);
+    const records=allExportableRecords();
+
+    if(!records.length){
+      alert(`${currentClass().name}班目前沒有可匯出的收繳紀錄。`);
+      return;
+    }
+
+    downloadStatusCSV(
+      records,
+      `${currentClass().name}_全班收繳狀態.csv`
+    );
+
+    showToast(`已匯出 ${currentClass().name}班全部 ${records.length} 筆收繳紀錄`);
+  }catch(err){
+    console.error(err);
+    alert(`匯出失敗：${err.code||err.message||"未知錯誤"}`);
+  }finally{
+    btn.disabled=false;
+    btn.textContent=oldText;
+  }
 }
 
 function friendlyAuthError(code){
@@ -2630,6 +2863,22 @@ $("archiveSelect").addEventListener("change",()=>{if($("archiveSelect").value)lo
 $("copyUnpaidBtn").addEventListener("click",copyUnpaid);
 $("emailUnpaidBtn").addEventListener("click",openMailModal);
 $("exportBtn").addEventListener("click",exportCSV);
+$("selectExportBtn").addEventListener("click",async()=>{
+  try{
+    await refreshHistory(false);
+    openExportModal();
+  }catch(err){
+    console.error(err);
+    alert(`讀取匯出資料失敗：${err.code||err.message||"未知錯誤"}`);
+  }
+});
+$("closeExportModalBtn").addEventListener("click",closeExportModal);
+$("exportModal").addEventListener("click",e=>{
+  if(e.target===$("exportModal"))closeExportModal();
+});
+$("selectAllExportBtn").addEventListener("click",selectAllExportRecords);
+$("clearAllExportBtn").addEventListener("click",clearAllExportRecords);
+$("exportSelectedBtn").addEventListener("click",exportSelectedRecords);
 $("printBtn").addEventListener("click",()=>{updatePrintSummary();window.print();});
 
 
