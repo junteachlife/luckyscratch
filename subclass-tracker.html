@@ -735,7 +735,7 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
     <div class="export-head">
       <div>
         <div class="export-title">☑️ 勾選要匯出的收繳項目</div>
-        <div class="archive-note">依資料夾與項目名稱排序；匯出的 Excel 每格只顯示繳交狀態，「已繳交」會以粗體紅字標示。</div>
+        <div class="archive-note">依資料夾與項目名稱排序；匯出的 Excel 每格只顯示繳交狀態。「已繳交」正常顏色、「未繳交」粗體紅字、「補交」藍字。</div>
       </div>
       <button class="btn-dark" id="closeExportModalBtn">✖ 關閉</button>
     </div>
@@ -2847,13 +2847,26 @@ async function downloadSelectedStatusExcel(records,fileName){
       const row=ws.addRow(rowData);
       row.alignment={horizontal:"center",vertical:"middle",wrapText:true};
 
-      // 「已繳交」：粗體紅字；其他狀態維持一般字樣。
+      // 狀態樣式：
+      // 已繳交：正常文字
+      // 未繳交：粗體紅字
+      // 補交：藍字
       columns.forEach((_,i)=>{
         const cell=row.getCell(i+3);
-        if(String(cell.value||"")==="已繳交"){
+        const value=String(cell.value||"");
+
+        if(value==="未繳交"){
           cell.font={
             bold:true,
             color:{argb:"FFFF0000"}
+          };
+        }else if(value==="補交"){
+          cell.font={
+            color:{argb:"FF0000FF"}
+          };
+        }else{
+          cell.font={
+            bold:false
           };
         }
       });
