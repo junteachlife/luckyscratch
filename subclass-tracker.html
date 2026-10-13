@@ -226,6 +226,105 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
   .folder-archive-row{grid-template-columns:1fr}
 }
 
+
+/* ===== 簡化操作介面 ===== */
+.primary-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+  margin-top:12px;
+}
+.primary-actions button{
+  min-width:150px;
+}
+.history-compact{
+  display:grid;
+  grid-template-columns:minmax(260px,1fr) minmax(160px,.55fr) minmax(170px,.55fr) auto;
+  gap:8px;
+  align-items:end;
+  margin-top:16px;
+  padding:12px;
+  border:2px solid rgba(71,51,29,.24);
+  border-radius:14px;
+  background:rgba(255,250,232,.72);
+}
+.context-actions{
+  display:none;
+  margin-top:10px;
+  padding:11px 12px;
+  border-radius:14px;
+  background:#fff7df;
+  border:2px dashed #b89257;
+}
+.context-actions.show{display:block}
+.context-actions-head{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+  margin-bottom:8px;
+  font-weight:900;
+  color:#594226;
+}
+.context-actions .toolbar{margin:0}
+.compact-tools{
+  margin-top:12px;
+  display:grid;
+  gap:8px;
+}
+.compact-details{
+  border:2px solid rgba(71,51,29,.25);
+  border-radius:14px;
+  background:rgba(255,251,238,.82);
+  overflow:hidden;
+}
+.compact-details > summary{
+  cursor:pointer;
+  list-style:none;
+  padding:12px 14px;
+  font-weight:900;
+  color:#4d3b27;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+  user-select:none;
+}
+.compact-details > summary::-webkit-details-marker{display:none}
+.compact-details > summary::after{
+  content:"▼";
+  font-size:12px;
+  transition:.18s transform;
+}
+.compact-details[open] > summary::after{transform:rotate(180deg)}
+.compact-details-body{
+  padding:0 12px 12px;
+  border-top:1px dashed rgba(71,51,29,.2);
+}
+.compact-details .history-tools{
+  margin-top:10px;
+}
+.compact-details .toolbar{
+  margin-top:10px;
+}
+.mini-help{
+  font-size:12px;
+  font-weight:800;
+  color:#725f46;
+  line-height:1.5;
+}
+@media(max-width:900px){
+  .history-compact{grid-template-columns:1fr 1fr}
+}
+@media(max-width:560px){
+  .history-compact{grid-template-columns:1fr}
+  .primary-actions button{width:100%}
+}
+@media print{
+  .compact-tools,.context-actions{display:none!important}
+}
+
 /* ===== Email 未繳通知 ===== */
 .mail-modal{
   position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;
@@ -486,37 +585,24 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
         </div>
       </div>
 
-      <div class="toolbar">
-        <button class="btn-primary" id="saveRecordBtn">💾 建立／儲存此項目</button>
-        <button class="btn-gold" id="newRecordBtn">🗺️ 新增收繳項目</button>
-        <button class="btn-blue" id="copyUnpaidBtn">📋 複製未繳名單</button>
-        <button class="btn-primary" id="emailUnpaidBtn">📧 未繳 Email 通知</button>
-        <button class="btn-light" id="exportBtn">📊 全部匯出</button>
-        <button class="btn-blue" id="selectExportBtn">☑️ 勾選項目匯出</button>
-        <button class="btn-light" id="printBtn">🖨️ 列印</button>
-        <button class="btn-light" id="toggleBatchPrintBtn">☑️ 批次列印</button>
+      <div class="primary-actions">
+        <button class="btn-primary" id="saveRecordBtn">💾 儲存目前項目</button>
+        <button class="btn-gold" id="newRecordBtn">➕ 新增收繳項目</button>
       </div>
 
-      <div class="history-row">
+      <div class="history-compact">
         <div>
           <label for="historySelect">目前班級歷史收繳紀錄</label>
-          <select id="historySelect"><option value="">— 選擇歷史收繳紀錄 —</option></select>
+          <select id="historySelect">
+            <option value="">— 選擇歷史收繳紀錄 —</option>
+          </select>
         </div>
-        <button class="btn-dark" id="loadBtn">📖 載入紀錄</button>
-        <button class="btn-blue" id="moveFolderBtn">📄 移動目前紀錄</button>
-        <button class="btn-light" id="deleteBtn">🗑️ 刪除目前紀錄</button>
-        <button class="btn-gold" id="archiveBtn">📦 封存目前紀錄</button>
-        <button class="btn-light" id="toggleArchiveBtn">🗄️ 查看封存</button>
-      </div>
-
-
-      <div class="history-tools">
         <div>
           <label for="historyFolderFilter">📁 資料夾</label>
           <select id="historyFolderFilter"></select>
         </div>
         <div>
-          <label for="historySort">↕️ 排序方式</label>
+          <label for="historySort">↕️ 排序</label>
           <select id="historySort">
             <option value="updatedDesc">最近更新在前</option>
             <option value="createdDesc">最新建立在前</option>
@@ -526,17 +612,68 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
             <option value="nameAsc">項目名稱 A → Z</option>
           </select>
         </div>
-        <div>
-          <label for="moveFolderSelect">📂 目前紀錄移到</label>
-          <select id="moveFolderSelect"></select>
+        <button class="btn-dark" id="loadBtn">📖 載入</button>
+      </div>
+
+      <div class="context-actions" id="currentRecordActions">
+        <div class="context-actions-head">
+          <span id="currentRecordActionTitle">目前紀錄操作</span>
+          <span class="mini-help">載入或儲存紀錄後顯示</span>
         </div>
-        <div class="toolbar" style="margin:0">
-          <button class="btn-gold" id="addFolderBtn">＋ 新增資料夾</button>
-          <button class="btn-light" id="renameFolderBtn">✏️ 重新命名</button>
-          <button class="btn-dark" id="archiveFolderBtn">🗄️ 封存資料夾</button>
-          <button class="btn-light" id="toggleFolderArchiveBtn">📚 查看封存資料夾</button>
-          <button class="btn-primary" id="deleteFolderBtn">🗑️ 刪除資料夾</button>
+
+        <div class="toolbar">
+          <button class="btn-blue" id="copyUnpaidBtn">📋 複製未繳</button>
+          <button class="btn-primary" id="emailUnpaidBtn">📧 未繳 Email</button>
+          <button class="btn-light" id="printBtn">🖨️ 列印目前紀錄</button>
+          <button class="btn-gold" id="archiveBtn">📦 封存</button>
+          <button class="btn-light" id="deleteBtn">🗑️ 刪除</button>
         </div>
+
+        <div class="toolbar">
+          <div style="min-width:220px;flex:1">
+            <label for="moveFolderSelect">📂 將目前紀錄移到</label>
+            <select id="moveFolderSelect"></select>
+          </div>
+          <button class="btn-blue" id="moveFolderBtn">📄 移動目前紀錄</button>
+        </div>
+      </div>
+
+      <div class="compact-tools">
+        <details class="compact-details" id="folderToolsDetails">
+          <summary>📁 資料夾管理</summary>
+          <div class="compact-details-body">
+            <div class="mini-help">平常只要用上方資料夾篩選即可；需要新增、改名、封存或刪除時再展開。</div>
+            <div class="toolbar">
+              <button class="btn-gold" id="addFolderBtn">＋ 新增資料夾</button>
+              <button class="btn-light" id="renameFolderBtn">✏️ 重新命名</button>
+              <button class="btn-dark" id="archiveFolderBtn">🗄️ 封存資料夾</button>
+              <button class="btn-light" id="toggleFolderArchiveBtn">📚 查看封存資料夾</button>
+              <button class="btn-primary" id="deleteFolderBtn">🗑️ 刪除資料夾</button>
+            </div>
+          </div>
+        </details>
+
+        <details class="compact-details" id="exportToolsDetails">
+          <summary>📊 匯出與批次處理</summary>
+          <div class="compact-details-body">
+            <div class="mini-help">全部匯出、勾選項目匯出與批次列印集中在這裡。</div>
+            <div class="toolbar">
+              <button class="btn-light" id="exportBtn">📊 全部匯出</button>
+              <button class="btn-blue" id="selectExportBtn">☑️ 勾選項目匯出</button>
+              <button class="btn-light" id="toggleBatchPrintBtn">☑️ 批次列印</button>
+            </div>
+          </div>
+        </details>
+
+        <details class="compact-details" id="archiveToolsDetails">
+          <summary>🗄️ 封存紀錄</summary>
+          <div class="compact-details-body">
+            <div class="mini-help">查看或恢復已封存的收繳紀錄。</div>
+            <div class="toolbar">
+              <button class="btn-light" id="toggleArchiveBtn">🗄️ 查看已封存紀錄</button>
+            </div>
+          </div>
+        </details>
       </div>
 
       <div class="folder-archive-panel" id="folderArchivePanel">
@@ -2020,7 +2157,25 @@ async function switchClass(newClassId){
   showToast(`已切換至 ${currentClass().name}`);
 }
 
+
+function updateCurrentRecordActions(){
+  const panel=$("currentRecordActions");
+  if(!panel)return;
+
+  const hasRecord=!!currentId;
+  panel.classList.toggle("show",hasRecord);
+
+  const title=$("currentRecordActionTitle");
+  if(title){
+    const item=$("itemName")?.value?.trim();
+    title.textContent=hasRecord
+      ? `目前紀錄：${item||"未命名項目"}`
+      : "目前紀錄操作";
+  }
+}
+
 function render(){
+  updateCurrentRecordActions();
   const q=$("searchInput").value.trim().toLowerCase(), tbody=$("studentBody");tbody.innerHTML="";
   let shown=0;
   students().forEach(s=>{
