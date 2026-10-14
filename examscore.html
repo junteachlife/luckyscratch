@@ -970,12 +970,6 @@
           </div>
         </section>
 
-        <section class="chart-card">
-          <div class="chart-title">歷次班級排名</div>
-          <div class="chart-box">
-            <canvas id="rankChart"></canvas>
-          </div>
-        </section>
       </div>
 
       <section class="card">
@@ -1063,7 +1057,6 @@
     const $ = id => document.getElementById(id);
 
     let averageChart = null;
-    let rankChart = null;
     let strengthRadarChart = null;
     const examScopeCache = new Map();
 
@@ -4043,10 +4036,6 @@
         averageChart.destroy();
       }
 
-      if (rankChart) {
-        rankChart.destroy();
-      }
-
       averageChart =
         new Chart(
           $("averageChart"),
@@ -4084,46 +4073,7 @@
           }
         );
 
-      rankChart =
-        new Chart(
-          $("rankChart"),
-          {
-            type:"line",
 
-            data:{
-              labels,
-
-              datasets:[
-                {
-                  label:"班級排名",
-
-                  data:
-                    records.map(
-                      item => Number(item.result.rank)
-                    ),
-
-                  tension:.28
-                }
-              ]
-            },
-
-            options:{
-              responsive:true,
-              maintainAspectRatio:false,
-
-              scales:{
-                y:{
-                  reverse:true,
-                  suggestedMin:1,
-
-                  ticks:{
-                    precision:0
-                  }
-                }
-              }
-            }
-          }
-        );
     }
 
     function renderHistory(records) {
@@ -5048,14 +4998,6 @@
           )
           .filter(value => value !== null);
 
-      const ranks =
-        records
-          .map(
-            item =>
-              scoreNumber(item.result.rank)
-          )
-          .filter(value => value !== null);
-
       $("summary").innerHTML = `
         <div class="summary-card">
           <div class="summary-label">
@@ -5080,20 +5022,6 @@
             ${
               averages.length
                 ? formatScore(Math.min(...averages))
-                : "—"
-            }
-          </div>
-        </div>
-
-        <div class="summary-card">
-          <div class="summary-label">
-            最佳班排
-          </div>
-
-          <div class="summary-value">
-            ${
-              ranks.length
-                ? formatScore(Math.min(...ranks))
                 : "—"
             }
           </div>
@@ -5886,11 +5814,6 @@
       if (averageChart) {
         averageChart.destroy();
         averageChart = null;
-      }
-
-      if (rankChart) {
-        rankChart.destroy();
-        rankChart = null;
       }
 
       window.scrollTo({
