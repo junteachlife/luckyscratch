@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>班級作業成績回報系統</title>
-<!-- v20261015-Y：任課老師段考資料夾封存 -->
+<!-- v20261015-Z：任課老師段考資料夾封存 -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>">
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--ink:#172033;--muted:#667085;--line:#e4e7ec;--brand:#2563eb;--brand2:#1d4ed8;--good:#067647;--warn:#b54708;--bad:#b42318;--soft:#eff6ff;--purple:#6941c6}
@@ -1397,8 +1397,8 @@ function selectedAggregateData(){
   selectedCollections.sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.itemName||'').localeCompare(b.itemName||''));
   selectedTests.sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.name||'').localeCompare(b.name||''));
   const columns=[
-    ...selectedCollections.map(it=>({kind:'collection',item:it,label:`作業｜${it.itemName}`,date:it.date||''})),
-    ...selectedTests.map(it=>({kind:'assessment',item:it,label:`成績｜${it.name}`,date:it.date||''}))
+    ...selectedCollections.map(it=>({kind:'collection',item:it,label:String(it.itemName||'').trim()})),
+    ...selectedTests.map(it=>({kind:'assessment',item:it,label:String(it.name||'').trim()}))
   ];
   const rows=roster.map(s=>{
     const values=columns.map(c=>c.kind==='collection'?aggregateCollectionValue(c.item,s):aggregateScoreValue(c.item,s));
@@ -1421,8 +1421,26 @@ function aggregateMeta(d){return `學期：${viewSemester}｜作業／作業繳�
 function ensureAggregateSelected(){const d=selectedAggregateData();if(!d.columns.length){alert('請至少勾選一筆作業、作業繳交或成績資料。');return null}return d}
 function showAggregatePreview(){
   const d=ensureAggregateSelected();if(!d)return;const box=$('#aggregatePreviewBox');if(!box)return;
-  box.innerHTML=`<div class="summary-title" style="margin-top:12px">📚 ${esc(aggregateTitle())}</div><div class="meta" style="margin-bottom:6px">${esc(aggregateMeta(d))}</div><div class="table-wrap"><table class="summary-table"><thead><tr><th>座號</th><th>姓名</th>${d.columns.map(c=>`<th>${esc(c.label)}<div class="meta">${esc(c.date)}</div></th>`).join('')}</tr></thead><tbody>${d.rows.map(r=>`<tr>${r.map((v,i)=>`<td>${i===1?esc(v):esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  box.innerHTML=`<div class="summary-title" style="margin-top:12px">📚 ${esc(aggregateTitle())}</div><div class="meta" style="margin-bottom:6px">${esc(aggregateMeta(d))}</div><div class="table-wrap"><table class="summary-table"><thead><tr><th>座號</th><th>姓名</th>${d.columns.map(c=>`<th>${esc(c.label)}</th>`).join('')}</tr></thead><tbody>${d.rows.map(r=>`<tr>${r.map((v,i)=>`<td>${i===1?esc(v):esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
+function makeAggregateSummarySheet(headers,rows,widths=[]){
+  const aoa=[headers,...rows];
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols']=widths.length?widths:[{wch:8},{wch:14},...headers.slice(2).map(()=>({wch:18}))];
+  ws['!autofilter']={ref:`A1:${excelColumnName(headers.length)}1`};
+  return ws
+}
+
+function makeNameOnlyDetailSheet(name,headers,rows,widths=[]){
+  const aoa=[[name],[],headers,...rows];
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  const last=Math.max(0,headers.length-1);
+  ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:last}}];
+  ws['!cols']=widths.length?widths:[{wch:8},{wch:14},...headers.slice(2).map(()=>({wch:18}))];
+  ws['!autofilter']={ref:`A3:${excelColumnName(headers.length)}3`};
+  return ws
+}
+
 function safeWorkbookSheetName(raw,used){
   let base=String(raw||'工作表')
     .replace(/[\\\/\?\*\[\]\:]/g,' ')
@@ -1448,25 +1466,22 @@ async function exportAggregateExcel(){
     const wb=XLSX.utils.book_new();
     const usedSheets=new Set();
 
-    // 1. 第一張：所有勾選資料的學生彙整總表
-    const summaryHeaders=['座號','姓名',...d.columns.map(c=>`${c.label}${c.date?` (${c.date})`:''}`)];
-    const summaryWs=makeTitledSheet(
-      aggregateTitle(),
-      aggregateMeta(d),
+    // 第一張：彙整總表
+    // 欄位只顯示「作業名稱」或「小考名稱」，不再加類別、日期等資訊。
+    const summaryHeaders=['座號','姓名',...d.columns.map(c=>c.label)];
+    const summaryWs=makeAggregateSummarySheet(
       summaryHeaders,
       d.rows,
       [{wch:7},{wch:12},...d.columns.map(()=>({wch:20}))]
     );
     XLSX.utils.book_append_sheet(wb,summaryWs,safeWorkbookSheetName('總表',usedSheets));
 
-    // 2. 每一筆作業／繳交各自一張工作表
-    d.selectedCollections.forEach((it,index)=>{
+    // 每筆作業：工作表上方只顯示作業名稱。
+    d.selectedCollections.forEach(it=>{
       const rows=collectionRows(it);
-      const title=`${it.classId}班｜${it.scopeName}｜${it.itemName}`;
-      const meta=`學期：${it.semester||viewSemester}｜日期：${it.date||''}${it.dueDate?`｜截止：${it.dueDate}`:''}${it.archived?`｜封存：${archiveGroupLabel(it.archiveGroup)}`:''}`;
-      const ws=makeTitledSheet(
-        title,
-        meta,
+      const name=String(it.itemName||'作業').trim()||'作業';
+      const ws=makeNameOnlyDetailSheet(
+        name,
         ['座號','姓名','狀態','備註'],
         rows,
         [{wch:7},{wch:12},{wch:14},{wch:20}]
@@ -1474,18 +1489,16 @@ async function exportAggregateExcel(){
       XLSX.utils.book_append_sheet(
         wb,
         ws,
-        safeWorkbookSheetName(`作業-${index+1}-${it.itemName}`,usedSheets)
+        safeWorkbookSheetName(name,usedSheets)
       )
     });
 
-    // 3. 每一筆小考／成績各自一張工作表
-    d.selectedTests.forEach((it,index)=>{
+    // 每筆小考：工作表上方只顯示小考名稱。
+    d.selectedTests.forEach(it=>{
       const rows=assessmentRows(it);
-      const title=`${it.classId}班｜${it.scopeName}｜${it.name}`;
-      const meta=`學期：${it.semester||viewSemester}｜日期：${it.date||''}｜滿分：${it.maxScore}｜及格：${it.passScore}${it.archived?`｜封存：${archiveGroupLabel(it.archiveGroup)}`:''}`;
-      const ws=makeTitledSheet(
-        title,
-        meta,
+      const name=String(it.name||'小考').trim()||'小考';
+      const ws=makeNameOnlyDetailSheet(
+        name,
         ['座號','姓名','成績','狀態'],
         rows,
         [{wch:7},{wch:12},{wch:12},{wch:14}]
@@ -1493,7 +1506,7 @@ async function exportAggregateExcel(){
       XLSX.utils.book_append_sheet(
         wb,
         ws,
-        safeWorkbookSheetName(`成績-${index+1}-${it.name}`,usedSheets)
+        safeWorkbookSheetName(name,usedSheets)
       )
     });
 
