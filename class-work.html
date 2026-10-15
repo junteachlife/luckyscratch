@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>班級作業成績回報系統</title>
-<!-- v20260917-W：任課老師段考資料夾封存 -->
+<!-- v20261015-X：任課老師段考資料夾封存 -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>">
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--ink:#172033;--muted:#667085;--line:#e4e7ec;--brand:#2563eb;--brand2:#1d4ed8;--good:#067647;--warn:#b54708;--bad:#b42318;--soft:#eff6ff;--purple:#6941c6}
@@ -672,7 +672,7 @@ function renderRoles(){
 }
 
 async function selectAssignment(i,el){
-  const list=currentAssignments();$$('.role-card').forEach(x=>x.classList.remove('active'));el.classList.add('active');currentAssignment=list[i];currentCollectionItems=[];currentAssessmentItems=[];archiveViewMode='current';archiveFolder='exam1';$('#workspace').classList.remove('hidden');$('#workspaceTitle').textContent=assignmentLabel(currentAssignment);$('#workspacePerm').textContent=`${currentAssignment.semester||viewSemester}｜${isHistoricalReadOnly()?'歷史學期唯讀；':''}${canCollection(currentAssignment)?'可登記作業繳交':'作業繳交唯讀'}${currentAssignment.scopeType==='subject'?`；${canScores(currentAssignment)?'可登記小考成績':'成績唯讀'}`:''}${canConfirm(currentAssignment)?'；可確認資料':''}${canArchiveAssignment(currentAssignment)?'；可封存至第一次／第二次／第三次段考':''}${isTeacherAssignment(currentAssignment)?'；任課老師可列印、Excel 與週成績彙整':''}`;
+  const list=currentAssignments();$$('.role-card').forEach(x=>x.classList.remove('active'));el.classList.add('active');currentAssignment=list[i];currentCollectionItems=[];currentAssessmentItems=[];archiveViewMode='current';archiveFolder='exam1';$('#workspace').classList.remove('hidden');$('#workspaceTitle').textContent=assignmentLabel(currentAssignment);$('#workspacePerm').textContent=`${currentAssignment.semester||viewSemester}｜${isHistoricalReadOnly()?'歷史學期唯讀；':''}${canCollection(currentAssignment)?'可登記作業繳交':'作業繳交唯讀'}${currentAssignment.scopeType==='subject'?`；${canScores(currentAssignment)?'可登記小考成績':'成績唯讀'}`:''}${canConfirm(currentAssignment)?'；可確認資料':''}${canArchiveAssignment(currentAssignment)?'；可封存至第一次／第二次／第三次段考':''}${isTeacherAssignment(currentAssignment)?'；任課老師可勾選／全選資料下載 Excel':''}`;
   $('#scoresTab').classList.toggle('hidden',currentAssignment.scopeType!=='subject');if(currentAssignment.scopeType!=='subject'){$$('.tab').forEach(x=>x.classList.remove('active'));document.querySelector('[data-tab="collection"]').classList.add('active');$('#collectionPanel').classList.remove('hidden');$('#scoresPanel').classList.add('hidden')}
   renderTeacherAggregatePanel();
   await loadRoster(currentAssignment.classId);
@@ -1010,7 +1010,7 @@ function renderScores(items){
   const p=$('#scoresPanel');
   const teacherArchive=canArchiveAssignment(currentAssignment);
   const visible=archiveVisibleItems(items);
-  let html=archiveManagerHtml('assessment',items)+renderTeacherWeekTools();
+  let html=archiveManagerHtml('assessment',items);
   if(canScores(currentAssignment)&&archiveViewMode==='current')html+='<div class="toolbar"><button id="newAssessBtn" class="btn primary">＋新增小考</button></div>';
   if(!visible.length)html+=teacherArchive&&archiveViewMode==='archived'
     ?`<div class="empty">「${esc(archiveGroupLabel(archiveFolder))}」目前沒有已封存的小考資料。</div>`
@@ -1029,9 +1029,6 @@ function renderScores(items){
   p.querySelectorAll('.del-score').forEach(b=>b.onclick=()=>removeAssessment(items.find(x=>x.id===b.dataset.id)));
   p.querySelectorAll('.print-score').forEach(b=>b.onclick=()=>printAssessment(items.find(x=>x.id===b.dataset.id)));
   p.querySelectorAll('.xlsx-score').forEach(b=>b.onclick=()=>exportAssessment(items.find(x=>x.id===b.dataset.id)));
-  $('#teacherWeekView')?.addEventListener('click',showTeacherWeekSummary);
-  $('#teacherWeekExcel')?.addEventListener('click',exportTeacherWeekExcel);
-  $('#teacherWeekPrint')?.addEventListener('click',printTeacherWeekSummary);
   bindArchiveManager('assessment',items)
 }
 
@@ -1217,18 +1214,98 @@ function aggregateSelectionState(){
 }
 function renderTeacherAggregatePanel(){
   const box=$('#teacherAggregatePanel');if(!box)return;
-  if(!currentAssignment||!isTeacherAssignment(currentAssignment)||currentAssignment.scopeType!=='subject'){box.classList.add('hidden');box.innerHTML='';return}
+  if(!currentAssignment||!isTeacherAssignment(currentAssignment)||currentAssignment.scopeType!=='subject'){
+    box.classList.add('hidden');box.innerHTML='';return
+  }
+
   const old=aggregateSelectionState();
   box.classList.remove('hidden');
-  const collections=currentCollectionItems||[],tests=currentAssessmentItems||[];
-  const colHtml=collections.length?collections.map(it=>{const k=`collection:${it.id}`,checked=old.has(k)?'checked':'';return `<label style="display:flex;gap:8px;align-items:flex-start;padding:7px 8px;border:1px solid #d6c39a;border-radius:10px;background:rgba(255,255,255,.55)"><input class="aggregate-choice" data-kind="collection" type="checkbox" value="${esc(it.id)}" ${checked}><span><b>📥 ${esc(it.itemName)}</b><span class="meta" style="display:block">${esc(it.date||'')}${it.dueDate?`｜截止 ${esc(it.dueDate)}`:''}${it.archived?`｜📦 ${esc(archiveGroupLabel(it.archiveGroup))}`:''}</span></span></label>`}).join(''):'<div class="meta">目前沒有作業繳交／作業資料。</div>';
-  const scoreHtml=tests.length?tests.map(it=>{const k=`assessment:${it.id}`,checked=old.has(k)?'checked':'';return `<label style="display:flex;gap:8px;align-items:flex-start;padding:7px 8px;border:1px solid #d6c39a;border-radius:10px;background:rgba(255,255,255,.55)"><input class="aggregate-choice" data-kind="assessment" type="checkbox" value="${esc(it.id)}" ${checked}><span><b>📊 ${esc(it.name)}</b><span class="meta" style="display:block">${esc(it.date||'')}｜滿分 ${esc(it.maxScore??'')}${it.archived?`｜📦 ${esc(archiveGroupLabel(it.archiveGroup))}`:''}</span></span></label>`}).join(''):'<div class="meta">目前沒有成績資料。</div>';
-  box.innerHTML=`<div class="teacher-tools"><div class="teacher-tools-title">🧭 任課老師｜自選資料彙整</div><div class="sub">勾選你要的作業／作業繳交與成績，可合併成同一張學生總表，再下載 Excel 或列印。</div><details style="margin-top:10px"><summary style="cursor:pointer;font-weight:900">📚 選擇要彙整的資料</summary><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:10px"><div><div style="font-weight:900;margin-bottom:7px">📥 作業／作業繳交</div><div style="display:grid;gap:6px">${colHtml}</div></div><div><div style="font-weight:900;margin-bottom:7px">📊 成績</div><div style="display:grid;gap:6px">${scoreHtml}</div></div></div><div class="toolbar" style="margin-top:10px"><button id="aggregateSelectAll" class="btn gray small">☑ 全選</button><button id="aggregateClear" class="btn gray small">☐ 清除</button><button id="aggregatePreview" class="btn purple small">👀 預覽彙整</button><button id="aggregateExcel" class="btn primary small">📥 下載彙整 Excel</button><button id="aggregatePrint" class="btn gray small">🖨 列印彙整</button></div><div id="aggregatePreviewBox"></div></details></div>`;
-  $('#aggregateSelectAll')?.addEventListener('click',()=>$$('#teacherAggregatePanel input.aggregate-choice').forEach(x=>x.checked=true));
-  $('#aggregateClear')?.addEventListener('click',()=>{ $$('#teacherAggregatePanel input.aggregate-choice').forEach(x=>x.checked=false);const p=$('#aggregatePreviewBox');if(p)p.innerHTML=''; });
+
+  const collections=(currentCollectionItems||[])
+    .slice()
+    .sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.itemName||'').localeCompare(b.itemName||''));
+  const tests=(currentAssessmentItems||[])
+    .slice()
+    .sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.name||'').localeCompare(b.name||''));
+
+  const colHtml=collections.length
+    ?collections.map(it=>{
+      const k=`collection:${it.id}`,checked=old.has(k)?'checked':'';
+      return `<label style="display:flex;gap:8px;align-items:flex-start;padding:8px 9px;border:1px solid #d6c39a;border-radius:10px;background:rgba(255,255,255,.62)">
+        <input class="aggregate-choice" data-kind="collection" type="checkbox" value="${esc(it.id)}" ${checked}>
+        <span>
+          <b>📥 ${esc(it.itemName)}</b>
+          <span class="meta" style="display:block">${esc(it.date||'')}${it.dueDate?`｜截止 ${esc(it.dueDate)}`:''}${it.archived?`｜📦 ${esc(archiveGroupLabel(it.archiveGroup))}`:''}</span>
+        </span>
+      </label>`
+    }).join('')
+    :'<div class="meta">目前沒有作業／作業繳交資料。</div>';
+
+  const scoreHtml=tests.length
+    ?tests.map(it=>{
+      const k=`assessment:${it.id}`,checked=old.has(k)?'checked':'';
+      return `<label style="display:flex;gap:8px;align-items:flex-start;padding:8px 9px;border:1px solid #d6c39a;border-radius:10px;background:rgba(255,255,255,.62)">
+        <input class="aggregate-choice" data-kind="assessment" type="checkbox" value="${esc(it.id)}" ${checked}>
+        <span>
+          <b>📊 ${esc(it.name)}</b>
+          <span class="meta" style="display:block">${esc(it.date||'')}｜滿分 ${esc(it.maxScore??'')}${it.archived?`｜📦 ${esc(archiveGroupLabel(it.archiveGroup))}`:''}</span>
+        </span>
+      </label>`
+    }).join('')
+    :'<div class="meta">目前沒有小考／成績資料。</div>';
+
+  const total=collections.length+tests.length;
+
+  box.innerHTML=`<div class="teacher-tools">
+    <div class="teacher-tools-title">📥 任課老師｜資料下載與統整</div>
+    <div class="sub">
+      直接勾選要下載的作業／成績，或按「全選全部資料」。下載後會得到 <b>1 個 Excel 檔</b>：
+      第一張工作表是全班彙整總表，後面再依每一筆作業／小考分成獨立工作表，方便保存與後續統整。
+    </div>
+
+    <div class="toolbar" style="margin-top:10px">
+      <button id="aggregateSelectAll" class="btn gray small">☑ 全選全部資料</button>
+      <button id="aggregateClear" class="btn gray small">☐ 清除勾選</button>
+      <button id="aggregateExcel" class="btn primary small">📥 下載勾選資料 Excel</button>
+      <button id="aggregateDownloadAll" class="btn good small">📚 一鍵下載全部資料</button>
+      <button id="aggregatePreview" class="btn purple small">👀 預覽彙整</button>
+    </div>
+
+    <div class="meta" style="margin-top:6px">
+      本學期目前共有 ${total} 筆資料：作業／繳交 ${collections.length} 筆，成績 ${tests.length} 筆。
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:10px">
+      <div>
+        <div style="font-weight:900;margin-bottom:7px">📥 作業／作業繳交</div>
+        <div style="display:grid;gap:6px;max-height:360px;overflow:auto;padding-right:3px">${colHtml}</div>
+      </div>
+      <div>
+        <div style="font-weight:900;margin-bottom:7px">📊 小考／成績</div>
+        <div style="display:grid;gap:6px;max-height:360px;overflow:auto;padding-right:3px">${scoreHtml}</div>
+      </div>
+    </div>
+
+    <div id="aggregatePreviewBox"></div>
+  </div>`;
+
+  $('#aggregateSelectAll')?.addEventListener('click',()=>{
+    $$('#teacherAggregatePanel input.aggregate-choice').forEach(x=>x.checked=true)
+  });
+
+  $('#aggregateClear')?.addEventListener('click',()=>{
+    $$('#teacherAggregatePanel input.aggregate-choice').forEach(x=>x.checked=false);
+    const p=$('#aggregatePreviewBox');if(p)p.innerHTML=''
+  });
+
   $('#aggregatePreview')?.addEventListener('click',showAggregatePreview);
   $('#aggregateExcel')?.addEventListener('click',exportAggregateExcel);
-  $('#aggregatePrint')?.addEventListener('click',printAggregateSummary);
+  $('#aggregateDownloadAll')?.addEventListener('click',async()=>{
+    const all=$$('#teacherAggregatePanel input.aggregate-choice');
+    if(!all.length)return alert('目前沒有可下載的資料。');
+    all.forEach(x=>x.checked=true);
+    await exportAggregateExcel()
+  });
 }
 function selectedAggregateData(){
   const chosen=$$('#teacherAggregatePanel input.aggregate-choice:checked');
@@ -1269,14 +1346,89 @@ function showAggregatePreview(){
   const d=ensureAggregateSelected();if(!d)return;const box=$('#aggregatePreviewBox');if(!box)return;
   box.innerHTML=`<div class="summary-title" style="margin-top:12px">📚 ${esc(aggregateTitle())}</div><div class="meta" style="margin-bottom:6px">${esc(aggregateMeta(d))}</div><div class="table-wrap"><table class="summary-table"><thead><tr><th>座號</th><th>姓名</th>${d.columns.map(c=>`<th>${esc(c.label)}<div class="meta">${esc(c.date)}</div></th>`).join('')}</tr></thead><tbody>${d.rows.map(r=>`<tr>${r.map((v,i)=>`<td>${i===1?esc(v):esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
+function safeWorkbookSheetName(raw,used){
+  let base=String(raw||'工作表')
+    .replace(/[\\\/\?\*\[\]\:]/g,' ')
+    .replace(/\s+/g,' ')
+    .trim()||'工作表';
+  base=base.slice(0,31);
+
+  let name=base,n=2;
+  while(used.has(name)){
+    const suffix=`-${n++}`;
+    name=(base.slice(0,31-suffix.length)+suffix).slice(0,31)
+  }
+  used.add(name);
+  return name
+}
+
 async function exportAggregateExcel(){
   const d=ensureAggregateSelected();if(!d)return;
+
   try{
-    await ensureXLSX();const headers=['座號','姓名',...d.columns.map(c=>`${c.label}${c.date?` (${c.date})`:''}`)];
-    const ws=makeTitledSheet(aggregateTitle(),aggregateMeta(d),headers,d.rows,[{wch:7},{wch:12},...d.columns.map(()=>({wch:20}))]),wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,ws,'任課資料彙整');
-    XLSX.writeFile(wb,`${safeFileName(currentAssignment.classId)}-${safeFileName(currentAssignment.scopeName)}-任課資料彙整.xlsx`)
-  }catch(e){alert('Excel 下載失敗：'+e.message)}
+    await ensureXLSX();
+
+    const wb=XLSX.utils.book_new();
+    const usedSheets=new Set();
+
+    // 1. 第一張：所有勾選資料的學生彙整總表
+    const summaryHeaders=['座號','姓名',...d.columns.map(c=>`${c.label}${c.date?` (${c.date})`:''}`)];
+    const summaryWs=makeTitledSheet(
+      aggregateTitle(),
+      aggregateMeta(d),
+      summaryHeaders,
+      d.rows,
+      [{wch:7},{wch:12},...d.columns.map(()=>({wch:20}))]
+    );
+    XLSX.utils.book_append_sheet(wb,summaryWs,safeWorkbookSheetName('總表',usedSheets));
+
+    // 2. 每一筆作業／繳交各自一張工作表
+    d.selectedCollections.forEach((it,index)=>{
+      const rows=collectionRows(it);
+      const title=`${it.classId}班｜${it.scopeName}｜${it.itemName}`;
+      const meta=`學期：${it.semester||viewSemester}｜日期：${it.date||''}${it.dueDate?`｜截止：${it.dueDate}`:''}${it.archived?`｜封存：${archiveGroupLabel(it.archiveGroup)}`:''}`;
+      const ws=makeTitledSheet(
+        title,
+        meta,
+        ['座號','姓名','狀態','備註'],
+        rows,
+        [{wch:7},{wch:12},{wch:14},{wch:20}]
+      );
+      XLSX.utils.book_append_sheet(
+        wb,
+        ws,
+        safeWorkbookSheetName(`作業-${index+1}-${it.itemName}`,usedSheets)
+      )
+    });
+
+    // 3. 每一筆小考／成績各自一張工作表
+    d.selectedTests.forEach((it,index)=>{
+      const rows=assessmentRows(it);
+      const title=`${it.classId}班｜${it.scopeName}｜${it.name}`;
+      const meta=`學期：${it.semester||viewSemester}｜日期：${it.date||''}｜滿分：${it.maxScore}｜及格：${it.passScore}${it.archived?`｜封存：${archiveGroupLabel(it.archiveGroup)}`:''}`;
+      const ws=makeTitledSheet(
+        title,
+        meta,
+        ['座號','姓名','成績','狀態'],
+        rows,
+        [{wch:7},{wch:12},{wch:12},{wch:14}]
+      );
+      XLSX.utils.book_append_sheet(
+        wb,
+        ws,
+        safeWorkbookSheetName(`成績-${index+1}-${it.name}`,usedSheets)
+      )
+    });
+
+    const count=d.selectedCollections.length+d.selectedTests.length;
+    XLSX.writeFile(
+      wb,
+      `${safeFileName(currentAssignment.classId)}-${safeFileName(currentAssignment.scopeName)}-${safeFileName(viewSemester)}-任課資料-${count}筆.xlsx`
+    )
+  }catch(e){
+    console.error(e);
+    alert('Excel 下載失敗：'+e.message)
+  }
 }
 function printAggregateSummary(){const d=ensureAggregateSelected();if(!d)return;openPrint(aggregateTitle(),aggregateMeta(d),['座號','姓名',...d.columns.map(c=>c.label)],d.rows.map(r=>[r[0],esc(r[1]),...r.slice(2)]),true,true)}
 
