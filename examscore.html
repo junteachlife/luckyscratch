@@ -3617,65 +3617,111 @@
     }
 
 
-    const BUILTIN_RESOURCE_BANK = {
-      chinese: [
-        {
-          name:"均一教育平台｜國中國文／出版社資源",
-          url:"https://www.junyiacademy.org/event/110-semester-sectionalexam/",
-          note:"可由康軒／翰林／南一專區進入對應國中國文資源"
-        }
-      ],
-      science: [
-        {
-          name:"均一教育平台｜國中自然／理化",
-          url:"https://www.junyiacademy.org/event/110-semester-sectionalexam/",
-          note:"含出版社資源與國中數理素養影片"
-        },
-        {
-          name:"因材網｜自然科學",
-          url:"https://adl.edu.tw/adl_material_tl_assessment.php",
-          note:"可依自然、物理化學、地科、生物分類進入"
-        }
-      ],
-      social: {
-        geography: [
+
+    /*
+      =========================================================
+      115-1 八年級第二次段考｜已人工複核的學生學習資源
+      原則：
+      1. 不使用舊學年度活動頁。
+      2. 不使用教師研習／師資增能頁。
+      3. 只放「學生可以直接學」且與本次範圍相符的頁面。
+      4. 找不到足夠精準的學生頁時，寧可少放，不硬塞連結。
+      =========================================================
+    */
+
+    const VERIFIED_EXAM_RESOURCE_BANK = {
+      "8-1-2": {
+        chinese: [
           {
-            name:"均一｜八年級地理",
-            url:"https://www.junyiacademy.org/topics/main-juni8-ge",
-            note:"中國、東北亞、東南亞與南亞等八年級地理主題"
-          },
-          {
-            name:"因材網｜地理",
-            url:"https://adl.edu.tw/adl_material_tl_assessment.php",
-            note:"社會科中的地理學習資源"
+            name:"均一｜八年級國文：愛蓮說＋語法句型",
+            url:"https://www.junyiacademy.org/topics/coocjun-c2",
+            note:"本次範圍可直接複習〈愛蓮說〉與語文常識二「語法句型」；其他課文仍以翰林課本、講義與老師筆記為主。"
           }
         ],
-        history: [
+
+        english: [
           {
-            name:"均一｜出版社段考資源入口",
-            url:"https://www.junyiacademy.org/event/110-semester-sectionalexam/",
-            note:"可選康軒／翰林／南一的國中歷史資源"
+            name:"Cool English｜國中文法專區",
+            url:"https://www.coolenglish.edu.tw/course/index.php?categoryid=20",
+            note:"本次 Unit 3–4 可用來加強過去式／過去進行式，以及動名詞、不定詞等文法；進入後選「文法」學生自學內容。"
           },
           {
-            name:"因材網｜歷史",
-            url:"https://adl.edu.tw/adl_material_tl_assessment.php",
-            note:"社會科中的歷史學習資源"
+            name:"Cool English｜文法總動員",
+            url:"https://www.coolenglish.edu.tw/course/view.php?id=352",
+            note:"直接對應「動詞後接動名詞或不定詞」；可能需要登入 Cool English。"
           }
         ],
-        civics: [
+
+        math: [
           {
-            name:"均一｜八上公民・政治篇",
-            url:"https://www.junyiacademy.org/middle-school-civics",
-            note:"現代國家與民主政治、中央政府、地方政府"
+            name:"均一｜2-2 根式運算＋2-3 畢氏定理",
+            url:"https://www.junyiacademy.org/topics/k-m8a-c02",
+            note:"頁面直接包含 2-2 根式的運算與 2-3 畢氏定理，可看觀念影片並練習。"
           },
           {
-            name:"因材網｜公民",
-            url:"https://adl.edu.tw/adl_material_tl_assessment.php",
-            note:"社會科中的公民學習資源"
+            name:"均一｜因式分解的方法",
+            url:"https://www.junyiacademy.org/topics/j-m8a-c03-2",
+            note:"直接包含提公因式、利用乘法公式、十字交乘等本次段考重點。"
           }
-        ]
+        ],
+
+        science: [
+          {
+            name:"均一｜八上波動與聲音",
+            url:"https://www.junyiacademy.org/topics/s4zpd-",
+            note:"對應翰林八上第3章：波的傳播、聲音形成、音調與響度、聲波應用。"
+          },
+          {
+            name:"均一｜八上光、影像與顏色",
+            url:"https://www.junyiacademy.org/topics/s4zgi-",
+            note:"對應翰林八上第4章：光的直進、反射、折射、面鏡／透鏡成像與顏色。"
+          }
+        ],
+
+        social: {
+          geography: [
+            {
+              name:"均一｜中國（二）",
+              url:"https://www.junyiacademy.org/topics/main-juni8-ge-5",
+              note:"對應康軒八上第3、4課：中國的產業發展與地區差異、經濟發展與全球關連。"
+            }
+          ],
+          history: [
+            {
+              name:"均一｜宋元至明清重點複習",
+              url:"https://www.junyiacademy.org/topics/v1283-new-topic-90",
+              note:"本次康軒八上第3、4課可對照宋元民族互動、宋元政經文化，以及明清政治與經濟發展。"
+            },
+            {
+              name:"均一｜明清帝國與天朝體制：靖難之變",
+              url:"https://www.junyiacademy.org/article/80cb6cab82384ebb830853f35aafd572",
+              note:"直接對應康軒八上第4課中的明初政治發展，可作為具體概念補強。"
+            }
+          ],
+          civics: [
+            {
+              name:"均一｜中央政府",
+              url:"https://www.junyiacademy.org/topics/h4czz-b",
+              note:"直接包含權力分立、中央政府組織、五院職權與行政／立法互動，對應康軒八上第3、4課。"
+            }
+          ]
+        }
       }
     };
+
+    function getVerifiedResources(subjectKey,nextExam) {
+      if (!nextExam) return [];
+
+      const key =
+        `${Number(nextExam.grade)}-${Number(nextExam.semester)}-${Number(nextExam.examNo)}`;
+
+      const bank =
+        VERIFIED_EXAM_RESOURCE_BANK[key];
+
+      if (!bank) return [];
+
+      return bank[subjectKey] || [];
+    }
 
     function compactResourceLinks(resources) {
       if (!resources?.length) return "";
@@ -3703,46 +3749,56 @@
       `;
     }
 
-    function renderSocialSubsections() {
+    function renderSocialSubsections(nextExam) {
+      const key =
+        nextExam
+          ? `${Number(nextExam.grade)}-${Number(nextExam.semester)}-${Number(nextExam.examNo)}`
+          : "";
+
+      const socialBank =
+        VERIFIED_EXAM_RESOURCE_BANK[key]?.social || null;
+
+      if (!socialBank) return "";
+
       return `
         <div class="social-subject-tabs">
 
           <div class="social-subject-item open">
             <button type="button" class="social-subject-btn">
-              <span>🌏 地理</span>
+              <span>🌏 地理｜第3、4課</span>
               <span>⌄</span>
             </button>
             <div class="social-subject-content">
               <div class="target-progress-note">
-                先看圖名、方向、圖例、比例尺與縱橫軸；遇到區域比較題，要把位置、自然環境、人口與產業連起來判斷。
+                本次：中國的產業發展與地區差異、經濟發展與全球關連。建議先整理「產業條件 → 區域差異 → 全球連結」三層關係，再練圖表與區域比較題。
               </div>
-              ${compactResourceLinks(BUILTIN_RESOURCE_BANK.social.geography)}
+              ${compactResourceLinks(socialBank.geography)}
             </div>
           </div>
 
           <div class="social-subject-item">
             <button type="button" class="social-subject-btn">
-              <span>🏺 歷史</span>
+              <span>🏺 歷史｜第3、4課</span>
               <span>⌄</span>
             </button>
             <div class="social-subject-content">
               <div class="target-progress-note">
-                先整理時間先後，再分原因、經過、結果與影響；史料題要從內容反推人物、制度與時代背景。
+                本次：宋元時期的民族互動、明清帝國與天朝體制。建議用時間線整理政權、民族互動、制度與對外關係，避免只背單一事件。
               </div>
-              ${compactResourceLinks(BUILTIN_RESOURCE_BANK.social.history)}
+              ${compactResourceLinks(socialBank.history)}
             </div>
           </div>
 
           <div class="social-subject-item">
             <button type="button" class="social-subject-btn">
-              <span>🏛️ 公民</span>
+              <span>🏛️ 公民｜第3、4課</span>
               <span>⌄</span>
             </button>
             <div class="social-subject-content">
               <div class="target-progress-note">
-                生活案例題先抓人物身分、行為、權利義務與制度關鍵字；相近概念要用定義差異判斷。
+                本次：政府與權力分立、我國的中央政府。先分清權力分立目的，再整理總統、行政院、立法院、司法院、考試院、監察院的職權與互動。
               </div>
-              ${compactResourceLinks(BUILTIN_RESOURCE_BANK.social.civics)}
+              ${compactResourceLinks(socialBank.civics)}
             </div>
           </div>
 
@@ -3779,7 +3835,8 @@
 
     function renderLearningResources(
       context,
-      subjectKey=""
+      subjectKey="",
+      nextExam=null
     ) {
       const customResources =
         (context?.resources || [])
@@ -3789,16 +3846,19 @@
               item?.url
           );
 
-      const extraResources =
-        subjectKey === "chinese"
-          ? BUILTIN_RESOURCE_BANK.chinese
-          : subjectKey === "science"
-            ? BUILTIN_RESOURCE_BANK.science
-            : [];
+      const verifiedResources =
+        getVerifiedResources(
+          subjectKey,
+          nextExam
+        );
 
       const mergedResources = [
         ...customResources,
-        ...extraResources
+        ...(
+          Array.isArray(verifiedResources)
+            ? verifiedResources
+            : []
+        )
       ].filter(
         (item,index,array) =>
           array.findIndex(
@@ -3813,7 +3873,11 @@
           ? `
             <div class="resource-box">
               <div class="box-title">
-                🔗 可以加強這次內容的學習資源
+                🔗 本次段考可直接使用的學習資源
+              </div>
+
+              <div class="target-progress-note">
+                以下連結已依目前八上第二次段考範圍重新篩選；不放教師研習、舊學年度活動頁或與本次無關的內容。
               </div>
 
               <div class="resource-list">
@@ -3843,20 +3907,32 @@
           `
           : "";
 
-      if (subjectKey === "social") {
+      if (
+        subjectKey === "social" &&
+        !Array.isArray(verifiedResources)
+      ) {
+        const socialHtml =
+          renderSocialSubsections(nextExam);
+
         return `
           ${normalResources}
-          <div class="resource-box">
-            <div class="box-title">
-              🔗 社會科分科加強資源
-            </div>
+          ${
+            socialHtml
+              ? `
+                <div class="resource-box">
+                  <div class="box-title">
+                    🔗 社會科分科精準複習
+                  </div>
 
-            <div class="target-progress-note">
-              為避免一次出現太多資訊，地理／歷史／公民採收合式呈現；點開需要的科目再查看。
-            </div>
+                  <div class="target-progress-note">
+                    為避免資料太亂，地理／歷史／公民分開收合；每一區只放本次第3、4課真正對應的學生學習內容。
+                  </div>
 
-            ${renderSocialSubsections()}
-          </div>
+                  ${socialHtml}
+                </div>
+              `
+              : ""
+          }
         `;
       }
 
@@ -5328,7 +5404,7 @@
 
                       </div>
 
-                      ${renderLearningResources(context, analysis.key)}
+                      ${renderLearningResources(context, analysis.key, nextExam)}
 
                       <div class="operation-box">
 
