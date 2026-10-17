@@ -965,6 +965,74 @@
   opacity:.72
 }
 
+
+.latest-target-achievement{
+  margin-top:16px;
+  padding-top:16px;
+  border-top:1px dashed #d9cdbd
+}
+.latest-target-achievement-title{
+  font-size:16px;
+  font-weight:950;
+  margin-bottom:10px;
+  color:#5e584f
+}
+.latest-achievement-levels{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:9px
+}
+.latest-achievement-level{
+  padding:11px 12px;
+  border-radius:13px;
+  background:#fff;
+  border:1px solid #e7dfd5;
+  line-height:1.55
+}
+.latest-achievement-level.reached{
+  background:#eef8f1;
+  border-color:#bcd9c4
+}
+.latest-achievement-level-name{
+  font-size:12px;
+  font-weight:900;
+  color:#716b63
+}
+.latest-achievement-level-score{
+  margin-top:3px;
+  font-size:20px;
+  font-weight:1000
+}
+.latest-achievement-level-status{
+  margin-top:4px;
+  font-size:12px;
+  font-weight:900
+}
+.latest-achievement-level.reached .latest-achievement-level-status{
+  color:#4c815b
+}
+.latest-achievement-result{
+  margin-top:11px;
+  padding:12px 14px;
+  border-radius:13px;
+  background:#eef8f1;
+  border-left:5px solid #64a777;
+  line-height:1.75
+}
+.latest-achievement-result.not-reached{
+  background:#fff7e9;
+  border-left-color:#d7a24b
+}
+.latest-achievement-reward{
+  margin-top:5px;
+  font-weight:950
+}
+@media(max-width:650px){
+  .latest-achievement-levels{
+    grid-template-columns:1fr
+  }
+}
+
 </style>
 </head>
 
@@ -1066,6 +1134,8 @@
         </div>
 
         <div id="latestExamNote" class="latest-exam-note"></div>
+
+        <div id="latestTargetAchievement" class="latest-target-achievement" style="display:none"></div>
       </section>
 
       <div class="next-stage">
@@ -1078,7 +1148,7 @@
         <div class="section-title">📊 我的學習歷程摘要</div>
         
 <section id="examTargetSection" class="card" style="display:none">
-  <div class="section-title">🎯 我的本次段考挑戰</div>
+  <div class="section-title">🎯 下一次段考挑戰</div>
   <div class="exam-target-card">
     <div id="targetExamTitle" style="font-size:18px;font-weight:900"></div>
     <div id="targetConfidenceText" style="margin-top:8px"></div>
@@ -4357,8 +4427,8 @@
 
       $("latestExamNote").textContent =
         previousRecord
-          ? `下方仍保留完整歷次成績；此區只呈現目前資料庫中最新的一次段考，並與「${previousRecord.exam?.examName || shortExamName(previousRecord.exam)}」做簡單比較。`
-          : "下方仍保留完整歷次成績；目前只有一次有效段考資料，因此暫時不顯示前次變化。";
+          ? `此區呈現目前資料庫中最新一次段考，並與「${previousRecord.exam?.examName || shortExamName(previousRecord.exam)}」做簡單比較；若這次段考曾發布目標，目標達成成果會直接顯示在本區下方。`
+          : "此區呈現目前資料庫中最新一次有效段考；若這次段考曾發布目標，目標達成成果會直接顯示在本區下方。";
     }
 
     function renderHistory(records) {
@@ -5603,6 +5673,172 @@
       };
     }
 
+
+    function renderLatestTargetAchievement(
+      targetMeta,
+      targetStudent,
+      actualResult
+    ) {
+      const box =
+        $("latestTargetAchievement");
+
+      if (
+        !box ||
+        !targetMeta ||
+        !targetStudent ||
+        !actualResult ||
+        !targetMeta.published
+      ) {
+        if (box) {
+          box.style.display = "none";
+          box.innerHTML = "";
+        }
+        return;
+      }
+
+      const normalized =
+        normalizeStudentTargets(
+          targetStudent
+        );
+
+      const rewards =
+        studentRewardPolicy(
+          targetStudent
+        );
+
+      const achievement =
+        evaluateTargetAchievement(
+          targetMeta,
+          targetStudent,
+          actualResult
+        );
+
+      const actualAverage =
+        scoreNumber(
+          actualResult.average
+        );
+
+      let levels = [];
+
+      if (rewards.targetCount === 1) {
+        levels = [
+          {
+            key:"level1",
+            icon:"🏆",
+            label:"最高挑戰",
+            score:normalized.level1
+          }
+        ];
+      } else if (rewards.targetCount === 2) {
+        levels = [
+          {
+            key:"level1",
+            icon:"🌱",
+            label:"初級目標",
+            score:normalized.level1
+          },
+          {
+            key:"level3",
+            icon:"🏆",
+            label:"最高目標",
+            score:normalized.level3
+          }
+        ];
+      } else {
+        levels = [
+          {
+            key:"level1",
+            icon:"🌱",
+            label:"初級目標",
+            score:normalized.level1
+          },
+          {
+            key:"level2",
+            icon:"⭐",
+            label:"次級目標",
+            score:normalized.level2
+          },
+          {
+            key:"level3",
+            icon:"🏆",
+            label:"最高目標",
+            score:normalized.level3
+          }
+        ];
+      }
+
+      box.style.display =
+        "block";
+
+      box.innerHTML = `
+        <div class="latest-target-achievement-title">
+          🏅 本次目標成果
+        </div>
+
+        <div class="latest-achievement-levels">
+          ${
+            levels.map(level => {
+              const score =
+                scoreNumber(level.score);
+
+              const reached =
+                actualAverage !== null &&
+                score !== null &&
+                actualAverage >= score;
+
+              return `
+                <div class="latest-achievement-level ${reached ? "reached" : ""}">
+                  <div class="latest-achievement-level-name">
+                    ${level.icon} ${escapeHtml(level.label)}
+                  </div>
+
+                  <div class="latest-achievement-level-score">
+                    ${formatScore(score)}
+                  </div>
+
+                  <div class="latest-achievement-level-status">
+                    ${
+                      reached
+                        ? "✓ 平均分數已達到"
+                        : "尚未達到"
+                    }
+                  </div>
+                </div>
+              `;
+            }).join("")
+          }
+        </div>
+
+        ${
+          achievement
+            ? (
+                achievement.key === "none"
+                  ? `
+                    <div class="latest-achievement-result not-reached">
+                      <strong>📌 本次尚未達成初級目標</strong><br>
+                      實際平均 ${formatScore(achievement.actualAverage)}，
+                      初級目標 ${formatScore(achievement.targetAverage)}。
+                      這次成績仍會成為下一次目標設定的參考。
+                    </div>
+                  `
+                  : `
+                    <div class="latest-achievement-result">
+                      <strong>🎉 已達成${escapeHtml(achievement.label)}！</strong><br>
+                      實際平均 ${formatScore(achievement.actualAverage)}，
+                      該級目標 ${formatScore(achievement.targetAverage)}。
+                      ${
+                        achievement.reward
+                          ? `<div class="latest-achievement-reward">🎟 依累加規則，本次共可獲得：${escapeHtml(achievement.reward)}</div>`
+                          : ""
+                      }
+                    </div>
+                  `
+              )
+            : ""
+        }
+      `;
+    }
+
     function renderExamTarget(targetMeta,targetStudent,actualResult=null) {
       if (!targetMeta || !targetStudent || !targetMeta.published) {
         $("examTargetSection").style.display = "none";
@@ -5820,70 +6056,152 @@
       }
     }
 
-    async function loadStudentExamTarget(studentKey,nextExam,records) {
-      $("examTargetSection").style.display = "none";
+    async function loadStudentExamTarget(
+      studentKey,
+      nextExam,
+      records
+    ) {
+      $("examTargetSection").style.display =
+        "none";
 
-      const tryCodes = [];
+      $("latestTargetAchievement").style.display =
+        "none";
 
-      if (nextExam) {
-        tryCodes.push({
-          code:targetCodeFromExam(nextExam),
-          actualResult:null
-        });
-      }
+      $("latestTargetAchievement").innerHTML =
+        "";
 
-      const latestRecord = records?.at(-1);
+      const getPublishedTarget =
+        async (codeCandidates) => {
+          for (const code of codeCandidates) {
+            if (!code) continue;
+
+            const root =
+              await getDoc(
+                doc(
+                  db,
+                  "examTargets",
+                  code
+                )
+              );
+
+            if (!root.exists()) {
+              continue;
+            }
+
+            const meta =
+              root.data();
+
+            if (!meta.published) {
+              continue;
+            }
+
+            const studentSnap =
+              await getDoc(
+                doc(
+                  db,
+                  "examTargets",
+                  code,
+                  "students",
+                  studentKey
+                )
+              );
+
+            if (!studentSnap.exists()) {
+              continue;
+            }
+
+            return {
+              code,
+              meta,
+              studentTarget:
+                studentSnap.data()
+            };
+          }
+
+          return null;
+        };
+
+      // --------------------------------------------------------
+      // A. 先處理「最近一次已經考完的段考」成果
+      // --------------------------------------------------------
+      const validRecords =
+        (records || [])
+          .filter(item =>
+            [
+              "chinese",
+              "english",
+              "math",
+              "science",
+              "social",
+              "total",
+              "average"
+            ].some(
+              key =>
+                scoreNumber(
+                  item.result?.[key]
+                ) !== null
+            )
+          );
+
+      const latestRecord =
+        validRecords.at(-1);
 
       if (latestRecord?.exam) {
-        const latestCode =
-          latestRecord.exam.examCode ||
-          targetCodeFromExam(latestRecord.exam);
+        const latestCandidates = [
+          targetCodeFromExam(
+            latestRecord.exam
+          ),
+          latestRecord.exam.examCode
+        ].filter(
+          (value,index,array) =>
+            value &&
+            array.indexOf(value) === index
+        );
 
-        if (!tryCodes.some(item => item.code === latestCode)) {
-          tryCodes.push({
-            code:latestCode,
-            actualResult:latestRecord.result
-          });
+        const previousTarget =
+          await getPublishedTarget(
+            latestCandidates
+          );
+
+        if (previousTarget) {
+          renderLatestTargetAchievement(
+            previousTarget.meta,
+            previousTarget.studentTarget,
+            latestRecord.result
+          );
         }
       }
 
-      for (const item of tryCodes) {
-        const root =
-          await getDoc(
-            doc(
-              db,
-              "examTargets",
-              item.code
-            )
-          );
-
-        if (!root.exists()) continue;
-
-        const meta = root.data();
-
-        if (!meta.published) continue;
-
-        const studentTarget =
-          await getDoc(
-            doc(
-              db,
-              "examTargets",
-              item.code,
-              "students",
-              studentKey
-            )
-          );
-
-        if (!studentTarget.exists()) continue;
-
-        renderExamTarget(
-          meta,
-          studentTarget.data(),
-          item.actualResult
-        );
-
+      // --------------------------------------------------------
+      // B. 再處理「下一次段考」已發布的新目標
+      // --------------------------------------------------------
+      if (!nextExam) {
         return;
       }
+
+      const nextCandidates = [
+        targetCodeFromExam(nextExam),
+        nextExam.examCode
+      ].filter(
+        (value,index,array) =>
+          value &&
+          array.indexOf(value) === index
+      );
+
+      const nextTarget =
+        await getPublishedTarget(
+          nextCandidates
+        );
+
+      if (!nextTarget) {
+        return;
+      }
+
+      renderExamTarget(
+        nextTarget.meta,
+        nextTarget.studentTarget,
+        null
+      );
     }
 
     async function queryStudent() {
