@@ -897,6 +897,86 @@ tbody tr:hover td:nth-child(1),tbody tr:hover td:nth-child(2) {
 .resource-list{display:grid;gap:9px;margin-top:10px}
 .resource-link{display:block;padding:10px 12px;border-radius:11px;background:#fff;border:1px solid #e2daef;text-decoration:none;color:#655083;font-weight:900}
 .resource-link small{display:block;color:#8a8197;font-weight:700;margin-top:3px}
+
+.achievement-control-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px
+}
+.achievement-table .reward-status{
+  display:inline-flex;
+  align-items:center;
+  padding:5px 9px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900
+}
+.reward-status.pending{
+  background:#fff3df;
+  color:#996728
+}
+.reward-status.issued{
+  background:#eaf7ee;
+  color:#4b7f59
+}
+.reward-status.none{
+  background:#eef2f5;
+  color:#6d7884
+}
+.achievement-level{
+  display:inline-flex;
+  align-items:center;
+  padding:5px 9px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  white-space:nowrap
+}
+.achievement-level.level1{
+  background:#eef8f1;
+  color:#4d7f59
+}
+.achievement-level.level2{
+  background:#eef3ff;
+  color:#4f68a0
+}
+.achievement-level.level3{
+  background:#fff1df;
+  color:#a06b24
+}
+.achievement-level.none{
+  background:#f2f3f5;
+  color:#747c86
+}
+.reward-action-btn{
+  min-height:34px;
+  padding:6px 10px;
+  border:0;
+  border-radius:9px;
+  cursor:pointer;
+  font-weight:900;
+  background:#eaf7ee;
+  color:#477756
+}
+.reward-action-btn.undo{
+  background:#f2f3f5;
+  color:#69727c
+}
+.reward-action-btn:disabled{
+  opacity:.45;
+  cursor:not-allowed
+}
+@media(max-width:900px){
+  .achievement-control-grid{
+    grid-template-columns:1fr 1fr
+  }
+}
+@media(max-width:560px){
+  .achievement-control-grid{
+    grid-template-columns:1fr
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1204,11 +1284,11 @@ tbody tr:hover td:nth-child(1),tbody tr:hover td:nth-child(2) {
     </div>
 
     <div class="target-help-box" style="margin-top:12px;background:#fff8e9;border-left-color:#e2aa4f">
-      <strong>🎟 生活札記免寫卷獎勵會依學生的「初級目標」自動決定：</strong><br>
-      初級目標未滿 80 分：初級 ×1、次級 ×2、最高 ×3。<br>
-      初級目標 80～89 分：初級 ×1、次級 ×2、最高 ×4。<br>
-      初級目標 90 分以上：初級 ×2、次級 ×3、最高 ×5。<br>
-      若因分數已很高，只剩兩個不同目標：初級 ×3、最高 ×6。
+      <strong>🎟 生活札記免寫卷採「累加制」：</strong><br>
+      初級目標未滿 80 分：初級 +1；達次級再 +2，累計 3；達最高再 +3，累計 6。<br>
+      初級目標 80～89 分：初級 +1；達次級再 +2，累計 3；達最高再 +4，累計 7。<br>
+      初級目標 90 分以上：初級 +2；達次級再 +3，累計 5；達最高再 +5，累計 10。<br>
+      若因分數已很高只剩兩個不同目標：初級 +3；最高再 +6，最高累計 9 張。
     </div>
 
     <div class="field" style="margin-top:10px;max-width:520px">
@@ -1234,7 +1314,7 @@ tbody tr:hover td:nth-child(1),tbody tr:hover td:nth-child(2) {
       <strong>三級目標原則：</strong>
       近期成績採「最近一次50%＋前一次30%＋前二次20%」，再用「近期加權70%＋歷次平均30%」得到目前實力基準；
       歷次最高分只作為次級與最高目標的合理上限參考。初級容易一些，次級與最高逐步增加，但分數越高，級距越小。
-      若因接近滿分只剩兩個不同目標，系統會自動改成兩階挑戰與 3／6 張免寫卷獎勵。
+      若因接近滿分只剩兩個不同目標，系統會自動改成兩階挑戰；初級 3 張、最高再加 6 張，最高累計 9 張。
     </div>
 
     <div id="targetStatusBanner" class="target-status-banner">
@@ -1266,6 +1346,81 @@ tbody tr:hover td:nth-child(1),tbody tr:hover td:nth-child(2) {
           </tr>
         </thead>
         <tbody id="targetTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="section-title">🏅 段考達標與獎勵發放</div>
+    <div class="help">
+      這裡和「下一次目標設定」分開。可查詢任何一次已發布的段考目標，直接比對該次實際成績，
+      查看學生達到初級／次級／最高哪一級，並登記生活札記免寫卷是否已經發放。
+      就算你已經發布第二次段考目標，第一次段考的達標結果仍可在這裡重新查回。
+    </div>
+
+    <div class="achievement-control-grid" style="margin-top:16px">
+      <div class="field">
+        <label>學年度</label>
+        <input id="achievementSchoolYear" type="number" value="115">
+      </div>
+      <div class="field">
+        <label>學期</label>
+        <select id="achievementSemester">
+          <option value="1">上學期</option>
+          <option value="2">下學期</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>第幾次段考</label>
+        <select id="achievementExamNo">
+          <option value="1">第一次段考</option>
+          <option value="2">第二次段考</option>
+          <option value="3">第三次段考</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>顯示範圍</label>
+        <select id="achievementFilter">
+          <option value="all">全部學生</option>
+          <option value="pending">只看達標但未發放</option>
+          <option value="issued">只看已發放</option>
+          <option value="notReached">只看未達標</option>
+          <option value="noResult">只看尚無成績</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="achievementLoadBtn" class="btn">查詢達標結果</button>
+      <button id="achievementUseTargetBtn" class="btn btn-secondary">帶入上方目標設定</button>
+      <button id="achievementMarkAllBtn" class="btn btn-secondary">將目前所有未發放者登記為已發放</button>
+    </div>
+
+    <div id="achievementMessage" class="message"></div>
+    <div id="achievementTitle" class="target-status-banner">尚未查詢段考達標結果。</div>
+    <div id="achievementSummary" class="summary" style="margin-top:12px"></div>
+
+    <div class="table-tip" style="margin-top:12px">
+      「達標級別」會依當時發布的達標判定方式計算；獎勵採累加制。
+      已發放狀態會寫回該次段考的學生目標資料，不會因你發布下一次目標而消失。
+    </div>
+
+    <div class="table-wrap">
+      <table class="achievement-table">
+        <thead>
+          <tr>
+            <th>座號</th>
+            <th>姓名</th>
+            <th>實際平均</th>
+            <th>🌱 初級</th>
+            <th>⭐ 次級</th>
+            <th>🏆 最高</th>
+            <th>達標級別</th>
+            <th>🎟 累計獎勵</th>
+            <th>發放狀態</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="achievementTableBody"></tbody>
       </table>
     </div>
   </div>
@@ -1558,7 +1713,7 @@ let parsedExams=[],currentExamRows=[],currentExamSort={
   key:"seat",asc:true
 },historyRows=[],historyExams=[],historySort={
   key:"seat",asc:true
-},studentDirectory=new Map(),studentAverageChart=null,studentRankChart=null,classSubjectChart=null,classAverageChart=null,examScopeCache=new Map(),examScopeCacheLoaded=false,targetRows=[],targetLoadedMeta=null;
+},studentDirectory=new Map(),studentAverageChart=null,studentRankChart=null,classSubjectChart=null,classAverageChart=null,examScopeCache=new Map(),examScopeCacheLoaded=false,targetRows=[],targetLoadedMeta=null,achievementRows=[],achievementLoadedMeta=null;
 const SUBJECTS=[{
   key:"chinese",avgKey:"chineseAvg",name:"國文",icon:"📖"
 },{
@@ -2243,14 +2398,16 @@ function normalizeThreeTargets(level1,level2,level3){
 function rewardPolicyForTargets(level1,level2,level3,targetCount=null){
   const normalized=normalizeThreeTargets(level1,level2,level3);
   const count=targetCount??normalized.targetCount;
-  const initial=scoreNumber(level1);
+  const initial=scoreNumber(normalized.level1);
+
+  const rewardText=n=>n>0?`生活札記免寫卷 ×${n}`:"";
 
   if(count<=0||initial===null){
     return {
       targetCount:0,
-      reward1:"",
-      reward2:"",
-      reward3:"",
+      add1:0,add2:0,add3:0,
+      total1:0,total2:0,total3:0,
+      reward1:"",reward2:"",reward3:"",
       label:"尚未設定"
     };
   }
@@ -2258,49 +2415,48 @@ function rewardPolicyForTargets(level1,level2,level3,targetCount=null){
   if(count===1){
     return {
       targetCount:1,
-      reward1:"生活札記免寫卷 ×6",
-      reward2:"",
-      reward3:"",
-      label:"單一滿分／極高目標：達成 ×6"
+      add1:6,add2:0,add3:0,
+      total1:6,total2:0,total3:0,
+      reward1:rewardText(6),reward2:"",reward3:"",
+      label:"單一最高挑戰：達成累計 6 張"
     };
   }
 
   if(count===2){
     return {
       targetCount:2,
-      reward1:"生活札記免寫卷 ×3",
-      reward2:"",
-      reward3:"生活札記免寫卷 ×6",
-      label:"兩階目標：初級 ×3／最高 ×6"
+      add1:3,add2:0,add3:6,
+      total1:3,total2:0,total3:9,
+      reward1:rewardText(3),reward2:"",reward3:rewardText(9),
+      label:"兩階目標：初級 3／最高累計 9 張"
     };
   }
+
+  let add1=1,add2=2,add3=3;
 
   if(initial>=90){
-    return {
-      targetCount:3,
-      reward1:"生活札記免寫卷 ×2",
-      reward2:"生活札記免寫卷 ×3",
-      reward3:"生活札記免寫卷 ×5",
-      label:"90分以上：2／3／5張"
-    };
+    add1=2;add2=3;add3=5;
+  }else if(initial>=80){
+    add1=1;add2=2;add3=4;
   }
 
-  if(initial>=80){
-    return {
-      targetCount:3,
-      reward1:"生活札記免寫卷 ×1",
-      reward2:"生活札記免寫卷 ×2",
-      reward3:"生活札記免寫卷 ×4",
-      label:"80～89分：1／2／4張"
-    };
-  }
+  const total1=add1;
+  const total2=add1+add2;
+  const total3=add1+add2+add3;
 
   return {
     targetCount:3,
-    reward1:"生活札記免寫卷 ×1",
-    reward2:"生活札記免寫卷 ×2",
-    reward3:"生活札記免寫卷 ×3",
-    label:"未滿80分：1／2／3張"
+    add1,add2,add3,
+    total1,total2,total3,
+    reward1:rewardText(total1),
+    reward2:rewardText(total2),
+    reward3:rewardText(total3),
+    label:
+      initial>=90
+        ?"90分以上：累計 2／5／10 張"
+        :initial>=80
+          ?"80～89分：累計 1／3／7 張"
+          :"未滿80分：累計 1／3／6 張"
   };
 }
 
@@ -2698,7 +2854,7 @@ async function saveTargets({publish=false,lock=false}={}){
     published:!!publish,
     locked:!!lock,
     rewardPolicy:"dynamic_by_initial_target",
-    rewardPolicyVersion:2,
+    rewardPolicyVersion:3,
     qualificationRule:$("targetQualificationRule").value,
     updatedAt:serverTimestamp(),
     updatedBy:auth.currentUser.email||""
@@ -4212,6 +4368,627 @@ function renderPriorities(analyses){
       r.overallPriority
     }
     </td></tr>`).join('');$('overviewTableBody').dataset.loaded='1';$('overviewTableWrap').scrollTop=0;$('overviewTableWrap').scrollLeft=0}catch(e){console.error(e);showMessage($('overviewMessage'),'處方總覽載入失敗。','error')}finally{$('loadOverviewBtn').disabled=false;$('loadOverviewBtn').textContent='載入處方總覽'}}
+
+
+    function getAchievementMetaFromInputs(){
+      return {
+        schoolYear:Number($("achievementSchoolYear").value),
+        semester:Number($("achievementSemester").value),
+        examNo:Number($("achievementExamNo").value)
+      };
+    }
+
+    function countAchievementSubjects(result,subjectTargets,levelKey){
+      if(!result)return 0;
+
+      return SUBJECTS.reduce((count,subject)=>{
+        const actual=scoreNumber(result?.[subject.key]);
+        const target=scoreNumber(subjectTargets?.[subject.key]?.[levelKey]);
+
+        return count + (
+          actual!==null &&
+          target!==null &&
+          actual>=target
+            ? 1
+            : 0
+        );
+      },0);
+    }
+
+    function evaluateAdminAchievement(targetMeta,targetStudent,result){
+      const actualAverage=scoreNumber(result?.average);
+
+      if(actualAverage===null){
+        return {
+          key:"noResult",
+          label:"尚無成績",
+          rewardCount:0,
+          rewardText:"",
+          reachedSubjects:0
+        };
+      }
+
+      const normalized=normalizeThreeTargets(
+        targetStudent.level1,
+        targetStudent.level2,
+        targetStudent.level3
+      );
+
+      const rewards=rewardPolicyForTargets(
+        normalized.level1,
+        normalized.level2,
+        normalized.level3,
+        targetStudent.targetCount??normalized.targetCount
+      );
+
+      const rule=
+        targetMeta.qualificationRule ||
+        "overall_plus_3subjects";
+
+      const candidates=
+        rewards.targetCount===1
+          ?[
+              {
+                key:"level1",
+                label:"最高挑戰",
+                target:normalized.level1,
+                rewardCount:rewards.total1,
+                rewardText:rewards.reward1
+              }
+            ]
+          :rewards.targetCount===2
+            ?[
+                {
+                  key:"level3",
+                  label:"最高目標",
+                  target:normalized.level3,
+                  rewardCount:rewards.total3,
+                  rewardText:rewards.reward3
+                },
+                {
+                  key:"level1",
+                  label:"初級目標",
+                  target:normalized.level1,
+                  rewardCount:rewards.total1,
+                  rewardText:rewards.reward1
+                }
+              ]
+            :[
+                {
+                  key:"level3",
+                  label:"最高目標",
+                  target:normalized.level3,
+                  rewardCount:rewards.total3,
+                  rewardText:rewards.reward3
+                },
+                {
+                  key:"level2",
+                  label:"次級目標",
+                  target:normalized.level2,
+                  rewardCount:rewards.total2,
+                  rewardText:rewards.reward2
+                },
+                {
+                  key:"level1",
+                  label:"初級目標",
+                  target:normalized.level1,
+                  rewardCount:rewards.total1,
+                  rewardText:rewards.reward1
+                }
+              ];
+
+      for(const candidate of candidates){
+        const targetAverage=scoreNumber(candidate.target);
+        if(targetAverage===null)continue;
+
+        const reachedSubjects=
+          countAchievementSubjects(
+            result,
+            targetStudent.subjectTargets||{},
+            candidate.key
+          );
+
+        const averageReached=
+          actualAverage>=targetAverage;
+
+        const subjectReached=
+          rule==="overall_only" ||
+          reachedSubjects>=3;
+
+        if(averageReached&&subjectReached){
+          return {
+            ...candidate,
+            actualAverage,
+            reachedSubjects
+          };
+        }
+      }
+
+      return {
+        key:"none",
+        label:"未達初級",
+        rewardCount:0,
+        rewardText:"",
+        actualAverage,
+        reachedSubjects:
+          countAchievementSubjects(
+            result,
+            targetStudent.subjectTargets||{},
+            "level1"
+          )
+      };
+    }
+
+    function achievementLevelClass(key){
+      if(key==="level3")return "level3";
+      if(key==="level2")return "level2";
+      if(key==="level1")return "level1";
+      return "none";
+    }
+
+    function filterAchievementRows(rows){
+      const filter=$("achievementFilter").value;
+
+      if(filter==="pending"){
+        return rows.filter(row=>
+          row.achievement.rewardCount>0 &&
+          !row.rewardIssued
+        );
+      }
+
+      if(filter==="issued"){
+        return rows.filter(row=>
+          row.rewardIssued
+        );
+      }
+
+      if(filter==="notReached"){
+        return rows.filter(row=>
+          row.achievement.key==="none"
+        );
+      }
+
+      if(filter==="noResult"){
+        return rows.filter(row=>
+          row.achievement.key==="noResult"
+        );
+      }
+
+      return rows;
+    }
+
+    function renderAchievementSummary(){
+      const rows=achievementRows;
+
+      const reached=rows.filter(r=>
+        ["level1","level2","level3"].includes(r.achievement.key)
+      );
+
+      const pending=reached.filter(r=>!r.rewardIssued);
+      const issued=reached.filter(r=>r.rewardIssued);
+
+      const level1=rows.filter(r=>r.achievement.key==="level1").length;
+      const level2=rows.filter(r=>r.achievement.key==="level2").length;
+      const level3=rows.filter(r=>r.achievement.key==="level3").length;
+      const none=rows.filter(r=>r.achievement.key==="none").length;
+      const noResult=rows.filter(r=>r.achievement.key==="noResult").length;
+
+      $("achievementSummary").innerHTML=`
+        <div class="summary-card">
+          <div class="summary-label">初級達標</div>
+          <div class="summary-value">${level1}</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">次級達標</div>
+          <div class="summary-value">${level2}</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">最高達標</div>
+          <div class="summary-value positive">${level3}</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">待發放</div>
+          <div class="summary-value negative">${pending.length}</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">已發放</div>
+          <div class="summary-value positive">${issued.length}</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">未達標／無成績</div>
+          <div class="summary-value">${none+noResult}</div>
+        </div>
+      `;
+    }
+
+    function renderAchievementTable(){
+      const rows=filterAchievementRows(achievementRows);
+
+      $("achievementTableBody").innerHTML=
+        rows.length
+          ?rows.map(row=>{
+              const a=row.achievement;
+              const reached=a.rewardCount>0;
+
+              const statusHtml=
+                reached
+                  ?(
+                      row.rewardIssued
+                        ?`<span class="reward-status issued">✓ 已發放 ${row.rewardIssuedCount||a.rewardCount} 張</span>`
+                        :`<span class="reward-status pending">待發放</span>`
+                    )
+                  :`<span class="reward-status none">${a.key==="noResult"?"尚無成績":"無獎勵"}</span>`;
+
+              const actionHtml=
+                reached
+                  ?(
+                      row.rewardIssued
+                        ?`<button class="reward-action-btn undo" data-reward-toggle="${escapeHtml(row.studentKey)}" data-issued="1">取消已發放</button>`
+                        :`<button class="reward-action-btn" data-reward-toggle="${escapeHtml(row.studentKey)}" data-issued="0">登記已發放</button>`
+                    )
+                  :`<button class="reward-action-btn" disabled>無需發放</button>`;
+
+              return `
+                <tr>
+                  <td>${escapeHtml(normalizeSeat(row.seat))}</td>
+                  <td>${escapeHtml(row.name||"")}</td>
+                  <td><strong>${formatScore(a.actualAverage)}</strong></td>
+                  <td>${formatScore(row.level1)}</td>
+                  <td>${formatScore(row.level2)}</td>
+                  <td>${formatScore(row.level3)}</td>
+                  <td>
+                    <span class="achievement-level ${achievementLevelClass(a.key)}">
+                      ${escapeHtml(a.label)}
+                    </span>
+                  </td>
+                  <td>${a.rewardCount>0?`${a.rewardCount} 張`:"—"}</td>
+                  <td>${statusHtml}</td>
+                  <td>${actionHtml}</td>
+                </tr>
+              `;
+            }).join("")
+          :`<tr><td colspan="10">目前篩選條件下沒有資料。</td></tr>`;
+
+      $("achievementTableBody")
+        .querySelectorAll("[data-reward-toggle]")
+        .forEach(btn=>{
+          btn.addEventListener("click",async()=>{
+            const studentKey=btn.dataset.rewardToggle;
+            const currentlyIssued=btn.dataset.issued==="1";
+            await toggleRewardIssued(studentKey,!currentlyIssued);
+          });
+        });
+    }
+
+    async function loadAchievementResults(){
+      clearMessage($("achievementMessage"));
+
+      $("achievementLoadBtn").disabled=true;
+      $("achievementLoadBtn").textContent="查詢中...";
+
+      try{
+        const meta=getAchievementMetaFromInputs();
+        const targetId=targetDocId(meta);
+
+        const rootSnap=
+          await getDoc(
+            doc(db,"examTargets",targetId)
+          );
+
+        if(!rootSnap.exists()){
+          achievementRows=[];
+          achievementLoadedMeta=null;
+          $("achievementTableBody").innerHTML="";
+          $("achievementSummary").innerHTML="";
+          $("achievementTitle").textContent=
+            `${targetExamTitle(meta)}：找不到已儲存的目標資料。`;
+          showMessage(
+            $("achievementMessage"),
+            "這一次段考沒有找到目標資料，因此無法判定達標。",
+            "error"
+          );
+          return;
+        }
+
+        const targetMeta={
+          id:targetId,
+          ...rootSnap.data()
+        };
+
+        const exams=await getExamList();
+
+        const exam=
+          exams.find(item=>
+            Number(item.schoolYear)===Number(meta.schoolYear) &&
+            Number(item.semester)===Number(meta.semester) &&
+            Number(item.examNo)===Number(meta.examNo)
+          );
+
+        const resultCode=
+          exam?.examCode ||
+          exam?.id ||
+          targetId;
+
+        const [targetStudentsSnap,resultStudentsSnap]=
+          await Promise.all([
+            getDocs(
+              collection(
+                db,
+                "examTargets",
+                targetId,
+                "students"
+              )
+            ),
+            getDocs(
+              collection(
+                db,
+                "examResults",
+                resultCode,
+                "students"
+              )
+            )
+          ]);
+
+        const resultMap=new Map();
+
+        resultStudentsSnap.docs.forEach(item=>{
+          const data=item.data();
+          resultMap.set(
+            data.studentKey||item.id,
+            data
+          );
+        });
+
+        achievementRows=
+          targetStudentsSnap.docs
+            .map(item=>{
+              const targetStudent=item.data();
+              const studentKey=
+                targetStudent.studentKey||
+                item.id;
+
+              const result=
+                resultMap.get(studentKey)||
+                null;
+
+              return {
+                studentKey,
+                seat:
+                  result?.seat||
+                  targetStudent.seat||
+                  "",
+                name:
+                  result?.name||
+                  targetStudent.name||
+                  "",
+                level1:targetStudent.level1,
+                level2:targetStudent.level2,
+                level3:targetStudent.level3,
+                targetStudent,
+                result,
+                achievement:
+                  evaluateAdminAchievement(
+                    targetMeta,
+                    targetStudent,
+                    result
+                  ),
+                rewardIssued:
+                  !!targetStudent.rewardIssued,
+                rewardIssuedCount:
+                  Number(targetStudent.rewardIssuedCount)||0,
+                rewardIssuedAt:
+                  targetStudent.rewardIssuedAt||null
+              };
+            })
+            .sort((a,b)=>
+              Number(a.seat)-Number(b.seat)||
+              String(a.name).localeCompare(String(b.name),"zh-Hant")
+            );
+
+        achievementLoadedMeta={
+          ...targetMeta,
+          targetId,
+          resultCode
+        };
+
+        $("achievementTitle").innerHTML=
+          `<strong>${escapeHtml(targetMeta.title||targetExamTitle(meta))}</strong>｜
+           目標狀態：${targetMeta.published?"已發布":"草稿"}｜
+           達標規則：${
+             targetMeta.qualificationRule==="overall_only"
+               ?"只看五科總平均"
+               :"總平均＋至少3科達同級"
+           }`;
+
+        renderAchievementSummary();
+        renderAchievementTable();
+
+        showMessage(
+          $("achievementMessage"),
+          `已載入 ${achievementRows.length} 位學生的達標結果。`,
+          "success"
+        );
+      }catch(e){
+        console.error(e);
+        showMessage(
+          $("achievementMessage"),
+          `查詢達標結果失敗：${e.message||e}`,
+          "error"
+        );
+      }finally{
+        $("achievementLoadBtn").disabled=false;
+        $("achievementLoadBtn").textContent="查詢達標結果";
+      }
+    }
+
+    async function toggleRewardIssued(studentKey,shouldIssue){
+      if(!achievementLoadedMeta||!studentKey)return;
+
+      const row=
+        achievementRows.find(r=>
+          r.studentKey===studentKey
+        );
+
+      if(!row||row.achievement.rewardCount<=0)return;
+
+      try{
+        await setDoc(
+          doc(
+            db,
+            "examTargets",
+            achievementLoadedMeta.targetId,
+            "students",
+            studentKey
+          ),
+          {
+            rewardIssued:!!shouldIssue,
+            rewardIssuedCount:
+              shouldIssue
+                ?row.achievement.rewardCount
+                :0,
+            rewardIssuedAt:
+              shouldIssue
+                ?serverTimestamp()
+                :null,
+            rewardIssuedBy:
+              shouldIssue
+                ?(auth.currentUser?.email||"")
+                :""
+          },
+          {merge:true}
+        );
+
+        row.rewardIssued=!!shouldIssue;
+        row.rewardIssuedCount=
+          shouldIssue
+            ?row.achievement.rewardCount
+            :0;
+
+        renderAchievementSummary();
+        renderAchievementTable();
+
+        showMessage(
+          $("achievementMessage"),
+          shouldIssue
+            ?`${normalizeSeat(row.seat)}號 ${row.name}：已登記發放 ${row.achievement.rewardCount} 張免寫卷。`
+            :`${normalizeSeat(row.seat)}號 ${row.name}：已取消已發放紀錄。`,
+          "success"
+        );
+      }catch(e){
+        console.error(e);
+        showMessage(
+          $("achievementMessage"),
+          `更新發放狀態失敗：${e.message||e}`,
+          "error"
+        );
+      }
+    }
+
+    async function markAllPendingRewardsIssued(){
+      if(!achievementLoadedMeta){
+        showMessage(
+          $("achievementMessage"),
+          "請先查詢一次段考達標結果。",
+          "error"
+        );
+        return;
+      }
+
+      const pending=
+        achievementRows.filter(row=>
+          row.achievement.rewardCount>0 &&
+          !row.rewardIssued
+        );
+
+      if(!pending.length){
+        showMessage(
+          $("achievementMessage"),
+          "目前沒有待發放的學生。",
+          "info"
+        );
+        return;
+      }
+
+      const ok=
+        confirm(
+          `確定要將目前 ${pending.length} 位達標學生全部登記為「已發放」嗎？`
+        );
+
+      if(!ok)return;
+
+      try{
+        const batch=writeBatch(db);
+
+        pending.forEach(row=>{
+          batch.set(
+            doc(
+              db,
+              "examTargets",
+              achievementLoadedMeta.targetId,
+              "students",
+              row.studentKey
+            ),
+            {
+              rewardIssued:true,
+              rewardIssuedCount:row.achievement.rewardCount,
+              rewardIssuedAt:serverTimestamp(),
+              rewardIssuedBy:auth.currentUser?.email||""
+            },
+            {merge:true}
+          );
+        });
+
+        await batch.commit();
+
+        pending.forEach(row=>{
+          row.rewardIssued=true;
+          row.rewardIssuedCount=row.achievement.rewardCount;
+        });
+
+        renderAchievementSummary();
+        renderAchievementTable();
+
+        showMessage(
+          $("achievementMessage"),
+          `已完成：${pending.length} 位學生全部登記為已發放。`,
+          "success"
+        );
+      }catch(e){
+        console.error(e);
+        showMessage(
+          $("achievementMessage"),
+          `批次登記失敗：${e.message||e}`,
+          "error"
+        );
+      }
+    }
+
+    $("achievementLoadBtn").onclick=
+      loadAchievementResults;
+
+    $("achievementFilter").onchange=
+      renderAchievementTable;
+
+    $("achievementUseTargetBtn").onclick=()=>{
+      $("achievementSchoolYear").value=
+        $("targetSchoolYear").value;
+
+      $("achievementSemester").value=
+        $("targetSemester").value;
+
+      $("achievementExamNo").value=
+        $("targetExamNo").value;
+
+      showMessage(
+        $("achievementMessage"),
+        "已帶入上方目前選擇的段考，可按「查詢達標結果」。",
+        "info"
+      );
+    };
+
+    $("achievementMarkAllBtn").onclick=
+      markAllPendingRewardsIssued;
+
 
     $('loadClassBtn').onclick=loadClassAnalysis;async function loadClassAnalysis(){clearMessage($('classMessage'));$('loadClassBtn').disabled=true;$('loadClassBtn').textContent='分析中...';try{const exams=await getExamList();if(!exams.length){showMessage($('classMessage'),'目前沒有段考資料。','error');return}const snaps=await Promise.all(exams.map(exam=>getDocs(collection(db,'examResults',exam.examCode||exam.id,'students')))),maps=snaps.map(s=>{const m=new Map();s.docs.forEach(d=>{const r=d.data();m.set(r.studentKey||d.id,r)});return m}),li=exams.length-1,pi=exams.length>=2?li-1:null,latest=exams[li],previous=pi!==null?exams[pi]:null,latestMap=maps[li],previousMap=pi!==null?maps[pi]:new Map(),changes=[];latestMap.forEach((s,key)=>{const p=previousMap.get(key);if(!p)return;const currentAvg=scoreNumber(s.average),previousAvg=scoreNumber(p.average);if(currentAvg===null||previousAvg===null)return;const c=currentAvg-previousAvg;if(Number.isFinite(c))changes.push({seat:normalizeSeat(s.seat),name:s.name,change:c})});const improved=changes.filter(x=>x.change>.5),declined=changes.filter(x=>x.change<-.5),stable=changes.filter(x=>Math.abs(x.change)<=.5),latestClassAvg=scoreNumber(latest.averageAvg),previousClassAvg=previous?scoreNumber(previous.averageAvg):null,avgChange=latestClassAvg!==null&&previousClassAvg!==null?latestClassAvg-previousClassAvg:null;$('classSummary').innerHTML=`<div class="summary-card"><div class="summary-label">最新班平均</div><div class="summary-value">${
       formatScore(latest.averageAvg)
