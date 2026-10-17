@@ -966,8 +966,15 @@ tbody tr:hover td:nth-child(1),tbody tr:hover td:nth-child(2) {
 <input id="excelFile" type="file" accept=".xlsx,.xls">
 </div>
 <div class="actions">
+<button id="templateBtn" class="btn btn-secondary">下載上傳格式範本</button>
 <button id="parseBtn" class="btn btn-blue">解析 Excel</button>
 <button id="importBtn" class="btn" disabled>同步到 Firebase</button>
+</div>
+<div class="help" style="margin-top:10px">
+<strong>建議新版格式：</strong>
+座號、姓名、國文、英文、數學、自然、社會、總分、平均、班級排名。<br>
+出生月日與末五碼若學生已存在系統中，可以不再放入；舊版含出生月日／末五碼的 Excel 仍可繼續匯入。<br>
+總分、平均、班級排名可由 Excel 公式計算；「各科平均」列可保留，也可由系統自動計算。
 </div>
 <div id="excelMessage" class="message">
 </div>
@@ -2832,91 +2839,550 @@ document.querySelectorAll('.tab').forEach(btn=>btn.onclick=async()=>{
     await loadStudentList();
   }
 });
+
+function normalizeExcelHeader(value){
+  return String(value??'')
+    .trim()
+    .replace(/\s+/g,'')
+    .replace(/[（）()]/g,'')
+    .toLowerCase();
+}
+
+function findHeaderIndex(header,aliases){
+  const normalized=(header||[]).map(normalizeExcelHeader);
+  for(const alias of aliases){
+    const idx=normalized.indexOf(normalizeExcelHeader(alias));
+    if(idx>=0)return idx;
+  }
+  return -1;
+}
+
+function detectExcelColumns(rows){
+  const header=rows?.[0]||[];
+
+  const map={
+    seat:findHeaderIndex(header,['座號','號碼','座次']),
+    name:findHeaderIndex(header,['姓名','學生姓名']),
+    birth:findHeaderIndex(header,['出生月日','生日','出生日期']),
+    last5:findHeaderIndex(header,['末五碼','身分證末五碼','身分證後五碼','查詢碼']),
+    chinese:findHeaderIndex(header,['國文','國語文']),
+    english:findHeaderIndex(header,['英文','英語']),
+    math:findHeaderIndex(header,['數學']),
+    science:findHeaderIndex(header,['自然','自然科學']),
+    social:findHeaderIndex(header,['社會']),
+    total:findHeaderIndex(header,['總分']),
+    average:findHeaderIndex(header,['平均','平均分數']),
+    rank:findHeaderIndex(header,['班級排名','班排','排名'])
+  };
+
+  // 相容最早版本固定欄位：
+  // A座號 B姓名 C出生月日 D末五碼 E國 F英 G數 H自 I社 J總分 K平均 L排名
+  if(map.seat<0&&map.name<0&&header.length>=9){
+    return {
+      seat:0,name:1,birth:2,last5:3,
+      chinese:4,english:5,math:6,science:7,social:8,
+      total:9,average:10,rank:11,
+      legacy:true
+    };
+  }
+
+  return map;
+}
+
+function validScoreValues(student){
+  return [student.chinese,student.english,student.math,student.science,student.social]
+    .filter(v=>v!==null&&v!==undefined&&Number.isFinite(Number(v)))
+    .map(Number);
+}
+
+function calculateStudentTotalAverage(student){
+  const scores=validScoreValues(student);
+  if(!scores.length){
+    return {total:null,average:null};
+  }
+  return {
+    total:scores.reduce((sum,v)=>sum+v,0),
+    average:scores.reduce((sum,v)=>sum+v,0)/scores.length
+  };
+}
+
+function calculateClassStats(students){
+  const avgOf=key=>{
+    const values=students
+      .map(s=>scoreNumber(s[key]))
+      .filter(v=>v!==null);
+    return values.length?mean(values):null;
+  };
+
+  return {
+    chineseAvg:avgOf('chinese'),
+    englishAvg:avgOf('english'),
+    mathAvg:avgOf('math'),
+    scienceAvg:avgOf('science'),
+    socialAvg:avgOf('social'),
+    totalAvg:avgOf('total'),
+    averageAvg:avgOf('average')
+  };
+}
+
+function resolveExistingStudentKey(seat,name){
+  const cleanName=String(name||'').trim();
+  const cleanSeat=normalizeSeat(seat);
+
+  const students=Array.from(studentDirectory.values());
+
+  const exact=students.find(s=>
+    normalizeSeat(s.seat)===cleanSeat &&
+    String(s.name||'').trim()===cleanName
+  );
+  if(exact)return exact.studentKey;
+
+  const sameName=students.filter(s=>
+    String(s.name||'').trim()===cleanName
+  );
+  if(sameName.length===1)return sameName[0].studentKey;
+
+  return null;
+}
+
+function assignRanksIfMissing(students){
+  const ranked=students
+    .map((student,index)=>({
+      student,index,average:scoreNumber(student.average)
+    }))
+    .filter(item=>item.average!==null)
+    .sort((a,b)=>b.average-a.average);
+
+  let previousAverage=null;
+  let previousRank=0;
+
+  ranked.forEach((item,index)=>{
+    if(item.student.rank!==null&&item.student.rank!==undefined)return;
+
+    const rank=
+      previousAverage!==null&&item.average===previousAverage
+        ? previousRank
+        : index+1;
+
+    item.student.rank=rank;
+    previousAverage=item.average;
+    previousRank=rank;
+  });
+}
+
+function downloadExcelTemplate(){
+  const wb=XLSX.utils.book_new();
+
+  const rows=[
+    ['座號','姓名','國文','英文','數學','自然','社會','總分','平均','班級排名']
+  ];
+
+  // 預留 30 位學生；總分、平均、班排直接放公式。
+  for(let r=2;r<=31;r++){
+    rows.push([
+      r-1,'','','','','','',
+      {f:`IF(COUNTA(C${r}:G${r})=0,"",SUM(C${r}:G${r}))`},
+      {f:`IF(COUNTA(C${r}:G${r})=0,"",AVERAGE(C${r}:G${r}))`},
+      {f:`IF(I${r}="","",RANK.EQ(I${r},$I$2:$I$31,0))`}
+    ]);
+  }
+
+  const avgRow=32;
+  rows.push([
+    '各科平均','',
+    {f:`IFERROR(AVERAGE(C2:C31),"")`},
+    {f:`IFERROR(AVERAGE(D2:D31),"")`},
+    {f:`IFERROR(AVERAGE(E2:E31),"")`},
+    {f:`IFERROR(AVERAGE(F2:F31),"")`},
+    {f:`IFERROR(AVERAGE(G2:G31),"")`},
+    {f:`IFERROR(AVERAGE(H2:H31),"")`},
+    {f:`IFERROR(AVERAGE(I2:I31),"")`},
+    ''
+  ]);
+
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+
+  ws['!cols']=[
+    {wch:8},{wch:12},{wch:9},{wch:9},{wch:9},
+    {wch:9},{wch:9},{wch:10},{wch:10},{wch:12}
+  ];
+
+  ws['!freeze']={xSplit:2,ySplit:1};
+
+  XLSX.utils.book_append_sheet(
+    wb,
+    ws,
+    '115上第一次段考'
+  );
+
+  XLSX.writeFile(
+    wb,
+    '段考成績上傳格式範本.xlsx'
+  );
+}
+
+$('templateBtn').onclick=downloadExcelTemplate;
+
+
 $('parseBtn').onclick=async()=>{
   clearMessage($('excelMessage'));
   $('sheetList').innerHTML='';
   $('importBtn').disabled=true;
+
   const file=$('excelFile').files[0];
+
   if(!file){
-    showMessage($('excelMessage'),'請先選擇 Excel 檔案。','error');
-    return
+    showMessage(
+      $('excelMessage'),
+      '請先選擇 Excel 檔案。',
+      'error'
+    );
+    return;
   }
+
   try{
-    const wb=XLSX.read(await file.arrayBuffer(),{
-      type:'array',cellDates:false
-    });
+    // 先載入既有學生資料。
+    // 新版 Excel 不需要再放生日／末五碼，而是由姓名＋座號對應原本 studentKey。
+    await loadStudentList();
+
+    const wb=XLSX.read(
+      await file.arrayBuffer(),
+      {
+        type:'array',
+        cellDates:false
+      }
+    );
+
     const exams=[];
+
     for(const sheetName of wb.SheetNames){
       const info=parseSheetName(sheetName);
+
       if(!info){
         exams.push({
-          sheetName,valid:false,errors:['工作表名稱無法辨識']
+          sheetName,
+          valid:false,
+          errors:['工作表名稱無法辨識，請使用例如「115上第一次段考」']
         });
-        continue
+        continue;
       }
-      const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{
-        header:1,raw:true,defval:null
+
+      const rows=XLSX.utils.sheet_to_json(
+        wb.Sheets[sheetName],
+        {
+          header:1,
+          raw:true,
+          defval:null
+        }
+      );
+
+      const columns=detectExcelColumns(rows);
+      const requiredMissing=[];
+
+      [
+        ['座號','seat'],
+        ['姓名','name'],
+        ['國文','chinese'],
+        ['英文','english'],
+        ['數學','math'],
+        ['自然','science'],
+        ['社會','social']
+      ].forEach(([label,key])=>{
+        if(columns[key]<0)requiredMissing.push(label);
       });
-      const classCode=getClassCode(info.schoolYear),students=[];
+
+      if(requiredMissing.length){
+        exams.push({
+          ...info,
+          sheetName,
+          valid:false,
+          errors:[
+            `缺少必要欄位：${requiredMissing.join('、')}`
+          ]
+        });
+        continue;
+      }
+
+      const classCode=getClassCode(info.schoolYear);
+      const students=[];
       let averageRow=null;
-      for(let i=1;
-      i<rows.length;
-      i++){
+
+      for(let i=1;i<rows.length;i++){
         const row=rows[i];
         if(!row)continue;
-        const first=String(row[0]??'').trim();
+
+        const first=
+          String(
+            row[columns.seat]??row[0]??''
+          ).trim();
+
         if(first==='各科平均'){
           averageRow=row;
-          continue
+          continue;
         }
-        const seat=Number(row[0]);
-        if(!Number.isInteger(seat)||seat<=0)continue;
-        const mmdd=padMMDD(row[2]),last5=padLast5(row[3]),studentKey=await createStudentKey(mmdd,last5),errors=[];
-        if(!row[1])errors.push('姓名空白');
-        if(!isValidMMDD(mmdd))errors.push('出生月日錯誤');
-        if(!/^\d{5}$/.test(last5))errors.push('末五碼錯誤');
-        students.push({
-          studentKey,classCode,seat:normalizeSeat(seat),name:String(row[1]??'').trim(),chinese:numberValue(row[4]),english:numberValue(row[5]),math:numberValue(row[6]),science:numberValue(row[7]),social:numberValue(row[8]),total:numberValue(row[9]),average:numberValue(row[10]),rank:numberValue(row[11]),errors
-        })
+
+        const seat=
+          Number(
+            row[columns.seat]
+          );
+
+        if(
+          !Number.isInteger(seat)||
+          seat<=0
+        ){
+          continue;
+        }
+
+        const name=
+          String(
+            row[columns.name]??''
+          ).trim();
+
+        const errors=[];
+        if(!name){
+          errors.push('姓名空白');
+        }
+
+        let studentKey=null;
+
+        // 若 Excel 還有舊版生日／末五碼，就沿用舊方式建立 key。
+        const hasCredentialColumns=
+          columns.birth>=0 &&
+          columns.last5>=0;
+
+        if(hasCredentialColumns){
+          const mmdd=
+            padMMDD(
+              row[columns.birth]
+            );
+
+          const last5=
+            padLast5(
+              row[columns.last5]
+            );
+
+          if(
+            isValidMMDD(mmdd) &&
+            /^\d{5}$/.test(last5)
+          ){
+            studentKey=
+              await createStudentKey(
+                mmdd,
+                last5
+              );
+          }else{
+            // 有欄位但內容空白／不完整時，改用既有學生主檔對應。
+            studentKey=
+              resolveExistingStudentKey(
+                seat,
+                name
+              );
+          }
+        }else{
+          studentKey=
+            resolveExistingStudentKey(
+              seat,
+              name
+            );
+        }
+
+        if(!studentKey){
+          errors.push(
+            '找不到既有學生主檔；請確認座號、姓名是否與系統一致。若為第一次建立的新生，請先使用含出生月日與末五碼的舊格式建立學生資料。'
+          );
+        }
+
+        const student={
+          studentKey,
+          classCode,
+          seat:normalizeSeat(seat),
+          name,
+          chinese:numberValue(row[columns.chinese]),
+          english:numberValue(row[columns.english]),
+          math:numberValue(row[columns.math]),
+          science:numberValue(row[columns.science]),
+          social:numberValue(row[columns.social]),
+          total:
+            columns.total>=0
+              ? numberValue(row[columns.total])
+              : null,
+          average:
+            columns.average>=0
+              ? numberValue(row[columns.average])
+              : null,
+          rank:
+            columns.rank>=0
+              ? numberValue(row[columns.rank])
+              : null,
+          errors
+        };
+
+        const calculated=
+          calculateStudentTotalAverage(
+            student
+          );
+
+        if(student.total===null){
+          student.total=
+            calculated.total;
+        }
+
+        if(student.average===null){
+          student.average=
+            calculated.average;
+        }
+
+        students.push(student);
       }
+
+      assignRanksIfMissing(students);
+
       const errors=[];
-      if(!students.length)errors.push('沒有學生資料');
-      if(!averageRow)errors.push('找不到各科平均');
+
+      if(!students.length){
+        errors.push('沒有學生資料');
+      }
+
+      // 有「各科平均」列就使用；沒有則由系統自動計算。
+      let stats=null;
+
+      if(averageRow){
+        stats={
+          chineseAvg:
+            columns.chinese>=0
+              ? numberValue(averageRow[columns.chinese])
+              : null,
+          englishAvg:
+            columns.english>=0
+              ? numberValue(averageRow[columns.english])
+              : null,
+          mathAvg:
+            columns.math>=0
+              ? numberValue(averageRow[columns.math])
+              : null,
+          scienceAvg:
+            columns.science>=0
+              ? numberValue(averageRow[columns.science])
+              : null,
+          socialAvg:
+            columns.social>=0
+              ? numberValue(averageRow[columns.social])
+              : null,
+          totalAvg:
+            columns.total>=0
+              ? numberValue(averageRow[columns.total])
+              : null,
+          averageAvg:
+            columns.average>=0
+              ? numberValue(averageRow[columns.average])
+              : null
+        };
+
+        // 若公式尚未由 Excel 計算出 cached value，就用學生資料補算。
+        const calculatedStats=
+          calculateClassStats(
+            students
+          );
+
+        Object.keys(stats).forEach(key=>{
+          if(stats[key]===null){
+            stats[key]=
+              calculatedStats[key];
+          }
+        });
+      }else{
+        stats=
+          calculateClassStats(
+            students
+          );
+      }
+
       exams.push({
-        ...info,sheetName,classCode,students,stats:averageRow?{
-          chineseAvg:numberValue(averageRow[4]),englishAvg:numberValue(averageRow[5]),mathAvg:numberValue(averageRow[6]),scienceAvg:numberValue(averageRow[7]),socialAvg:numberValue(averageRow[8]),totalAvg:numberValue(averageRow[9]),averageAvg:numberValue(averageRow[10])
-        }
-        :null,errors,valid:errors.length===0&&students.every(s=>s.errors.length===0)
-      })
+        ...info,
+        sheetName,
+        classCode,
+        students,
+        stats,
+        errors,
+        valid:
+          errors.length===0 &&
+          students.every(
+            student=>
+              student.errors.length===0
+          )
+      });
     }
+
     parsedExams=exams;
     renderParsedSheets();
-    const invalid=exams.filter(e=>!e.valid).length;
-    if(invalid)showMessage($('excelMessage'),`解析完成，但有 ${invalid} 個工作表需要檢查。`,'error');
-    else{
+
+    const invalid=
+      exams.filter(
+        exam=>!exam.valid
+      ).length;
+
+    if(invalid){
+      showMessage(
+        $('excelMessage'),
+        `解析完成，但有 ${invalid} 個工作表需要檢查。新版格式只需要座號、姓名與五科成績；班級排名可以保留。`,
+        'error'
+      );
+    }else{
       $('importBtn').disabled=false;
-      showMessage($('excelMessage'),`成功解析 ${exams.length} 次段考，可以同步。`,'success')
+
+      showMessage(
+        $('excelMessage'),
+        `成功解析 ${exams.length} 次段考，可以同步。`,
+        'success'
+      );
     }
   }catch(e){
     console.error(e);
-    showMessage($('excelMessage'),'Excel 解析失敗。','error')
+
+    showMessage(
+      $('excelMessage'),
+      'Excel 解析失敗：'+
+      (e.message||e),
+      'error'
+    );
   }
 };
+
 function renderParsedSheets(){
   $('sheetList').innerHTML='';
   parsedExams.forEach(exam=>{
     const d=document.createElement('div');
     d.className='sheet-card';
-    d.innerHTML=`<div class="sheet-title">${escapeHtml(exam.examName||exam.sheetName)}</div><div class="sheet-info"><span class="${exam.valid?'sheet-ok':'sheet-error'}">${exam.valid?'✓ 資料正常':'✕ 無法匯入'}</span>${exam.valid?`<br>班級：${
-      escapeHtml(exam.classCode)
-    }
-    <br>有效學生：${
-      exam.students.length
-    }
-     人<br>班平均：${
-      formatScore(exam.stats.averageAvg)
-    }
-    `:''}</div>`;
+    const detail=exam.valid
+      ? `<br>班級：${escapeHtml(exam.classCode)}
+         <br>有效學生：${exam.students.length} 人
+         <br>班平均：${formatScore(exam.stats?.averageAvg)}`
+      : `<br><strong>原因：</strong>${
+          escapeHtml(
+            [
+              ...(exam.errors||[]),
+              ...((exam.students||[])
+                .flatMap(student=>
+                  (student.errors||[])
+                    .map(error=>`${student.seat||''}號 ${student.name||''}：${error}`)
+                ))
+            ]
+            .slice(0,8)
+            .join('；')
+          )
+        }`;
+
+    d.innerHTML=`
+      <div class="sheet-title">
+        ${escapeHtml(exam.examName||exam.sheetName)}
+      </div>
+      <div class="sheet-info">
+        <span class="${exam.valid?'sheet-ok':'sheet-error'}">
+          ${exam.valid?'✓ 資料正常':'✕ 無法匯入'}
+        </span>
+        ${detail}
+      </div>
+    `;
     $('sheetList').appendChild(d)
   })
 }
