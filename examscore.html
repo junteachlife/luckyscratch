@@ -1033,6 +1033,65 @@
   }
 }
 
+
+.social-subject-tabs{
+  display:grid;
+  gap:8px;
+  margin-top:12px
+}
+.social-subject-item{
+  border:1px solid #e4ded5;
+  border-radius:13px;
+  overflow:hidden;
+  background:#fff
+}
+.social-subject-btn{
+  width:100%;
+  border:0;
+  background:#fbfaf7;
+  padding:11px 13px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  cursor:pointer;
+  text-align:left;
+  font-weight:950
+}
+.social-subject-item.open .social-subject-btn{
+  background:#f4f8fc
+}
+.social-subject-content{
+  display:none;
+  padding:0 13px 13px
+}
+.social-subject-item.open .social-subject-content{
+  display:block
+}
+.compact-resource-list{
+  display:grid;
+  gap:7px;
+  margin-top:9px
+}
+.compact-resource-link{
+  display:block;
+  padding:9px 10px;
+  border-radius:10px;
+  border:1px solid #e6e0f0;
+  background:#fff;
+  text-decoration:none;
+  color:#655083;
+  font-size:13px;
+  font-weight:900;
+  line-height:1.45
+}
+.compact-resource-link small{
+  display:block;
+  margin-top:2px;
+  color:#8b8395;
+  font-weight:700
+}
+
 </style>
 </head>
 
@@ -3557,10 +3616,172 @@
       return stages;
     }
 
+
+    const BUILTIN_RESOURCE_BANK = {
+      chinese: [
+        {
+          name:"均一教育平台｜國中國文／出版社資源",
+          url:"https://www.junyiacademy.org/event/110-semester-sectionalexam/",
+          note:"可由康軒／翰林／南一專區進入對應國中國文資源"
+        }
+      ],
+      science: [
+        {
+          name:"均一教育平台｜國中自然／理化",
+          url:"https://www.junyiacademy.org/event/110-semester-sectionalexam/",
+          note:"含出版社資源與國中數理素養影片"
+        },
+        {
+          name:"因材網｜自然科學",
+          url:"https://adl.edu.tw/adl_material_tl_assessment.php",
+          note:"可依自然、物理化學、地科、生物分類進入"
+        }
+      ],
+      social: {
+        geography: [
+          {
+            name:"均一｜八年級地理",
+            url:"https://www.junyiacademy.org/topics/main-juni8-ge",
+            note:"中國、東北亞、東南亞與南亞等八年級地理主題"
+          },
+          {
+            name:"因材網｜地理",
+            url:"https://adl.edu.tw/adl_material_tl_assessment.php",
+            note:"社會科中的地理學習資源"
+          }
+        ],
+        history: [
+          {
+            name:"均一｜出版社段考資源入口",
+            url:"https://www.junyiacademy.org/event/110-semester-sectionalexam/",
+            note:"可選康軒／翰林／南一的國中歷史資源"
+          },
+          {
+            name:"因材網｜歷史",
+            url:"https://adl.edu.tw/adl_material_tl_assessment.php",
+            note:"社會科中的歷史學習資源"
+          }
+        ],
+        civics: [
+          {
+            name:"均一｜八上公民・政治篇",
+            url:"https://www.junyiacademy.org/middle-school-civics",
+            note:"現代國家與民主政治、中央政府、地方政府"
+          },
+          {
+            name:"因材網｜公民",
+            url:"https://adl.edu.tw/adl_material_tl_assessment.php",
+            note:"社會科中的公民學習資源"
+          }
+        ]
+      }
+    };
+
+    function compactResourceLinks(resources) {
+      if (!resources?.length) return "";
+
+      return `
+        <div class="compact-resource-list">
+          ${
+            resources.map(item => `
+              <a
+                class="compact-resource-link"
+                href="${escapeHtml(item.url)}"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                ${escapeHtml(item.name)}
+                ${
+                  item.note
+                    ? `<small>${escapeHtml(item.note)}</small>`
+                    : ""
+                }
+              </a>
+            `).join("")
+          }
+        </div>
+      `;
+    }
+
+    function renderSocialSubsections() {
+      return `
+        <div class="social-subject-tabs">
+
+          <div class="social-subject-item open">
+            <button type="button" class="social-subject-btn">
+              <span>🌏 地理</span>
+              <span>⌄</span>
+            </button>
+            <div class="social-subject-content">
+              <div class="target-progress-note">
+                先看圖名、方向、圖例、比例尺與縱橫軸；遇到區域比較題，要把位置、自然環境、人口與產業連起來判斷。
+              </div>
+              ${compactResourceLinks(BUILTIN_RESOURCE_BANK.social.geography)}
+            </div>
+          </div>
+
+          <div class="social-subject-item">
+            <button type="button" class="social-subject-btn">
+              <span>🏺 歷史</span>
+              <span>⌄</span>
+            </button>
+            <div class="social-subject-content">
+              <div class="target-progress-note">
+                先整理時間先後，再分原因、經過、結果與影響；史料題要從內容反推人物、制度與時代背景。
+              </div>
+              ${compactResourceLinks(BUILTIN_RESOURCE_BANK.social.history)}
+            </div>
+          </div>
+
+          <div class="social-subject-item">
+            <button type="button" class="social-subject-btn">
+              <span>🏛️ 公民</span>
+              <span>⌄</span>
+            </button>
+            <div class="social-subject-content">
+              <div class="target-progress-note">
+                生活案例題先抓人物身分、行為、權利義務與制度關鍵字；相近概念要用定義差異判斷。
+              </div>
+              ${compactResourceLinks(BUILTIN_RESOURCE_BANK.social.civics)}
+            </div>
+          </div>
+
+        </div>
+      `;
+    }
+
+    function wireSocialSubsections(scope) {
+      scope
+        .querySelectorAll(".social-subject-btn")
+        .forEach(btn => {
+          btn.addEventListener("click", () => {
+            const item =
+              btn.closest(".social-subject-item");
+
+            const container =
+              item.parentElement;
+
+            const wasOpen =
+              item.classList.contains("open");
+
+            container
+              .querySelectorAll(".social-subject-item")
+              .forEach(node =>
+                node.classList.remove("open")
+              );
+
+            if (!wasOpen) {
+              item.classList.add("open");
+            }
+          });
+        });
+    }
+
     function renderLearningResources(
-      context
+      context,
+      subjectKey=""
     ) {
-      const resources =
+      const customResources =
         (context?.resources || [])
           .filter(
             item =>
@@ -3568,42 +3789,78 @@
               item?.url
           );
 
-      if (!resources.length) {
-        return "";
+      const extraResources =
+        subjectKey === "chinese"
+          ? BUILTIN_RESOURCE_BANK.chinese
+          : subjectKey === "science"
+            ? BUILTIN_RESOURCE_BANK.science
+            : [];
+
+      const mergedResources = [
+        ...customResources,
+        ...extraResources
+      ].filter(
+        (item,index,array) =>
+          array.findIndex(
+            other =>
+              other.url === item.url &&
+              other.name === item.name
+          ) === index
+      );
+
+      const normalResources =
+        mergedResources.length
+          ? `
+            <div class="resource-box">
+              <div class="box-title">
+                🔗 可以加強這次內容的學習資源
+              </div>
+
+              <div class="resource-list">
+                ${
+                  mergedResources.map(
+                    item => `
+                      <a
+                        class="resource-link"
+                        href="${escapeHtml(item.url)}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        ${escapeHtml(item.name)}
+                        <small>
+                          ${
+                            item.focus
+                              ? `對應：${escapeHtml(item.focus)}`
+                              : escapeHtml(item.note || "")
+                          }
+                        </small>
+                      </a>
+                    `
+                  ).join("")
+                }
+              </div>
+            </div>
+          `
+          : "";
+
+      if (subjectKey === "social") {
+        return `
+          ${normalResources}
+          <div class="resource-box">
+            <div class="box-title">
+              🔗 社會科分科加強資源
+            </div>
+
+            <div class="target-progress-note">
+              為避免一次出現太多資訊，地理／歷史／公民採收合式呈現；點開需要的科目再查看。
+            </div>
+
+            ${renderSocialSubsections()}
+          </div>
+        `;
       }
 
-      return `
-        <div class="resource-box">
-
-          <div class="box-title">
-            🔗 可以加強這次內容的學習資源
-          </div>
-
-          <div class="resource-list">
-
-            ${
-              resources.map(
-                item => `
-                  <a
-                    class="resource-link"
-                    href="${escapeHtml(item.url)}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    ${escapeHtml(item.name)}
-                    <small>
-                      對應：
-                      ${escapeHtml(item.focus || "全部")}
-                    </small>
-                  </a>
-                `
-              ).join("")
-            }
-
-          </div>
-
-        </div>
-      `;
+      return normalResources;
     }
 
     function weeklyOperationalTasks(
@@ -5071,7 +5328,7 @@
 
                       </div>
 
-                      ${renderLearningResources(context)}
+                      ${renderLearningResources(context, analysis.key)}
 
                       <div class="operation-box">
 
@@ -5214,6 +5471,10 @@
           }
         );
       });
+
+      wireSocialSubsections(
+        $("subjectList")
+      );
     }
 
 
