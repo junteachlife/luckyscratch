@@ -1092,6 +1092,38 @@
   font-weight:700
 }
 
+
+.exam-position-number,
+.latest-position-number{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:24px;
+  height:24px;
+  padding:0 7px;
+  margin-left:6px;
+  border-radius:999px;
+  background:#f3efe8;
+  border:1px solid #ddd3c6;
+  color:#756b60;
+  font-size:12px;
+  font-weight:950;
+  line-height:1;
+  vertical-align:middle
+}
+.latest-position-number{
+  background:#fff;
+  border-color:#cfe1d5;
+  color:#557263
+}
+.history-exam-head{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  white-space:nowrap
+}
+
 </style>
 </head>
 
@@ -1248,7 +1280,7 @@
 
       <section class="card">
         <div class="section-title">📖 五科歷次成績</div>
-        <div class="table-tip">手機可左右滑動查看歷次段考；「科目」固定於左側。</div>
+        <div class="table-tip">手機可左右滑動查看歷次段考；「科目」固定於左側。每次段考欄位旁的小數字與最新五科總分旁的小數字，僅在個人登入後顯示。</div>
 
         <div class="table-wrap">
           <table class="subject-history-table">
@@ -4665,6 +4697,9 @@
       const average =
         scoreNumber(latest.average);
 
+      const latestPosition =
+        scoreNumber(latest.rank);
+
       $("latestExamAverageBadge").textContent =
         average === null
           ? "本次平均 —"
@@ -4746,11 +4781,15 @@
             validSubjectScores.length
           : null;
 
-      $("latestExamTotal").textContent =
-        formatScore(
+      $("latestExamTotal").innerHTML =
+        `${formatScore(
           scoreNumber(latest.total) ??
           calculatedTotal
-        );
+        )}${
+          latestPosition !== null
+            ? `<span class="latest-position-number">${formatScore(latestPosition)}</span>`
+            : ""
+        }`;
 
       $("latestExamAverage").textContent =
         formatScore(
@@ -4770,8 +4809,23 @@
 
         ${
           records.map(
-            item =>
-              `<th>${escapeHtml(shortExamName(item.exam))}</th>`
+            item => {
+              const position =
+                scoreNumber(item.result?.rank);
+
+              return `
+                <th>
+                  <div class="history-exam-head">
+                    <span>${escapeHtml(shortExamName(item.exam))}</span>
+                    ${
+                      position !== null
+                        ? `<span class="exam-position-number">${formatScore(position)}</span>`
+                        : ""
+                    }
+                  </div>
+                </th>
+              `;
+            }
           ).join("")
         }
 
