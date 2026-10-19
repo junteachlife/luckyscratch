@@ -337,7 +337,53 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
   background:#5b3429!important;color:#fff!important;border-color:#5b3429!important;
   box-shadow:0 3px 0 rgba(0,0,0,.2)
 }
-.mode-hidden{display:none!important}
+
+
+.mode-switch-label{
+  flex-basis:100%;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+  padding:2px 4px 5px;
+  color:#5a4028;
+}
+.mode-switch-label b{font-size:16px}
+.mode-switch-label span{font-size:12px;font-weight:800;color:#77624a}
+.work-mode-switch{
+  border:3px solid #8b6337!important;
+  background:#fff6dc!important;
+}
+.mode-btn{
+  min-height:48px;
+  font-size:16px!important;
+}
+.grade-mode-main{
+  border:2px solid #1d5875!important;
+}
+.grade-col-actions{
+  display:flex;
+  justify-content:center;
+  gap:4px;
+  margin-top:6px;
+}
+.grade-col-delete{
+  border:1px solid #b78f7a!important;
+  background:#fff3ef!important;
+  color:#8a3327!important;
+  padding:3px 7px!important;
+  border-radius:7px!important;
+  box-shadow:none!important;
+  font-size:11px!important;
+}
+.grade-col-delete:hover{background:#ffe2da!important}
+
+
+.global-item-flow-note{
+  font-size:12px;
+  font-weight:800;
+  color:#725f46;
+}
 
 /* ===== 成績登記 ===== */
 .grade-panel{margin-top:18px}
@@ -666,10 +712,11 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
       <div class="current-class-display">目前班級：<span class="current-class-name" id="currentClassName"></span></div>
     </div>
 
-    <div class="work-mode-switch">
-      <button class="btn-light mode-btn active" id="submissionModeBtn">📋 收繳資料</button>
-      <button class="btn-light mode-btn" id="gradeModeBtn">📊 成績登記</button>
+    <div class="primary-actions" style="margin-top:12px">
+      <button class="btn-gold" id="newRecordBtn">➕ 新增項目</button>
+      <span class="mini-help">新增時再選擇「📋 收繳資料」或「📊 成績登記」。</span>
     </div>
+
 
     <div class="panel" id="submissionTaskPanel" style="margin-top:18px;box-shadow:none">
       <div class="section-title">🧭 收繳任務設定</div>
@@ -694,7 +741,6 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
 
       <div class="primary-actions">
         <button class="btn-primary" id="saveRecordBtn">💾 儲存目前項目</button>
-        <button class="btn-gold" id="newRecordBtn">➕ 新增項目</button>
       </div>
 
       <div class="history-compact">
@@ -856,7 +902,7 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
 
 
 
-  <section class="panel grade-panel mode-hidden" id="gradePanel">
+  <section class="panel grade-panel" id="gradePanel">
     <div class="section-title">📊 成績登記</div>
 
     <div class="grade-toolbar">
@@ -871,7 +917,7 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
       <div class="grade-help">
         左側「座號、姓名」與上方欄名會固定。空白成績格使用粗框；輸入成績後自動變細框並同步 Firebase。
       </div>
-      <button class="btn-gold" id="newGradeItemBtn">➕ 新增成績項目</button>
+      <div class="grade-help">要增加新的成績欄位，請使用頁面上方「➕ 新增項目」，再選擇「📊 成績登記」。</div>
     </div>
 
     <div class="grade-sheet-wrap" id="gradeSheetWrap">
@@ -1034,8 +1080,8 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
   <div class="item-card">
     <div class="mail-head">
       <div>
-        <div class="mail-title">➕ 新增項目</div>
-        <div class="archive-note">先選擇項目類型；收繳資料沿用原本介面，成績登記會加入成績總表欄位。</div>
+        <div class="mail-title">➕ 建立新項目</div>
+        <div class="archive-note">請先選擇類型。選「收繳資料」會使用原本介面；選「成績登記」會建立 Excel 式成績欄位。</div>
       </div>
       <button class="btn-dark" id="closeItemModalBtn">✖ 關閉</button>
     </div>
@@ -1191,7 +1237,6 @@ let currentClassId=localStorage.getItem("subjectTrackerCurrentClass")||"904";
 if(!CLASS_CONFIG[currentClassId]) currentClassId="904";
 let currentId=null, filter="all", historyRecords=[], archivedRecords=[], autosaveTimer=null, classSwitchSerial=0;
 let gradeRecords=[], archivedGradeRecords=[];
-let currentMode=localStorage.getItem("subjectTrackerMode")==="grade"?"grade":"submission";
 let gradeFolderFilter="all";
 const gradeSaveTimers=new Map();
 let historyFolderFilter="all", historySortMode="updatedDesc";
@@ -1203,22 +1248,6 @@ const $=id=>document.getElementById(id);
 const currentClass=()=>CLASS_CONFIG[currentClassId];
 const students=()=>currentClass().students;
 
-
-function switchWorkMode(mode,save=true){
-  currentMode=mode==="grade"?"grade":"submission";
-  if(save)localStorage.setItem("subjectTrackerMode",currentMode);
-
-  $("submissionModeBtn")?.classList.toggle("active",currentMode==="submission");
-  $("gradeModeBtn")?.classList.toggle("active",currentMode==="grade");
-  $("submissionTaskPanel")?.classList.toggle("mode-hidden",currentMode!=="submission");
-  $("submissionRosterPanel")?.classList.toggle("mode-hidden",currentMode!=="submission");
-  $("gradePanel")?.classList.toggle("mode-hidden",currentMode!=="grade");
-
-  if(currentMode==="grade"){
-    updateGradeFolderSelector();
-    renderGradeSheet();
-  }
-}
 
 function fillNewItemFolderOptions(){
   const sel=$("newItemFolder");
@@ -1235,7 +1264,7 @@ function updateNewItemTypeFields(){
   $("newItemDueWrap").hidden=type==="grade";
 }
 
-function openNewItemModal(defaultType=currentMode==="grade"?"grade":"submission"){
+function openNewItemModal(defaultType="submission"){
   fillNewItemFolderOptions();
   const radio=document.querySelector(`input[name="newItemType"][value="${defaultType}"]`);
   if(radio)radio.checked=true;
@@ -1299,16 +1328,16 @@ async function createNewItemFromModal(){
     await refreshHistory(false);
 
     if(type==="grade"){
-      switchWorkMode("grade");
       gradeFolderFilter=folder;
       updateGradeFolderSelector();
       if($("gradeFolderFilter"))$("gradeFolderFilter").value=folder;
       renderGradeSheet();
+      setTimeout(()=>$("gradePanel")?.scrollIntoView({behavior:"smooth",block:"start"}),80);
       showToast(`已建立成績項目「${itemName}」`);
     }else{
-      switchWorkMode("submission");
       if($("historySelect"))$("historySelect").value=id;
       loadRecord();
+      setTimeout(()=>$("submissionTaskPanel")?.scrollIntoView({behavior:"smooth",block:"start"}),80);
       showToast(`已建立收繳項目「${itemName}」`);
     }
     setSync("ok","☁️ 已同步");
@@ -2613,9 +2642,9 @@ function renderGradeSheet(){
   if(!records.length){
     table.hidden=true;
     empty.hidden=false;
-    empty.textContent=gradeFolderFilter==="all"
-      ?"目前班級尚未建立成績項目。"
-      :"這個資料夾目前沒有成績項目。";
+    empty.innerHTML=gradeFolderFilter==="all"
+      ?'目前班級尚未建立成績項目。<br><br><b>請使用頁面上方「➕ 新增項目」，再選擇「📊 成績登記」。</b>'
+      :'這個資料夾目前沒有成績項目。<br><br><b>請使用頁面上方「➕ 新增項目」建立。</b>';
     return;
   }
 
@@ -2629,6 +2658,9 @@ function renderGradeSheet(){
       <th>
         <span class="grade-col-title">${escapeHTML(rec.itemName||"未命名")}</span>
         <span class="grade-col-meta">📁 ${escapeHTML(normalizeFolderName(rec.folder))}｜滿分 ${escapeHTML(rec.maxScore??100)}</span>
+        <span class="grade-col-actions">
+          <button type="button" class="grade-col-delete" data-grade-delete-id="${escapeHTML(rec.id)}" title="刪除這個成績項目">🗑️ 刪除</button>
+        </span>
       </th>
     `).join("")}
   </tr>`;
@@ -2653,6 +2685,14 @@ function renderGradeSheet(){
       }).join("")}
     </tr>
   `).join("");
+
+  head.querySelectorAll(".grade-col-delete").forEach(btn=>{
+    btn.addEventListener("click",e=>{
+      e.preventDefault();
+      e.stopPropagation();
+      deleteGradeRecordById(btn.dataset.gradeDeleteId);
+    });
+  });
 
   body.querySelectorAll(".grade-input").forEach(input=>{
     input.addEventListener("input",()=>{
@@ -2684,6 +2724,40 @@ function renderGradeSheet(){
       }
     });
   });
+}
+
+
+async function deleteGradeRecordById(id){
+  if(!currentUser){showToast("請先登入");return;}
+
+  const rec=gradeRecords.find(r=>r.id===id) || archivedGradeRecords.find(r=>r.id===id);
+  if(!rec){
+    showToast("找不到這個成績項目");
+    return;
+  }
+
+  const itemName=rec.itemName||"未命名成績項目";
+  const filledCount=Object.values(rec.scores||{}).filter(v=>String(v??"").trim()!=="").length;
+
+  const ok=confirm(
+    `確定要刪除成績項目「${itemName}」嗎？\n\n`+
+    `目前已有 ${filledCount} 位學生輸入成績。\n\n`+
+    `刪除後，這個欄位與其中所有成績都會從 Firebase 一併刪除，無法復原。`
+  );
+  if(!ok)return;
+
+  try{
+    setSync("saving","☁️ 刪除成績項目中…");
+    await deleteDoc(recordRef(id));
+    await refreshHistory(false);
+    renderGradeSheet();
+    setSync("ok","☁️ 已同步");
+    showToast(`已刪除成績項目「${itemName}」`);
+  }catch(err){
+    console.error(err);
+    setSync("error","⚠️ 刪除失敗");
+    alert(`刪除成績項目失敗：${err.code||err.message||"未知錯誤"}`);
+  }
 }
 
 function scheduleGradeSave(rec){
@@ -2975,7 +3049,7 @@ async function refreshHistory(showMessage=false){
 
     refreshArchiveSelect();
     updateGradeFolderSelector();
-    if(currentMode==="grade")renderGradeSheet();
+    renderGradeSheet();
     setSync("ok","☁️ 已同步");
     if(showMessage)showToast(`已重新讀取 ${currentClass().name} Firebase 資料`);
   }catch(err){
@@ -3624,9 +3698,6 @@ $("refreshCloudBtn").addEventListener("click",()=>refreshCurrentClassData(true))
 $("saveRecordBtn").addEventListener("click",saveRecord);
 $("newRecordBtn").addEventListener("click",()=>openNewItemModal("submission"));
 
-$("submissionModeBtn").addEventListener("click",()=>switchWorkMode("submission"));
-$("gradeModeBtn").addEventListener("click",()=>switchWorkMode("grade"));
-$("newGradeItemBtn").addEventListener("click",()=>openNewItemModal("grade"));
 
 $("closeItemModalBtn").addEventListener("click",closeNewItemModal);
 $("itemModal").addEventListener("click",e=>{if(e.target===$("itemModal"))closeNewItemModal();});
@@ -3756,9 +3827,9 @@ onAuthStateChanged(auth,async user=>{
     await loadAllRostersFromCloud();
     await loadFolderSettings();
     updateFolderSelectors();
-    studentState=createBlankState();renderClassButtons();render();await refreshHistory(false);switchWorkMode(currentMode,false);
+    studentState=createBlankState();renderClassButtons();render();await refreshHistory(false);updateGradeFolderSelector();renderGradeSheet();
     updateRosterInfo();
-    switchWorkMode(currentMode,false);
+    
   }else{
     currentId=null;historyRecords=[];archivedRecords=[];gradeRecords=[];archivedGradeRecords=[];studentState=createBlankState();$("accountEmail").textContent="";
     setSync("","☁️ 等待登入");$("loginScreen").classList.remove("hidden");renderClassButtons();render();
@@ -3771,7 +3842,7 @@ updateFolderSelectors();
 renderClassButtons();
 render();
 renderBatchPrintList();
-switchWorkMode(currentMode,false);
+
 </script>
 </body>
 </html>
