@@ -325,6 +325,108 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
   .compact-tools,.context-actions{display:none!important}
 }
 
+
+/* ===== 收繳／成績雙模式 ===== */
+.work-mode-switch{
+  display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px;
+  padding:8px;border-radius:14px;background:rgba(255,250,232,.72);
+  border:2px solid rgba(71,51,29,.22)
+}
+.mode-btn{flex:1;min-width:145px}
+.mode-btn.active{
+  background:#5b3429!important;color:#fff!important;border-color:#5b3429!important;
+  box-shadow:0 3px 0 rgba(0,0,0,.2)
+}
+.mode-hidden{display:none!important}
+
+/* ===== 成績登記 ===== */
+.grade-panel{margin-top:18px}
+.grade-toolbar{
+  display:grid;grid-template-columns:minmax(170px,.7fr) minmax(180px,.8fr) 1fr auto;
+  gap:8px;align-items:end;margin-bottom:12px
+}
+.grade-help{
+  padding:10px 12px;border-radius:12px;background:#fff8e8;border:1px solid #d8c092;
+  font-size:12px;font-weight:800;color:#6c573c;line-height:1.55
+}
+.grade-sheet-wrap{
+  overflow:auto;max-height:68vh;border:2px solid #70502e;border-radius:14px;background:#fff;
+  position:relative
+}
+.grade-sheet{
+  border-collapse:separate;border-spacing:0;min-width:100%;width:max-content;background:#fff
+}
+.grade-sheet th,.grade-sheet td{
+  border-right:1px solid #aaa;border-bottom:1px solid #aaa;padding:0;text-align:center;background:#fff
+}
+.grade-sheet thead th{
+  position:sticky;top:0;z-index:7;background:#f4e7c5;min-width:120px;
+  padding:8px 6px;font-weight:900;border-bottom:2px solid #70502e
+}
+.grade-sheet .grade-seat-head,.grade-sheet .grade-seat{
+  position:sticky;left:0;z-index:9;width:58px;min-width:58px;max-width:58px;background:#fff8df;
+  border-right:1px solid #70502e
+}
+.grade-sheet .grade-name-head,.grade-sheet .grade-name{
+  position:sticky;left:58px;z-index:9;width:112px;min-width:112px;max-width:112px;background:#fff8df;
+  border-right:2px solid #70502e
+}
+.grade-sheet thead .grade-seat-head,.grade-sheet thead .grade-name-head{
+  z-index:12;background:#e9d6aa
+}
+.grade-sheet .grade-seat,.grade-sheet .grade-name{
+  padding:8px 6px;font-weight:900
+}
+.grade-col-title{display:block;font-weight:900;line-height:1.25}
+.grade-col-meta{display:block;margin-top:3px;font-size:11px;color:#755f45;font-weight:700}
+.grade-score-cell{padding:4px!important;background:#fff}
+.grade-input{
+  display:block;width:100%;min-width:105px;height:42px;
+  border:3px solid #3d352e;border-radius:7px;background:#fffdf8;
+  text-align:center;font-size:16px;font-weight:900;outline:none;padding:5px 6px;
+  transition:border-width .12s,border-color .12s,background .12s
+}
+.grade-input.filled{
+  border-width:1px;border-color:#9b9186;background:#fff
+}
+.grade-input:focus{
+  border-color:#1d5875!important;box-shadow:inset 0 0 0 1px #1d5875
+}
+.grade-input.over-max{background:#fff2dc}
+.grade-empty{
+  padding:28px;text-align:center;font-weight:900;color:#74624e;background:#fffaf0
+}
+.grade-sync-note{
+  font-size:12px;font-weight:800;color:#5d5041;white-space:nowrap
+}
+
+/* ===== 新增項目視窗 ===== */
+.item-modal{
+  position:fixed;inset:0;z-index:350;display:none;align-items:center;justify-content:center;
+  padding:16px;background:rgba(25,28,31,.58);backdrop-filter:blur(3px)
+}
+.item-modal.show{display:flex}
+.item-card{
+  width:min(650px,96vw);max-height:92vh;overflow:auto;background:linear-gradient(180deg,#fff9e7,#f0d9a2);
+  border:4px solid #5d4328;border-radius:20px;padding:18px;box-shadow:0 18px 50px rgba(0,0,0,.32)
+}
+.item-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.item-type-card{
+  display:block;padding:14px;border:2px solid #a88450;border-radius:14px;background:#fffaf0;
+  cursor:pointer;font-weight:900
+}
+.item-type-card input{margin-right:6px;accent-color:#6e2b22}
+.item-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.item-fields .wide{grid-column:1/-1}
+@media(max-width:760px){
+  .grade-toolbar{grid-template-columns:1fr}
+  .grade-sheet-wrap{max-height:62vh}
+  .item-fields,.item-type-grid{grid-template-columns:1fr}
+}
+@media print{
+  .work-mode-switch,.grade-panel,.item-modal{display:none!important}
+}
+
 /* ===== Email 未繳通知 ===== */
 .mail-modal{
   position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;
@@ -564,7 +666,12 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
       <div class="current-class-display">目前班級：<span class="current-class-name" id="currentClassName"></span></div>
     </div>
 
-    <div class="panel" style="margin-top:18px;box-shadow:none">
+    <div class="work-mode-switch">
+      <button class="btn-light mode-btn active" id="submissionModeBtn">📋 收繳資料</button>
+      <button class="btn-light mode-btn" id="gradeModeBtn">📊 成績登記</button>
+    </div>
+
+    <div class="panel" id="submissionTaskPanel" style="margin-top:18px;box-shadow:none">
       <div class="section-title">🧭 收繳任務設定</div>
       <div class="form-grid" style="grid-template-columns:2fr 1fr 1fr 1.2fr">
         <div>
@@ -587,7 +694,7 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
 
       <div class="primary-actions">
         <button class="btn-primary" id="saveRecordBtn">💾 儲存目前項目</button>
-        <button class="btn-gold" id="newRecordBtn">➕ 新增收繳項目</button>
+        <button class="btn-gold" id="newRecordBtn">➕ 新增項目</button>
       </div>
 
       <div class="history-compact">
@@ -748,6 +855,35 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
   </section>
 
 
+
+  <section class="panel grade-panel mode-hidden" id="gradePanel">
+    <div class="section-title">📊 成績登記</div>
+
+    <div class="grade-toolbar">
+      <div>
+        <label for="gradeFolderFilter">📁 資料夾</label>
+        <select id="gradeFolderFilter"></select>
+      </div>
+      <div>
+        <label for="gradeSearchInput">🔎 搜尋學生</label>
+        <input id="gradeSearchInput" type="text" placeholder="座號或姓名" />
+      </div>
+      <div class="grade-help">
+        左側「座號、姓名」與上方欄名會固定。空白成績格使用粗框；輸入成績後自動變細框並同步 Firebase。
+      </div>
+      <button class="btn-gold" id="newGradeItemBtn">➕ 新增成績項目</button>
+    </div>
+
+    <div class="grade-sheet-wrap" id="gradeSheetWrap">
+      <div class="grade-empty" id="gradeEmpty">目前班級尚未建立成績項目。</div>
+      <table class="grade-sheet" id="gradeSheet" hidden>
+        <thead id="gradeHead"></thead>
+        <tbody id="gradeBody"></tbody>
+      </table>
+    </div>
+    <div class="grade-sync-note" id="gradeSyncNote">成績輸入後會自動儲存。</div>
+  </section>
+
   <section class="roster-import-panel">
     <div class="section-title">📚 學生名單與 Email</div>
 
@@ -787,7 +923,7 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
 
   </section>
 
-  <section class="panel">
+  <section class="panel" id="submissionRosterPanel">
     <div class="print-summary" id="printSummary">
       <div class="print-summary-title" id="printSummaryTitle"></div>
       <div class="print-summary-stats">
@@ -826,7 +962,7 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
     </div>
   </section>
 
-  <div class="footer-note">☁️ 904、906、802、804 的收繳資料使用 Firebase Firestore 雲端獨立儲存。</div>
+  <div class="footer-note">☁️ 904、906、802、804 的收繳資料與成績資料使用 Firebase Firestore 雲端獨立儲存。</div>
 </div>
 
 
@@ -888,6 +1024,60 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
 
     <div class="toolbar">
       <button class="btn-primary" id="exportSelectedBtn">📤 匯出已勾選項目 Excel</button>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="item-modal" id="itemModal">
+  <div class="item-card">
+    <div class="mail-head">
+      <div>
+        <div class="mail-title">➕ 新增項目</div>
+        <div class="archive-note">先選擇項目類型；收繳資料沿用原本介面，成績登記會加入成績總表欄位。</div>
+      </div>
+      <button class="btn-dark" id="closeItemModalBtn">✖ 關閉</button>
+    </div>
+
+    <div class="item-type-grid">
+      <label class="item-type-card">
+        <input type="radio" name="newItemType" value="submission" checked>
+        📋 收繳資料
+        <div class="archive-note">未繳／已繳／補交／免繳，維持原本登記介面。</div>
+      </label>
+      <label class="item-type-card">
+        <input type="radio" name="newItemType" value="grade">
+        📊 成績登記
+        <div class="archive-note">在固定姓名的橫向成績表中直接輸入分數。</div>
+      </label>
+    </div>
+
+    <div class="item-fields">
+      <div class="wide">
+        <label for="newItemName">項目名稱</label>
+        <input id="newItemName" type="text" placeholder="例如：數習1、第一次小考、第一次段考" />
+      </div>
+      <div>
+        <label for="newItemFolder">資料夾</label>
+        <select id="newItemFolder"></select>
+      </div>
+      <div id="newItemMaxScoreWrap" hidden>
+        <label for="newItemMaxScore">滿分</label>
+        <input id="newItemMaxScore" type="number" min="0" step="0.1" value="100" inputmode="decimal" />
+      </div>
+      <div id="newItemReceiveWrap">
+        <label for="newItemReceiveDate">開始收繳日期</label>
+        <input id="newItemReceiveDate" type="date" />
+      </div>
+      <div id="newItemDueWrap">
+        <label for="newItemDueDate">截止日期</label>
+        <input id="newItemDueDate" type="date" />
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn-primary" id="createNewItemBtn">✅ 建立項目</button>
     </div>
   </div>
 </div>
@@ -1000,6 +1190,10 @@ let currentUser=null;
 let currentClassId=localStorage.getItem("subjectTrackerCurrentClass")||"904";
 if(!CLASS_CONFIG[currentClassId]) currentClassId="904";
 let currentId=null, filter="all", historyRecords=[], archivedRecords=[], autosaveTimer=null, classSwitchSerial=0;
+let gradeRecords=[], archivedGradeRecords=[];
+let currentMode=localStorage.getItem("subjectTrackerMode")==="grade"?"grade":"submission";
+let gradeFolderFilter="all";
+const gradeSaveTimers=new Map();
 let historyFolderFilter="all", historySortMode="updatedDesc";
 let folderList=["未分類"];
 let archivedFolderNames=[];
@@ -1008,6 +1202,122 @@ let studentState=createBlankState();
 const $=id=>document.getElementById(id);
 const currentClass=()=>CLASS_CONFIG[currentClassId];
 const students=()=>currentClass().students;
+
+
+function switchWorkMode(mode,save=true){
+  currentMode=mode==="grade"?"grade":"submission";
+  if(save)localStorage.setItem("subjectTrackerMode",currentMode);
+
+  $("submissionModeBtn")?.classList.toggle("active",currentMode==="submission");
+  $("gradeModeBtn")?.classList.toggle("active",currentMode==="grade");
+  $("submissionTaskPanel")?.classList.toggle("mode-hidden",currentMode!=="submission");
+  $("submissionRosterPanel")?.classList.toggle("mode-hidden",currentMode!=="submission");
+  $("gradePanel")?.classList.toggle("mode-hidden",currentMode!=="grade");
+
+  if(currentMode==="grade"){
+    updateGradeFolderSelector();
+    renderGradeSheet();
+  }
+}
+
+function fillNewItemFolderOptions(){
+  const sel=$("newItemFolder");
+  if(!sel)return;
+  const list=activeFolderList();
+  sel.innerHTML=list.map(f=>`<option value="${escapeHTML(f)}">📁 ${escapeHTML(f)}</option>`).join("");
+  if(!sel.options.length)sel.innerHTML='<option value="未分類">📁 未分類</option>';
+}
+
+function updateNewItemTypeFields(){
+  const type=document.querySelector('input[name="newItemType"]:checked')?.value||"submission";
+  $("newItemMaxScoreWrap").hidden=type!=="grade";
+  $("newItemReceiveWrap").hidden=type==="grade";
+  $("newItemDueWrap").hidden=type==="grade";
+}
+
+function openNewItemModal(defaultType=currentMode==="grade"?"grade":"submission"){
+  fillNewItemFolderOptions();
+  const radio=document.querySelector(`input[name="newItemType"][value="${defaultType}"]`);
+  if(radio)radio.checked=true;
+  $("newItemName").value="";
+  $("newItemMaxScore").value="100";
+  $("newItemReceiveDate").value=todayISO();
+  $("newItemDueDate").value="";
+  updateNewItemTypeFields();
+  $("itemModal").classList.add("show");
+  setTimeout(()=>$("newItemName").focus(),50);
+}
+
+function closeNewItemModal(){
+  $("itemModal").classList.remove("show");
+}
+
+async function createNewItemFromModal(){
+  if(!currentUser){showToast("請先登入");return;}
+
+  const type=document.querySelector('input[name="newItemType"]:checked')?.value||"submission";
+  const itemName=$("newItemName").value.trim();
+  const folder=$("newItemFolder").value||"未分類";
+  if(!itemName){
+    showToast("請輸入項目名稱");
+    $("newItemName").focus();
+    return;
+  }
+
+  const id=doc(recordsCollection()).id;
+  const payload={
+    type,
+    classId:currentClassId,
+    className:currentClass().name,
+    itemName,
+    folder,
+    archived:false,
+    updatedAt:serverTimestamp(),
+    createdAt:serverTimestamp()
+  };
+
+  if(type==="grade"){
+    const maxScoreRaw=$("newItemMaxScore").value.trim();
+    payload.maxScore=maxScoreRaw===""?100:Number(maxScoreRaw);
+    payload.scores={};
+  }else{
+    const receiveDate=$("newItemReceiveDate").value;
+    const dueDate=$("newItemDueDate").value;
+    if(receiveDate&&dueDate&&receiveDate>dueDate){
+      showToast("截止日期不能早於開始日期");
+      return;
+    }
+    payload.receiveDate=receiveDate;
+    payload.dueDate=dueDate;
+    payload.students=createBlankState();
+  }
+
+  try{
+    setSync("saving","☁️ 建立項目中…");
+    await setDoc(recordRef(id),payload);
+    closeNewItemModal();
+    await refreshHistory(false);
+
+    if(type==="grade"){
+      switchWorkMode("grade");
+      gradeFolderFilter=folder;
+      updateGradeFolderSelector();
+      if($("gradeFolderFilter"))$("gradeFolderFilter").value=folder;
+      renderGradeSheet();
+      showToast(`已建立成績項目「${itemName}」`);
+    }else{
+      switchWorkMode("submission");
+      if($("historySelect"))$("historySelect").value=id;
+      loadRecord();
+      showToast(`已建立收繳項目「${itemName}」`);
+    }
+    setSync("ok","☁️ 已同步");
+  }catch(err){
+    console.error(err);
+    setSync("error","⚠️ 建立失敗");
+    showToast(`建立項目失敗：${err.code||err.message||"未知錯誤"}`);
+  }
+}
 
 function createBlankState(){
   const list=CLASS_CONFIG[currentClassId]?.students||[];
@@ -1022,7 +1332,8 @@ function escapeHTML(str=""){return String(str).replace(/[&<>'"]/g,ch=>({"&":"&am
 function showToast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>t.classList.remove("show"),2200);}
 function setSync(state,text){const b=$("syncBadge");b.className="sync-badge"+(state?` ${state}`:"");b.textContent=text;}
 function isOverdue(status){const due=$("dueDate").value;return !!due&&todayISO()>due&&status==="unpaid";}
-function currentMeta(){return {classId:currentClassId,className:currentClass().name,itemName:$("itemName").value.trim(),receiveDate:$("receiveDate").value,dueDate:$("dueDate").value,folder:$("recordFolder")?.value||"未分類"};}
+function recordType(rec){return rec?.type==="grade"?"grade":"submission";}
+function currentMeta(){return {type:"submission",classId:currentClassId,className:currentClass().name,itemName:$("itemName").value.trim(),receiveDate:$("receiveDate").value,dueDate:$("dueDate").value,folder:$("recordFolder")?.value||"未分類"};}
 
 /* Firestore：四班分開存放 */
 function recordsCollection(){
@@ -2146,7 +2457,7 @@ async function switchClass(newClassId){
   historyFolderFilter="all";historySortMode="updatedDesc";
   if(currentUser)await loadFolderSettings();
 
-  currentId=null;historyRecords=[];archivedRecords=[];batchPrintSelectedIds.clear();filter="all";studentState=createBlankState();
+  currentId=null;historyRecords=[];archivedRecords=[];gradeRecords=[];archivedGradeRecords=[];batchPrintSelectedIds.clear();filter="all";studentState=createBlankState();
   $("itemName").value="";$("receiveDate").value=todayISO();$("dueDate").value="";
   updateFolderSelectors();$("recordFolder").value="未分類";$("moveFolderSelect").value="未分類";
   $("historyFolderFilter").value="all";$("historySort").value="updatedDesc";
@@ -2245,6 +2556,164 @@ function updateStats(){
 /* ==========================================================
    批次彙整列印
 ========================================================== */
+
+
+function updateGradeFolderSelector(){
+  const sel=$("gradeFolderFilter");
+  if(!sel)return;
+  const old=gradeFolderFilter;
+  const folders=activeFolderList();
+  sel.innerHTML='<option value="all">🗂️ 全部資料夾</option>'+
+    folders.map(f=>`<option value="${escapeHTML(f)}">📁 ${escapeHTML(f)}</option>`).join("");
+  sel.value=old==="all"||folders.includes(old)?old:"all";
+  gradeFolderFilter=sel.value;
+}
+
+function visibleGradeRecords(){
+  return gradeRecords
+    .filter(r=>{
+      const f=normalizeFolderName(r.folder);
+      if(r.folderArchived===true||isFolderArchived(f))return false;
+      return gradeFolderFilter==="all"||f===gradeFolderFilter;
+    })
+    .sort((a,b)=>{
+      const folderCmp=normalizeFolderName(a.folder).localeCompare(
+        normalizeFolderName(b.folder),"zh-Hant",{numeric:true,sensitivity:"base"}
+      );
+      if(folderCmp!==0)return folderCmp;
+      return String(a.itemName||"").localeCompare(
+        String(b.itemName||""),"zh-Hant",{numeric:true,sensitivity:"base"}
+      );
+    });
+}
+
+function gradeValue(rec,seat){
+  const raw=rec?.scores?.[String(seat)] ?? rec?.scores?.[seat];
+  return raw===undefined||raw===null?"":String(raw);
+}
+
+function gradeInputClass(value,maxScore){
+  const parts=["grade-input"];
+  if(String(value).trim()!=="")parts.push("filled");
+  const n=Number(value),max=Number(maxScore);
+  if(String(value).trim()!==""&&Number.isFinite(n)&&Number.isFinite(max)&&n>max)parts.push("over-max");
+  return parts.join(" ");
+}
+
+function renderGradeSheet(){
+  const table=$("gradeSheet"),head=$("gradeHead"),body=$("gradeBody"),empty=$("gradeEmpty");
+  if(!table||!head||!body||!empty)return;
+
+  const records=visibleGradeRecords();
+  const q=($("gradeSearchInput")?.value||"").trim().toLowerCase();
+  const studentRows=students().filter(s=>
+    !q||String(s.seat).includes(q)||String(s.name).toLowerCase().includes(q)
+  );
+
+  if(!records.length){
+    table.hidden=true;
+    empty.hidden=false;
+    empty.textContent=gradeFolderFilter==="all"
+      ?"目前班級尚未建立成績項目。"
+      :"這個資料夾目前沒有成績項目。";
+    return;
+  }
+
+  empty.hidden=true;
+  table.hidden=false;
+
+  head.innerHTML=`<tr>
+    <th class="grade-seat-head">座號</th>
+    <th class="grade-name-head">姓名</th>
+    ${records.map(rec=>`
+      <th>
+        <span class="grade-col-title">${escapeHTML(rec.itemName||"未命名")}</span>
+        <span class="grade-col-meta">📁 ${escapeHTML(normalizeFolderName(rec.folder))}｜滿分 ${escapeHTML(rec.maxScore??100)}</span>
+      </th>
+    `).join("")}
+  </tr>`;
+
+  body.innerHTML=studentRows.map(s=>`
+    <tr>
+      <td class="grade-seat">${s.seat}</td>
+      <td class="grade-name">${escapeHTML(s.name)}</td>
+      ${records.map(rec=>{
+        const value=gradeValue(rec,s.seat);
+        return `<td class="grade-score-cell">
+          <input
+            class="${gradeInputClass(value,rec.maxScore)}"
+            data-record-id="${escapeHTML(rec.id)}"
+            data-seat="${s.seat}"
+            inputmode="decimal"
+            autocomplete="off"
+            value="${escapeHTML(value)}"
+            aria-label="${escapeHTML(rec.itemName||"成績")} ${s.seat}號 ${escapeHTML(s.name)}"
+          />
+        </td>`;
+      }).join("")}
+    </tr>
+  `).join("");
+
+  body.querySelectorAll(".grade-input").forEach(input=>{
+    input.addEventListener("input",()=>{
+      const rec=gradeRecords.find(r=>r.id===input.dataset.recordId);
+      if(!rec)return;
+      const seat=String(input.dataset.seat);
+      const value=input.value.trim();
+
+      if(!rec.scores||typeof rec.scores!=="object")rec.scores={};
+      if(value==="")delete rec.scores[seat];
+      else rec.scores[seat]=value;
+
+      input.classList.toggle("filled",value!=="");
+      const n=Number(value),max=Number(rec.maxScore);
+      input.classList.toggle("over-max",value!==""&&Number.isFinite(n)&&Number.isFinite(max)&&n>max);
+
+      scheduleGradeSave(rec);
+    });
+
+    input.addEventListener("keydown",e=>{
+      if(e.key!=="Enter")return;
+      e.preventDefault();
+      const all=[...body.querySelectorAll(`.grade-input[data-record-id="${CSS.escape(input.dataset.recordId)}"]`)];
+      const idx=all.indexOf(input);
+      const target=e.shiftKey?all[idx-1]:all[idx+1];
+      if(target){
+        target.focus();
+        target.select();
+      }
+    });
+  });
+}
+
+function scheduleGradeSave(rec){
+  if(!rec?.id)return;
+  clearTimeout(gradeSaveTimers.get(rec.id));
+  $("gradeSyncNote").textContent="☁️ 等待儲存…";
+  setSync("saving","☁️ 等待儲存…");
+
+  const timer=setTimeout(()=>saveGradeRecord(rec),500);
+  gradeSaveTimers.set(rec.id,timer);
+}
+
+async function saveGradeRecord(rec){
+  if(!currentUser||!rec?.id)return;
+  try{
+    $("gradeSyncNote").textContent="☁️ 儲存中…";
+    setSync("saving","☁️ 儲存中…");
+    await setDoc(recordRef(rec.id),{
+      type:"grade",
+      scores:rec.scores||{},
+      updatedAt:serverTimestamp()
+    },{merge:true});
+    $("gradeSyncNote").textContent="✅ 成績已同步";
+    setSync("ok","☁️ 已同步");
+  }catch(err){
+    console.error(err);
+    $("gradeSyncNote").textContent=`⚠️ 儲存失敗：${err.code||err.message||"未知錯誤"}`;
+    setSync("error","⚠️ 同步失敗");
+  }
+}
 
 let batchPrintSelectedIds=new Set();
 
@@ -2480,8 +2949,14 @@ async function refreshHistory(showMessage=false){
     const allRecords=snap.docs
       .map(d=>({id:d.id,...d.data()}))
       .filter(r=>r.id!=="__folder_settings__" && r._systemType!=="folderSettings");
-    historyRecords=allRecords.filter(r=>r.archived!==true);
-    archivedRecords=allRecords.filter(r=>r.archived===true);
+
+    const submissionRecords=allRecords.filter(r=>recordType(r)==="submission");
+    const gradeAll=allRecords.filter(r=>recordType(r)==="grade");
+
+    historyRecords=submissionRecords.filter(r=>r.archived!==true);
+    archivedRecords=submissionRecords.filter(r=>r.archived===true);
+    gradeRecords=gradeAll.filter(r=>r.archived!==true);
+    archivedGradeRecords=gradeAll.filter(r=>r.archived===true);
 
     mergeFolderList(allRecords.map(r=>normalizeFolderName(r.folder)));
 
@@ -2499,6 +2974,8 @@ async function refreshHistory(showMessage=false){
     renderHistorySelect();
 
     refreshArchiveSelect();
+    updateGradeFolderSelector();
+    if(currentMode==="grade")renderGradeSheet();
     setSync("ok","☁️ 已同步");
     if(showMessage)showToast(`已重新讀取 ${currentClass().name} Firebase 資料`);
   }catch(err){
@@ -3145,7 +3622,23 @@ $("loginPassword").addEventListener("keydown",e=>{if(e.key==="Enter")login();});
 $("logoutBtn").addEventListener("click",()=>signOut(auth));
 $("refreshCloudBtn").addEventListener("click",()=>refreshCurrentClassData(true));
 $("saveRecordBtn").addEventListener("click",saveRecord);
-$("newRecordBtn").addEventListener("click",()=>newRecord(true));
+$("newRecordBtn").addEventListener("click",()=>openNewItemModal("submission"));
+
+$("submissionModeBtn").addEventListener("click",()=>switchWorkMode("submission"));
+$("gradeModeBtn").addEventListener("click",()=>switchWorkMode("grade"));
+$("newGradeItemBtn").addEventListener("click",()=>openNewItemModal("grade"));
+
+$("closeItemModalBtn").addEventListener("click",closeNewItemModal);
+$("itemModal").addEventListener("click",e=>{if(e.target===$("itemModal"))closeNewItemModal();});
+document.querySelectorAll('input[name="newItemType"]').forEach(r=>r.addEventListener("change",updateNewItemTypeFields));
+$("createNewItemBtn").addEventListener("click",createNewItemFromModal);
+
+$("gradeFolderFilter").addEventListener("change",e=>{
+  gradeFolderFilter=e.target.value;
+  renderGradeSheet();
+});
+$("gradeSearchInput").addEventListener("input",renderGradeSheet);
+
 $("loadBtn").addEventListener("click",loadRecord);
 $("moveFolderBtn").addEventListener("click",moveCurrentRecordFolder);
 $("addFolderBtn").addEventListener("click",addFolder);
@@ -3263,10 +3756,11 @@ onAuthStateChanged(auth,async user=>{
     await loadAllRostersFromCloud();
     await loadFolderSettings();
     updateFolderSelectors();
-    studentState=createBlankState();renderClassButtons();render();await refreshHistory(false);
+    studentState=createBlankState();renderClassButtons();render();await refreshHistory(false);switchWorkMode(currentMode,false);
     updateRosterInfo();
+    switchWorkMode(currentMode,false);
   }else{
-    currentId=null;historyRecords=[];archivedRecords=[];studentState=createBlankState();$("accountEmail").textContent="";
+    currentId=null;historyRecords=[];archivedRecords=[];gradeRecords=[];archivedGradeRecords=[];studentState=createBlankState();$("accountEmail").textContent="";
     setSync("","☁️ 等待登入");$("loginScreen").classList.remove("hidden");renderClassButtons();render();
     if($("rosterImportStatus"))setRosterImportStatus("","登入後可匯入 Excel 名單並同步到 Firebase。");
   }
@@ -3277,6 +3771,7 @@ updateFolderSelectors();
 renderClassButtons();
 render();
 renderBatchPrintList();
+switchWorkMode(currentMode,false);
 </script>
 </body>
 </html>
