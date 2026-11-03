@@ -498,6 +498,46 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
   white-space:nowrap
 }
 
+
+/* ===== 表格式欄位拖曳排序 ===== */
+.drag-handle{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:30px;
+  min-height:28px;
+  margin-right:4px;
+  border:1px solid #a98f68;
+  border-radius:7px;
+  background:#fffaf0;
+  color:#5e4932;
+  cursor:grab;
+  user-select:none;
+  touch-action:pan-y;
+  font-weight:900;
+}
+.drag-handle:active{cursor:grabbing}
+.table-field-head{
+  position:relative;
+  transition:background .12s,border-color .12s;
+}
+.table-field-head.dragging{
+  opacity:.55;
+  background:#f7edda!important;
+}
+.table-field-head.drag-over-left{
+  box-shadow:inset 4px 0 0 #8c5a2b;
+}
+.table-field-head.drag-over-right{
+  box-shadow:inset -4px 0 0 #8c5a2b;
+}
+.field-order-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
 /* ===== 表格欄位設定 ===== */
 .field-action-btn{
   border:1px solid #9d845f!important;
@@ -1345,6 +1385,12 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
       </div>
     </div>
 
+    <div class="field-order-actions">
+      <span class="mini-help">欄位位置：</span>
+      <button class="btn-light" id="moveFieldLeftBtn">← 往左移</button>
+      <button class="btn-light" id="moveFieldRightBtn">往右移 →</button>
+    </div>
+
     <div class="toolbar">
       <button class="btn-primary" id="saveFieldSettingsBtn">💾 儲存設定</button>
       <button class="btn-light" id="deleteFieldSettingsBtn">🗑️ 刪除這個項目</button>
@@ -1523,12 +1569,19 @@ async function createNewItemFromModal(){
   }
 
   const id=doc(recordsCollection()).id;
+  const sameTypeRecords=type==="grade"?gradeRecords:(type==="check"?checkRecords:[]);
+  const maxSortOrder=sameTypeRecords.reduce((m,r)=>{
+    const v=Number(r.sortOrder);
+    return Number.isFinite(v)?Math.max(m,v):m;
+  },0);
+
   const payload={
     type,
     classId:currentClassId,
     className:currentClass().name,
     itemName,
     folder,
+    sortOrder:(type==="grade"||type==="check")?maxSortOrder+1:null,
     archived:false,
     updatedAt:serverTimestamp(),
     createdAt:serverTimestamp()
@@ -2892,6 +2945,9 @@ function visibleCheckRecords(){
         normalizeFolderName(b.folder),"zh-Hant",{numeric:true,sensitivity:"base"}
       );
       if(folderCmp!==0)return folderCmp;
+      const ao=Number.isFinite(Number(a.sortOrder))?Number(a.sortOrder):999999;
+      const bo=Number.isFinite(Number(b.sortOrder))?Number(b.sortOrder):999999;
+      if(ao!==bo)return ao-bo;
       return String(a.itemName||"").localeCompare(
         String(b.itemName||""),"zh-Hant",{numeric:true,sensitivity:"base"}
       );
@@ -2928,8 +2984,8 @@ function renderCheckSheet(){
     <th class="check-seat-head">座號</th>
     <th class="check-name-head">姓名</th>
     ${records.map(rec=>`
-      <th>
-        <span class="grade-col-title">${escapeHTML(rec.itemName||"未命名")}</span>
+      <th class="table-field-head" data-field-id="${escapeHTML(rec.id)}" data-field-type="check">
+        <span class="grade-col-title"><span class="drag-handle" draggable="true" title="拖曳調整欄位順序">⋮⋮</span>${escapeHTML(rec.itemName||"未命名")}</span>
         <span class="grade-col-meta">📁 ${escapeHTML(normalizeFolderName(rec.folder))}</span>
         <span class="grade-col-actions">
           <button type="button" class="field-action-btn" data-field-settings-id="${escapeHTML(rec.id)}" data-field-settings-type="check">⚙️ 設定</button>
@@ -2957,6 +3013,8 @@ function renderCheckSheet(){
       }).join("")}
     </tr>
   `).join("");
+
+  bindFieldDragAndDrop(head,"check");
 
   head.querySelectorAll("[data-field-settings-id]").forEach(btn=>{
     btn.addEventListener("click",e=>{
@@ -3037,6 +3095,9 @@ function visibleGradeRecords(){
         normalizeFolderName(b.folder),"zh-Hant",{numeric:true,sensitivity:"base"}
       );
       if(folderCmp!==0)return folderCmp;
+      const ao=Number.isFinite(Number(a.sortOrder))?Number(a.sortOrder):999999;
+      const bo=Number.isFinite(Number(b.sortOrder))?Number(b.sortOrder):999999;
+      if(ao!==bo)return ao-bo;
       return String(a.itemName||"").localeCompare(
         String(b.itemName||""),"zh-Hant",{numeric:true,sensitivity:"base"}
       );
@@ -3082,8 +3143,8 @@ function renderGradeSheet(){
     <th class="grade-seat-head">座號</th>
     <th class="grade-name-head">姓名</th>
     ${records.map(rec=>`
-      <th>
-        <span class="grade-col-title">${escapeHTML(rec.itemName||"未命名")}</span>
+      <th class="table-field-head" data-field-id="${escapeHTML(rec.id)}" data-field-type="grade">
+        <span class="grade-col-title"><span class="drag-handle" draggable="true" title="拖曳調整欄位順序">⋮⋮</span>${escapeHTML(rec.itemName||"未命名")}</span>
         <span class="grade-col-meta">📁 ${escapeHTML(normalizeFolderName(rec.folder))}｜滿分 ${escapeHTML(rec.maxScore??100)}</span>
         <span class="grade-col-actions">
           <button type="button" class="field-action-btn" data-field-settings-id="${escapeHTML(rec.id)}" data-field-settings-type="grade">⚙️ 設定</button>
@@ -3112,6 +3173,8 @@ function renderGradeSheet(){
       }).join("")}
     </tr>
   `).join("");
+
+  bindFieldDragAndDrop(head,"grade");
 
   head.querySelectorAll("[data-field-settings-id]").forEach(btn=>{
     btn.addEventListener("click",e=>{
@@ -3153,6 +3216,151 @@ function renderGradeSheet(){
 }
 
 
+
+
+function tableRecordsByType(type){
+  if(type==="grade")return gradeRecords;
+  if(type==="check")return checkRecords;
+  return [];
+}
+
+function getOrderedFieldRecords(type,folderFilter="all"){
+  return tableRecordsByType(type)
+    .filter(r=>{
+      const folder=normalizeFolderName(r.folder);
+      if(r.folderArchived===true||isFolderArchived(folder))return false;
+      return folderFilter==="all"||folder===folderFilter;
+    })
+    .sort((a,b)=>{
+      const ao=Number.isFinite(Number(a.sortOrder))?Number(a.sortOrder):999999;
+      const bo=Number.isFinite(Number(b.sortOrder))?Number(b.sortOrder):999999;
+      if(ao!==bo)return ao-bo;
+      return String(a.itemName||"").localeCompare(String(b.itemName||""),"zh-Hant",{numeric:true,sensitivity:"base"});
+    });
+}
+
+async function persistFieldOrder(type,orderedIds){
+  if(!currentUser)return;
+  const list=tableRecordsByType(type);
+  const updates=[];
+  orderedIds.forEach((id,index)=>{
+    const rec=list.find(r=>r.id===id);
+    if(rec){
+      rec.sortOrder=index+1;
+      updates.push(setDoc(recordRef(id),{
+        sortOrder:index+1,
+        updatedAt:serverTimestamp()
+      },{merge:true}));
+    }
+  });
+  await Promise.all(updates);
+}
+
+async function moveFieldByStep(id,type,direction){
+  const rec=findTableFieldRecord(id,type);
+  if(!rec)return;
+
+  const folder=normalizeFolderName(rec.folder);
+  const list=getOrderedFieldRecords(type,folder);
+  const index=list.findIndex(r=>r.id===id);
+  if(index<0)return;
+
+  const targetIndex=direction==="left"?index-1:index+1;
+  if(targetIndex<0||targetIndex>=list.length){
+    showToast(direction==="left"?"已經是最左邊":"已經是最右邊");
+    return;
+  }
+
+  const ids=list.map(r=>r.id);
+  [ids[index],ids[targetIndex]]=[ids[targetIndex],ids[index]];
+
+  try{
+    setSync("saving","☁️ 更新欄位順序中…");
+    await persistFieldOrder(type,ids);
+    await refreshHistory(false);
+    setSync("ok","☁️ 已同步");
+    showToast("欄位順序已更新");
+  }catch(err){
+    console.error(err);
+    setSync("error","⚠️ 排序失敗");
+    alert(`欄位排序失敗：${err.code||err.message||"未知錯誤"}`);
+  }
+}
+
+function bindFieldDragAndDrop(head,type){
+  if(!head)return;
+  let draggedId="";
+
+  head.querySelectorAll(".drag-handle").forEach(handle=>{
+    const th=handle.closest(".table-field-head");
+    if(!th)return;
+
+    handle.addEventListener("dragstart",e=>{
+      draggedId=th.dataset.fieldId||"";
+      th.classList.add("dragging");
+      e.dataTransfer.effectAllowed="move";
+      try{e.dataTransfer.setData("text/plain",draggedId);}catch{}
+    });
+
+    handle.addEventListener("dragend",()=>{
+      draggedId="";
+      head.querySelectorAll(".table-field-head").forEach(x=>{
+        x.classList.remove("dragging","drag-over-left","drag-over-right");
+      });
+    });
+  });
+
+  head.querySelectorAll(".table-field-head").forEach(target=>{
+    target.addEventListener("dragover",e=>{
+      if(!draggedId||target.dataset.fieldId===draggedId)return;
+      e.preventDefault();
+      const rect=target.getBoundingClientRect();
+      const left=e.clientX<rect.left+rect.width/2;
+      target.classList.toggle("drag-over-left",left);
+      target.classList.toggle("drag-over-right",!left);
+      e.dataTransfer.dropEffect="move";
+    });
+
+    target.addEventListener("dragleave",()=>{
+      target.classList.remove("drag-over-left","drag-over-right");
+    });
+
+    target.addEventListener("drop",async e=>{
+      if(!draggedId||target.dataset.fieldId===draggedId)return;
+      e.preventDefault();
+
+      const filter=type==="grade"?gradeFolderFilter:checkFolderFilter;
+      const list=getOrderedFieldRecords(type,filter==="all"?"all":filter);
+      const ids=list.map(r=>r.id);
+
+      const from=ids.indexOf(draggedId);
+      const targetIndex=ids.indexOf(target.dataset.fieldId);
+      if(from<0||targetIndex<0)return;
+
+      const rect=target.getBoundingClientRect();
+      const insertAfter=e.clientX>=rect.left+rect.width/2;
+
+      ids.splice(from,1);
+      const base=ids.indexOf(target.dataset.fieldId);
+      const insertIndex=base+(insertAfter?1:0);
+      ids.splice(insertIndex,0,draggedId);
+
+      target.classList.remove("drag-over-left","drag-over-right");
+
+      try{
+        setSync("saving","☁️ 更新欄位順序中…");
+        await persistFieldOrder(type,ids);
+        await refreshHistory(false);
+        setSync("ok","☁️ 已同步");
+        showToast("欄位順序已更新");
+      }catch(err){
+        console.error(err);
+        setSync("error","⚠️ 排序失敗");
+        alert(`欄位排序失敗：${err.code||err.message||"未知錯誤"}`);
+      }
+    });
+  });
+}
 
 function allTableFieldRecords(){
   return [...checkRecords,...archivedCheckRecords,...gradeRecords,...archivedGradeRecords];
@@ -4296,6 +4504,14 @@ $("fieldSettingsModal").addEventListener("click",e=>{
 $("fieldSettingsAddFolderBtn").addEventListener("click",addFolderFromFieldSettings);
 $("saveFieldSettingsBtn").addEventListener("click",saveFieldSettings);
 $("deleteFieldSettingsBtn").addEventListener("click",deleteCurrentTableField);
+
+$("moveFieldLeftBtn").addEventListener("click",()=>{
+  if(fieldSettingsRecordId)moveFieldByStep(fieldSettingsRecordId,fieldSettingsType,"left");
+});
+$("moveFieldRightBtn").addEventListener("click",()=>{
+  if(fieldSettingsRecordId)moveFieldByStep(fieldSettingsRecordId,fieldSettingsType,"right");
+});
+
 
 $("gradeFolderFilter").addEventListener("change",e=>{
   gradeFolderFilter=e.target.value;
