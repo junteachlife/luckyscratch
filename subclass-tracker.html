@@ -635,6 +635,29 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
   font-size:12px;font-weight:800;color:#5d5041;white-space:nowrap
 }
 
+
+/* ===== 表格式欄位表頭文字可讀性修正 ===== */
+.grade-sheet thead th,
+.check-sheet thead th{
+  color:#3f2f20 !important;
+}
+.grade-sheet .grade-col-title,
+.check-sheet .grade-col-title{
+  color:#2f241a !important;
+  text-shadow:none !important;
+}
+.grade-sheet .grade-col-meta,
+.check-sheet .grade-col-meta{
+  color:#6a5034 !important;
+  text-shadow:none !important;
+}
+.grade-sheet thead .grade-seat-head,
+.grade-sheet thead .grade-name-head,
+.check-sheet thead .check-seat-head,
+.check-sheet thead .check-name-head{
+  color:#3f2f20 !important;
+}
+
 /* ===== 新增項目視窗 ===== */
 .item-modal{
   position:fixed;inset:0;z-index:350;display:none;align-items:center;justify-content:center;
