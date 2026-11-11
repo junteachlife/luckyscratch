@@ -1382,7 +1382,7 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
       <div>
         <div class="unified-batch-title">🧰 批次列印／匯出</div>
         <div class="archive-note">
-          先選資料類型，再勾選要處理的項目。可跨「收繳資料、檢查登記、成績登記」一起列印或匯出。
+          先選資料類型，再勾選要處理的項目。可跨「收繳資料、檢查登記、成績登記」一起列印或匯出；已封存項目不會顯示。
         </div>
       </div>
       <button class="btn-dark" id="closeUnifiedBatchBtn">✖ 關閉</button>
@@ -3766,9 +3766,19 @@ function chunkArray(arr,size){
 
 
 function unifiedBatchAllRecords(){
-  const submission=[...historyRecords,...archivedRecords].map(r=>({...r,_batchType:"submission"}));
-  const checks=[...checkRecords,...archivedCheckRecords].map(r=>({...r,_batchType:"check"}));
-  const grades=[...gradeRecords,...archivedGradeRecords].map(r=>({...r,_batchType:"grade"}));
+  // 批次列印／匯出只顯示「未封存」項目。
+  // 已封存資料仍保留在 Firebase 與各自的封存區，不會出現在勾選清單。
+  const submission=historyRecords
+    .filter(r=>r.archived!==true && r.folderArchived!==true && !isFolderArchived(normalizeFolderName(r.folder)))
+    .map(r=>({...r,_batchType:"submission"}));
+
+  const checks=checkRecords
+    .filter(r=>r.archived!==true && r.folderArchived!==true && !isFolderArchived(normalizeFolderName(r.folder)))
+    .map(r=>({...r,_batchType:"check"}));
+
+  const grades=gradeRecords
+    .filter(r=>r.archived!==true && r.folderArchived!==true && !isFolderArchived(normalizeFolderName(r.folder)))
+    .map(r=>({...r,_batchType:"grade"}));
 
   return [...submission,...checks,...grades]
     .filter(r=>r?.id)
@@ -3834,7 +3844,6 @@ function renderUnifiedBatchList(){
     const key=unifiedBatchKey(rec);
     const checked=unifiedBatchSelected.has(key);
     const folder=normalizeFolderName(rec.folder);
-    const archived=rec.archived===true?"｜📦 已封存":"";
     let extra="";
     if(rec._batchType==="submission"){
       extra=`｜截止 ${escapeHTML(formatDate(rec.dueDate))}`;
@@ -3845,7 +3854,7 @@ function renderUnifiedBatchList(){
     return `<label class="unified-batch-row">
       <input type="checkbox" class="unified-batch-check" data-key="${escapeHTML(key)}" ${checked?"checked":""}>
       <span class="unified-batch-name">${unifiedBatchTypeLabel(rec._batchType)}｜${escapeHTML(rec.itemName||"未命名")}</span>
-      <span class="unified-batch-meta">📁 ${escapeHTML(folder)}${archived}${extra}</span>
+      <span class="unified-batch-meta">📁 ${escapeHTML(folder)}${extra}</span>
     </label>`;
   }).join("");
 
