@@ -1131,6 +1131,7 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
         適合「數學自我評量」等批閱情境。空白代表尚未登記；點一下格子即標記「✓ 已繳」，再點一次可取消。
         左側座號、姓名與上方欄名固定，不需來回切換不同項目。
       </div>
+      <button class="btn-light" id="printCheckTableBtn">🖨️ 列印檢查表</button>
     </div>
 
     <div class="check-sheet-wrap" id="checkSheetWrap">
@@ -1159,6 +1160,7 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
         左側「座號、姓名」與上方欄名會固定。空白成績格使用粗框；輸入成績後自動變細框並同步 Firebase。
       </div>
       <div class="grade-help">要增加新的成績欄位，請使用頁面上方「➕ 新增項目」，再選擇「📊 成績登記」。</div>
+      <button class="btn-light" id="printGradeTableBtn">🖨️ 列印成績表</button>
     </div>
 
     <div class="grade-sheet-wrap" id="gradeSheetWrap">
@@ -3667,6 +3669,86 @@ function chunkArray(arr,size){
   return out;
 }
 
+
+function printTableRecords(type){
+  const isGrade=type==="grade";
+  const records=isGrade?visibleGradeRecords():visibleCheckRecords();
+  if(!records.length){
+    showToast(isGrade?"目前沒有可列印的成績欄位":"目前沒有可列印的檢查欄位");
+    return;
+  }
+
+  const w=window.open("","_blank");
+  if(!w){
+    alert("瀏覽器阻擋了列印視窗，請允許彈出式視窗後再試。");
+    return;
+  }
+
+  const groups=chunkArray(records,7);
+  const filterValue=isGrade?gradeFolderFilter:checkFolderFilter;
+  const filterLabel=filterValue==="all"?"全部資料夾":filterValue;
+  const title=isGrade?"成績登記表":"檢查登記表";
+
+  const sections=groups.map((cols,pageIndex)=>{
+    const headers=cols.map(rec=>`<th class="item-head-print">
+      <div>${escapeHTML(rec.itemName||"未命名")}</div>
+      <small>${escapeHTML(normalizeFolderName(rec.folder))}${isGrade?`｜滿分 ${escapeHTML(rec.maxScore??100)}`:""}</small>
+    </th>`).join("");
+
+    const rows=students().map(s=>`<tr>
+      <td class="seat-print">${s.seat}</td>
+      <td class="name-print">${escapeHTML(s.name)}</td>
+      ${cols.map(rec=>{
+        if(isGrade){
+          const value=gradeValue(rec,s.seat);
+          return `<td class="value-print">${escapeHTML(value)}</td>`;
+        }
+        const checked=checkValue(rec,s.seat);
+        return `<td class="value-print check-print">${checked?"✓":""}</td>`;
+      }).join("")}
+    </tr>`).join("");
+
+    return `<section class="print-sheet">
+      <div class="print-title">${escapeHTML(currentClass().name)}班｜${title}</div>
+      <div class="print-sub">資料夾：${escapeHTML(filterLabel)}${groups.length>1?`｜第 ${pageIndex+1}/${groups.length} 頁`:""}</div>
+      <table>
+        <thead><tr><th class="seat-print">座號</th><th class="name-print">姓名</th>${headers}</tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </section>`;
+  }).join("");
+
+  w.document.write(`<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>${escapeHTML(currentClass().name)}班－${title}</title>
+<style>
+@page{size:A4 landscape;margin:5mm}
+*{box-sizing:border-box}
+body{font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif;margin:0;color:#111}
+.print-sheet{page-break-after:always}
+.print-sheet:last-child{page-break-after:auto}
+.print-title{text-align:center;font-size:14pt;font-weight:900;margin:0 0 1mm}
+.print-sub{text-align:center;font-size:8.5pt;margin:0 0 2mm;color:#444}
+table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:8.5pt}
+thead{display:table-header-group}
+tr{break-inside:avoid;page-break-inside:avoid}
+th,td{border:1px solid #666;padding:1.25mm .8mm;text-align:center;vertical-align:middle;line-height:1.15}
+th{background:#eee;font-weight:900}
+th small{display:block;font-size:6.8pt;font-weight:700;margin-top:.5mm;white-space:normal}
+.seat-print{width:6%}
+.name-print{width:12%;font-weight:900}
+.item-head-print{overflow-wrap:anywhere}
+.value-print{font-size:9pt}
+.check-print{font-size:13pt;font-weight:900}
+</style>
+</head>
+<body>${sections}<script>window.onload=()=>window.print()<\/script></body>
+</html>`);
+  w.document.close();
+}
+
 function printBatchSelectedRecords(){
   const selected=historyRecords.filter(r=>batchPrintSelectedIds.has(r.id));
 
@@ -4593,6 +4675,8 @@ $("selectAllExportBtn").addEventListener("click",selectAllExportRecords);
 $("clearAllExportBtn").addEventListener("click",clearAllExportRecords);
 $("exportSelectedBtn").addEventListener("click",exportSelectedRecords);
 $("printBtn").addEventListener("click",()=>{updatePrintSummary();window.print();});
+$("printCheckTableBtn").addEventListener("click",()=>printTableRecords("check"));
+$("printGradeTableBtn").addEventListener("click",()=>printTableRecords("grade"));
 
 
 $("closeMailModalBtn").addEventListener("click",closeMailModal);
