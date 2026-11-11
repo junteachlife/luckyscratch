@@ -685,6 +685,64 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
   .work-mode-switch,.grade-panel,.item-modal{display:none!important}
 }
 
+
+/* ===== 三類資料統一批次列印／匯出 ===== */
+.unified-batch-modal{
+  position:fixed;inset:0;z-index:380;display:none;align-items:center;justify-content:center;
+  padding:16px;background:rgba(25,28,31,.58);backdrop-filter:blur(3px)
+}
+.unified-batch-modal.show{display:flex}
+.unified-batch-card{
+  width:min(900px,97vw);max-height:92vh;overflow:auto;
+  background:linear-gradient(180deg,#fff9e7,#f0d9a2);
+  border:4px solid #5d4328;border-radius:20px;padding:18px;
+  box-shadow:0 18px 50px rgba(0,0,0,.32)
+}
+.unified-batch-head{
+  display:flex;justify-content:space-between;gap:12px;align-items:flex-start
+}
+.unified-batch-title{font-size:20px;font-weight:900;color:#4b3422}
+.batch-type-tabs{
+  display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 10px
+}
+.batch-type-tab{
+  border:2px solid #9d7b4d;background:#fff8e6;color:#5d452b;
+  border-radius:10px;padding:9px 12px;font-weight:900;cursor:pointer
+}
+.batch-type-tab.active{
+  background:#5b3429;color:#fff;border-color:#5b3429
+}
+.unified-batch-tools{
+  display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 12px
+}
+.unified-batch-summary{
+  padding:9px 11px;border-radius:10px;background:#fff8e7;
+  border:1px solid #d6bd91;font-size:13px;font-weight:900;color:#645039
+}
+.unified-batch-list{
+  display:grid;gap:7px;max-height:48vh;overflow:auto;padding:4px
+}
+.unified-batch-row{
+  display:grid;grid-template-columns:28px minmax(160px,1fr) minmax(170px,.8fr);
+  gap:8px;align-items:center;padding:9px 10px;border:1px solid #cfb78e;
+  border-radius:10px;background:#fffaf0;cursor:pointer
+}
+.unified-batch-row:hover{background:#fff4d7}
+.unified-batch-row input{width:18px;height:18px}
+.unified-batch-name{font-weight:900;color:#4f3a24}
+.unified-batch-meta{font-size:12px;font-weight:800;color:#7a6548}
+.unified-batch-empty{
+  padding:20px;text-align:center;font-weight:900;color:#7a6548
+}
+.unified-batch-actions{
+  display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:14px
+}
+@media(max-width:640px){
+  .unified-batch-row{grid-template-columns:26px 1fr}
+  .unified-batch-meta{grid-column:2}
+  .unified-batch-actions button{width:100%}
+}
+
 /* ===== Email 未繳通知 ===== */
 .mail-modal{
   position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;
@@ -1021,11 +1079,9 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
         <details class="compact-details" id="exportToolsDetails">
           <summary>📊 匯出與批次處理</summary>
           <div class="compact-details-body">
-            <div class="mini-help">全部匯出、勾選項目匯出與批次列印集中在這裡。</div>
+            <div class="mini-help">可從收繳資料、檢查登記、成績登記三種類型中勾選任意項目，再選擇批次列印或匯出 Excel。</div>
             <div class="toolbar">
-              <button class="btn-light" id="exportBtn">📊 全部匯出</button>
-              <button class="btn-blue" id="selectExportBtn">☑️ 勾選項目匯出</button>
-              <button class="btn-light" id="toggleBatchPrintBtn">☑️ 批次列印</button>
+              <button class="btn-blue" id="openUnifiedBatchBtn">🧰 選擇批次列印／匯出</button>
             </div>
           </div>
         </details>
@@ -1059,7 +1115,7 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
       </div>
 
 
-      <div class="batch-print-panel" id="batchPrintPanel">
+      <div class="batch-print-panel" id="batchPrintPanel" style="display:none!important">
         <div class="batch-print-head">
           <div>
             <div class="batch-print-title">☑️ 批次彙整列印</div>
@@ -1319,6 +1375,42 @@ tbody tr:hover td{background:#fff4cd} tbody tr.overdue td{background:#fff0e6} tb
 
 
 
+
+<div class="unified-batch-modal" id="unifiedBatchModal">
+  <div class="unified-batch-card">
+    <div class="unified-batch-head">
+      <div>
+        <div class="unified-batch-title">🧰 批次列印／匯出</div>
+        <div class="archive-note">
+          先選資料類型，再勾選要處理的項目。可跨「收繳資料、檢查登記、成績登記」一起列印或匯出。
+        </div>
+      </div>
+      <button class="btn-dark" id="closeUnifiedBatchBtn">✖ 關閉</button>
+    </div>
+
+    <div class="batch-type-tabs">
+      <button class="batch-type-tab active" data-batch-type="all">🗂️ 全部</button>
+      <button class="batch-type-tab" data-batch-type="submission">📋 收繳資料</button>
+      <button class="batch-type-tab" data-batch-type="check">✅ 檢查登記</button>
+      <button class="batch-type-tab" data-batch-type="grade">📊 成績登記</button>
+    </div>
+
+    <div class="unified-batch-tools">
+      <button class="btn-light" id="selectAllUnifiedBatchBtn">☑ 全選目前類型</button>
+      <button class="btn-light" id="clearUnifiedBatchBtn">□ 清除目前類型</button>
+      <button class="btn-light" id="clearAllUnifiedBatchBtn">✖ 全部清除</button>
+    </div>
+
+    <div class="unified-batch-summary" id="unifiedBatchSummary">尚未選擇項目</div>
+    <div class="unified-batch-list" id="unifiedBatchList"></div>
+
+    <div class="unified-batch-actions">
+      <button class="btn-primary" id="exportUnifiedBatchBtn">📤 匯出已勾選 Excel</button>
+      <button class="btn-blue" id="printUnifiedBatchBtn">🖨️ 批次列印已勾選</button>
+    </div>
+  </div>
+</div>
+
 <div class="item-modal" id="itemModal">
   <div class="item-card">
     <div class="mail-head">
@@ -1539,6 +1631,8 @@ const gradeSaveTimers=new Map();
 const checkSaveTimers=new Map();
 let fieldSettingsRecordId="";
 let fieldSettingsType="";
+let unifiedBatchType="all";
+const unifiedBatchSelected=new Set();
 let historyFolderFilter="all", historySortMode="updatedDesc";
 let folderList=["未分類"];
 let archivedFolderNames=[];
@@ -3670,6 +3764,328 @@ function chunkArray(arr,size){
 }
 
 
+
+function unifiedBatchAllRecords(){
+  const submission=[...historyRecords,...archivedRecords].map(r=>({...r,_batchType:"submission"}));
+  const checks=[...checkRecords,...archivedCheckRecords].map(r=>({...r,_batchType:"check"}));
+  const grades=[...gradeRecords,...archivedGradeRecords].map(r=>({...r,_batchType:"grade"}));
+
+  return [...submission,...checks,...grades]
+    .filter(r=>r?.id)
+    .sort((a,b)=>{
+      const typeOrder={submission:0,check:1,grade:2};
+      if(typeOrder[a._batchType]!==typeOrder[b._batchType]){
+        return typeOrder[a._batchType]-typeOrder[b._batchType];
+      }
+      const folderCmp=normalizeFolderName(a.folder).localeCompare(
+        normalizeFolderName(b.folder),"zh-Hant",{numeric:true,sensitivity:"base"}
+      );
+      if(folderCmp!==0)return folderCmp;
+      const ao=Number.isFinite(Number(a.sortOrder))?Number(a.sortOrder):999999;
+      const bo=Number.isFinite(Number(b.sortOrder))?Number(b.sortOrder):999999;
+      if(ao!==bo)return ao-bo;
+      return String(a.itemName||"").localeCompare(
+        String(b.itemName||""),"zh-Hant",{numeric:true,sensitivity:"base"}
+      );
+    });
+}
+
+function unifiedBatchTypeLabel(type){
+  if(type==="submission")return "📋 收繳資料";
+  if(type==="check")return "✅ 檢查登記";
+  if(type==="grade")return "📊 成績登記";
+  return "資料";
+}
+
+function unifiedBatchKey(rec){
+  return `${rec._batchType}:${rec.id}`;
+}
+
+function unifiedBatchRecordMap(){
+  return new Map(unifiedBatchAllRecords().map(r=>[unifiedBatchKey(r),r]));
+}
+
+function currentUnifiedBatchRecords(){
+  const all=unifiedBatchAllRecords();
+  return unifiedBatchType==="all"?all:all.filter(r=>r._batchType===unifiedBatchType);
+}
+
+function updateUnifiedBatchSummary(){
+  const map=unifiedBatchRecordMap();
+  const selected=[...unifiedBatchSelected].map(k=>map.get(k)).filter(Boolean);
+  const countByType={submission:0,check:0,grade:0};
+  selected.forEach(r=>countByType[r._batchType]++);
+  $("unifiedBatchSummary").textContent=
+    `已選 ${selected.length} 項｜收繳 ${countByType.submission}｜檢查 ${countByType.check}｜成績 ${countByType.grade}`;
+}
+
+function renderUnifiedBatchList(){
+  const list=currentUnifiedBatchRecords();
+  const wrap=$("unifiedBatchList");
+  if(!wrap)return;
+
+  if(!list.length){
+    wrap.innerHTML='<div class="unified-batch-empty">這個類型目前沒有可選擇的資料。</div>';
+    updateUnifiedBatchSummary();
+    return;
+  }
+
+  wrap.innerHTML=list.map(rec=>{
+    const key=unifiedBatchKey(rec);
+    const checked=unifiedBatchSelected.has(key);
+    const folder=normalizeFolderName(rec.folder);
+    const archived=rec.archived===true?"｜📦 已封存":"";
+    let extra="";
+    if(rec._batchType==="submission"){
+      extra=`｜截止 ${escapeHTML(formatDate(rec.dueDate))}`;
+    }else if(rec._batchType==="grade"){
+      extra=`｜滿分 ${escapeHTML(rec.maxScore??100)}`;
+    }
+
+    return `<label class="unified-batch-row">
+      <input type="checkbox" class="unified-batch-check" data-key="${escapeHTML(key)}" ${checked?"checked":""}>
+      <span class="unified-batch-name">${unifiedBatchTypeLabel(rec._batchType)}｜${escapeHTML(rec.itemName||"未命名")}</span>
+      <span class="unified-batch-meta">📁 ${escapeHTML(folder)}${archived}${extra}</span>
+    </label>`;
+  }).join("");
+
+  wrap.querySelectorAll(".unified-batch-check").forEach(cb=>{
+    cb.addEventListener("change",()=>{
+      const key=cb.dataset.key;
+      if(cb.checked)unifiedBatchSelected.add(key);
+      else unifiedBatchSelected.delete(key);
+      updateUnifiedBatchSummary();
+    });
+  });
+
+  updateUnifiedBatchSummary();
+}
+
+function openUnifiedBatchModal(){
+  if(!currentUser){showToast("請先登入");return;}
+  unifiedBatchType="all";
+  document.querySelectorAll(".batch-type-tab").forEach(btn=>{
+    btn.classList.toggle("active",btn.dataset.batchType==="all");
+  });
+  renderUnifiedBatchList();
+  $("unifiedBatchModal").classList.add("show");
+}
+
+function closeUnifiedBatchModal(){
+  $("unifiedBatchModal").classList.remove("show");
+}
+
+function selectedUnifiedBatchRecords(){
+  const map=unifiedBatchRecordMap();
+  return [...unifiedBatchSelected].map(k=>map.get(k)).filter(Boolean);
+}
+
+function selectCurrentUnifiedBatch(){
+  currentUnifiedBatchRecords().forEach(r=>unifiedBatchSelected.add(unifiedBatchKey(r)));
+  renderUnifiedBatchList();
+}
+
+function clearCurrentUnifiedBatch(){
+  currentUnifiedBatchRecords().forEach(r=>unifiedBatchSelected.delete(unifiedBatchKey(r)));
+  renderUnifiedBatchList();
+}
+
+function clearAllUnifiedBatch(){
+  unifiedBatchSelected.clear();
+  renderUnifiedBatchList();
+}
+
+function unifiedCellValue(rec,seat){
+  if(rec._batchType==="submission"){
+    const saved=rec.students?.[seat] ?? rec.students?.[String(seat)];
+    const status=saved?.status || "unpaid";
+    return STATUS_LABEL[status] || status || "未繳交";
+  }
+  if(rec._batchType==="check"){
+    return checkValue(rec,seat)?"已繳":"";
+  }
+  if(rec._batchType==="grade"){
+    return gradeValue(rec,seat);
+  }
+  return "";
+}
+
+async function exportUnifiedBatch(){
+  const records=selectedUnifiedBatchRecords();
+  if(!records.length){
+    showToast("請至少勾選一個項目");
+    return;
+  }
+  if(!window.ExcelJS){
+    alert("Excel 元件載入失敗，請重新整理頁面後再試。");
+    return;
+  }
+
+  const btn=$("exportUnifiedBatchBtn");
+  const old=btn.textContent;
+  btn.disabled=true;
+  btn.textContent="⏳ 產生 Excel 中…";
+
+  try{
+    const wb=new ExcelJS.Workbook();
+    wb.creator="任課班收繳登記";
+    wb.created=new Date();
+
+    const ws=wb.addWorksheet(`${currentClass().name}批次資料`,{
+      views:[{state:"frozen",xSplit:2,ySplit:1}]
+    });
+
+    const used=new Set();
+    const cols=records.map((rec,index)=>{
+      let title=`${rec.itemName||"未命名"}`;
+      const typePrefix=rec._batchType==="submission"?"收繳":rec._batchType==="check"?"檢查":"成績";
+      title=`${typePrefix}｜${title}`;
+      let finalTitle=title,n=2;
+      while(used.has(finalTitle))finalTitle=`${title} (${n++})`;
+      used.add(finalTitle);
+      return {rec,title:finalTitle,key:`v_${index}`};
+    });
+
+    ws.columns=[
+      {header:"座號",key:"seat",width:8},
+      {header:"姓名",key:"name",width:14},
+      ...cols.map(c=>({
+        header:c.title,
+        key:c.key,
+        width:Math.max(14,Math.min(28,c.title.length+4))
+      }))
+    ];
+
+    const header=ws.getRow(1);
+    header.font={bold:true};
+    header.alignment={horizontal:"center",vertical:"middle",wrapText:true};
+    header.height=30;
+
+    students().slice().sort((a,b)=>Number(a.seat)-Number(b.seat)).forEach(s=>{
+      const rowData={seat:s.seat,name:s.name};
+      cols.forEach(c=>rowData[c.key]=unifiedCellValue(c.rec,s.seat));
+      const row=ws.addRow(rowData);
+      row.alignment={horizontal:"center",vertical:"middle",wrapText:true};
+
+      cols.forEach((c,i)=>{
+        const cell=row.getCell(i+3);
+        const val=String(cell.value??"");
+        if(c.rec._batchType==="submission"){
+          if(val==="未繳交")cell.font={bold:true,color:{argb:"FFFF0000"}};
+          else if(val==="補交")cell.font={color:{argb:"FF0000FF"}};
+        }
+      });
+    });
+
+    ws.eachRow({includeEmpty:true},row=>{
+      row.eachCell({includeEmpty:true},cell=>{
+        cell.border={
+          top:{style:"thin"},left:{style:"thin"},
+          bottom:{style:"thin"},right:{style:"thin"}
+        };
+      });
+    });
+
+    const buffer=await wb.xlsx.writeBuffer();
+    const blob=new Blob([buffer],{
+      type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    });
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download=`${currentClass().name}_批次資料.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+
+    showToast(`已匯出 ${records.length} 個勾選項目`);
+  }catch(err){
+    console.error(err);
+    alert(`批次匯出失敗：${err.message||err}`);
+  }finally{
+    btn.disabled=false;
+    btn.textContent=old;
+  }
+}
+
+function printUnifiedBatch(){
+  const selected=selectedUnifiedBatchRecords();
+  if(!selected.length){
+    showToast("請至少勾選一個項目");
+    return;
+  }
+
+  const w=window.open("","_blank");
+  if(!w){
+    alert("瀏覽器阻擋了列印視窗，請允許彈出式視窗後再試。");
+    return;
+  }
+
+  const groups=chunkArray(selected,7);
+
+  const sections=groups.map((records,pageIndex)=>{
+    const headers=records.map(rec=>{
+      const typeText=rec._batchType==="submission"?"收繳":rec._batchType==="check"?"檢查":"成績";
+      const meta=rec._batchType==="grade"
+        ? `滿分 ${escapeHTML(rec.maxScore??100)}`
+        : escapeHTML(normalizeFolderName(rec.folder));
+      return `<th class="item-head-print">
+        <div>${escapeHTML(rec.itemName||"未命名")}</div>
+        <small>${typeText}｜${meta}</small>
+      </th>`;
+    }).join("");
+
+    const rows=students().map(s=>`<tr>
+      <td class="seat-print">${s.seat}</td>
+      <td class="name-print">${escapeHTML(s.name)}</td>
+      ${records.map(rec=>{
+        const value=unifiedCellValue(rec,s.seat);
+        const cls=rec._batchType==="check"?"check-print":"";
+        return `<td class="value-print ${cls}">${escapeHTML(value)}</td>`;
+      }).join("")}
+    </tr>`).join("");
+
+    return `<section class="batch-sheet">
+      <div class="batch-title">${escapeHTML(currentClass().name)}班｜批次資料彙整</div>
+      <div class="batch-sub">共勾選 ${selected.length} 項${groups.length>1?`｜第 ${pageIndex+1}/${groups.length} 頁`:""}</div>
+      <table>
+        <thead><tr><th class="seat-print">座號</th><th class="name-print">姓名</th>${headers}</tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </section>`;
+  }).join("");
+
+  w.document.write(`<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>${escapeHTML(currentClass().name)}班－批次資料彙整</title>
+<style>
+@page{size:A4 landscape;margin:5mm}
+*{box-sizing:border-box}
+body{font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif;margin:0;color:#111}
+.batch-sheet{page-break-after:always}
+.batch-sheet:last-child{page-break-after:auto}
+.batch-title{text-align:center;font-size:14pt;font-weight:900;margin:0 0 1mm}
+.batch-sub{text-align:center;font-size:8.5pt;margin:0 0 2mm;color:#444}
+table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:8.2pt}
+thead{display:table-header-group}
+tr{break-inside:avoid;page-break-inside:avoid}
+th,td{border:1px solid #777;padding:1.25mm .8mm;text-align:center;vertical-align:middle;line-height:1.12}
+th{background:#eee;font-weight:900}
+th small{display:block;font-size:6.8pt;font-weight:700;margin-top:.5mm;white-space:normal}
+.seat-print{width:6%}
+.name-print{width:12%;font-weight:900}
+.item-head-print{overflow-wrap:anywhere}
+.value-print{font-size:8.8pt}
+.check-print{font-size:10pt;font-weight:900}
+</style>
+</head>
+<body>${sections}<script>window.onload=()=>window.print()<\/script></body>
+</html>`);
+  w.document.close();
+}
+
 function printTableRecords(type){
   const isGrade=type==="grade";
   const records=isGrade?visibleGradeRecords():visibleCheckRecords();
@@ -4657,8 +5073,8 @@ $("unarchiveBtn").addEventListener("click",unarchiveCurrentRecord);
 $("archiveSelect").addEventListener("change",()=>{if($("archiveSelect").value)loadArchivedRecord();});
 $("copyUnpaidBtn").addEventListener("click",copyUnpaid);
 $("emailUnpaidBtn").addEventListener("click",openMailModal);
-$("exportBtn").addEventListener("click",exportCSV);
-$("selectExportBtn").addEventListener("click",async()=>{
+$("exportBtn")?.addEventListener("click",exportCSV);
+$("selectExportBtn")?.addEventListener("click",async()=>{
   try{
     await refreshHistory(false);
     openExportModal();
@@ -4678,6 +5094,35 @@ $("printBtn").addEventListener("click",()=>{updatePrintSummary();window.print();
 $("printCheckTableBtn").addEventListener("click",()=>printTableRecords("check"));
 $("printGradeTableBtn").addEventListener("click",()=>printTableRecords("grade"));
 
+$("openUnifiedBatchBtn").addEventListener("click",async()=>{
+  try{
+    await refreshHistory(false);
+    openUnifiedBatchModal();
+  }catch(err){
+    console.error(err);
+    showToast("讀取批次資料失敗");
+  }
+});
+$("closeUnifiedBatchBtn").addEventListener("click",closeUnifiedBatchModal);
+$("unifiedBatchModal").addEventListener("click",e=>{
+  if(e.target===$("unifiedBatchModal"))closeUnifiedBatchModal();
+});
+document.querySelectorAll(".batch-type-tab").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    unifiedBatchType=btn.dataset.batchType||"all";
+    document.querySelectorAll(".batch-type-tab").forEach(x=>{
+      x.classList.toggle("active",x===btn);
+    });
+    renderUnifiedBatchList();
+  });
+});
+$("selectAllUnifiedBatchBtn").addEventListener("click",selectCurrentUnifiedBatch);
+$("clearUnifiedBatchBtn").addEventListener("click",clearCurrentUnifiedBatch);
+$("clearAllUnifiedBatchBtn").addEventListener("click",clearAllUnifiedBatch);
+$("exportUnifiedBatchBtn").addEventListener("click",exportUnifiedBatch);
+$("printUnifiedBatchBtn").addEventListener("click",printUnifiedBatch);
+
+
 
 $("closeMailModalBtn").addEventListener("click",closeMailModal);
 $("mailModal").addEventListener("click",e=>{if(e.target===$("mailModal"))closeMailModal();});
@@ -4693,7 +5138,7 @@ $("copyMailBodyBtn").addEventListener("click",()=>{
   copyTextSafe($("mailBody").value,"通知內容已複製");
 });
 
-$("toggleBatchPrintBtn").addEventListener("click",toggleBatchPrintPanel);
+$("toggleBatchPrintBtn")?.addEventListener("click",toggleBatchPrintPanel);
 $("selectAllBatchPrintBtn").addEventListener("click",selectAllBatchPrint);
 $("clearBatchPrintBtn").addEventListener("click",clearBatchPrint);
 $("printBatchSelectedBtn").addEventListener("click",printBatchSelectedRecords);
