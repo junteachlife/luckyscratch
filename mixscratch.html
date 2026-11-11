@@ -5055,7 +5055,7 @@ function initScratch(){
     ctx.arc(
       x,
       y,
-      30,
+      14,
       0,
       Math.PI*2
     );
@@ -5186,8 +5186,8 @@ function initScratch(){
 
 
     /*
-      不必等手指放開，
-      刮到一定比例就會自動揭曉。
+      採用較細刮痕，避免一次刮除太大範圍。
+      刮到較高比例後才會自動揭曉。
     */
 
     moveCounter++;
@@ -5330,7 +5330,7 @@ function checkScratch(
 
   if(
     ratio >=
-    .8
+    .85
   ){
 
     finishScratch(
