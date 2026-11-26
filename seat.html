@@ -470,7 +470,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, signInAnonymously, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB2qXsbab4fh15C9YbCDWK208eJLLHgsKk",
@@ -485,6 +485,23 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
+    // 午休座位背景同步：僅傳送座號，不傳送姓名。
+    const lunchApp = initializeApp({apiKey:"AIzaSyAFPV1CXiLt6aLO-0ICjsYyOESeS2NQh6U",authDomain:"lunch-attendance-d2683.firebaseapp.com",projectId:"lunch-attendance-d2683",databaseURL:"https://lunch-attendance-d2683-default-rtdb.asia-southeast1.firebasedatabase.app/",appId:"1:385815165195:web:6f7a75e730f06eb5f38a0e"}, 'lunch-seat-publisher');
+    const lunchAuth=getAuth(lunchApp), lunchDb=getDatabase(lunchApp);
+    let lunchQueue=Promise.resolve(), lunchUserPromise=null;
+    function syncLunchSeats(map, manual=false){
+        const layout={};
+        for(let i=0;i<30;i++){const n=Number(map['cell-'+i]?.id);layout['cell-'+i]=Number.isInteger(n)&&n>=1&&n<=28?n:0;}
+        lunchQueue=lunchQueue.catch(()=>{}).then(async()=>{
+            if(!auth.currentUser)return;
+            if(!lunchUserPromise)lunchUserPromise=(async()=>{await setPersistence(lunchAuth,browserLocalPersistence);await lunchAuth.authStateReady();return lunchAuth.currentUser||(await signInAnonymously(lunchAuth)).user;})().catch(e=>{lunchUserPromise=null;throw e;});
+            const user=await lunchUserPromise;
+            try{await set(ref(lunchDb,'seat_layout'),layout);}
+            catch(e){console.warn('午休座位同步失敗',e);if(manual)prompt('原座位已儲存。午休座位同步失敗：'+e.message+'。若尚未授權，請複製以下發布 UID。',user.uid);}
+        }).catch(e=>{console.warn('午休座位驗證失敗',e);if(manual)alert('原座位已儲存，午休同步失敗：'+e.message);});
+        return lunchQueue;
+    }
+
 
     onAuthStateChanged(auth, (user) => {
         const overlay = document.getElementById("auth-overlay");
@@ -528,6 +545,7 @@
         set(ref(db, 'class_804/seat_data'), data)
             .then(() => {
                 alert("🏴‍☠️ 雲端航海日誌同步成功！");
+                syncLunchSeats(data.seatMap,true);
             })
             .catch((error) => {
                 alert("❌ 儲存失敗：" + error.message);
@@ -536,7 +554,7 @@
 
     window.saveDataToFirebaseSilent = function() {
         const data = { seatMap, unassignedStudents, staffAssignments, examHistory };
-        set(ref(db, 'class_804/seat_data'), data).catch((error) => {
+        set(ref(db, 'class_804/seat_data'), data).then(()=>syncLunchSeats(data.seatMap)).catch((error) => {
             console.error("自動同步失敗", error);
         });
     };
